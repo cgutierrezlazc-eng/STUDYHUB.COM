@@ -2,31 +2,16 @@ import React, { useState, useEffect, useRef } from 'react';
 import { useParams } from 'react-router-dom';
 import { useAuth } from '../services/auth';
 import { api } from '../services/api';
+import cvStyles from './CVProfile.module.css';
 import {
   Pencil,
   Download,
   Share2,
   Upload,
-  Globe,
-  Briefcase,
-  GraduationCap,
-  Award,
-  Star,
-  CheckCircle,
-  ExternalLink,
-  Link,
-  Eye,
-  EyeOff,
   Save,
   Plus,
   Trash2,
   X,
-  Clock,
-  Map,
-  Target,
-  Users,
-  FileText,
-  Zap,
   ChevronRight,
 } from '../components/Icons';
 
@@ -106,294 +91,23 @@ const EMPTY_CV: CVData = {
   visibility: 'private',
 };
 
-const LANG_LEVELS = ['Basico', 'Intermedio', 'Avanzado', 'Nativo/Bilingue'];
+const LANG_LEVELS = ['Básico', 'Intermedio', 'Avanzado', 'Nativo/Bilingüe'];
 
 function genId() {
   return Math.random().toString(36).slice(2, 10);
 }
 
-/* ────────── Styles ────────── */
-const styles: Record<string, React.CSSProperties> = {
-  page: {
-    minHeight: '100vh',
-    background: 'var(--bg-secondary, #f3f4f6)',
-    paddingBottom: 60,
-  },
-  banner: {
-    height: 200,
-    background: 'linear-gradient(135deg, #0a2463 0%, #1e56a0 40%, #3d7cc9 100%)',
-    position: 'relative',
-    borderRadius: '0 0 16px 16px',
-  },
-  bannerOverlay: {
-    position: 'absolute',
-    inset: 0,
-    background: 'linear-gradient(180deg, rgba(0,0,0,0) 50%, rgba(0,0,0,0.35) 100%)',
-    borderRadius: '0 0 16px 16px',
-  },
-  profileHeader: {
-    maxWidth: 960,
-    margin: '0 auto',
-    padding: '0 24px',
-    position: 'relative',
-    marginTop: -60,
-  },
-  avatar: {
-    width: 120,
-    height: 120,
-    borderRadius: '50%',
-    border: '4px solid var(--bg-primary, #fff)',
-    background: 'linear-gradient(135deg, #1e56a0, #3d7cc9)',
-    display: 'flex',
-    alignItems: 'center',
-    justifyContent: 'center',
-    fontSize: 40,
-    fontWeight: 700,
-    color: '#fff',
-    boxShadow: '0 4px 20px rgba(0,0,0,0.15)',
-    overflow: 'hidden',
-  },
-  headerCard: {
-    background: 'var(--bg-primary, #fff)',
-    borderRadius: 16,
-    padding: '0 28px 24px',
-    boxShadow: '0 2px 12px rgba(0,0,0,0.06)',
-    marginTop: -60,
-    paddingTop: 76,
-    position: 'relative',
-  },
-  name: {
-    fontSize: 26,
-    fontWeight: 700,
-    color: 'var(--text-primary, #1a1a2e)',
-    margin: 0,
-    lineHeight: 1.2,
-  },
-  headline: {
-    fontSize: 16,
-    color: 'var(--text-secondary, #555)',
-    marginTop: 4,
-    fontWeight: 500,
-  },
-  meta: {
-    display: 'flex',
-    flexWrap: 'wrap' as const,
-    gap: 16,
-    marginTop: 10,
-    fontSize: 13,
-    color: 'var(--text-tertiary, #888)',
-  },
-  metaItem: {
-    display: 'flex',
-    alignItems: 'center',
-    gap: 4,
-  },
-  badge: {
-    display: 'inline-flex',
-    alignItems: 'center',
-    gap: 4,
-    background: 'linear-gradient(135deg, #059669, #10b981)',
-    color: '#fff',
-    fontSize: 12,
-    fontWeight: 600,
-    padding: '4px 12px',
-    borderRadius: 20,
-    marginTop: 8,
-  },
-  actions: {
-    display: 'flex',
-    gap: 10,
-    marginTop: 16,
-    flexWrap: 'wrap' as const,
-  },
-  btnPrimary: {
-    display: 'inline-flex',
-    alignItems: 'center',
-    gap: 6,
-    padding: '10px 20px',
-    background: 'linear-gradient(135deg, #1e56a0, #2d6fc5)',
-    color: '#fff',
-    border: 'none',
-    borderRadius: 10,
-    fontSize: 14,
-    fontWeight: 600,
-    cursor: 'pointer',
-    transition: 'all .2s',
-  },
-  btnSecondary: {
-    display: 'inline-flex',
-    alignItems: 'center',
-    gap: 6,
-    padding: '10px 20px',
-    background: 'var(--bg-secondary, #f3f4f6)',
-    color: 'var(--text-primary, #333)',
-    border: '1px solid var(--border, #e0e0e0)',
-    borderRadius: 10,
-    fontSize: 14,
-    fontWeight: 600,
-    cursor: 'pointer',
-    transition: 'all .2s',
-  },
-  mainGrid: {
-    maxWidth: 960,
-    margin: '24px auto 0',
-    padding: '0 24px',
-    display: 'grid',
-    gridTemplateColumns: '1fr 300px',
-    gap: 24,
-  },
-  card: {
-    background: 'var(--bg-primary, #fff)',
-    borderRadius: 16,
-    padding: 24,
-    boxShadow: '0 2px 12px rgba(0,0,0,0.06)',
-    marginBottom: 0,
-  },
-  cardTitle: {
-    fontSize: 18,
-    fontWeight: 700,
-    color: 'var(--text-primary, #1a1a2e)',
-    marginBottom: 16,
-    display: 'flex',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-  },
-  tabBar: {
-    display: 'flex',
-    gap: 4,
-    background: 'var(--bg-secondary, #f3f4f6)',
-    borderRadius: 12,
-    padding: 4,
-    marginBottom: 24,
-    overflowX: 'auto' as const,
-  },
-  tab: {
-    padding: '10px 18px',
-    borderRadius: 10,
-    fontSize: 14,
-    fontWeight: 600,
-    cursor: 'pointer',
-    border: 'none',
-    background: 'transparent',
-    color: 'var(--text-secondary, #666)',
-    whiteSpace: 'nowrap' as const,
-    transition: 'all .2s',
-  },
-  tabActive: {
-    background: 'var(--bg-primary, #fff)',
-    color: 'var(--text-primary, #1a1a2e)',
-    boxShadow: '0 1px 4px rgba(0,0,0,0.08)',
-  },
-  input: {
-    width: '100%',
-    padding: '10px 14px',
-    borderRadius: 10,
-    border: '1px solid var(--border, #e0e0e0)',
-    fontSize: 14,
-    background: 'var(--bg-primary, #fff)',
-    color: 'var(--text-primary, #333)',
-    outline: 'none',
-    boxSizing: 'border-box' as const,
-  },
-  textarea: {
-    width: '100%',
-    padding: '10px 14px',
-    borderRadius: 10,
-    border: '1px solid var(--border, #e0e0e0)',
-    fontSize: 14,
-    background: 'var(--bg-primary, #fff)',
-    color: 'var(--text-primary, #333)',
-    outline: 'none',
-    resize: 'vertical' as const,
-    minHeight: 80,
-    fontFamily: 'inherit',
-    boxSizing: 'border-box' as const,
-  },
-  tag: {
-    display: 'inline-flex',
-    alignItems: 'center',
-    gap: 4,
-    padding: '5px 12px',
-    borderRadius: 20,
-    fontSize: 13,
-    fontWeight: 500,
-    background: 'var(--bg-secondary, #eef2f7)',
-    color: 'var(--text-primary, #333)',
-  },
-  skillBar: {
-    height: 8,
-    borderRadius: 4,
-    background: 'var(--bg-secondary, #e5e7eb)',
-    overflow: 'hidden',
-    flex: 1,
-  },
-  skillFill: {
-    height: '100%',
-    borderRadius: 4,
-    background: 'linear-gradient(90deg, #1e56a0, #3d7cc9)',
-    transition: 'width .4s ease',
-  },
-  sidebar: {
-    display: 'flex',
-    flexDirection: 'column' as const,
-    gap: 20,
-  },
-  statRow: {
-    display: 'flex',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    padding: '8px 0',
-    borderBottom: '1px solid var(--border, #f0f0f0)',
-    fontSize: 14,
-  },
-  toggle: {
-    width: 44,
-    height: 24,
-    borderRadius: 12,
-    border: 'none',
-    cursor: 'pointer',
-    position: 'relative' as const,
-    transition: 'background .2s',
-  },
-  toggleDot: {
-    width: 18,
-    height: 18,
-    borderRadius: '50%',
-    background: '#fff',
-    position: 'absolute' as const,
-    top: 3,
-    transition: 'left .2s',
-    boxShadow: '0 1px 3px rgba(0,0,0,0.2)',
-  },
-  timeline: {
-    position: 'relative' as const,
-    paddingLeft: 24,
-    borderLeft: '2px solid var(--border, #e5e7eb)',
-  },
-  timelineDot: {
-    position: 'absolute' as const,
-    left: -7,
-    top: 4,
-    width: 12,
-    height: 12,
-    borderRadius: '50%',
-    background: '#1e56a0',
-    border: '2px solid var(--bg-primary, #fff)',
-  },
-  timelineItem: {
-    position: 'relative' as const,
-    paddingBottom: 24,
-  },
-  uploadZone: {
-    border: '2px dashed var(--border, #d0d5dd)',
-    borderRadius: 14,
-    padding: '32px 24px',
-    textAlign: 'center' as const,
-    cursor: 'pointer',
-    transition: 'all .2s',
-    background: 'var(--bg-secondary, #fafbfc)',
-  },
-};
+const SECTIONS = [
+  { id: 'sobre', label: 'Resumen profesional', group: 'Datos básicos' },
+  { id: 'educacion', label: 'Educación', group: 'Académico' },
+  { id: 'experiencia', label: 'Experiencia', group: 'Experiencia' },
+  { id: 'certificaciones', label: 'Certificaciones', group: 'Experiencia' },
+  { id: 'habilidades', label: 'Habilidades', group: 'Habilidades' },
+  { id: 'idiomas', label: 'Idiomas', group: 'Habilidades' },
+  { id: 'diferenciadores', label: 'Lo que me diferencia', group: 'Habilidades' },
+] as const;
+
+type SectionId = (typeof SECTIONS)[number]['id'];
 
 export default function CVProfile({ onNavigate }: Props) {
   const { user } = useAuth();
@@ -406,23 +120,14 @@ export default function CVProfile({ onNavigate }: Props) {
   const [saving, setSaving] = useState(false);
   const [saveError, setSaveError] = useState<string | null>(null);
   const [editMode, setEditMode] = useState(false);
-  const [activeTab, setActiveTab] = useState('sobre');
+  const [activeSection, setActiveSection] = useState<SectionId>('sobre');
   const [uploadMsg, setUploadMsg] = useState('');
-  const [showPreview, setShowPreview] = useState(false);
   const fileRef = useRef<HTMLInputElement>(null);
-
-  const tabs = [
-    { id: 'sobre', label: 'Sobre Mi' },
-    { id: 'experiencia', label: 'Experiencia' },
-    { id: 'educacion', label: 'Educacion' },
-    { id: 'certificaciones', label: 'Certificaciones' },
-    { id: 'habilidades', label: 'Habilidades' },
-    { id: 'diferenciadores', label: 'Lo que me diferencia' },
-  ];
 
   /* ── Load data ── */
   useEffect(() => {
     loadCV();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [username]);
 
   async function loadCV() {
@@ -478,7 +183,6 @@ export default function CVProfile({ onNavigate }: Props) {
     return fallback;
   }
 
-  // Normaliza experiencias: acepta formato del asistente (start_date/bullets) y formato guardado (startDate/description)
   function normalizeExperience(arr: any[]): Experience[] {
     return arr.map((exp) => ({
       id: exp.id || genId(),
@@ -494,7 +198,6 @@ export default function CVProfile({ onNavigate }: Props) {
     }));
   }
 
-  // Normaliza educación: acepta start_date/end_date y startYear/endYear
   function normalizeEducation(arr: any[]): Education[] {
     return arr.map((edu) => ({
       id: edu.id || genId(),
@@ -507,7 +210,6 @@ export default function CVProfile({ onNavigate }: Props) {
     }));
   }
 
-  // Normaliza habilidades: acepta items[{name,proficiency}] e skills[{name,level}]
   function normalizeSkillGroups(arr: any[]): SkillGroup[] {
     return arr.map((group) => ({
       category: group.category || '',
@@ -519,7 +221,6 @@ export default function CVProfile({ onNavigate }: Props) {
     }));
   }
 
-  // Convierte texto de nivel a número 0-100
   function proficiencyToNumber(p: any): number {
     if (typeof p === 'number') return p;
     const map: Record<string, number> = {
@@ -541,7 +242,6 @@ export default function CVProfile({ onNavigate }: Props) {
     return map[(p || '').toLowerCase()] ?? 50;
   }
 
-  // Normaliza idiomas: acepta {language,proficiency} y {name,level}
   function normalizeLanguages(arr: any[]): { name: string; level: string }[] {
     return arr.map((lang) => ({
       name: lang.name || lang.language || '',
@@ -549,7 +249,6 @@ export default function CVProfile({ onNavigate }: Props) {
     }));
   }
 
-  // Normaliza diferenciadores: acepta strings o {title, description}
   function normalizeDifferentiators(arr: any[]): string[] {
     return arr
       .map((d) => {
@@ -571,11 +270,11 @@ export default function CVProfile({ onNavigate }: Props) {
         location: cv.location,
         phone: cv.phone,
         available_worldwide: cv.availableWorldwide,
-        open_to_work: cv.openToOffers, // nombre correcto en backend
-        experience: cv.experience, // enviamos lista directa, no string
+        open_to_work: cv.openToOffers,
+        experience: cv.experience,
         education: cv.education,
         certifications: cv.certifications,
-        skills: cv.skillGroups, // nombre correcto en backend
+        skills: cv.skillGroups,
         differentiators: cv.differentiators,
         languages: cv.languages,
         visibility: cv.visibility,
@@ -592,30 +291,30 @@ export default function CVProfile({ onNavigate }: Props) {
   async function handleFileUpload(e: React.ChangeEvent<HTMLInputElement>) {
     const file = e.target.files?.[0];
     if (!file) return;
-    // Reset input so same file can be re-uploaded
     e.target.value = '';
-    setUploadMsg('⏳ Analizando tu CV...');
+    setUploadMsg('Analizando tu CV…');
     try {
       const res = await api.uploadCV(file);
       if (res.success === false && !res.draft) {
         setUploadMsg(res.message || 'No se pudo extraer texto del archivo.');
+        setTimeout(() => setUploadMsg(''), 4000);
         return;
       }
-      // Use the full saved profile (preferred) or fall back to draft
       const source = res.profile || res.draft;
       if (source) {
         hydrateCV(source);
-        setUploadMsg(res.message || '✅ CV analizado. Revisa y ajusta los campos.');
+        setUploadMsg(res.message || 'CV analizado. Revisa y ajusta los campos.');
         setEditMode(true);
+        setTimeout(() => setUploadMsg(''), 4000);
       }
     } catch (err: any) {
       setUploadMsg(err.message || 'Error al procesar el archivo');
+      setTimeout(() => setUploadMsg(''), 4000);
     }
   }
 
   /* ── PDF Download ── */
   function handleDownloadPDF() {
-    // Generate a simple print-friendly version
     window.print();
   }
 
@@ -625,7 +324,8 @@ export default function CVProfile({ onNavigate }: Props) {
     navigator.clipboard
       .writeText(url)
       .then(() => {
-        alert('Enlace copiado al portapapeles');
+        setUploadMsg('Enlace copiado al portapapeles');
+        setTimeout(() => setUploadMsg(''), 3000);
       })
       .catch(() => {
         prompt('Copia este enlace:', url);
@@ -699,13 +399,7 @@ export default function CVProfile({ onNavigate }: Props) {
   function addCertification() {
     updateField('certifications', [
       ...cv.certifications,
-      {
-        id: genId(),
-        name: '',
-        issuer: '',
-        date: '',
-        url: '',
-      },
+      { id: genId(), name: '', issuer: '', date: '', url: '' },
     ]);
   }
 
@@ -760,6 +454,12 @@ export default function CVProfile({ onNavigate }: Props) {
     updateField('skillGroups', groups);
   }
 
+  function updateSkillGroupCategory(groupIdx: number, value: string) {
+    const groups = [...cv.skillGroups];
+    groups[groupIdx] = { ...groups[groupIdx], category: value };
+    updateField('skillGroups', groups);
+  }
+
   function addLanguage() {
     updateField('languages', [...cv.languages, { name: '', level: 'Intermedio' }]);
   }
@@ -771,15 +471,10 @@ export default function CVProfile({ onNavigate }: Props) {
     );
   }
 
-  function addLink() {
-    updateField('links', [...cv.links, { label: '', url: '' }]);
-  }
-
-  function removeLink(idx: number) {
-    updateField(
-      'links',
-      cv.links.filter((_, i) => i !== idx)
-    );
+  function updateLanguage(idx: number, field: 'name' | 'level', value: string) {
+    const langs = [...cv.languages];
+    langs[idx] = { ...langs[idx], [field]: value };
+    updateField('languages', langs);
   }
 
   function addDifferentiator() {
@@ -793,31 +488,44 @@ export default function CVProfile({ onNavigate }: Props) {
     );
   }
 
-  function addCompetency(text: string) {
-    if (text.trim() && !cv.competencies.includes(text.trim())) {
-      updateField('competencies', [...cv.competencies, text.trim()]);
+  function updateDifferentiator(idx: number, value: string) {
+    const items = [...cv.differentiators];
+    items[idx] = value;
+    updateField('differentiators', items);
+  }
+
+  /* ── Completitud real ── */
+  function isSectionComplete(id: SectionId): boolean {
+    switch (id) {
+      case 'sobre':
+        return cv.summary.trim().length > 30;
+      case 'educacion':
+        return cv.education.length > 0;
+      case 'experiencia':
+        return cv.experience.length > 0;
+      case 'certificaciones':
+        return cv.certifications.length > 0;
+      case 'habilidades':
+        return cv.skillGroups.length > 0 && cv.skillGroups.some((g) => g.skills.length > 0);
+      case 'idiomas':
+        return cv.languages.length > 0;
+      case 'diferenciadores':
+        return cv.differentiators.filter((d) => d.trim()).length > 0;
+      default:
+        return false;
     }
   }
 
-  function removeCompetency(idx: number) {
-    updateField(
-      'competencies',
-      cv.competencies.filter((_, i) => i !== idx)
-    );
-  }
+  const completedCount = SECTIONS.filter((s) => isSectionComplete(s.id)).length;
+  const basicsComplete =
+    cv.headline.trim().length > 0 &&
+    (cv.email || '').trim().length > 0 &&
+    cv.location.trim().length > 0;
+  const totalPoints = SECTIONS.length + 1; // +1 por datos básicos
+  const completeness = Math.round(
+    ((completedCount + (basicsComplete ? 1 : 0)) / totalPoints) * 100
+  );
 
-  /* ── Computed stats ── */
-  const yearsExp = cv.experience.reduce((sum, e) => {
-    const start = e.startDate ? new Date(e.startDate).getFullYear() : 0;
-    const end = e.current
-      ? new Date().getFullYear()
-      : e.endDate
-        ? new Date(e.endDate).getFullYear()
-        : 0;
-    return sum + Math.max(0, end - start);
-  }, 0);
-  const companiesCount = new Set(cv.experience.map((e) => e.company).filter(Boolean)).size;
-  const certsCount = cv.certifications.length;
   const displayName =
     (user?.firstName && user?.lastName ? `${user.firstName} ${user.lastName}` : user?.username) ||
     'Profesional';
@@ -828,54 +536,132 @@ export default function CVProfile({ onNavigate }: Props) {
     .slice(0, 2)
     .toUpperCase();
 
+  /* Tip dinámico según estado */
+  const firstIncomplete = SECTIONS.find((s) => !isSectionComplete(s.id));
+  const tipLabel = firstIncomplete
+    ? `Completa ${firstIncomplete.label.toLowerCase()}`
+    : '¡Perfil completo!';
+  const tipDesc = firstIncomplete
+    ? `Agregarlo sube tu completitud y mejora el match con ofertas laborales.`
+    : 'Tu CV está completo. Revisa las ofertas que matchean con tu perfil en la sección Empleo.';
+
+  /* Scroll a sección al cambiar activeSection */
+  useEffect(() => {
+    const el = document.getElementById(`cv-${activeSection}`);
+    if (el) {
+      el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }
+  }, [activeSection]);
+
   if (loading) {
     return (
-      <div
-        style={{
-          ...styles.page,
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'center',
-          minHeight: '60vh',
-        }}
-      >
-        <div
-          style={{
-            display: 'flex',
-            flexDirection: 'column',
-            gap: 12,
-            width: '100%',
-            maxWidth: 600,
-            margin: '0 auto',
-          }}
-        >
-          {[1, 2, 3].map((i) => (
-            <div key={i} className="skeleton skeleton-card" />
-          ))}
+      <div className={cvStyles.cvRoot}>
+        <div className={cvStyles.topBar}>
+          <div className={cvStyles.breadcrumb}>
+            <span>Empleo</span>
+            <span>/</span>
+            <span className={cvStyles.current}>Cargando CV…</span>
+          </div>
+        </div>
+        <div className={cvStyles.cvStage}>
+          <div
+            className={cvStyles.cvPaper}
+            style={{ padding: 60, textAlign: 'center', color: '#696c6f' }}
+          >
+            Cargando tu CV…
+          </div>
         </div>
       </div>
     );
   }
 
-  /* ══════════════════════════════════════════════
-     RENDER
-  ══════════════════════════════════════════════ */
+  /* Agrupa secciones por group */
+  const groupedSections: Record<string, (typeof SECTIONS)[number][]> = {};
+  SECTIONS.forEach((s) => {
+    if (!groupedSections[s.group]) groupedSections[s.group] = [];
+    groupedSections[s.group].push(s);
+  });
+
   return (
-    <div style={styles.page} className="cv-profile-page">
-      {/* ── Print styles ── */}
-      <style>{`
-        @media print {
-          .cv-no-print { display: none !important; }
-          .cv-profile-page { background: #fff !important; }
-        }
-        @media (max-width: 768px) {
-          .cv-main-grid { grid-template-columns: 1fr !important; }
-          .cv-header-card { padding: 0 16px 20px !important; }
-        }
-        .cv-upload-zone:hover { border-color: #1e56a0 !important; background: rgba(30,86,160,0.04) !important; }
-        .cv-tab:hover { background: var(--bg-primary, #fff); }
-        .cv-btn:hover { opacity: 0.9; transform: translateY(-1px); }
-      `}</style>
+    <div className={cvStyles.cvRoot}>
+      {/* ── Top bar ── */}
+      <div className={cvStyles.topBar}>
+        <div className={cvStyles.breadcrumb}>
+          <span>Empleo</span>
+          <span>/</span>
+          <span className={cvStyles.current}>
+            {isPublicView ? `CV de ${displayName}` : 'Mi CV Conniku'}
+          </span>
+        </div>
+
+        <div className={cvStyles.topRight}>
+          {isOwnProfile && (
+            <div className={cvStyles.completeness}>
+              <span>Completitud</span>
+              <div className={cvStyles.complBar}>
+                <div className={cvStyles.complFill} style={{ width: `${completeness}%` }} />
+              </div>
+              <span className={cvStyles.complPct}>{completeness}%</span>
+            </div>
+          )}
+
+          {uploadMsg && (
+            <span className={`${cvStyles.topAlert} ${cvStyles.success}`}>{uploadMsg}</span>
+          )}
+          {saveError && (
+            <span className={`${cvStyles.topAlert} ${cvStyles.error}`}>{saveError}</span>
+          )}
+
+          {isOwnProfile && !editMode && (
+            <>
+              <button
+                className={cvStyles.topBtn}
+                onClick={() => fileRef.current?.click()}
+                type="button"
+              >
+                {Upload({ size: 14 })} Subir CV
+              </button>
+              <button className={cvStyles.topBtn} onClick={handleDownloadPDF} type="button">
+                {Download({ size: 14 })} PDF
+              </button>
+              <button className={cvStyles.topBtn} onClick={handleShare} type="button">
+                {Share2({ size: 14 })} Compartir
+              </button>
+              <button
+                className={`${cvStyles.topBtn} ${cvStyles.primary}`}
+                onClick={() => setEditMode(true)}
+                type="button"
+              >
+                {Pencil({ size: 14 })} Editar
+                <span className="ring">→</span>
+              </button>
+            </>
+          )}
+
+          {isOwnProfile && editMode && (
+            <>
+              <button
+                className={cvStyles.topBtn}
+                onClick={() => {
+                  setEditMode(false);
+                  loadCV();
+                }}
+                type="button"
+              >
+                <X size={14} /> Cancelar
+              </button>
+              <button
+                className={`${cvStyles.topBtn} ${cvStyles.primary}`}
+                onClick={handleSave}
+                disabled={saving}
+                type="button"
+              >
+                <Save size={14} /> {saving ? 'Guardando…' : 'Guardar'}
+              </button>
+            </>
+          )}
+        </div>
+      </div>
 
       <input
         ref={fileRef}
@@ -885,1858 +671,765 @@ export default function CVProfile({ onNavigate }: Props) {
         onChange={handleFileUpload}
       />
 
-      {/* ── Banner ── */}
-      <div style={styles.banner}>
-        <div style={styles.bannerOverlay} />
-      </div>
+      {/* ── Shell 3 col ── */}
+      <div className={cvStyles.shell}>
+        {/* Left nav */}
+        <aside className={cvStyles.leftNav}>
+          {Object.entries(groupedSections).map(([groupName, items]) => (
+            <React.Fragment key={groupName}>
+              <div className={cvStyles.sectionHeader}>{groupName}</div>
+              {items.map((s) => {
+                const complete = isSectionComplete(s.id);
+                return (
+                  <button
+                    key={s.id}
+                    onClick={() => setActiveSection(s.id)}
+                    className={`${cvStyles.secItem} ${activeSection === s.id ? cvStyles.active : ''} ${complete ? cvStyles.complete : ''}`}
+                    type="button"
+                  >
+                    <span className={cvStyles.secNum}>{complete ? '✓' : '○'}</span>
+                    {s.label}
+                    <span className={cvStyles.secCount}>
+                      {s.id === 'experiencia' && cv.experience.length}
+                      {s.id === 'educacion' && cv.education.length}
+                      {s.id === 'certificaciones' && cv.certifications.length}
+                      {s.id === 'idiomas' && cv.languages.length}
+                      {s.id === 'habilidades' &&
+                        cv.skillGroups.reduce((a, g) => a + g.skills.length, 0)}
+                      {s.id === 'diferenciadores' &&
+                        cv.differentiators.filter((d) => d.trim()).length}
+                    </span>
+                  </button>
+                );
+              })}
+            </React.Fragment>
+          ))}
 
-      {/* ── Profile Header Card ── */}
-      <div style={styles.profileHeader}>
-        <div style={{ position: 'absolute', top: -60, left: 24, zIndex: 2 }}>
-          <div style={styles.avatar}>
-            {user?.avatar ? (
-              <img
-                src={user.avatar}
-                alt=""
-                style={{ width: '100%', height: '100%', objectFit: 'cover', borderRadius: '50%' }}
-              />
-            ) : (
-              initials
-            )}
-          </div>
-        </div>
-
-        <div style={styles.headerCard} className="cv-header-card">
-          {/* Top-right edit/save */}
           {isOwnProfile && (
+            <div className={cvStyles.tipBox}>
+              <div className={cvStyles.tipLabel}>Tip del asistente</div>
+              <h4>{tipLabel}</h4>
+              <p>{tipDesc}</p>
+            </div>
+          )}
+        </aside>
+
+        {/* Center cv paper */}
+        <main className={cvStyles.cvStage}>
+          {editMode && (
             <div
-              style={{
-                position: 'absolute',
-                top: 16,
-                right: 20,
-                display: 'flex',
-                gap: 8,
-                alignItems: 'center',
-              }}
-              className="cv-no-print"
+              className={cvStyles.uploadZone}
+              onClick={() => fileRef.current?.click()}
+              style={{ maxWidth: 820, margin: '0 auto 20px' }}
             >
-              {editMode ? (
-                <>
-                  {saveError && (
-                    <p style={{ color: '#ef4444', fontSize: 12, margin: '4px 0' }}>{saveError}</p>
+              {Upload({ size: 16 })} Sube un PDF/DOCX existente y lo rellenamos automáticamente
+            </div>
+          )}
+
+          {cv.visibility === 'private' && isOwnProfile && (
+            <div
+              className={cvStyles.visibilityBanner}
+              style={{ maxWidth: 820, margin: '0 auto 18px' }}
+            >
+              <strong>🔒 CV privado</strong>
+              <span>Solo tú puedes verlo. Cambia a público para aparecer en ofertas.</span>
+            </div>
+          )}
+
+          <div className={cvStyles.cvPaper}>
+            {/* Header */}
+            <header className={cvStyles.cvHeader}>
+              <div>
+                <h1 className={cvStyles.cvName}>{displayName}</h1>
+                {editMode ? (
+                  <input
+                    className={cvStyles.inlineInput}
+                    value={cv.headline}
+                    onChange={(e) => updateField('headline', e.target.value)}
+                    placeholder="Tu título profesional"
+                    style={{ fontSize: 12, marginTop: 8 }}
+                  />
+                ) : (
+                  cv.headline && <div className={cvStyles.cvTitle}>{cv.headline}</div>
+                )}
+                <div className={cvStyles.cvMeta}>
+                  {editMode ? (
+                    <>
+                      <input
+                        className={cvStyles.inlineInput}
+                        value={cv.email}
+                        onChange={(e) => updateField('email', e.target.value)}
+                        placeholder="email"
+                      />
+                      <input
+                        className={cvStyles.inlineInput}
+                        value={cv.phone}
+                        onChange={(e) => updateField('phone', e.target.value)}
+                        placeholder="teléfono"
+                      />
+                      <input
+                        className={cvStyles.inlineInput}
+                        value={cv.location}
+                        onChange={(e) => updateField('location', e.target.value)}
+                        placeholder="ciudad"
+                      />
+                    </>
+                  ) : (
+                    <>
+                      {cv.email && <span>{cv.email}</span>}
+                      {cv.phone && <span>{cv.phone}</span>}
+                      {cv.location && <span>{cv.location}</span>}
+                      {user?.username && <span>conniku.com/cv/{user.username}</span>}
+                    </>
                   )}
-                  <button
-                    style={styles.btnPrimary}
-                    className="cv-btn"
-                    onClick={handleSave}
-                    disabled={saving}
-                  >
-                    {Save({ style: { width: 16, height: 16 } })}{' '}
-                    {saving ? 'Guardando...' : 'Guardar'}
-                  </button>
-                  <button
-                    style={styles.btnSecondary}
-                    className="cv-btn"
-                    onClick={() => {
-                      setEditMode(false);
-                      loadCV();
-                    }}
-                  >
-                    Cancelar
-                  </button>
-                </>
-              ) : (
-                <button
-                  style={styles.btnSecondary}
-                  className="cv-btn"
-                  onClick={() => setEditMode(true)}
-                >
-                  {Pencil({ style: { width: 16, height: 16 } })} Editar Perfil
-                </button>
-              )}
-              {/* Preview toggle */}
-              <button
-                style={{
-                  ...styles.btnSecondary,
-                  background: showPreview ? '#1e56a0' : undefined,
-                  color: showPreview ? '#fff' : undefined,
-                  borderColor: showPreview ? '#1e56a0' : undefined,
-                }}
-                className="cv-btn"
-                onClick={() => setShowPreview((p) => !p)}
-                title="Vista previa en formato Conniku"
-              >
-                {Eye({ style: { width: 16, height: 16 } })} Vista Previa
-              </button>
-            </div>
-          )}
+                </div>
+              </div>
+              <div className={cvStyles.cvPhoto}>
+                {(user as any)?.avatar ? <img src={(user as any).avatar} alt="" /> : initials}
+              </div>
+            </header>
 
-          {/* Name & Headline */}
-          {editMode ? (
-            <div style={{ display: 'flex', flexDirection: 'column', gap: 8, marginBottom: 8 }}>
-              <input
-                style={{ ...styles.input, fontSize: 22, fontWeight: 700 }}
-                value={cv.headline}
-                onChange={(e) => updateField('headline', e.target.value)}
-                placeholder="Titulo profesional (ej: Director Tecnico de Entretenimiento)"
-              />
-            </div>
-          ) : (
-            <>
-              <h1 style={styles.name}>{displayName}</h1>
-              {cv.headline && <p style={styles.headline}>{cv.headline}</p>}
-            </>
-          )}
-
-          {/* Meta info */}
-          <div style={styles.meta}>
-            {(editMode || cv.location) && (
-              <span style={styles.metaItem}>
-                {Map({ style: { width: 14, height: 14 } })}
-                {editMode ? (
-                  <input
-                    style={{ ...styles.input, width: 200, padding: '4px 10px' }}
-                    value={cv.location}
-                    onChange={(e) => updateField('location', e.target.value)}
-                    placeholder="Ubicacion"
-                  />
-                ) : (
-                  cv.location
+            {/* Badges (solo si hay datos) */}
+            {(cv.openToOffers ||
+              cv.availableWorldwide ||
+              cv.certifications.length > 0 ||
+              completedCount >= 4) && (
+              <div className={cvStyles.cvBadges}>
+                {cv.openToOffers && (
+                  <span className={`${cvStyles.cvBadge} ${cvStyles.lime}`}>
+                    ★ Abierto a ofertas
+                  </span>
                 )}
-              </span>
-            )}
-            {(editMode || cv.email) && (
-              <span style={styles.metaItem}>
-                {editMode ? (
-                  <input
-                    style={{ ...styles.input, width: 220, padding: '4px 10px' }}
-                    value={cv.email}
-                    onChange={(e) => updateField('email', e.target.value)}
-                    placeholder="Email"
-                  />
-                ) : (
-                  cv.email
+                {cv.availableWorldwide && (
+                  <span className={`${cvStyles.cvBadge} ${cvStyles.cream}`}>🌎 Remoto global</span>
                 )}
-              </span>
-            )}
-            {(editMode || cv.phone) && (
-              <span style={styles.metaItem}>
-                {editMode ? (
-                  <input
-                    style={{ ...styles.input, width: 160, padding: '4px 10px' }}
-                    value={cv.phone}
-                    onChange={(e) => updateField('phone', e.target.value)}
-                    placeholder="Telefono"
-                  />
-                ) : (
-                  cv.phone
+                {cv.certifications.length > 0 && (
+                  <span className={`${cvStyles.cvBadge} ${cvStyles.ghost}`}>
+                    {cv.certifications.length} certificaci
+                    {cv.certifications.length !== 1 ? 'ones' : 'ón'}
+                  </span>
                 )}
-              </span>
-            )}
-          </div>
-
-          {/* Worldwide badge */}
-          {(cv.availableWorldwide || editMode) && (
-            <div style={{ marginTop: 8 }}>
-              {editMode ? (
-                <label
-                  style={{
-                    display: 'flex',
-                    alignItems: 'center',
-                    gap: 8,
-                    fontSize: 13,
-                    cursor: 'pointer',
-                  }}
-                >
-                  <input
-                    type="checkbox"
-                    checked={cv.availableWorldwide}
-                    onChange={(e) => updateField('availableWorldwide', e.target.checked)}
-                  />
-                  Disponible mundialmente
-                </label>
-              ) : (
-                <span style={styles.badge}>
-                  {Globe({ style: { width: 14, height: 14 } })} Disponible mundialmente
-                </span>
-              )}
-            </div>
-          )}
-
-          {/* Action buttons */}
-          {isOwnProfile && !editMode && (
-            <div style={styles.actions} className="cv-no-print">
-              <button
-                style={styles.btnPrimary}
-                className="cv-btn"
-                onClick={() => fileRef.current?.click()}
-              >
-                {Upload({ style: { width: 16, height: 16 } })} Subir CV
-              </button>
-              <button style={styles.btnSecondary} className="cv-btn" onClick={handleDownloadPDF}>
-                {Download({ style: { width: 16, height: 16 } })} Imprimir / Guardar PDF
-              </button>
-              <button style={styles.btnSecondary} className="cv-btn" onClick={handleShare}>
-                {Share2({ style: { width: 16, height: 16 } })} Compartir
-              </button>
-            </div>
-          )}
-
-          {uploadMsg && (
-            <div
-              style={{
-                marginTop: 12,
-                padding: '10px 16px',
-                borderRadius: 10,
-                background: 'var(--bg-secondary, #f0f4f8)',
-                fontSize: 13,
-                color: 'var(--text-secondary, #555)',
-              }}
-              className="cv-no-print"
-            >
-              {uploadMsg}
-              <button
-                onClick={() => setUploadMsg('')}
-                style={{
-                  marginLeft: 8,
-                  background: 'none',
-                  border: 'none',
-                  cursor: 'pointer',
-                  color: 'var(--text-tertiary)',
-                }}
-              >
-                {X({ style: { width: 14, height: 14 } })}
-              </button>
-            </div>
-          )}
-        </div>
-      </div>
-
-      {/* ── Tabs + Content ── */}
-      <div style={styles.mainGrid} className="cv-main-grid">
-        {/* Left column */}
-        <div>
-          <div style={styles.tabBar} className="cv-no-print">
-            {tabs.map((t) => (
-              <button
-                key={t.id}
-                className="cv-tab"
-                style={{ ...styles.tab, ...(activeTab === t.id ? styles.tabActive : {}) }}
-                onClick={() => setActiveTab(t.id)}
-              >
-                {t.label}
-              </button>
-            ))}
-          </div>
-
-          {/* ── TAB: Sobre Mi ── */}
-          {activeTab === 'sobre' && (
-            <div style={styles.card}>
-              <div style={styles.cardTitle}>
-                Resumen Profesional
-                {editMode && isOwnProfile && (
-                  <span style={{ fontSize: 12, color: 'var(--text-tertiary)', fontWeight: 400 }}>
-                    Describe tu trayectoria profesional
+                {completedCount >= 4 && (
+                  <span className={`${cvStyles.cvBadge} ${cvStyles.ghost}`}>
+                    Perfil {completeness}% completo
                   </span>
                 )}
               </div>
-              {editMode ? (
-                <textarea
-                  style={styles.textarea}
-                  rows={5}
-                  value={cv.summary}
-                  onChange={(e) => updateField('summary', e.target.value)}
-                  placeholder="Escribe un resumen de tu perfil profesional, logros clave y lo que buscas..."
-                />
-              ) : (
-                <p
-                  style={{
-                    fontSize: 15,
-                    lineHeight: 1.7,
-                    color: 'var(--text-secondary, #555)',
-                    margin: 0,
-                    whiteSpace: 'pre-line',
-                  }}
-                >
-                  {cv.summary ||
-                    (isOwnProfile
-                      ? 'Agrega un resumen profesional para destacar tu perfil.'
-                      : 'Sin informacion disponible.')}
-                </p>
-              )}
+            )}
 
-              {/* Competencies tags */}
-              <div style={{ marginTop: 20 }}>
-                <div
-                  style={{
-                    fontSize: 14,
-                    fontWeight: 600,
-                    marginBottom: 10,
-                    color: 'var(--text-primary)',
-                  }}
-                >
-                  Competencias Clave
+            {/* Body */}
+            <div className={cvStyles.cvBody}>
+              {/* Resumen */}
+              <section id="cv-sobre" className={cvStyles.cvSection}>
+                <div className={cvStyles.cvSecHead}>
+                  <h3>Resumen profesional</h3>
                 </div>
-                <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8 }}>
-                  {cv.competencies.map((c, i) => (
-                    <span key={i} style={styles.tag}>
-                      {c}
-                      {editMode && (
-                        <button
-                          onClick={() => removeCompetency(i)}
-                          style={{
-                            background: 'none',
-                            border: 'none',
-                            cursor: 'pointer',
-                            padding: 0,
-                            marginLeft: 2,
-                            color: 'var(--text-tertiary)',
-                          }}
-                        >
-                          {X({ style: { width: 12, height: 12 } })}
-                        </button>
-                      )}
-                    </span>
-                  ))}
-                  {editMode && (
-                    <input
-                      style={{ ...styles.input, width: 180, padding: '5px 12px', fontSize: 13 }}
-                      placeholder="Agregar competencia + Enter"
-                      onKeyDown={(e) => {
-                        if (e.key === 'Enter') {
-                          addCompetency((e.target as HTMLInputElement).value);
-                          (e.target as HTMLInputElement).value = '';
-                        }
-                      }}
-                    />
-                  )}
-                  {!editMode && cv.competencies.length === 0 && isOwnProfile && (
-                    <span style={{ fontSize: 13, color: 'var(--text-tertiary)' }}>
-                      Agrega competencias clave para mejorar tu visibilidad.
-                    </span>
-                  )}
-                </div>
-              </div>
-            </div>
-          )}
-
-          {/* ── TAB: Experiencia ── */}
-          {activeTab === 'experiencia' && (
-            <div style={styles.card}>
-              <div style={styles.cardTitle}>
-                <span style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-                  {Briefcase({ style: { width: 20, height: 20, color: '#1e56a0' } })} Experiencia
-                  Laboral
-                </span>
-                {editMode && (
-                  <button
-                    style={{ ...styles.btnSecondary, padding: '6px 14px', fontSize: 13 }}
-                    className="cv-btn"
-                    onClick={addExperience}
-                  >
-                    {Plus({ style: { width: 14, height: 14 } })} Agregar
-                  </button>
+                {editMode ? (
+                  <textarea
+                    className={cvStyles.inlineTextarea}
+                    value={cv.summary}
+                    onChange={(e) => updateField('summary', e.target.value)}
+                    placeholder="Describe tu perfil en 2-4 líneas: qué estudias, tu enfoque, qué buscas."
+                  />
+                ) : (
+                  <p className={cvStyles.cvSummary}>
+                    {cv.summary || (
+                      <em style={{ color: '#696c6f' }}>Aún no has agregado tu resumen.</em>
+                    )}
+                  </p>
                 )}
-              </div>
+              </section>
 
-              {cv.experience.length === 0 && !editMode && (
-                <p style={{ color: 'var(--text-tertiary)', fontSize: 14 }}>
-                  {isOwnProfile
-                    ? 'Agrega tu experiencia laboral para completar tu perfil.'
-                    : 'Sin experiencia registrada.'}
-                </p>
-              )}
-
-              <div style={cv.experience.length > 0 ? styles.timeline : {}}>
-                {cv.experience.map((exp) => (
-                  <div key={exp.id} style={styles.timelineItem}>
-                    {!editMode && <div style={styles.timelineDot} />}
-                    {editMode ? (
-                      <div
-                        style={{
-                          background: 'var(--bg-secondary, #f9fafb)',
-                          borderRadius: 12,
-                          padding: 16,
-                          marginBottom: 12,
-                        }}
-                      >
-                        <div
-                          style={{
-                            display: 'flex',
-                            justifyContent: 'space-between',
-                            marginBottom: 10,
-                          }}
-                        >
-                          <strong style={{ fontSize: 14 }}>Experiencia</strong>
-                          <button
-                            onClick={() => removeExperience(exp.id)}
-                            style={{
-                              background: 'none',
-                              border: 'none',
-                              cursor: 'pointer',
-                              color: '#ef4444',
-                            }}
-                          >
-                            {Trash2({ style: { width: 16, height: 16 } })}
-                          </button>
-                        </div>
-                        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10 }}>
+              {/* Educación */}
+              <section id="cv-educacion" className={cvStyles.cvSection}>
+                <div className={cvStyles.cvSecHead}>
+                  <h3>Educación</h3>
+                  {editMode ? (
+                    <button className={cvStyles.addBtn} onClick={addEducation} type="button">
+                      {Plus({ size: 12 })} Agregar
+                    </button>
+                  ) : (
+                    <div className={cvStyles.cvSecMeta}>
+                      {cv.education.length} entrada{cv.education.length !== 1 ? 's' : ''}
+                    </div>
+                  )}
+                </div>
+                {cv.education.length === 0 && !editMode ? (
+                  <div className={cvStyles.sectionEmpty}>Sin entradas de educación.</div>
+                ) : (
+                  cv.education.map((edu) => (
+                    <div key={edu.id} className={cvStyles.cvEntry}>
+                      <div className={cvStyles.cvEntryTop}>
+                        {editMode ? (
                           <input
-                            style={styles.input}
+                            className={cvStyles.inlineInput}
+                            value={edu.degree}
+                            onChange={(e) => updateEducation(edu.id, 'degree', e.target.value)}
+                            placeholder="Título / carrera"
+                          />
+                        ) : (
+                          <div className={cvStyles.cvEntryTitle}>
+                            {edu.degree} {edu.field ? `· ${edu.field}` : ''}
+                          </div>
+                        )}
+                        {editMode ? (
+                          <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
+                            <input
+                              className={cvStyles.inlineInput}
+                              value={edu.startYear}
+                              onChange={(e) => updateEducation(edu.id, 'startYear', e.target.value)}
+                              placeholder="inicio"
+                              style={{ width: 80 }}
+                            />
+                            <span>—</span>
+                            <input
+                              className={cvStyles.inlineInput}
+                              value={edu.endYear}
+                              onChange={(e) => updateEducation(edu.id, 'endYear', e.target.value)}
+                              placeholder="fin"
+                              style={{ width: 80 }}
+                            />
+                            <button
+                              className={cvStyles.removeBtn}
+                              onClick={() => removeEducation(edu.id)}
+                              type="button"
+                            >
+                              {Trash2({ size: 10 })}
+                            </button>
+                          </div>
+                        ) : (
+                          <div className={cvStyles.cvEntryDate}>
+                            {edu.startYear} {edu.endYear ? `— ${edu.endYear}` : '· cursando'}
+                          </div>
+                        )}
+                      </div>
+                      {editMode ? (
+                        <input
+                          className={cvStyles.inlineInput}
+                          value={edu.institution}
+                          onChange={(e) => updateEducation(edu.id, 'institution', e.target.value)}
+                          placeholder="Institución"
+                          style={{ marginTop: 4 }}
+                        />
+                      ) : (
+                        <div className={cvStyles.cvEntryOrg}>{edu.institution}</div>
+                      )}
+                      {editMode ? (
+                        <textarea
+                          className={cvStyles.inlineTextarea}
+                          value={edu.description}
+                          onChange={(e) => updateEducation(edu.id, 'description', e.target.value)}
+                          placeholder="Logros, proyectos destacados, promedio (opcional)"
+                          style={{ marginTop: 6 }}
+                        />
+                      ) : (
+                        edu.description && (
+                          <div className={cvStyles.cvEntryBody}>{edu.description}</div>
+                        )
+                      )}
+                    </div>
+                  ))
+                )}
+              </section>
+
+              {/* Experiencia */}
+              <section id="cv-experiencia" className={cvStyles.cvSection}>
+                <div className={cvStyles.cvSecHead}>
+                  <h3>Experiencia</h3>
+                  {editMode ? (
+                    <button className={cvStyles.addBtn} onClick={addExperience} type="button">
+                      {Plus({ size: 12 })} Agregar
+                    </button>
+                  ) : (
+                    <div className={cvStyles.cvSecMeta}>
+                      {cv.experience.length} entrada{cv.experience.length !== 1 ? 's' : ''}
+                    </div>
+                  )}
+                </div>
+                {cv.experience.length === 0 && !editMode ? (
+                  <div className={cvStyles.sectionEmpty}>
+                    Sin experiencia profesional. Agrega prácticas, pasantías o voluntariados.
+                  </div>
+                ) : (
+                  cv.experience.map((exp) => (
+                    <div key={exp.id} className={cvStyles.cvEntry}>
+                      <div className={cvStyles.cvEntryTop}>
+                        {editMode ? (
+                          <input
+                            className={cvStyles.inlineInput}
                             value={exp.title}
                             onChange={(e) => updateExperience(exp.id, 'title', e.target.value)}
                             placeholder="Cargo"
                           />
-                          <input
-                            style={styles.input}
-                            value={exp.company}
-                            onChange={(e) => updateExperience(exp.id, 'company', e.target.value)}
-                            placeholder="Empresa"
-                          />
-                          <input
-                            style={styles.input}
-                            value={exp.location}
-                            onChange={(e) => updateExperience(exp.id, 'location', e.target.value)}
-                            placeholder="Ubicacion"
-                          />
+                        ) : (
+                          <div className={cvStyles.cvEntryTitle}>{exp.title}</div>
+                        )}
+                        {editMode ? (
                           <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
                             <input
-                              type="date"
-                              style={{ ...styles.input, flex: 1 }}
+                              className={cvStyles.inlineInput}
                               value={exp.startDate}
                               onChange={(e) =>
                                 updateExperience(exp.id, 'startDate', e.target.value)
                               }
+                              placeholder="inicio"
+                              style={{ width: 80 }}
                             />
-                            <span style={{ fontSize: 13 }}>-</span>
+                            <span>—</span>
                             {exp.current ? (
-                              <span style={{ fontSize: 13, color: '#059669', fontWeight: 600 }}>
-                                Presente
-                              </span>
+                              <span style={{ fontSize: 11 }}>actual</span>
                             ) : (
                               <input
-                                type="date"
-                                style={{ ...styles.input, flex: 1 }}
+                                className={cvStyles.inlineInput}
                                 value={exp.endDate}
                                 onChange={(e) =>
                                   updateExperience(exp.id, 'endDate', e.target.value)
                                 }
+                                placeholder="fin"
+                                style={{ width: 80 }}
                               />
                             )}
-                          </div>
-                        </div>
-                        <label
-                          style={{
-                            display: 'flex',
-                            alignItems: 'center',
-                            gap: 6,
-                            fontSize: 13,
-                            marginTop: 8,
-                            cursor: 'pointer',
-                          }}
-                        >
-                          <input
-                            type="checkbox"
-                            checked={exp.current}
-                            onChange={(e) => updateExperience(exp.id, 'current', e.target.checked)}
-                          />
-                          Trabajo actual
-                        </label>
-                        <textarea
-                          style={{ ...styles.textarea, marginTop: 8 }}
-                          value={exp.description}
-                          onChange={(e) => updateExperience(exp.id, 'description', e.target.value)}
-                          placeholder="Describe tus responsabilidades y logros..."
-                          rows={3}
-                        />
-                      </div>
-                    ) : (
-                      <div>
-                        <div
-                          style={{ fontWeight: 600, fontSize: 16, color: 'var(--text-primary)' }}
-                        >
-                          {exp.title}
-                        </div>
-                        <div style={{ fontSize: 14, color: 'var(--text-secondary)', marginTop: 2 }}>
-                          {exp.company}
-                          {exp.location ? ` - ${exp.location}` : ''}
-                        </div>
-                        <div
-                          style={{
-                            fontSize: 13,
-                            color: 'var(--text-tertiary)',
-                            marginTop: 2,
-                            display: 'flex',
-                            alignItems: 'center',
-                            gap: 4,
-                          }}
-                        >
-                          {Clock({ style: { width: 12, height: 12 } })}
-                          {exp.startDate}
-                          {exp.current ? ' - Presente' : exp.endDate ? ` - ${exp.endDate}` : ''}
-                        </div>
-                        {exp.description && (
-                          <p
-                            style={{
-                              fontSize: 14,
-                              lineHeight: 1.6,
-                              color: 'var(--text-secondary)',
-                              marginTop: 8,
-                              whiteSpace: 'pre-line',
-                            }}
-                          >
-                            {exp.description}
-                          </p>
-                        )}
-                      </div>
-                    )}
-                  </div>
-                ))}
-              </div>
-            </div>
-          )}
-
-          {/* ── TAB: Educacion ── */}
-          {activeTab === 'educacion' && (
-            <div style={styles.card}>
-              <div style={styles.cardTitle}>
-                <span style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-                  {GraduationCap({ style: { width: 20, height: 20, color: '#1e56a0' } })} Educacion
-                </span>
-                {editMode && (
-                  <button
-                    style={{ ...styles.btnSecondary, padding: '6px 14px', fontSize: 13 }}
-                    className="cv-btn"
-                    onClick={addEducation}
-                  >
-                    {Plus({ style: { width: 14, height: 14 } })} Agregar
-                  </button>
-                )}
-              </div>
-
-              {cv.education.length === 0 && !editMode && (
-                <p style={{ color: 'var(--text-tertiary)', fontSize: 14 }}>
-                  {isOwnProfile ? 'Agrega tu formacion academica.' : 'Sin formacion registrada.'}
-                </p>
-              )}
-
-              <div style={cv.education.length > 0 ? styles.timeline : {}}>
-                {cv.education.map((edu) => (
-                  <div key={edu.id} style={styles.timelineItem}>
-                    {!editMode && <div style={styles.timelineDot} />}
-                    {editMode ? (
-                      <div
-                        style={{
-                          background: 'var(--bg-secondary, #f9fafb)',
-                          borderRadius: 12,
-                          padding: 16,
-                          marginBottom: 12,
-                        }}
-                      >
-                        <div
-                          style={{
-                            display: 'flex',
-                            justifyContent: 'space-between',
-                            marginBottom: 10,
-                          }}
-                        >
-                          <strong style={{ fontSize: 14 }}>Educacion</strong>
-                          <button
-                            onClick={() => removeEducation(edu.id)}
-                            style={{
-                              background: 'none',
-                              border: 'none',
-                              cursor: 'pointer',
-                              color: '#ef4444',
-                            }}
-                          >
-                            {Trash2({ style: { width: 16, height: 16 } })}
-                          </button>
-                        </div>
-                        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10 }}>
-                          <input
-                            style={styles.input}
-                            value={edu.institution}
-                            onChange={(e) => updateEducation(edu.id, 'institution', e.target.value)}
-                            placeholder="Institucion"
-                          />
-                          <input
-                            style={styles.input}
-                            value={edu.degree}
-                            onChange={(e) => updateEducation(edu.id, 'degree', e.target.value)}
-                            placeholder="Titulo/Grado"
-                          />
-                          <input
-                            style={styles.input}
-                            value={edu.field}
-                            onChange={(e) => updateEducation(edu.id, 'field', e.target.value)}
-                            placeholder="Campo de estudio"
-                          />
-                          <div style={{ display: 'flex', gap: 8 }}>
-                            <input
-                              style={{ ...styles.input, flex: 1 }}
-                              value={edu.startYear}
-                              onChange={(e) => updateEducation(edu.id, 'startYear', e.target.value)}
-                              placeholder="Inicio"
-                            />
-                            <input
-                              style={{ ...styles.input, flex: 1 }}
-                              value={edu.endYear}
-                              onChange={(e) => updateEducation(edu.id, 'endYear', e.target.value)}
-                              placeholder="Fin"
-                            />
-                          </div>
-                        </div>
-                        <textarea
-                          style={{ ...styles.textarea, marginTop: 8 }}
-                          value={edu.description}
-                          onChange={(e) => updateEducation(edu.id, 'description', e.target.value)}
-                          placeholder="Descripcion (opcional)"
-                          rows={2}
-                        />
-                      </div>
-                    ) : (
-                      <div>
-                        <div
-                          style={{ fontWeight: 600, fontSize: 16, color: 'var(--text-primary)' }}
-                        >
-                          {edu.degree}
-                          {edu.field ? ` en ${edu.field}` : ''}
-                        </div>
-                        <div style={{ fontSize: 14, color: 'var(--text-secondary)', marginTop: 2 }}>
-                          {edu.institution}
-                        </div>
-                        <div style={{ fontSize: 13, color: 'var(--text-tertiary)', marginTop: 2 }}>
-                          {edu.startYear}
-                          {edu.endYear ? ` - ${edu.endYear}` : ''}
-                        </div>
-                        {edu.description && (
-                          <p
-                            style={{
-                              fontSize: 14,
-                              lineHeight: 1.6,
-                              color: 'var(--text-secondary)',
-                              marginTop: 6,
-                              whiteSpace: 'pre-line',
-                            }}
-                          >
-                            {edu.description}
-                          </p>
-                        )}
-                      </div>
-                    )}
-                  </div>
-                ))}
-              </div>
-            </div>
-          )}
-
-          {/* ── TAB: Certificaciones ── */}
-          {activeTab === 'certificaciones' && (
-            <div style={styles.card}>
-              <div style={styles.cardTitle}>
-                <span style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-                  {Award({ style: { width: 20, height: 20, color: '#1e56a0' } })} Certificaciones
-                </span>
-                {editMode && (
-                  <button
-                    style={{ ...styles.btnSecondary, padding: '6px 14px', fontSize: 13 }}
-                    className="cv-btn"
-                    onClick={addCertification}
-                  >
-                    {Plus({ style: { width: 14, height: 14 } })} Agregar
-                  </button>
-                )}
-              </div>
-
-              {cv.certifications.length === 0 && !editMode && (
-                <p style={{ color: 'var(--text-tertiary)', fontSize: 14 }}>
-                  {isOwnProfile
-                    ? 'Agrega tus certificaciones profesionales.'
-                    : 'Sin certificaciones registradas.'}
-                </p>
-              )}
-
-              <div
-                style={{
-                  display: 'grid',
-                  gridTemplateColumns: 'repeat(auto-fill, minmax(260px, 1fr))',
-                  gap: 14,
-                }}
-              >
-                {cv.certifications.map((cert) => (
-                  <div
-                    key={cert.id}
-                    style={{
-                      background: 'var(--bg-secondary, #f9fafb)',
-                      borderRadius: 12,
-                      padding: 16,
-                      position: 'relative',
-                    }}
-                  >
-                    {editMode ? (
-                      <>
-                        <button
-                          onClick={() => removeCertification(cert.id)}
-                          style={{
-                            position: 'absolute',
-                            top: 8,
-                            right: 8,
-                            background: 'none',
-                            border: 'none',
-                            cursor: 'pointer',
-                            color: '#ef4444',
-                          }}
-                        >
-                          {Trash2({ style: { width: 14, height: 14 } })}
-                        </button>
-                        <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
-                          <input
-                            style={styles.input}
-                            value={cert.name}
-                            onChange={(e) => updateCertification(cert.id, 'name', e.target.value)}
-                            placeholder="Nombre de certificacion"
-                          />
-                          <input
-                            style={styles.input}
-                            value={cert.issuer}
-                            onChange={(e) => updateCertification(cert.id, 'issuer', e.target.value)}
-                            placeholder="Entidad emisora"
-                          />
-                          <input
-                            style={styles.input}
-                            value={cert.date}
-                            onChange={(e) => updateCertification(cert.id, 'date', e.target.value)}
-                            placeholder="Fecha (ej: 2024)"
-                          />
-                          <input
-                            style={styles.input}
-                            value={cert.url}
-                            onChange={(e) => updateCertification(cert.id, 'url', e.target.value)}
-                            placeholder="URL de verificacion (opcional)"
-                          />
-                        </div>
-                      </>
-                    ) : (
-                      <>
-                        <div
-                          style={{
-                            display: 'flex',
-                            alignItems: 'center',
-                            gap: 10,
-                            marginBottom: 6,
-                          }}
-                        >
-                          <div
-                            style={{
-                              width: 36,
-                              height: 36,
-                              borderRadius: 10,
-                              background: 'linear-gradient(135deg, #1e56a0, #3d7cc9)',
-                              display: 'flex',
-                              alignItems: 'center',
-                              justifyContent: 'center',
-                            }}
-                          >
-                            {Award({ style: { width: 18, height: 18, color: '#fff' } })}
-                          </div>
-                          <div>
-                            <div
+                            <label
                               style={{
-                                fontWeight: 600,
-                                fontSize: 14,
-                                color: 'var(--text-primary)',
+                                display: 'flex',
+                                alignItems: 'center',
+                                gap: 4,
+                                fontSize: 11,
                               }}
                             >
-                              {cert.name}
-                            </div>
-                            <div style={{ fontSize: 12, color: 'var(--text-tertiary)' }}>
-                              {cert.issuer}
-                            </div>
+                              <input
+                                type="checkbox"
+                                checked={exp.current}
+                                onChange={(e) =>
+                                  updateExperience(exp.id, 'current', e.target.checked)
+                                }
+                              />
+                              Actual
+                            </label>
+                            <button
+                              className={cvStyles.removeBtn}
+                              onClick={() => removeExperience(exp.id)}
+                              type="button"
+                            >
+                              {Trash2({ size: 10 })}
+                            </button>
                           </div>
+                        ) : (
+                          <div className={cvStyles.cvEntryDate}>
+                            {exp.startDate} — {exp.current ? 'actual' : exp.endDate || 'sin fecha'}
+                          </div>
+                        )}
+                      </div>
+                      {editMode ? (
+                        <input
+                          className={cvStyles.inlineInput}
+                          value={exp.company}
+                          onChange={(e) => updateExperience(exp.id, 'company', e.target.value)}
+                          placeholder="Empresa"
+                          style={{ marginTop: 4 }}
+                        />
+                      ) : (
+                        <div className={cvStyles.cvEntryOrg}>
+                          {exp.company} {exp.location ? `· ${exp.location}` : ''}
                         </div>
-                        {cert.date && (
-                          <div
-                            style={{ fontSize: 12, color: 'var(--text-tertiary)', marginTop: 4 }}
-                          >
-                            {cert.date}
-                          </div>
-                        )}
-                        {cert.url && (
-                          <a
-                            href={cert.url}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            style={{
-                              fontSize: 12,
-                              color: '#1e56a0',
-                              display: 'flex',
-                              alignItems: 'center',
-                              gap: 4,
-                              marginTop: 6,
-                              textDecoration: 'none',
-                            }}
-                          >
-                            Ver credencial {ExternalLink({ style: { width: 12, height: 12 } })}
-                          </a>
-                        )}
-                      </>
-                    )}
-                  </div>
-                ))}
-              </div>
-            </div>
-          )}
-
-          {/* ── TAB: Habilidades ── */}
-          {activeTab === 'habilidades' && (
-            <div style={styles.card}>
-              <div style={styles.cardTitle}>
-                <span style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-                  {Zap({ style: { width: 20, height: 20, color: '#1e56a0' } })} Habilidades
-                </span>
-                {editMode && (
-                  <button
-                    style={{ ...styles.btnSecondary, padding: '6px 14px', fontSize: 13 }}
-                    className="cv-btn"
-                    onClick={addSkillGroup}
-                  >
-                    {Plus({ style: { width: 14, height: 14 } })} Agregar Categoria
-                  </button>
-                )}
-              </div>
-
-              {cv.skillGroups.length === 0 && !editMode && (
-                <p style={{ color: 'var(--text-tertiary)', fontSize: 14 }}>
-                  {isOwnProfile
-                    ? 'Organiza tus habilidades por categoria.'
-                    : 'Sin habilidades registradas.'}
-                </p>
-              )}
-
-              {cv.skillGroups.map((group, gi) => (
-                <div key={gi} style={{ marginBottom: 24 }}>
-                  {editMode ? (
-                    <div
-                      style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 12 }}
-                    >
-                      <input
-                        style={{ ...styles.input, fontWeight: 600, flex: 1 }}
-                        value={group.category}
-                        onChange={(e) => {
-                          const groups = [...cv.skillGroups];
-                          groups[gi] = { ...groups[gi], category: e.target.value };
-                          updateField('skillGroups', groups);
-                        }}
-                        placeholder="Nombre de categoria (ej: Software, Gestion, Tecnico)"
-                      />
-                      <button
-                        onClick={() => addSkillToGroup(gi)}
-                        style={{ ...styles.btnSecondary, padding: '6px 12px', fontSize: 12 }}
-                        className="cv-btn"
-                      >
-                        {Plus({ style: { width: 12, height: 12 } })} Habilidad
-                      </button>
-                      <button
-                        onClick={() => removeSkillGroup(gi)}
-                        style={{
-                          background: 'none',
-                          border: 'none',
-                          cursor: 'pointer',
-                          color: '#ef4444',
-                        }}
-                      >
-                        {Trash2({ style: { width: 16, height: 16 } })}
-                      </button>
+                      )}
+                      {editMode ? (
+                        <textarea
+                          className={cvStyles.inlineTextarea}
+                          value={exp.description}
+                          onChange={(e) => updateExperience(exp.id, 'description', e.target.value)}
+                          placeholder="Qué hiciste, qué logros (usa bullets con • al inicio de línea)"
+                          style={{ marginTop: 6 }}
+                        />
+                      ) : (
+                        exp.description && (
+                          <div className={cvStyles.cvEntryBody}>{exp.description}</div>
+                        )
+                      )}
                     </div>
+                  ))
+                )}
+              </section>
+
+              {/* Certificaciones */}
+              <section id="cv-certificaciones" className={cvStyles.cvSection}>
+                <div className={cvStyles.cvSecHead}>
+                  <h3>Certificaciones</h3>
+                  {editMode ? (
+                    <button className={cvStyles.addBtn} onClick={addCertification} type="button">
+                      {Plus({ size: 12 })} Agregar
+                    </button>
                   ) : (
-                    <div
-                      style={{
-                        fontSize: 15,
-                        fontWeight: 600,
-                        color: 'var(--text-primary)',
-                        marginBottom: 12,
-                      }}
-                    >
-                      {group.category}
+                    <div className={cvStyles.cvSecMeta}>
+                      {cv.certifications.length} entrada
+                      {cv.certifications.length !== 1 ? 's' : ''}
                     </div>
                   )}
-                  <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
-                    {group.skills.map((skill, si) => (
-                      <div key={si} style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+                </div>
+                {cv.certifications.length === 0 && !editMode ? (
+                  <div className={cvStyles.sectionEmpty}>Sin certificaciones.</div>
+                ) : (
+                  cv.certifications.map((cert) => (
+                    <div key={cert.id} className={cvStyles.cvEntry}>
+                      <div className={cvStyles.cvEntryTop}>
+                        {editMode ? (
+                          <input
+                            className={cvStyles.inlineInput}
+                            value={cert.name}
+                            onChange={(e) => updateCertification(cert.id, 'name', e.target.value)}
+                            placeholder="Nombre certificación"
+                          />
+                        ) : (
+                          <div className={cvStyles.cvEntryTitle}>{cert.name}</div>
+                        )}
+                        {editMode ? (
+                          <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
+                            <input
+                              className={cvStyles.inlineInput}
+                              value={cert.date}
+                              onChange={(e) => updateCertification(cert.id, 'date', e.target.value)}
+                              placeholder="fecha"
+                              style={{ width: 100 }}
+                            />
+                            <button
+                              className={cvStyles.removeBtn}
+                              onClick={() => removeCertification(cert.id)}
+                              type="button"
+                            >
+                              {Trash2({ size: 10 })}
+                            </button>
+                          </div>
+                        ) : (
+                          <div className={cvStyles.cvEntryDate}>{cert.date}</div>
+                        )}
+                      </div>
+                      {editMode ? (
+                        <input
+                          className={cvStyles.inlineInput}
+                          value={cert.issuer}
+                          onChange={(e) => updateCertification(cert.id, 'issuer', e.target.value)}
+                          placeholder="Emisor"
+                          style={{ marginTop: 4 }}
+                        />
+                      ) : (
+                        <div className={cvStyles.cvEntryOrg}>{cert.issuer}</div>
+                      )}
+                    </div>
+                  ))
+                )}
+              </section>
+
+              {/* Habilidades */}
+              <section id="cv-habilidades" className={cvStyles.cvSection}>
+                <div className={cvStyles.cvSecHead}>
+                  <h3>Habilidades</h3>
+                  {editMode && (
+                    <button className={cvStyles.addBtn} onClick={addSkillGroup} type="button">
+                      {Plus({ size: 12 })} Grupo
+                    </button>
+                  )}
+                </div>
+                {cv.skillGroups.length === 0 && !editMode ? (
+                  <div className={cvStyles.sectionEmpty}>Sin habilidades agregadas.</div>
+                ) : (
+                  <div className={cvStyles.cvGridRow}>
+                    {cv.skillGroups.map((group, gIdx) => (
+                      <div key={gIdx}>
+                        {editMode ? (
+                          <div
+                            style={{
+                              display: 'flex',
+                              gap: 8,
+                              alignItems: 'center',
+                              marginBottom: 10,
+                            }}
+                          >
+                            <input
+                              className={cvStyles.inlineInput}
+                              value={group.category}
+                              onChange={(e) => updateSkillGroupCategory(gIdx, e.target.value)}
+                              placeholder="Categoría"
+                              style={{ fontSize: 11, textTransform: 'uppercase' }}
+                            />
+                            <button
+                              className={cvStyles.removeBtn}
+                              onClick={() => removeSkillGroup(gIdx)}
+                              type="button"
+                            >
+                              {Trash2({ size: 10 })}
+                            </button>
+                          </div>
+                        ) : (
+                          <div className={cvStyles.skillCategoryLabel}>{group.category}</div>
+                        )}
+                        <div className={cvStyles.skillChipGroup}>
+                          {group.skills.map((skill, sIdx) => (
+                            <div
+                              key={sIdx}
+                              className={`${cvStyles.skillChip} ${skill.level >= 75 ? cvStyles.hl : ''}`}
+                            >
+                              {editMode ? (
+                                <input
+                                  value={skill.name}
+                                  onChange={(e) =>
+                                    updateSkillInGroup(gIdx, sIdx, 'name', e.target.value)
+                                  }
+                                  placeholder="skill"
+                                  style={{
+                                    border: 0,
+                                    background: 'transparent',
+                                    fontSize: 12,
+                                    fontWeight: 700,
+                                    outline: 'none',
+                                    width: 80,
+                                  }}
+                                />
+                              ) : (
+                                skill.name
+                              )}
+                              {editMode ? (
+                                <input
+                                  type="number"
+                                  min={0}
+                                  max={100}
+                                  value={skill.level}
+                                  onChange={(e) =>
+                                    updateSkillInGroup(
+                                      gIdx,
+                                      sIdx,
+                                      'level',
+                                      parseInt(e.target.value) || 0
+                                    )
+                                  }
+                                  style={{
+                                    border: 0,
+                                    background: 'transparent',
+                                    fontSize: 10,
+                                    width: 36,
+                                    outline: 'none',
+                                  }}
+                                />
+                              ) : (
+                                <span className={cvStyles.skillLevel}>
+                                  {'★'.repeat(Math.ceil(skill.level / 20))}
+                                </span>
+                              )}
+                              {editMode && (
+                                <button
+                                  onClick={() => removeSkillFromGroup(gIdx, sIdx)}
+                                  style={{
+                                    border: 0,
+                                    background: 'transparent',
+                                    cursor: 'pointer',
+                                    color: '#ff4d3a',
+                                    padding: 0,
+                                    marginLeft: 2,
+                                  }}
+                                  type="button"
+                                  aria-label="Quitar"
+                                >
+                                  ×
+                                </button>
+                              )}
+                            </div>
+                          ))}
+                          {editMode && (
+                            <button
+                              className={cvStyles.skillChip}
+                              onClick={() => addSkillToGroup(gIdx)}
+                              style={{ cursor: 'pointer', color: '#696c6f' }}
+                              type="button"
+                            >
+                              + Skill
+                            </button>
+                          )}
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </section>
+
+              {/* Idiomas */}
+              <section id="cv-idiomas" className={cvStyles.cvSection}>
+                <div className={cvStyles.cvSecHead}>
+                  <h3>Idiomas</h3>
+                  {editMode && (
+                    <button className={cvStyles.addBtn} onClick={addLanguage} type="button">
+                      {Plus({ size: 12 })} Agregar
+                    </button>
+                  )}
+                </div>
+                {cv.languages.length === 0 && !editMode ? (
+                  <div className={cvStyles.sectionEmpty}>Sin idiomas agregados.</div>
+                ) : (
+                  <div className={cvStyles.cvLangRow}>
+                    {cv.languages.map((lang, idx) => (
+                      <div key={idx} className={cvStyles.cvLang}>
+                        <div className={cvStyles.cvLangCode}>
+                          {(lang.name || '—').slice(0, 2).toUpperCase()}
+                        </div>
                         {editMode ? (
                           <>
                             <input
-                              style={{ ...styles.input, width: 180 }}
-                              value={skill.name}
-                              onChange={(e) => updateSkillInGroup(gi, si, 'name', e.target.value)}
-                              placeholder="Habilidad"
+                              className={cvStyles.inlineInput}
+                              value={lang.name}
+                              onChange={(e) => updateLanguage(idx, 'name', e.target.value)}
+                              placeholder="Idioma"
+                              style={{ fontSize: 14, fontWeight: 800, marginTop: 2 }}
                             />
-                            <input
-                              type="range"
-                              min={10}
-                              max={100}
-                              step={5}
-                              value={skill.level}
-                              onChange={(e) =>
-                                updateSkillInGroup(gi, si, 'level', Number(e.target.value))
-                              }
-                              style={{ flex: 1 }}
-                            />
-                            <span
-                              style={{
-                                fontSize: 13,
-                                color: 'var(--text-tertiary)',
-                                width: 36,
-                                textAlign: 'right',
-                              }}
+                            <select
+                              className={cvStyles.inlineInput}
+                              value={lang.level}
+                              onChange={(e) => updateLanguage(idx, 'level', e.target.value)}
+                              style={{ fontSize: 11, marginTop: 4 }}
                             >
-                              {skill.level}%
-                            </span>
+                              {LANG_LEVELS.map((lv) => (
+                                <option key={lv} value={lv}>
+                                  {lv}
+                                </option>
+                              ))}
+                            </select>
                             <button
-                              onClick={() => removeSkillFromGroup(gi, si)}
-                              style={{
-                                background: 'none',
-                                border: 'none',
-                                cursor: 'pointer',
-                                color: '#ef4444',
-                              }}
+                              className={cvStyles.removeBtn}
+                              onClick={() => removeLanguage(idx)}
+                              type="button"
+                              style={{ marginTop: 6 }}
                             >
-                              {X({ style: { width: 14, height: 14 } })}
+                              {Trash2({ size: 10 })}
                             </button>
                           </>
                         ) : (
                           <>
-                            <span
-                              style={{
-                                fontSize: 14,
-                                color: 'var(--text-primary)',
-                                width: 160,
-                                flexShrink: 0,
-                              }}
-                            >
-                              {skill.name}
-                            </span>
-                            <div style={styles.skillBar}>
-                              <div style={{ ...styles.skillFill, width: `${skill.level}%` }} />
-                            </div>
-                            <span
-                              style={{
-                                fontSize: 12,
-                                color: 'var(--text-tertiary)',
-                                width: 36,
-                                textAlign: 'right',
-                              }}
-                            >
-                              {skill.level}%
-                            </span>
+                            <div className={cvStyles.cvLangName}>{lang.name}</div>
+                            <div className={cvStyles.cvLangLevel}>{lang.level}</div>
                           </>
                         )}
                       </div>
                     ))}
                   </div>
-                </div>
-              ))}
-            </div>
-          )}
-
-          {/* ── TAB: Diferenciadores ── */}
-          {activeTab === 'diferenciadores' && (
-            <div style={styles.card}>
-              <div style={styles.cardTitle}>
-                <span style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-                  {Target({ style: { width: 20, height: 20, color: '#1e56a0' } })} Lo que me
-                  diferencia
-                </span>
-                {editMode && (
-                  <button
-                    style={{ ...styles.btnSecondary, padding: '6px 14px', fontSize: 13 }}
-                    className="cv-btn"
-                    onClick={addDifferentiator}
-                  >
-                    {Plus({ style: { width: 14, height: 14 } })} Agregar
-                  </button>
                 )}
-              </div>
+              </section>
 
-              {cv.differentiators.length === 0 && !editMode && (
-                <p style={{ color: 'var(--text-tertiary)', fontSize: 14 }}>
-                  {isOwnProfile
-                    ? 'Destaca lo que te hace unico como profesional.'
-                    : 'Sin informacion disponible.'}
-                </p>
-              )}
-
-              <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
-                {cv.differentiators.map((d, i) => (
-                  <div
-                    key={i}
-                    style={{
-                      display: 'flex',
-                      alignItems: 'flex-start',
-                      gap: 12,
-                      padding: 14,
-                      borderRadius: 12,
-                      background: 'var(--bg-secondary, #f9fafb)',
-                    }}
-                  >
-                    <div
-                      style={{
-                        width: 32,
-                        height: 32,
-                        borderRadius: 8,
-                        background: 'linear-gradient(135deg, #1e56a0, #3d7cc9)',
-                        display: 'flex',
-                        alignItems: 'center',
-                        justifyContent: 'center',
-                        flexShrink: 0,
-                        marginTop: 2,
-                      }}
-                    >
-                      {Star({ style: { width: 16, height: 16, color: '#fff' } })}
-                    </div>
-                    {editMode ? (
-                      <div style={{ flex: 1, display: 'flex', gap: 8 }}>
-                        <textarea
-                          style={{ ...styles.textarea, minHeight: 40 }}
-                          value={d}
-                          onChange={(e) => {
-                            const arr = [...cv.differentiators];
-                            arr[i] = e.target.value;
-                            updateField('differentiators', arr);
-                          }}
-                          placeholder="Describe tu propuesta de valor unica..."
-                          rows={2}
-                        />
-                        <button
-                          onClick={() => removeDifferentiator(i)}
-                          style={{
-                            background: 'none',
-                            border: 'none',
-                            cursor: 'pointer',
-                            color: '#ef4444',
-                            alignSelf: 'flex-start',
-                          }}
-                        >
-                          {Trash2({ style: { width: 16, height: 16 } })}
-                        </button>
-                      </div>
-                    ) : (
-                      <p
-                        style={{
-                          fontSize: 14,
-                          lineHeight: 1.6,
-                          color: 'var(--text-secondary)',
-                          margin: 0,
-                        }}
-                      >
-                        {d}
-                      </p>
-                    )}
-                  </div>
-                ))}
-              </div>
-            </div>
-          )}
-
-          {/* ── Upload Zone (edit mode, sobre tab) ── */}
-          {editMode && activeTab === 'sobre' && isOwnProfile && (
-            <div style={{ ...styles.card, marginTop: 20 }}>
-              <div style={styles.cardTitle}>Importar desde documento</div>
-              <div
-                className="cv-upload-zone"
-                style={styles.uploadZone}
-                onClick={() => fileRef.current?.click()}
-              >
-                {Upload({ style: { width: 32, height: 32, color: '#1e56a0', marginBottom: 8 } })}
-                <div
-                  style={{
-                    fontSize: 15,
-                    fontWeight: 600,
-                    color: 'var(--text-primary)',
-                    marginTop: 8,
-                  }}
-                >
-                  Arrastra o haz clic para subir tu CV
-                </div>
-                <div style={{ fontSize: 13, color: 'var(--text-tertiary)', marginTop: 4 }}>
-                  PDF o Word (.docx) - Maximo 10 MB
-                </div>
-              </div>
-            </div>
-          )}
-        </div>
-
-        {/* ── Sidebar (right) ── */}
-        <div style={styles.sidebar}>
-          {/* Quick stats */}
-          <div style={styles.card}>
-            <div style={{ ...styles.cardTitle, fontSize: 15 }}>Estadisticas</div>
-            <div style={styles.statRow}>
-              <span style={{ color: 'var(--text-secondary)' }}>Anos de experiencia</span>
-              <strong style={{ color: 'var(--text-primary)' }}>{yearsExp}</strong>
-            </div>
-            <div style={styles.statRow}>
-              <span style={{ color: 'var(--text-secondary)' }}>Empresas</span>
-              <strong style={{ color: 'var(--text-primary)' }}>{companiesCount}</strong>
-            </div>
-            <div style={{ ...styles.statRow, borderBottom: 'none' }}>
-              <span style={{ color: 'var(--text-secondary)' }}>Certificaciones</span>
-              <strong style={{ color: 'var(--text-primary)' }}>{certsCount}</strong>
-            </div>
-          </div>
-
-          {/* Open to offers toggle */}
-          {isOwnProfile && (
-            <div style={styles.card}>
-              <div
-                style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}
-              >
-                <div>
-                  <div style={{ fontSize: 14, fontWeight: 600, color: 'var(--text-primary)' }}>
-                    Abierto a ofertas
-                  </div>
-                  <div style={{ fontSize: 12, color: 'var(--text-tertiary)', marginTop: 2 }}>
-                    Los reclutadores pueden contactarte
-                  </div>
-                </div>
-                <button
-                  style={{
-                    ...styles.toggle,
-                    background: cv.openToOffers ? '#059669' : 'var(--bg-secondary, #d1d5db)',
-                  }}
-                  onClick={() => updateField('openToOffers', !cv.openToOffers)}
-                >
-                  <div style={{ ...styles.toggleDot, left: cv.openToOffers ? 23 : 3 }} />
-                </button>
-              </div>
-            </div>
-          )}
-
-          {/* Visibility */}
-          {isOwnProfile && (
-            <div style={styles.card}>
-              <div style={{ ...styles.cardTitle, fontSize: 15 }}>Visibilidad del perfil</div>
-              {(['public', 'connections', 'private'] as const).map((v) => (
-                <label
-                  key={v}
-                  style={{
-                    display: 'flex',
-                    alignItems: 'center',
-                    gap: 8,
-                    padding: '6px 0',
-                    cursor: 'pointer',
-                    fontSize: 14,
-                  }}
-                >
-                  <input
-                    type="radio"
-                    name="cv-visibility"
-                    checked={cv.visibility === v}
-                    onChange={() => updateField('visibility', v)}
-                  />
-                  <span style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
-                    {v === 'public' && Globe({ style: { width: 14, height: 14 } })}
-                    {v === 'connections' && Users({ style: { width: 14, height: 14 } })}
-                    {v === 'private' && EyeOff({ style: { width: 14, height: 14 } })}
-                    {v === 'public'
-                      ? 'Publico'
-                      : v === 'connections'
-                        ? 'Solo conexiones'
-                        : 'Privado'}
-                  </span>
-                </label>
-              ))}
-            </div>
-          )}
-
-          {/* Languages */}
-          <div style={styles.card}>
-            <div style={{ ...styles.cardTitle, fontSize: 15 }}>
-              Idiomas
-              {editMode && (
-                <button
-                  onClick={addLanguage}
-                  style={{
-                    background: 'none',
-                    border: 'none',
-                    cursor: 'pointer',
-                    color: '#1e56a0',
-                  }}
-                >
-                  {Plus({ style: { width: 16, height: 16 } })}
-                </button>
-              )}
-            </div>
-            {cv.languages.length === 0 && !editMode && (
-              <p style={{ color: 'var(--text-tertiary)', fontSize: 13 }}>
-                Sin idiomas registrados.
-              </p>
-            )}
-            {cv.languages.map((lang, i) => (
-              <div
-                key={i}
-                style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 8 }}
-              >
-                {editMode ? (
-                  <>
-                    <input
-                      style={{ ...styles.input, flex: 1 }}
-                      value={lang.name}
-                      onChange={(e) => {
-                        const langs = [...cv.languages];
-                        langs[i] = { ...langs[i], name: e.target.value };
-                        updateField('languages', langs);
-                      }}
-                      placeholder="Idioma"
-                    />
-                    <select
-                      style={{ ...styles.input, width: 140 }}
-                      value={lang.level}
-                      onChange={(e) => {
-                        const langs = [...cv.languages];
-                        langs[i] = { ...langs[i], level: e.target.value };
-                        updateField('languages', langs);
-                      }}
-                    >
-                      {LANG_LEVELS.map((l) => (
-                        <option key={l} value={l}>
-                          {l}
-                        </option>
-                      ))}
-                    </select>
-                    <button
-                      onClick={() => removeLanguage(i)}
-                      style={{
-                        background: 'none',
-                        border: 'none',
-                        cursor: 'pointer',
-                        color: '#ef4444',
-                      }}
-                    >
-                      {X({ style: { width: 14, height: 14 } })}
+              {/* Diferenciadores */}
+              <section id="cv-diferenciadores" className={cvStyles.cvSection}>
+                <div className={cvStyles.cvSecHead}>
+                  <h3>Lo que me diferencia</h3>
+                  {editMode && (
+                    <button className={cvStyles.addBtn} onClick={addDifferentiator} type="button">
+                      {Plus({ size: 12 })} Agregar
                     </button>
-                  </>
-                ) : (
-                  <div style={{ display: 'flex', justifyContent: 'space-between', width: '100%' }}>
-                    <span style={{ fontSize: 14, color: 'var(--text-primary)' }}>{lang.name}</span>
-                    <span style={{ fontSize: 13, color: 'var(--text-tertiary)' }}>
-                      {lang.level}
-                    </span>
-                  </div>
-                )}
-              </div>
-            ))}
-          </div>
-
-          {/* Links */}
-          <div style={styles.card}>
-            <div style={{ ...styles.cardTitle, fontSize: 15 }}>
-              Enlaces
-              {editMode && (
-                <button
-                  onClick={addLink}
-                  style={{
-                    background: 'none',
-                    border: 'none',
-                    cursor: 'pointer',
-                    color: '#1e56a0',
-                  }}
-                >
-                  {Plus({ style: { width: 16, height: 16 } })}
-                </button>
-              )}
-            </div>
-            {cv.links.length === 0 && !editMode && (
-              <p style={{ color: 'var(--text-tertiary)', fontSize: 13 }}>
-                Sin enlaces registrados.
-              </p>
-            )}
-            {cv.links.map((lnk, i) => (
-              <div key={i} style={{ marginBottom: 8 }}>
-                {editMode ? (
-                  <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
-                    <input
-                      style={{ ...styles.input, width: 100 }}
-                      value={lnk.label}
-                      onChange={(e) => {
-                        const links = [...cv.links];
-                        links[i] = { ...links[i], label: e.target.value };
-                        updateField('links', links);
-                      }}
-                      placeholder="Etiqueta"
-                    />
-                    <input
-                      style={{ ...styles.input, flex: 1 }}
-                      value={lnk.url}
-                      onChange={(e) => {
-                        const links = [...cv.links];
-                        links[i] = { ...links[i], url: e.target.value };
-                        updateField('links', links);
-                      }}
-                      placeholder="URL"
-                    />
-                    <button
-                      onClick={() => removeLink(i)}
-                      style={{
-                        background: 'none',
-                        border: 'none',
-                        cursor: 'pointer',
-                        color: '#ef4444',
-                      }}
-                    >
-                      {X({ style: { width: 14, height: 14 } })}
-                    </button>
-                  </div>
-                ) : (
-                  <a
-                    href={lnk.url}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    style={{
-                      display: 'flex',
-                      alignItems: 'center',
-                      gap: 6,
-                      fontSize: 14,
-                      color: '#1e56a0',
-                      textDecoration: 'none',
-                      padding: '4px 0',
-                    }}
-                  >
-                    {Link({ style: { width: 14, height: 14 } })} {lnk.label || lnk.url}
-                    {ExternalLink({ style: { width: 12, height: 12, opacity: 0.5 } })}
-                  </a>
-                )}
-              </div>
-            ))}
-          </div>
-        </div>
-      </div>
-
-      {/* ══ CV PREVIEW PANEL — lateral Conniku format ══ */}
-      {showPreview && (
-        <>
-          {/* Overlay */}
-          <div
-            onClick={() => setShowPreview(false)}
-            style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.28)', zIndex: 1100 }}
-            className="cv-no-print"
-          />
-
-          {/* Panel */}
-          <div
-            style={{
-              position: 'fixed',
-              top: 0,
-              right: 0,
-              width: 420,
-              height: '100vh',
-              background: '#f8f9fb',
-              borderLeft: '1px solid #e0e4ea',
-              zIndex: 1101,
-              display: 'flex',
-              flexDirection: 'column',
-              boxShadow: '-6px 0 28px rgba(0,0,0,0.14)',
-              overflowY: 'auto',
-            }}
-            className="cv-no-print"
-          >
-            {/* Panel header */}
-            <div
-              style={{
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'space-between',
-                padding: '14px 18px',
-                background: '#fff',
-                borderBottom: '1px solid #e8eaed',
-                flexShrink: 0,
-                position: 'sticky',
-                top: 0,
-                zIndex: 2,
-              }}
-            >
-              <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-                <svg viewBox="0 0 40 40" width={18} height={18}>
-                  <circle
-                    cx="20"
-                    cy="20"
-                    r="12"
-                    fill="none"
-                    stroke="#2D62C8"
-                    strokeWidth="5"
-                    strokeLinecap="round"
-                    strokeDasharray="56 19"
-                  />
-                </svg>
-                <span
-                  style={{
-                    fontWeight: 700,
-                    fontSize: 13,
-                    color: '#2D62C8',
-                    letterSpacing: '0.02em',
-                  }}
-                >
-                  Vista Previa — Formato Conniku
-                </span>
-              </div>
-              <button
-                onClick={() => setShowPreview(false)}
-                style={{
-                  background: 'none',
-                  border: 'none',
-                  cursor: 'pointer',
-                  color: '#94a3b8',
-                  fontSize: 20,
-                  lineHeight: 1,
-                  padding: 4,
-                }}
-              >
-                ×
-              </button>
-            </div>
-
-            {/* CV Document */}
-            <div style={{ padding: '20px 20px 40px', flex: 1 }}>
-              {/* Document card */}
-              <div
-                style={{
-                  background: '#fff',
-                  borderRadius: 12,
-                  boxShadow: '0 2px 12px rgba(0,0,0,0.08)',
-                  overflow: 'hidden',
-                  border: '1px solid #e8eaed',
-                }}
-              >
-                {/* Document header — blue Conniku stripe */}
-                <div
-                  style={{
-                    background: 'linear-gradient(135deg, #0d2a6b 0%, #1a56db 60%, #3b82f6 100%)',
-                    padding: '22px 22px 18px',
-                    color: '#fff',
-                  }}
-                >
-                  <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 12 }}>
-                    <div
-                      style={{
-                        width: 52,
-                        height: 52,
-                        borderRadius: '50%',
-                        background: user?.avatar
-                          ? `url(${user.avatar}) center/cover`
-                          : 'rgba(255,255,255,0.2)',
-                        display: 'flex',
-                        alignItems: 'center',
-                        justifyContent: 'center',
-                        fontSize: 18,
-                        fontWeight: 700,
-                        color: '#fff',
-                        border: '2px solid rgba(255,255,255,0.4)',
-                        flexShrink: 0,
-                      }}
-                    >
-                      {!user?.avatar &&
-                        `${(user?.firstName || '?')[0]}${(user?.lastName || '')[0]}`.toUpperCase()}
-                    </div>
-                    <div>
-                      <div
-                        style={{
-                          fontSize: 18,
-                          fontWeight: 800,
-                          letterSpacing: '-0.02em',
-                          lineHeight: 1.1,
-                        }}
-                      >
-                        {user?.firstName} {user?.lastName}
-                      </div>
-                      {cv.headline && (
-                        <div style={{ fontSize: 12, marginTop: 4, opacity: 0.85, lineHeight: 1.3 }}>
-                          {cv.headline}
-                        </div>
-                      )}
-                    </div>
-                  </div>
-                  <div
-                    style={{
-                      display: 'flex',
-                      flexWrap: 'wrap',
-                      gap: 10,
-                      fontSize: 11,
-                      opacity: 0.8,
-                    }}
-                  >
-                    {cv.email && <span>✉ {cv.email}</span>}
-                    {cv.phone && <span>📞 {cv.phone}</span>}
-                    {cv.location && <span>📍 {cv.location}</span>}
-                    {cv.openToOffers && (
-                      <span
-                        style={{
-                          background: 'rgba(255,255,255,0.18)',
-                          borderRadius: 8,
-                          padding: '2px 8px',
-                          fontWeight: 600,
-                        }}
-                      >
-                        ✓ Abierto a ofertas
-                      </span>
-                    )}
-                  </div>
-                  {/* Conniku watermark */}
-                  <div
-                    style={{
-                      marginTop: 12,
-                      fontSize: 9,
-                      opacity: 0.45,
-                      letterSpacing: '0.15em',
-                      textTransform: 'uppercase',
-                    }}
-                  >
-                    Generado con Conniku · conniku.com
-                  </div>
+                  )}
                 </div>
-
-                {/* Body */}
-                <div
-                  style={{
-                    padding: '16px 20px',
-                    display: 'flex',
-                    flexDirection: 'column',
-                    gap: 14,
-                  }}
-                >
-                  {/* Summary */}
-                  {cv.summary && (
-                    <div>
-                      <div
-                        style={{
-                          fontSize: 10,
-                          fontWeight: 700,
-                          textTransform: 'uppercase',
-                          letterSpacing: '0.1em',
-                          color: '#1a56db',
-                          marginBottom: 6,
-                          borderBottom: '1.5px solid #1a56db',
-                          paddingBottom: 4,
-                        }}
-                      >
-                        Resumen
-                      </div>
-                      <p style={{ fontSize: 12, color: '#444', lineHeight: 1.6, margin: 0 }}>
-                        {cv.summary}
-                      </p>
-                    </div>
-                  )}
-
-                  {/* Competencies */}
-                  {cv.competencies.length > 0 && (
-                    <div>
-                      <div
-                        style={{
-                          fontSize: 10,
-                          fontWeight: 700,
-                          textTransform: 'uppercase',
-                          letterSpacing: '0.1em',
-                          color: '#1a56db',
-                          marginBottom: 6,
-                          borderBottom: '1.5px solid #1a56db',
-                          paddingBottom: 4,
-                        }}
-                      >
-                        Competencias Clave
-                      </div>
-                      <div style={{ display: 'flex', flexWrap: 'wrap', gap: 5 }}>
-                        {cv.competencies.map((c, i) => (
-                          <span
-                            key={i}
-                            style={{
-                              fontSize: 10,
-                              padding: '2px 8px',
-                              borderRadius: 12,
-                              background: 'rgba(26,86,219,0.08)',
-                              color: '#1a56db',
-                              border: '1px solid rgba(26,86,219,0.18)',
-                              fontWeight: 500,
-                            }}
-                          >
-                            {c}
-                          </span>
-                        ))}
-                      </div>
-                    </div>
-                  )}
-
-                  {/* Experience */}
-                  {cv.experience.length > 0 && (
-                    <div>
-                      <div
-                        style={{
-                          fontSize: 10,
-                          fontWeight: 700,
-                          textTransform: 'uppercase',
-                          letterSpacing: '0.1em',
-                          color: '#1a56db',
-                          marginBottom: 8,
-                          borderBottom: '1.5px solid #1a56db',
-                          paddingBottom: 4,
-                        }}
-                      >
-                        Experiencia
-                      </div>
-                      {cv.experience.map((exp, i) => (
-                        <div
-                          key={exp.id}
-                          style={{
-                            marginBottom: i < cv.experience.length - 1 ? 10 : 0,
-                            paddingBottom: i < cv.experience.length - 1 ? 10 : 0,
-                            borderBottom:
-                              i < cv.experience.length - 1 ? '1px solid #f0f0f0' : 'none',
-                          }}
-                        >
-                          <div style={{ fontWeight: 700, fontSize: 12, color: '#1a2e4a' }}>
-                            {exp.title}
-                          </div>
-                          <div style={{ fontSize: 11, color: '#1a56db', marginTop: 1 }}>
-                            {exp.company}
-                            {exp.location ? ` · ${exp.location}` : ''}
-                          </div>
-                          <div style={{ fontSize: 10, color: '#888', marginTop: 1 }}>
-                            {exp.startDate}
-                            {exp.endDate ? ` – ${exp.endDate}` : exp.current ? ' – Actualidad' : ''}
-                          </div>
-                          {exp.description && (
-                            <p
-                              style={{
-                                fontSize: 11,
-                                color: '#555',
-                                margin: '4px 0 0',
-                                lineHeight: 1.5,
-                              }}
-                            >
-                              {exp.description}
-                            </p>
-                          )}
-                        </div>
-                      ))}
-                    </div>
-                  )}
-
-                  {/* Education */}
-                  {cv.education.length > 0 && (
-                    <div>
-                      <div
-                        style={{
-                          fontSize: 10,
-                          fontWeight: 700,
-                          textTransform: 'uppercase',
-                          letterSpacing: '0.1em',
-                          color: '#1a56db',
-                          marginBottom: 8,
-                          borderBottom: '1.5px solid #1a56db',
-                          paddingBottom: 4,
-                        }}
-                      >
-                        Educación
-                      </div>
-                      {cv.education.map((edu, i) => (
-                        <div
-                          key={edu.id}
-                          style={{ marginBottom: i < cv.education.length - 1 ? 8 : 0 }}
-                        >
-                          <div style={{ fontWeight: 700, fontSize: 12, color: '#1a2e4a' }}>
-                            {edu.degree}
-                            {edu.field ? ` en ${edu.field}` : ''}
-                          </div>
-                          <div style={{ fontSize: 11, color: '#1a56db', marginTop: 1 }}>
-                            {edu.institution}
-                          </div>
-                          <div style={{ fontSize: 10, color: '#888', marginTop: 1 }}>
-                            {edu.startYear}
-                            {edu.endYear ? ` – ${edu.endYear}` : ''}
-                          </div>
-                        </div>
-                      ))}
-                    </div>
-                  )}
-
-                  {/* Skills */}
-                  {cv.skillGroups.length > 0 && (
-                    <div>
-                      <div
-                        style={{
-                          fontSize: 10,
-                          fontWeight: 700,
-                          textTransform: 'uppercase',
-                          letterSpacing: '0.1em',
-                          color: '#1a56db',
-                          marginBottom: 8,
-                          borderBottom: '1.5px solid #1a56db',
-                          paddingBottom: 4,
-                        }}
-                      >
-                        Habilidades
-                      </div>
-                      {cv.skillGroups.map((sg, i) => (
-                        <div key={i} style={{ marginBottom: 8 }}>
+                {cv.differentiators.filter((d) => d.trim()).length === 0 && !editMode ? (
+                  <div className={cvStyles.sectionEmpty}>Sin diferenciadores agregados.</div>
+                ) : (
+                  <div className={cvStyles.diffList}>
+                    {cv.differentiators.map((d, idx) => (
+                      <div key={idx} className={cvStyles.diffItem}>
+                        {editMode ? (
                           <div
                             style={{
-                              fontSize: 10,
-                              fontWeight: 600,
-                              color: '#555',
-                              marginBottom: 4,
+                              display: 'flex',
+                              gap: 8,
+                              alignItems: 'center',
                             }}
                           >
-                            {sg.category}
-                          </div>
-                          {sg.skills.map((sk, j) => (
-                            <div
-                              key={j}
-                              style={{
-                                display: 'flex',
-                                alignItems: 'center',
-                                gap: 8,
-                                marginBottom: 4,
-                              }}
+                            <input
+                              className={cvStyles.inlineInput}
+                              value={d}
+                              onChange={(e) => updateDifferentiator(idx, e.target.value)}
+                              placeholder="Qué te hace único"
+                            />
+                            <button
+                              className={cvStyles.removeBtn}
+                              onClick={() => removeDifferentiator(idx)}
+                              type="button"
                             >
-                              <span
-                                style={{
-                                  fontSize: 11,
-                                  color: '#444',
-                                  width: 90,
-                                  flexShrink: 0,
-                                  overflow: 'hidden',
-                                  textOverflow: 'ellipsis',
-                                  whiteSpace: 'nowrap',
-                                }}
-                              >
-                                {sk.name}
-                              </span>
-                              <div
-                                style={{
-                                  flex: 1,
-                                  height: 4,
-                                  borderRadius: 2,
-                                  background: '#e8eaed',
-                                  overflow: 'hidden',
-                                }}
-                              >
-                                <div
-                                  style={{
-                                    width: `${(sk.level / 5) * 100}%`,
-                                    height: '100%',
-                                    background: 'linear-gradient(90deg, #1a56db, #3b82f6)',
-                                    borderRadius: 2,
-                                  }}
-                                />
-                              </div>
-                            </div>
-                          ))}
-                        </div>
-                      ))}
-                    </div>
-                  )}
+                              {Trash2({ size: 10 })}
+                            </button>
+                          </div>
+                        ) : (
+                          d
+                        )}
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </section>
+            </div>
 
-                  {/* Languages */}
-                  {cv.languages.length > 0 && (
-                    <div>
-                      <div
-                        style={{
-                          fontSize: 10,
-                          fontWeight: 700,
-                          textTransform: 'uppercase',
-                          letterSpacing: '0.1em',
-                          color: '#1a56db',
-                          marginBottom: 6,
-                          borderBottom: '1.5px solid #1a56db',
-                          paddingBottom: 4,
-                        }}
-                      >
-                        Idiomas
-                      </div>
-                      <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6 }}>
-                        {cv.languages.map((l, i) => (
-                          <span
-                            key={i}
-                            style={{
-                              fontSize: 11,
-                              padding: '2px 8px',
-                              borderRadius: 8,
-                              background: '#f3f4f6',
-                              color: '#333',
-                              fontWeight: 500,
-                            }}
-                          >
-                            {l.name} · {l.level}
-                          </span>
-                        ))}
-                      </div>
-                    </div>
-                  )}
-
-                  {/* Certifications */}
-                  {cv.certifications.length > 0 && (
-                    <div>
-                      <div
-                        style={{
-                          fontSize: 10,
-                          fontWeight: 700,
-                          textTransform: 'uppercase',
-                          letterSpacing: '0.1em',
-                          color: '#1a56db',
-                          marginBottom: 6,
-                          borderBottom: '1.5px solid #1a56db',
-                          paddingBottom: 4,
-                        }}
-                      >
-                        Certificaciones
-                      </div>
-                      {cv.certifications.map((cert, i) => (
-                        <div
-                          key={cert.id}
-                          style={{
-                            marginBottom: i < cv.certifications.length - 1 ? 6 : 0,
-                            fontSize: 11,
-                          }}
-                        >
-                          <span style={{ fontWeight: 600, color: '#1a2e4a' }}>{cert.name}</span>
-                          {cert.issuer && <span style={{ color: '#888' }}> · {cert.issuer}</span>}
-                          {cert.date && <span style={{ color: '#888' }}> · {cert.date}</span>}
-                        </div>
-                      ))}
-                    </div>
-                  )}
-
-                  {/* Links */}
-                  {cv.links.length > 0 && (
-                    <div>
-                      <div
-                        style={{
-                          fontSize: 10,
-                          fontWeight: 700,
-                          textTransform: 'uppercase',
-                          letterSpacing: '0.1em',
-                          color: '#1a56db',
-                          marginBottom: 6,
-                          borderBottom: '1.5px solid #1a56db',
-                          paddingBottom: 4,
-                        }}
-                      >
-                        Links
-                      </div>
-                      {cv.links.map((lnk, i) => (
-                        <div key={i} style={{ fontSize: 11, marginBottom: 3 }}>
-                          <span style={{ color: '#1a56db', fontWeight: 500 }}>
-                            {lnk.label || lnk.url}
-                          </span>
-                        </div>
-                      ))}
-                    </div>
-                  )}
-                </div>
-              </div>
+            {/* Footer */}
+            <div className={cvStyles.cvFooterVerify}>
+              <span>
+                CV Conniku · <strong>Hash SHA-256 al guardar</strong>
+              </span>
+              <span>
+                {user?.username ? `conniku.com/cv/${user.username} · ` : ''}
+                <strong>{completeness}% completo</strong>
+              </span>
             </div>
           </div>
-        </>
-      )}
+        </main>
+
+        {/* Right aside */}
+        <aside className={cvStyles.rightAside}>
+          <div className={cvStyles.assistantBox}>
+            <h3>
+              <span className={cvStyles.assIco}>C</span> Sugerencias
+            </h3>
+            <div className="sub">Basadas en tu CV</div>
+
+            {firstIncomplete && (
+              <div className={cvStyles.assistSuggestion}>
+                <div className={cvStyles.asLabel}>★ Falta</div>
+                <div className={cvStyles.asText}>
+                  Agrega <strong>{firstIncomplete.label.toLowerCase()}</strong> para subir tu
+                  completitud.
+                </div>
+              </div>
+            )}
+
+            {cv.summary && cv.summary.length < 80 && (
+              <div className={cvStyles.assistSuggestion}>
+                <div className={cvStyles.asLabel}>★ Mejora</div>
+                <div className={cvStyles.asText}>
+                  Tu <strong>resumen profesional</strong> es corto. Agrega detalles sobre tu
+                  enfoque, herramientas y qué buscas.
+                </div>
+              </div>
+            )}
+
+            {completedCount === SECTIONS.length && (
+              <div className={cvStyles.assistSuggestion}>
+                <div className={cvStyles.asLabel}>✓ Completo</div>
+                <div className={cvStyles.asText}>
+                  Tu CV está <strong>100% completo</strong>. Revisa las ofertas que matchean.
+                </div>
+              </div>
+            )}
+          </div>
+
+          <div className={cvStyles.matchesBox}>
+            <div className={cvStyles.matchesHead}>Siguiente paso</div>
+            <button
+              className={cvStyles.matchesCTA}
+              onClick={() => onNavigate('/jobs')}
+              type="button"
+            >
+              <h4>Explora ofertas laborales</h4>
+              <p>
+                {completeness >= 70
+                  ? `Tu CV está ${completeness}% listo. Mira ofertas que matchean con tu perfil.`
+                  : `Completa más secciones para mejorar tu match con ofertas.`}
+              </p>
+              <span className={cvStyles.matchesCTAArrow}>
+                Ver ofertas <ChevronRight size={12} />
+              </span>
+            </button>
+          </div>
+        </aside>
+      </div>
     </div>
   );
 }
