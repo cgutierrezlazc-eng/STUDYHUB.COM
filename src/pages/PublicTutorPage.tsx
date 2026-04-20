@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { api, getApiBase } from '../services/api';
+import ptStyles from './PublicTutorPage.module.css';
 
 const API_BASE = getApiBase();
 
@@ -146,6 +147,13 @@ export default function PublicTutorPage({ username, onNavigate }: Props) {
 
   return (
     <div style={{ minHeight: '100vh', background: 'var(--bg-primary)' }}>
+      <div className={ptStyles.topProgress}>
+        <div className={ptStyles.tpLeft}>
+          <span className={ptStyles.pulse} aria-hidden="true" />
+          <span>Perfil público de tutor</span>
+        </div>
+        <span>Titulados verificados · pago intermediado</span>
+      </div>
       {/* Hero Header */}
       <div
         style={{
