@@ -9,7 +9,7 @@
  *
  * Decisiones de copy aplicadas (ver también COPY NOTES en cada sección):
  * - "127" count pill → "comunidad activa" (no estadística inventada)
- * - "+70k títulos en biblioteca" se mantiene (es descripción de feature)
+ * - "+70k títulos" / "+70k" → "biblioteca extensa" (regla §RULES.01.3 no inventar cifras)
  * - "+30 Días Pro" stat phone mock → "Activo" (no stat inventada)
  * - "Pía Ramírez" → "Estudiante" + iniciales "PR" (no nombre real)
  * - App Store / Google Play → PENDING_USER_INSTRUCTION (href="#" + preventDefault)
@@ -255,10 +255,12 @@ export default function Landing({ onLogin, onRegister }: LandingProps) {
           {TABS.map((tab) => (
             <button
               key={tab.key}
+              id={`tab-${tab.key}`}
               className={`${styles.tabBtn}${activeTab === tab.key ? ` ${styles.active}` : ''}`}
               role="tab"
               aria-selected={activeTab === tab.key}
               aria-controls={`panel-${tab.key}`}
+              tabIndex={activeTab === tab.key ? 0 : -1}
               onClick={() => handleTabClick(tab.key)}
               type="button"
             >

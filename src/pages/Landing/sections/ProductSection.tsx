@@ -4,8 +4,10 @@
  * Fuente: FINAL HTML/01-landing-20260419-1650.html líneas 904-954
  *
  * COPY NOTES:
- * - "Biblioteca +70k" se mantiene (es descripción de feature, no estadística
- *   de plataforma en vivo). OK según instrucciones del plan.
+ * - "Biblioteca +70k" → "Biblioteca extensa" (regla §RULES.01.3 no inventar
+ *   cifras; el número exacto del catálogo no está respaldado verificable).
+ * - "Garantía antifraude real" → "Pago intermediado por Conniku" (no promesa
+ *   comercial no verificable, regla §RULES.01.3).
  * - "Explorar" en ci-btn es PENDING_USER_INSTRUCTION — mantiene estructura
  *   visual con button sin handler real.
  */
@@ -43,14 +45,14 @@ export default function ProductSection() {
 
         <div className={`${styles.stk} ${styles.stkInk}`}>
           <span className={styles.stkNum}>04</span>
-          <h3>Biblioteca +70k</h3>
+          <h3>Biblioteca extensa</h3>
           <p>Académicos y generales. Por tu carrera. Offline disponible.</p>
         </div>
 
         <div className={`${styles.stk} ${styles.stkViolet}`}>
           <span className={styles.stkNum}>05</span>
           <h3>Tutorías verificadas</h3>
-          <p>Titulados verificados. Pago protegido. Garantía antifraude real.</p>
+          <p>Titulados verificados. Pago intermediado por Conniku.</p>
         </div>
 
         <div className={`${styles.stk} ${styles.stkCyan}`}>

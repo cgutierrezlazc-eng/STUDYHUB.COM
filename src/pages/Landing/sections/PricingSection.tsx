@@ -86,7 +86,7 @@ export default function PricingSection({ onRegister }: PricingSectionProps) {
             <li className={styles.pfItem}>
               <div className={styles.pfCheck}>✓</div>
               <div>
-                <strong>Biblioteca +70k</strong> con chat por libro
+                <strong>Biblioteca extensa</strong> con chat por libro
               </div>
             </li>
             <li className={styles.pfItem}>
