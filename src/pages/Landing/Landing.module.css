@@ -55,22 +55,34 @@
   overflow: hidden;
 }
 
+/* Particles globales · valores tomados del JS fuente del HTML
+ * (FINAL HTML/01-landing líneas 1234-1239 que aplica filter+opacity en runtime).
+ * Aquí lo declaro estático en CSS para evitar JS animation inicial.
+ *   light-far: blur 40-100px, opacity .22-.60 → uso 70px / 0.4
+ *   light-mid: blur 14-48px,  opacity .28-.70 → uso 30px / 0.5
+ *   sp:       blur 0-5px,    opacity .70-1.00 → uso 2px / 0.85 */
 .panelFx .lightFar {
   position: absolute;
   border-radius: 50%;
   mix-blend-mode: screen;
+  filter: blur(70px);
+  opacity: 0.4;
 }
 
 .panelFx .lightMid {
   position: absolute;
   border-radius: 50%;
   mix-blend-mode: screen;
+  filter: blur(30px);
+  opacity: 0.5;
 }
 
 .panelFx .sp {
   position: absolute;
   border-radius: 50%;
   display: block;
+  filter: blur(2px);
+  opacity: 0.85;
 }
 
 .spPink {
