@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { useAuth } from '../services/auth';
 import { Project } from '../types';
+import styles from './Quizzes.module.css';
 
 interface Props {
   projects: Project[];
@@ -326,304 +327,387 @@ export default function Quizzes({ projects, onNavigate }: Props) {
   };
 
   return (
-    <div className="page-body" style={{ padding: '24px 32px', maxWidth: 960, margin: '0 auto' }}>
-      {/* Header */}
-      <div className="page-header" style={{ marginBottom: 24 }}>
-        <h1 style={{ fontSize: 28, fontWeight: 700, color: 'var(--text-primary)', margin: 0 }}>
-          Quizzes y Flashcards
-        </h1>
-        <p style={{ color: 'var(--text-secondary)', margin: '4px 0 0', fontSize: 14 }}>
-          Practica y refuerza tus conocimientos — basado en tus documentos
-        </p>
+    <div className={styles.quizRoot}>
+      <div className={styles.topProgress}>
+        <div className={styles.tpLeft}>
+          <span className={styles.pulse} aria-hidden="true" />
+          <span>Quizzes y flashcards</span>
+        </div>
+        <span>Practica desde tus documentos</span>
       </div>
 
-      {/* Tabs */}
-      <div
-        style={{
-          display: 'flex',
-          gap: 4,
-          marginBottom: 24,
-          background: 'var(--bg-secondary)',
-          borderRadius: 10,
-          padding: 4,
-        }}
-      >
-        {(
-          [
-            ['quizzes', 'Quizzes'],
-            ['flashcards', 'Flashcards'],
-            ['stats', 'Mis Resultados'],
-          ] as [Tab, string][]
-        ).map(([key, label]) => (
-          <button
-            key={key}
-            onClick={() => setActiveTab(key)}
-            style={{
-              flex: 1,
-              padding: '10px 16px',
-              borderRadius: 8,
-              border: 'none',
-              cursor: 'pointer',
-              fontSize: 14,
-              fontWeight: 600,
-              transition: 'all 0.2s',
-              background: activeTab === key ? 'var(--accent)' : 'transparent',
-              color: activeTab === key ? '#fff' : 'var(--text-secondary)',
-            }}
-          >
-            {label}
-          </button>
-        ))}
-      </div>
+      <main className={styles.main}>
+        {/* ── Hero editorial ── */}
+        <section className={styles.hero}>
+          <div className={styles.heroCopy}>
+            <h1 className={styles.heroH1}>
+              Aprende con
+              <br />
+              <span className={styles.hlCyan}>flashcards</span>
+              <br />
+              inteligentes.
+            </h1>
+            <p className={styles.heroLead}>
+              Generadas desde tus documentos. <strong>Repaso espaciado</strong> según tu desempeño
+              en cada asignatura.
+            </p>
+          </div>
 
-      {/* ═══════════════════ TAB: QUIZZES ═══════════════════ */}
-      {activeTab === 'quizzes' && <ProjectCards tab="quiz" />}
-
-      {/* ═══════════════════ TAB: FLASHCARDS ═══════════════════ */}
-      {activeTab === 'flashcards' && <ProjectCards tab="flashcards" />}
-
-      {/* ═══════════════════ TAB: STATS ═══════════════════ */}
-      {activeTab === 'stats' && (
-        <div>
-          {totalQuizzes === 0 ? (
-            <div className="u-card" style={{ padding: 48, textAlign: 'center' }}>
-              <p style={{ fontSize: 40, margin: '0 0 12px' }}>📊</p>
-              <h3
-                style={{
-                  fontSize: 18,
-                  fontWeight: 600,
-                  color: 'var(--text-primary)',
-                  margin: '0 0 8px',
-                }}
-              >
-                Sin resultados aún
-              </h3>
-              <p style={{ fontSize: 14, color: 'var(--text-secondary)', margin: 0 }}>
-                Completa tu primer quiz para ver tus estadísticas aquí
-              </p>
-            </div>
-          ) : (
-            <>
-              {/* Summary cards */}
-              <div
-                style={{
-                  display: 'grid',
-                  gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))',
-                  gap: 14,
-                  marginBottom: 24,
-                }}
-              >
-                {[
-                  { label: 'Quizzes completados', value: totalQuizzes, color: 'var(--accent)' },
-                  { label: 'Promedio general', value: `${avgScore}%`, color: scoreColor(avgScore) },
-                  { label: 'Racha de estudio', value: `${streakDays} días`, color: '#F59E0B' },
-                  { label: 'Materias practicadas', value: subjectAvgs.length, color: '#8B5CF6' },
-                ].map((s, i) => (
-                  <div key={i} className="u-card" style={{ padding: 20, textAlign: 'center' }}>
-                    <p style={{ fontSize: 28, fontWeight: 800, color: s.color, margin: 0 }}>
-                      {s.value}
-                    </p>
-                    <p
-                      style={{
-                        fontSize: 12,
-                        fontWeight: 600,
-                        color: 'var(--text-secondary)',
-                        margin: '4px 0 0',
-                      }}
-                    >
-                      {s.label}
-                    </p>
-                  </div>
-                ))}
+          <div className={styles.heroStats}>
+            <div className={styles.hsLabel}>Tu progreso</div>
+            <div className={styles.hsGrid}>
+              <div className={`${styles.hsItem} ${styles.hl}`}>
+                <div className="v" style={{ fontSize: 34, fontWeight: 800, lineHeight: 1 }}>
+                  {totalQuizzes > 0 ? `${avgScore}%` : '—'}
+                </div>
+                <div
+                  className="l"
+                  style={{
+                    fontSize: 10,
+                    marginTop: 4,
+                    opacity: 0.55,
+                    letterSpacing: '0.1em',
+                    textTransform: 'uppercase',
+                    fontWeight: 700,
+                    fontFamily: "'Geist Mono', monospace",
+                  }}
+                >
+                  Precisión
+                </div>
               </div>
+              <div className={styles.hsItem}>
+                <div style={{ fontSize: 34, fontWeight: 800, lineHeight: 1 }}>{totalQuizzes}</div>
+                <div
+                  style={{
+                    fontSize: 10,
+                    marginTop: 4,
+                    opacity: 0.55,
+                    letterSpacing: '0.1em',
+                    textTransform: 'uppercase',
+                    fontWeight: 700,
+                    fontFamily: "'Geist Mono', monospace",
+                  }}
+                >
+                  Quizzes hechos
+                </div>
+              </div>
+              <div className={styles.hsItem}>
+                <div style={{ fontSize: 34, fontWeight: 800, lineHeight: 1 }}>
+                  {streakDays > 0 ? `${streakDays}d` : '—'}
+                </div>
+                <div
+                  style={{
+                    fontSize: 10,
+                    marginTop: 4,
+                    opacity: 0.55,
+                    letterSpacing: '0.1em',
+                    textTransform: 'uppercase',
+                    fontWeight: 700,
+                    fontFamily: "'Geist Mono', monospace",
+                  }}
+                >
+                  Racha
+                </div>
+              </div>
+              <div className={styles.hsItem}>
+                <div style={{ fontSize: 34, fontWeight: 800, lineHeight: 1 }}>
+                  {subjectAvgs.length}
+                </div>
+                <div
+                  style={{
+                    fontSize: 10,
+                    marginTop: 4,
+                    opacity: 0.55,
+                    letterSpacing: '0.1em',
+                    textTransform: 'uppercase',
+                    fontWeight: 700,
+                    fontFamily: "'Geist Mono', monospace",
+                  }}
+                >
+                  Materias
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
 
-              {/* Best/worst subjects */}
-              {subjectAvgs.length > 0 && (
+        {/* ── Tabs editoriales ── */}
+        <div className={styles.tabs} role="tablist">
+          {(
+            [
+              ['quizzes', 'Quizzes'],
+              ['flashcards', 'Flashcards'],
+              ['stats', 'Mis resultados'],
+            ] as [Tab, string][]
+          ).map(([key, label]) => (
+            <button
+              key={key}
+              onClick={() => setActiveTab(key)}
+              className={`${styles.tabBtn} ${activeTab === key ? styles.active : ''}`}
+              type="button"
+              role="tab"
+              aria-selected={activeTab === key}
+            >
+              {label}
+            </button>
+          ))}
+        </div>
+
+        {/* ═══ TAB: QUIZZES ═══ */}
+        {activeTab === 'quizzes' && <ProjectCards tab="quiz" />}
+
+        {/* ═══ TAB: FLASHCARDS ═══ */}
+        {activeTab === 'flashcards' && <ProjectCards tab="flashcards" />}
+
+        {/* ═══ TAB: STATS ═══ */}
+        {activeTab === 'stats' && (
+          <div>
+            {totalQuizzes === 0 ? (
+              <div className="u-card" style={{ padding: 48, textAlign: 'center' }}>
+                <p style={{ fontSize: 40, margin: '0 0 12px' }}>📊</p>
+                <h3
+                  style={{
+                    fontSize: 18,
+                    fontWeight: 600,
+                    color: 'var(--text-primary)',
+                    margin: '0 0 8px',
+                  }}
+                >
+                  Sin resultados aún
+                </h3>
+                <p style={{ fontSize: 14, color: 'var(--text-secondary)', margin: 0 }}>
+                  Completa tu primer quiz para ver tus estadísticas aquí
+                </p>
+              </div>
+            ) : (
+              <>
+                {/* Summary cards */}
                 <div
                   style={{
                     display: 'grid',
-                    gridTemplateColumns: '1fr 1fr',
+                    gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))',
                     gap: 14,
                     marginBottom: 24,
                   }}
                 >
-                  {bestSubject && (
-                    <div className="u-card" style={{ padding: 18 }}>
+                  {[
+                    { label: 'Quizzes completados', value: totalQuizzes, color: 'var(--accent)' },
+                    {
+                      label: 'Promedio general',
+                      value: `${avgScore}%`,
+                      color: scoreColor(avgScore),
+                    },
+                    { label: 'Racha de estudio', value: `${streakDays} días`, color: '#F59E0B' },
+                    { label: 'Materias practicadas', value: subjectAvgs.length, color: '#8B5CF6' },
+                  ].map((s, i) => (
+                    <div key={i} className="u-card" style={{ padding: 20, textAlign: 'center' }}>
+                      <p style={{ fontSize: 28, fontWeight: 800, color: s.color, margin: 0 }}>
+                        {s.value}
+                      </p>
                       <p
                         style={{
                           fontSize: 12,
                           fontWeight: 600,
-                          color: '#10B981',
-                          margin: '0 0 6px',
-                          textTransform: 'uppercase',
-                          letterSpacing: 0.5,
+                          color: 'var(--text-secondary)',
+                          margin: '4px 0 0',
                         }}
                       >
-                        Mejor materia
-                      </p>
-                      <p
-                        style={{
-                          fontSize: 16,
-                          fontWeight: 700,
-                          color: 'var(--text-primary)',
-                          margin: '0 0 2px',
-                        }}
-                      >
-                        {bestSubject.name}
-                      </p>
-                      <p style={{ fontSize: 14, color: '#10B981', margin: 0, fontWeight: 600 }}>
-                        {bestSubject.avg}% promedio ({bestSubject.count} quizzes)
+                        {s.label}
                       </p>
                     </div>
-                  )}
-                  {worstSubject && subjectAvgs.length > 1 && (
-                    <div className="u-card" style={{ padding: 18 }}>
-                      <p
-                        style={{
-                          fontSize: 12,
-                          fontWeight: 600,
-                          color: '#EF4444',
-                          margin: '0 0 6px',
-                          textTransform: 'uppercase',
-                          letterSpacing: 0.5,
-                        }}
-                      >
-                        Para repasar
-                      </p>
-                      <p
-                        style={{
-                          fontSize: 16,
-                          fontWeight: 700,
-                          color: 'var(--text-primary)',
-                          margin: '0 0 2px',
-                        }}
-                      >
-                        {worstSubject.name}
-                      </p>
-                      <p style={{ fontSize: 14, color: '#EF4444', margin: 0, fontWeight: 600 }}>
-                        {worstSubject.avg}% promedio ({worstSubject.count} quizzes)
-                      </p>
-                    </div>
-                  )}
+                  ))}
                 </div>
-              )}
 
-              {/* Bar chart */}
-              {chartData.length > 0 && (
-                <div className="u-card" style={{ padding: 24, marginBottom: 24 }}>
+                {/* Best/worst subjects */}
+                {subjectAvgs.length > 0 && (
+                  <div
+                    style={{
+                      display: 'grid',
+                      gridTemplateColumns: '1fr 1fr',
+                      gap: 14,
+                      marginBottom: 24,
+                    }}
+                  >
+                    {bestSubject && (
+                      <div className="u-card" style={{ padding: 18 }}>
+                        <p
+                          style={{
+                            fontSize: 12,
+                            fontWeight: 600,
+                            color: '#10B981',
+                            margin: '0 0 6px',
+                            textTransform: 'uppercase',
+                            letterSpacing: 0.5,
+                          }}
+                        >
+                          Mejor materia
+                        </p>
+                        <p
+                          style={{
+                            fontSize: 16,
+                            fontWeight: 700,
+                            color: 'var(--text-primary)',
+                            margin: '0 0 2px',
+                          }}
+                        >
+                          {bestSubject.name}
+                        </p>
+                        <p style={{ fontSize: 14, color: '#10B981', margin: 0, fontWeight: 600 }}>
+                          {bestSubject.avg}% promedio ({bestSubject.count} quizzes)
+                        </p>
+                      </div>
+                    )}
+                    {worstSubject && subjectAvgs.length > 1 && (
+                      <div className="u-card" style={{ padding: 18 }}>
+                        <p
+                          style={{
+                            fontSize: 12,
+                            fontWeight: 600,
+                            color: '#EF4444',
+                            margin: '0 0 6px',
+                            textTransform: 'uppercase',
+                            letterSpacing: 0.5,
+                          }}
+                        >
+                          Para repasar
+                        </p>
+                        <p
+                          style={{
+                            fontSize: 16,
+                            fontWeight: 700,
+                            color: 'var(--text-primary)',
+                            margin: '0 0 2px',
+                          }}
+                        >
+                          {worstSubject.name}
+                        </p>
+                        <p style={{ fontSize: 14, color: '#EF4444', margin: 0, fontWeight: 600 }}>
+                          {worstSubject.avg}% promedio ({worstSubject.count} quizzes)
+                        </p>
+                      </div>
+                    )}
+                  </div>
+                )}
+
+                {/* Bar chart */}
+                {chartData.length > 0 && (
+                  <div className="u-card" style={{ padding: 24, marginBottom: 24 }}>
+                    <h3
+                      style={{
+                        fontSize: 15,
+                        fontWeight: 600,
+                        color: 'var(--text-primary)',
+                        margin: '0 0 20px',
+                      }}
+                    >
+                      Puntajes recientes
+                    </h3>
+                    <div style={{ display: 'flex', alignItems: 'flex-end', gap: 8, height: 160 }}>
+                      {chartData.map((d, i) => (
+                        <div
+                          key={i}
+                          style={{
+                            flex: 1,
+                            display: 'flex',
+                            flexDirection: 'column',
+                            alignItems: 'center',
+                            gap: 4,
+                            height: '100%',
+                            justifyContent: 'flex-end',
+                          }}
+                        >
+                          <span
+                            style={{ fontSize: 11, fontWeight: 700, color: scoreColor(d.value) }}
+                          >
+                            {d.value}%
+                          </span>
+                          <div
+                            style={{
+                              width: '100%',
+                              maxWidth: 48,
+                              borderRadius: '6px 6px 0 0',
+                              background: `linear-gradient(to top, ${scoreColor(d.value)}, ${scoreColor(d.value)}80)`,
+                              height: `${Math.max((d.value / 100) * 130, 4)}px`,
+                              transition: 'height 0.5s ease',
+                            }}
+                          />
+                          <span
+                            style={{
+                              fontSize: 10,
+                              color: 'var(--text-secondary)',
+                              textAlign: 'center',
+                              overflow: 'hidden',
+                              textOverflow: 'ellipsis',
+                              whiteSpace: 'nowrap',
+                              maxWidth: 60,
+                            }}
+                          >
+                            {d.label}
+                          </span>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
+
+                {/* Per-subject breakdown */}
+                <div className="u-card" style={{ padding: 24 }}>
                   <h3
                     style={{
                       fontSize: 15,
                       fontWeight: 600,
                       color: 'var(--text-primary)',
-                      margin: '0 0 20px',
+                      margin: '0 0 16px',
                     }}
                   >
-                    Puntajes recientes
+                    Rendimiento por materia
                   </h3>
-                  <div style={{ display: 'flex', alignItems: 'flex-end', gap: 8, height: 160 }}>
-                    {chartData.map((d, i) => (
-                      <div
-                        key={i}
-                        style={{
-                          flex: 1,
-                          display: 'flex',
-                          flexDirection: 'column',
-                          alignItems: 'center',
-                          gap: 4,
-                          height: '100%',
-                          justifyContent: 'flex-end',
-                        }}
-                      >
-                        <span style={{ fontSize: 11, fontWeight: 700, color: scoreColor(d.value) }}>
-                          {d.value}%
-                        </span>
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
+                    {subjectAvgs.map((s, i) => (
+                      <div key={i}>
                         <div
                           style={{
-                            width: '100%',
-                            maxWidth: 48,
-                            borderRadius: '6px 6px 0 0',
-                            background: `linear-gradient(to top, ${scoreColor(d.value)}, ${scoreColor(d.value)}80)`,
-                            height: `${Math.max((d.value / 100) * 130, 4)}px`,
-                            transition: 'height 0.5s ease',
-                          }}
-                        />
-                        <span
-                          style={{
-                            fontSize: 10,
-                            color: 'var(--text-secondary)',
-                            textAlign: 'center',
-                            overflow: 'hidden',
-                            textOverflow: 'ellipsis',
-                            whiteSpace: 'nowrap',
-                            maxWidth: 60,
+                            display: 'flex',
+                            justifyContent: 'space-between',
+                            marginBottom: 4,
                           }}
                         >
-                          {d.label}
-                        </span>
+                          <span
+                            style={{ fontSize: 13, fontWeight: 600, color: 'var(--text-primary)' }}
+                          >
+                            {s.name}
+                          </span>
+                          <span style={{ fontSize: 13, fontWeight: 700, color: scoreColor(s.avg) }}>
+                            {s.avg}%
+                          </span>
+                        </div>
+                        <div
+                          style={{
+                            height: 8,
+                            borderRadius: 4,
+                            background: 'var(--bg-secondary)',
+                            overflow: 'hidden',
+                          }}
+                        >
+                          <div
+                            style={{
+                              height: '100%',
+                              borderRadius: 4,
+                              background: scoreColor(s.avg),
+                              width: `${s.avg}%`,
+                              transition: 'width 0.5s ease',
+                            }}
+                          />
+                        </div>
                       </div>
                     ))}
                   </div>
                 </div>
-              )}
-
-              {/* Per-subject breakdown */}
-              <div className="u-card" style={{ padding: 24 }}>
-                <h3
-                  style={{
-                    fontSize: 15,
-                    fontWeight: 600,
-                    color: 'var(--text-primary)',
-                    margin: '0 0 16px',
-                  }}
-                >
-                  Rendimiento por materia
-                </h3>
-                <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
-                  {subjectAvgs.map((s, i) => (
-                    <div key={i}>
-                      <div
-                        style={{
-                          display: 'flex',
-                          justifyContent: 'space-between',
-                          marginBottom: 4,
-                        }}
-                      >
-                        <span
-                          style={{ fontSize: 13, fontWeight: 600, color: 'var(--text-primary)' }}
-                        >
-                          {s.name}
-                        </span>
-                        <span style={{ fontSize: 13, fontWeight: 700, color: scoreColor(s.avg) }}>
-                          {s.avg}%
-                        </span>
-                      </div>
-                      <div
-                        style={{
-                          height: 8,
-                          borderRadius: 4,
-                          background: 'var(--bg-secondary)',
-                          overflow: 'hidden',
-                        }}
-                      >
-                        <div
-                          style={{
-                            height: '100%',
-                            borderRadius: 4,
-                            background: scoreColor(s.avg),
-                            width: `${s.avg}%`,
-                            transition: 'width 0.5s ease',
-                          }}
-                        />
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              </div>
-            </>
-          )}
-        </div>
-      )}
+              </>
+            )}
+          </div>
+        )}
+      </main>
     </div>
   );
 }
