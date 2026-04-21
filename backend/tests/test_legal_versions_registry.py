@@ -1,9 +1,9 @@
 """Tests de la infraestructura de versionado formal de documentos legales.
 
-Pieza 7 del bloque bloque-legal-consolidation-v2.
+Pieza 7 del bloque bloque-legal-consolidation-v2, actualizado a v3.2 en bloque-legal-v3.2-post-audit.
 
 Valida:
-- Que el directorio docs/legal/v3.1/ exista con los 4 archivos canónicos.
+- Que el directorio docs/legal/v3.2/ exista con los 4 archivos canónicos.
 - Que METADATA.yaml tenga el schema correcto (campos obligatorios + hash hex).
 - Que el hash SHA-256 de cada archivo coincida con el declarado en METADATA.yaml.
 """
@@ -21,11 +21,11 @@ import yaml
 # Ruta absoluta a la raíz del repo (dos niveles arriba de backend/tests/)
 REPO_ROOT = Path(__file__).resolve().parent.parent.parent
 
-V3_1_DIR = REPO_ROOT / "docs" / "legal" / "v3.1"
-METADATA_PATH = V3_1_DIR / "METADATA.yaml"
+V3_2_DIR = REPO_ROOT / "docs" / "legal" / "v3.2"
+METADATA_PATH = V3_2_DIR / "METADATA.yaml"
 LEGAL_VERSIONS_PATH = REPO_ROOT / "docs" / "legal" / "LEGAL_VERSIONS.md"
 
-# Archivos canónicos requeridos en v3.1/
+# Archivos canónicos requeridos en v3.2/
 REQUIRED_FILES = [
     "privacy.md",
     "terms.md",
@@ -44,16 +44,16 @@ REQUIRED_METADATA_FIELDS = {
 
 
 @pytest.mark.legal
-def test_v3_1_directory_exists() -> None:
-    """El directorio docs/legal/v3.1/ debe existir."""
-    assert V3_1_DIR.is_dir(), f"Directorio {V3_1_DIR} no existe"
+def test_v3_2_directory_exists() -> None:
+    """El directorio docs/legal/v3.2/ debe existir."""
+    assert V3_2_DIR.is_dir(), f"Directorio {V3_2_DIR} no existe"
 
 
 @pytest.mark.legal
 def test_required_files_exist() -> None:
-    """Los 5 archivos requeridos deben existir en docs/legal/v3.1/."""
+    """Los 5 archivos requeridos deben existir en docs/legal/v3.2/."""
     for fname in REQUIRED_FILES:
-        fpath = V3_1_DIR / fname
+        fpath = V3_2_DIR / fname
         assert fpath.is_file(), f"Archivo requerido ausente: {fpath}"
 
 
@@ -75,7 +75,7 @@ def test_metadata_yaml_schema() -> None:
             vigencia_desde: str (fecha ISO)
             autor_aprobacion: str
     """
-    assert METADATA_PATH.is_file(), f"METADATA.yaml no existe en {V3_1_DIR}"
+    assert METADATA_PATH.is_file(), f"METADATA.yaml no existe en {V3_2_DIR}"
 
     with open(METADATA_PATH, encoding="utf-8") as f:
         data = yaml.safe_load(f)
@@ -121,7 +121,7 @@ def test_metadata_sha256_matches_files() -> None:
     }
 
     for doc_name, fname in file_map.items():
-        fpath = V3_1_DIR / fname
+        fpath = V3_2_DIR / fname
         if not fpath.is_file():
             pytest.skip(f"Archivo {fname} no existe aún — skip hasta Pieza 7 completa")
 

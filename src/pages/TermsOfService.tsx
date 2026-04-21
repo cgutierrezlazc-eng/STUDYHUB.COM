@@ -95,8 +95,8 @@ export default function TermsOfService({ onNavigate }: Props) {
         <p style={styles.p}>
           El presente sitio web y la plataforma Conniku son operados por{' '}
           <strong>Conniku SpA</strong>, sociedad constituida conforme a las leyes de la República de
-          Chile, con domicilio en Santiago, Chile. El servicio se encuentra disponible a través del
-          sitio web{' '}
+          Chile, con domicilio en Antofagasta, Chile. El servicio se encuentra disponible a través
+          del sitio web{' '}
           <a href="https://conniku.com" style={{ color: '#2D62C8' }}>
             conniku.com
           </a>
@@ -350,8 +350,8 @@ export default function TermsOfService({ onNavigate }: Props) {
         <p style={styles.p}>
           Estos Términos se rigen por la legislación vigente de la República de Chile. Cualquier
           controversia derivada de la interpretación o cumplimiento de estos Términos será sometida
-          al conocimiento de los Tribunales Ordinarios de Justicia de la ciudad de Santiago de
-          Chile, renunciando las partes a cualquier otro fuero que pudiere corresponderles.
+          a los Tribunales Ordinarios de Justicia de Antofagasta, sin perjuicio del derecho del
+          consumidor a recurrir al tribunal competente de su domicilio conforme a la Ley 19.496.
         </p>
 
         {/* 12. Disposiciones generales */}

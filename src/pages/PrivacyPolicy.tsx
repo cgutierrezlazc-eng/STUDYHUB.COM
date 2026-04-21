@@ -121,7 +121,7 @@ export default function PrivacyPolicy({ onNavigate }: Props) {
         </button>
 
         <h1 style={styles.h1}>Política de Privacidad</h1>
-        <p style={styles.date}>Última actualización: 19 de abril de 2026 · Versión 2.3</p>
+        <p style={styles.date}>Última actualización: 20 de abril de 2026 · Versión 2.4</p>
 
         <p style={styles.p}>
           En Conniku SpA (en adelante, "Conniku", "nosotros" o "la empresa"), nos comprometemos a
@@ -168,7 +168,7 @@ export default function PrivacyPolicy({ onNavigate }: Props) {
             <strong>RUT:</strong> 78.395.702-7
           </li>
           <li>
-            <strong>Domicilio:</strong> Santiago, Chile
+            <strong>Domicilio:</strong> Antofagasta, Chile
           </li>
           <li>
             <strong>Sitio web:</strong>{' '}
@@ -457,6 +457,11 @@ export default function PrivacyPolicy({ onNavigate }: Props) {
                 inteligente sobre documentos del usuario: generación de resúmenes, análisis de
                 documentos, chat privado por documento, sugerencias de reescritura sobre fragmentos
                 seleccionados, y otras funciones equivalentes que se incorporen al asistente Athena.
+                Anthropic, PBC, con domicilio en San Francisco, California, Estados Unidos. Las
+                transferencias internacionales se realizan, cuando corresponda, bajo mecanismos
+                contractuales apropiados conforme al artículo 5 de la Ley N° 19.628 de Chile,
+                incluyendo Cláusulas Contractuales Tipo aprobadas por la Comisión Europea cuando
+                resulten aplicables según la jurisdicción del usuario.
               </td>
               <td style={styles.td}>
                 Título y materia del documento, contenido completo del documento cuando usted lo
@@ -991,7 +996,7 @@ export default function PrivacyPolicy({ onNavigate }: Props) {
             Esta Política de Privacidad ha sido redactada en conformidad con la Ley N° 19.628 sobre
             Protección de la Vida Privada (Chile), el Reglamento General de Protección de Datos
             (GDPR, UE 2016/679), la Lei Geral de Proteção de Dados Pessoais (LGPD, Brasil) y la
-            California Consumer Privacy Act (CCPA / CPRA, EE.UU.). Versión 2.3 — Abril 2026.
+            California Consumer Privacy Act (CCPA / CPRA, EE.UU.). Versión 2.4 — Abril 2026.
           </p>
         </div>
       </div>

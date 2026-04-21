@@ -405,8 +405,8 @@ export default function DeleteAccount({ onNavigate }: Props) {
 
         <div style={{ marginTop: 40, paddingTop: 20, borderTop: '1px solid var(--border)' }}>
           <p style={{ fontSize: 13, fontStyle: 'italic', color: 'var(--text-muted)' }}>
-            Conniku SpA · RUT 78.395.702-7 · Santiago, Chile · privacidad@conniku.com · Versión 1.0
-            — Abril 2026
+            Conniku SpA · RUT 78.395.702-7 · Antofagasta, Chile · privacidad@conniku.com · Versión
+            1.0 — Abril 2026
           </p>
         </div>
       </div>

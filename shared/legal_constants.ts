@@ -77,16 +77,16 @@ export interface LegalDocumentDescriptor {
 
 export const TOS_DOCUMENT: LegalDocumentDescriptor = {
   documentType: 'tos',
-  version: '3.1.0',
-  hash: 'e3780c975df95ef48b07147940b406e6b3fa8d374aa466d2dd86a3dd8a85a98f',
+  version: '3.2.0',
+  hash: '9a16122f985a1d252a5928c5fae518b5bd23ac6ee00996ee9e8293c4aaf08dce',
   route: '/terms',
   label: 'Términos y Condiciones',
 };
 
 export const PRIVACY_DOCUMENT: LegalDocumentDescriptor = {
   documentType: 'privacy',
-  version: '2.3.0',
-  hash: '0f7e0a3dc287da20bbbeede903622e005782cb4d927c4d01ebe35d22c3fd591f',
+  version: '2.4.0',
+  hash: '7a8ba81d0be22cc1deee7d92764baaac1a598a662b84d9ba90043b2a25f63f6c',
   route: '/privacy',
   label: 'Política de Privacidad',
 };
