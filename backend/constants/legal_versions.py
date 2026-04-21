@@ -46,10 +46,16 @@ PRIVACY_HASH: str = "7a8ba81d0be22cc1deee7d92764baaac1a598a662b84d9ba90043b2a25f
 # --- Política de Cookies ----------------------------------------------------
 COOKIES_DOCUMENT_TYPE: str = "cookies"
 COOKIES_VERSION: str = "1.0.0"
-# SHA-256 de docs/legal/v3.1/cookies.md (stub inicial; se recalcula cuando
-# el markdown se sincronice byte a byte con el render de
-# src/pages/CookiesPolicy.tsx — seguimiento en docs/legal/alerts.md).
-COOKIES_HASH: str = "a00150297efa288b53bbd9a0c655e046a292d3cdefb04254b0b33c079022efd9"
+# SHA-256 de docs/legal/v3.2/cookies.md (versión 1.0.0 canónica publicada
+# 2026-04-21 como Pieza 5 del bloque bloque-legal-consolidation-v2).
+# Supersede al stub anterior que compartía hash con v3.1/cookies.md y
+# violaba GDPR Art. 7(1) al tener usuarios aceptando implícitamente un
+# documento marcado "NO PUBLICAR". Documenta inventario real,
+# cc_visitor_uuid clasificado como esencial (Capa 0 D-01 Opción A),
+# base legal Art. 6(1)(b) GDPR para funcionales post-login, retención
+# 5 años (Art. 17(3)(e) GDPR + Art. 2515 CC chileno), pseudonimización
+# 12 meses, vigencia Ley 21.719 desde 2026-12-01.
+COOKIES_HASH: str = "48b90468822fda6b0470acb30d4707f037f1dd636eac7ebd967ab293c2a3a513"
 
 
 # --- Declaración de Edad (checkbox declarativo) ----------------------------
@@ -90,7 +96,7 @@ COOKIE_CONSENT_POLICY_VERSION: str = "1.1.0"
 # sobre no compartir con terceros con fines publicitarios.
 # Aprobado por Cristian en Capa 0 bloque-cookie-consent-banner-v1 (2026-04-21).
 # Valor calculado: python3.11 -c "from shared.cookie_consent_texts import COOKIE_CATEGORIES_HASH; print(COOKIE_CATEGORIES_HASH)"
-COOKIE_CONSENT_POLICY_HASH: str = "26e5a20e5f9692a953ca9a840d4639868d7358e5edc4401a2eac4341c6819f14"
+COOKIE_CONSENT_POLICY_HASH: str = "bba33024bae091584f975585fffd78198321ab2878680ec920103d828a27d316"
 
 # Categorías válidas de consentimiento de cookies.
 # Estas 4 categorías son las únicas aceptadas en el campo categories_accepted.

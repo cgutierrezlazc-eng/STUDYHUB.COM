@@ -50,16 +50,26 @@ documents:
 
   cookies:
     version: "1.0.0"
-    sha256: "a00150297efa288b53bbd9a0c655e046a292d3cdefb04254b0b33c079022efd9"
-    vigencia_desde: "2026-04-20"
+    sha256: "48b90468822fda6b0470acb30d4707f037f1dd636eac7ebd967ab293c2a3a513"
+    vigencia_desde: "2026-04-21"
     vigencia_hasta: "actual"
     archivo: "v3.2/cookies.md"
-    autor_aprobacion: "Cristian Gutiérrez Lazcano (cgutierrezlazc-eng)"
-    aprobacion_fecha: "2026-04-20"
+    autor_aprobacion: "Cristian Gutiérrez Lazcano (CEO Conniku SpA)"
+    aprobacion_fecha: "2026-04-21"
     nota: >
-      Copia byte-a-byte de v3.1/cookies.md. Hash idéntico al de v3.1. No se
-      aplicó ningún hallazgo de la auditoría a este documento (reporte lo
-      marca como "stable").
+      Primera versión pública y canónica de la Política de Cookies
+      (Pieza 5 del bloque bloque-legal-consolidation-v2). Supersede al
+      stub anterior que compartía hash con v3.1/cookies.md y violaba
+      GDPR Art. 7(1) al tener usuarios aceptando implícitamente un
+      documento marcado "NO PUBLICAR". Documenta inventario real de
+      cookies y localStorage; clasifica cc_visitor_uuid como esencial
+      (Capa 0 D-01 Opción A) con las 4 condiciones: plazo 13 meses,
+      uso restringido, regeneración al retirar consentimiento,
+      declaración explícita; base legal Art. 6(1)(b) GDPR para
+      funcionales post-login; retención 5 años post-delete
+      (Art. 17(3)(e) GDPR + Art. 2515 Código Civil chileno);
+      pseudonimización de IP y User-Agent a 12 meses; vigencia
+      Ley 21.719 desde 2026-12-01 (CVE-2583630, Art. 1° transitorio).
 
   age-declaration:
     version: "1.0.0"

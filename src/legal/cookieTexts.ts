@@ -25,7 +25,7 @@ export const COOKIE_CONSENT_POLICY_VERSION = '1.1.0';
  * Pieza 4 valida coincidencia byte-a-byte entre Python y TypeScript.
  */
 export const COOKIE_CONSENT_POLICY_HASH =
-  '766ee8e1f84e514fa5430e9107b6638c20acfa2fda4175ae25ef3ce23890d2ef';
+  'bba33024bae091584f975585fffd78198321ab2878680ec920103d828a27d316';
 
 /** Textos del banner (primera capa). Plan §9.1. */
 export const COOKIE_BANNER_TEXTS = {
