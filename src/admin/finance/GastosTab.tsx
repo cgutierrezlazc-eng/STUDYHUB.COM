@@ -36,6 +36,7 @@ import {
   type AccountCategory,
 } from '../shared/accountingData';
 import { api } from '../../services/api';
+import { RETENCION_HONORARIOS_2026_PCT } from 'shared/chile_constants';
 
 // ─── Map API expense → Transaction ──────────────────────────────
 function _mapApiExpense(e: any): Transaction {
@@ -751,7 +752,11 @@ function TransactionModal({
     form.currency === 'USD' ? Math.round(form.amountOriginal * usdRate) : form.amountOriginal;
   const { neto, iva } = calculateIVA(amountCLP, form.hasIVA);
   const deductibleAmount = Math.round((neto * form.deductiblePercent) / 100);
-  const retencion = form.documentType === 'boleta_honorarios' ? Math.round(amountCLP * 0.1375) : 0;
+  // Ley 21.133 Art. Transitorio — retención honorarios vigente 2026: 15.25%
+  const retencion =
+    form.documentType === 'boleta_honorarios'
+      ? Math.round(amountCLP * RETENCION_HONORARIOS_2026_PCT)
+      : 0;
 
   const handleSave = () => {
     if (!form.description || !form.category || form.amountOriginal <= 0) {
@@ -1154,7 +1159,11 @@ function TransactionModal({
             {form.hasIVA && <CalcRow label="Neto" value={`$${fmt(neto)}`} />}
             {form.hasIVA && <CalcRow label="IVA (19%)" value={`$${fmt(iva)}`} color="#3b82f6" />}
             {retencion > 0 && (
-              <CalcRow label="Retencion (13.75%)" value={`$${fmt(retencion)}`} color="#f59e0b" />
+              <CalcRow
+                label={`Retencion (${(RETENCION_HONORARIOS_2026_PCT * 100).toFixed(2)}% — Ley 21.133)`}
+                value={`$${fmt(retencion)}`}
+                color="#f59e0b"
+              />
             )}
             <CalcRow
               label="Deducible"

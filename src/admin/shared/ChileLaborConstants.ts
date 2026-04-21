@@ -1,31 +1,47 @@
 // ─── Chilean Labor Law Constants (Auto-updatable) ──────────────
 // Fuente: Ministerio del Trabajo, SII, Superintendencia de Pensiones
-// IMPORTANTE: Actualizar estos valores cada vez que cambien por ley
+// IMPORTANTE: Los valores numéricos se importan desde shared/chile_constants.ts
+// (espejo del backend). No hardcodear aquí — editar la fuente y re-sincronizar.
+
+import {
+  AFC_EMPLEADOR_INDEFINIDO_PCT,
+  AFC_EMPLEADOR_PLAZO_FIJO_PCT,
+  AFC_TRABAJADOR_INDEFINIDO_PCT,
+  IMPUESTO_2A_CATEGORIA_TRAMOS_2026_UTM,
+  SIS_PCT,
+  SUELDO_MINIMO_2026,
+  TOPE_IMPONIBLE_AFC_UF,
+  TOPE_IMPONIBLE_AFP_UF,
+  UF_ABRIL_2026,
+  UTM_ABRIL_2026,
+} from 'shared/chile_constants';
 
 export const CHILE_LABOR = {
   // ─── Ingreso Minimo Mensual (IMM) — Art. 44 Codigo del Trabajo ───
+  // Ley 21.751 — SMI $539.000 desde 2026-01-01
   IMM: {
-    current: 500000,
-    effectiveDate: '2024-07-01',
+    current: SUELDO_MINIMO_2026,
+    effectiveDate: '2026-01-01',
     history: [
+      { from: '2026-01-01', amount: 539000 },
       { from: '2024-07-01', amount: 500000 },
       { from: '2024-01-01', amount: 460000 },
       { from: '2023-09-01', amount: 440000 },
       { from: '2023-05-01', amount: 410000 },
       { from: '2022-08-01', amount: 400000 },
     ],
-    partialRate: (weeklyHours: number) => Math.round((500000 * weeklyHours) / 40),
+    partialRate: (weeklyHours: number) => Math.round((SUELDO_MINIMO_2026 * weeklyHours) / 40),
     reduced: 372989,
     nonRemunerational: 296514,
   },
 
-  UF: { value: 38700, lastUpdate: '2026-04-01' },
-  UTM: { value: 67294, lastUpdate: '2026-04-01' },
+  UF: { value: UF_ABRIL_2026, lastUpdate: '2026-04-01' },
+  UTM: { value: UTM_ABRIL_2026, lastUpdate: '2026-04-01' },
 
   TOPES: {
-    afpUF: 81.6,
-    afcUF: 122.6,
-    saludUF: 81.6,
+    afpUF: TOPE_IMPONIBLE_AFP_UF,
+    afcUF: TOPE_IMPONIBLE_AFC_UF,
+    saludUF: TOPE_IMPONIBLE_AFP_UF,
     get afpCLP() {
       return Math.round(CHILE_LABOR.UF.value * this.afpUF);
     },
@@ -46,27 +62,25 @@ export const CHILE_LABOR = {
   },
 
   AFC: {
-    employeeRate: 0.006,
-    employerIndefinido: 0.024,
-    employerPlazoFijo: 0.03,
+    employeeRate: AFC_TRABAJADOR_INDEFINIDO_PCT,
+    employerIndefinido: AFC_EMPLEADOR_INDEFINIDO_PCT,
+    employerPlazoFijo: AFC_EMPLEADOR_PLAZO_FIJO_PCT,
   },
 
-  SIS: { rate: 0.0141 },
+  SIS: { rate: SIS_PCT },
 
   MUTUAL: { baseRate: 0.0093, additionalRate: 0 },
 
   HORAS_EXTRA: { recargo: 0.5, maxDiarias: 2, maxPacto: 3 },
 
-  TAX_BRACKETS: [
-    { from: 0, to: 13.5, rate: 0, deduction: 0 },
-    { from: 13.5, to: 30, rate: 0.04, deduction: 0.54 },
-    { from: 30, to: 50, rate: 0.08, deduction: 1.74 },
-    { from: 50, to: 70, rate: 0.135, deduction: 4.49 },
-    { from: 70, to: 90, rate: 0.23, deduction: 11.14 },
-    { from: 90, to: 120, rate: 0.304, deduction: 17.8 },
-    { from: 120, to: 150, rate: 0.35, deduction: 23.32 },
-    { from: 150, to: Infinity, rate: 0.4, deduction: 30.82 },
-  ],
+  // DL 824 Art. 43 — tramos impuesto 2ª categoría vigentes 2026 (circular SII)
+  // Fuente: https://www.sii.cl/valores_y_fechas/impuesto_2da_categoria/impuesto2026.htm
+  TAX_BRACKETS: IMPUESTO_2A_CATEGORIA_TRAMOS_2026_UTM.map(([from, to, rate, deduction]) => ({
+    from,
+    to: to === null ? Infinity : to,
+    rate,
+    deduction,
+  })),
 
   APV: {
     regimes: [

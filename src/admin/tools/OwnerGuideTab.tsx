@@ -1,5 +1,6 @@
 import React from 'react';
 import { Star, Check } from 'lucide-react';
+import { RETENCION_HONORARIOS_2026_PCT } from 'shared/chile_constants';
 
 export default function OwnerGuideTab() {
   return (
@@ -115,7 +116,14 @@ export default function OwnerGuideTab() {
                 <strong>Ventajas:</strong>
               </p>
               <ul style={{ paddingLeft: 20, lineHeight: 1.8 }}>
-                <li>Retencion de 13.75% (2025) como PPM (puede recuperarse en renta anual)</li>
+                <li>
+                  Retencion de {(RETENCION_HONORARIOS_2026_PCT * 100).toFixed(2)}% (2026) como PPM
+                  (puede recuperarse en renta anual)
+                  <br />
+                  <small style={{ opacity: 0.8 }}>
+                    Ley 21.133 Art. Transitorio — bcn.cl/leychile/navegar?idNorma=1128094
+                  </small>
+                </li>
                 <li>Menor carga administrativa mensual</li>
                 <li>Flexibility en montos y frecuencia</li>
               </ul>
