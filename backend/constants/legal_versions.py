@@ -67,6 +67,42 @@ AGE_DECLARATION_TEXT_HASH: str = "ca527535a0f3f938b51d9a2e896e140233ecdd2286e13f
 AGE_DECLARATION_FILE_HASH: str = "61dab2ecf1b27e3fb212efcf5a066784943c689de11611bb6d2b919e39441a9b"
 
 
+# --- Consentimiento de cookies (bloque-cookie-consent-banner-v1) -----------
+# Constantes para la tabla cookie_consents. Son DISTINTAS de COOKIES_HASH
+# (que es el hash del archivo markdown de la política de cookies).
+# COOKIE_CONSENT_POLICY_HASH es el hash del texto canónico de las categorías
+# del banner (shared/cookie_consent_texts.py::COOKIE_CATEGORIES_TEXT_V1).
+#
+# Referencia legal:
+# - GDPR Art. 7(1): demostrabilidad del consentimiento.
+# - Orange Romania C-61/19 (TJUE 2020-11-11): carga de la prueba al
+#   encargado del tratamiento.
+# - Ley 19.628 Art. 4°: información al titular al momento de recolectar.
+#
+# El hash se recalcula con:
+#   python3.11 -c "from shared.cookie_consent_texts import COOKIE_CATEGORIES_HASH; print(COOKIE_CATEGORIES_HASH)"
+#
+# Fecha de verificación: 2026-04-20.
+# Verificador: backend-builder (Tori).
+COOKIE_CONSENT_POLICY_VERSION: str = "1.1.0"
+# SHA-256 de shared/cookie_consent_texts.py::COOKIE_CATEGORIES_TEXT_V1.
+# Versión 1.1.0 — D-02: marketing reformulado + D-03: functional agrega aclaración
+# sobre no compartir con terceros con fines publicitarios.
+# Aprobado por Cristian en Capa 0 bloque-cookie-consent-banner-v1 (2026-04-21).
+# Valor calculado: python3.11 -c "from shared.cookie_consent_texts import COOKIE_CATEGORIES_HASH; print(COOKIE_CATEGORIES_HASH)"
+COOKIE_CONSENT_POLICY_HASH: str = "26e5a20e5f9692a953ca9a840d4639868d7358e5edc4401a2eac4341c6819f14"
+
+# Categorías válidas de consentimiento de cookies.
+# Estas 4 categorías son las únicas aceptadas en el campo categories_accepted.
+# Fuente: GDPR Art. 5(3) ePrivacy + EDPB 05/2020 §3.
+COOKIE_CONSENT_CATEGORIES: list[str] = [
+    "necessary",
+    "functional",
+    "analytics",
+    "marketing",
+]
+
+
 # --- Registro consolidado ---------------------------------------------------
 REACCEPT_DOCUMENTS: list[tuple[str, str, str]] = [
     (TOS_DOCUMENT_TYPE, TOS_VERSION, TOS_HASH),
