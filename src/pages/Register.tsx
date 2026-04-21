@@ -410,8 +410,8 @@ export default function Register({ onSwitchToLogin, onBack }: Props) {
         </div>
 
         <div className={rgStyles.footerLinks}>
-          <a href="/terminos">Términos</a>
-          <a href="/privacidad">Privacidad</a>
+          <a href="/terms">Términos</a>
+          <a href="/privacy">Privacidad</a>
           <a href="/cookies">Cookies</a>
           <a href="mailto:contacto@conniku.com">Contacto</a>
           <span className={rgStyles.mini}>+18 años · Hecho en Chile</span>

@@ -1,0 +1,159 @@
+/* LegalDocumentRenderer.module.css
+   Bloque: legal-viewer-v1
+*/
+
+.wrapper {
+  font-family:
+    'Inter',
+    -apple-system,
+    BlinkMacSystemFont,
+    sans-serif;
+  color: var(--text-primary);
+  line-height: 1.7;
+}
+
+/* Variant: page — margen generoso, scroll propio */
+.wrapper[data-variant='page'] {
+  max-width: 800px;
+  margin: 0 auto;
+  padding: 32px 24px 80px;
+}
+
+/* Variant: modal — ocupa el 100% del panel del modal */
+.wrapper[data-variant='modal'] {
+  padding: 0 24px 24px;
+  overflow-y: auto;
+  flex: 1;
+}
+
+/* Tipografía del contenido markdown */
+.wrapper :global(h1) {
+  font-size: 28px;
+  font-weight: 700;
+  margin-bottom: 8px;
+  color: var(--text-primary);
+}
+
+.wrapper :global(h2) {
+  font-size: 20px;
+  font-weight: 600;
+  margin-top: 32px;
+  margin-bottom: 10px;
+  color: var(--text-primary);
+}
+
+.wrapper :global(h3) {
+  font-size: 16px;
+  font-weight: 600;
+  margin-top: 18px;
+  margin-bottom: 6px;
+  color: var(--text-primary);
+}
+
+.wrapper :global(p) {
+  font-size: 15px;
+  margin-bottom: 12px;
+  color: var(--text-secondary);
+}
+
+.wrapper :global(ul),
+.wrapper :global(ol) {
+  padding-left: 24px;
+  margin-bottom: 12px;
+  color: var(--text-secondary);
+  font-size: 15px;
+}
+
+.wrapper :global(li) {
+  margin-bottom: 4px;
+}
+
+.wrapper :global(a) {
+  color: var(--accent);
+  text-decoration: underline;
+}
+
+.wrapper :global(a:hover) {
+  opacity: 0.8;
+}
+
+.wrapper :global(code) {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 13px;
+  background: var(--bg-secondary);
+  padding: 1px 4px;
+  border-radius: 4px;
+}
+
+.wrapper :global(table) {
+  width: 100%;
+  border-collapse: collapse;
+  margin-bottom: 16px;
+  font-size: 14px;
+}
+
+.wrapper :global(th) {
+  text-align: left;
+  padding: 10px 12px;
+  border-bottom: 2px solid var(--border);
+  color: var(--text-primary);
+  font-weight: 600;
+  font-size: 14px;
+}
+
+.wrapper :global(td) {
+  padding: 10px 12px;
+  border-bottom: 1px solid var(--border);
+  color: var(--text-secondary);
+  font-size: 14px;
+  vertical-align: top;
+}
+
+.wrapper :global(blockquote) {
+  border-left: 3px solid var(--accent);
+  margin: 0 0 12px 0;
+  padding: 8px 16px;
+  color: var(--text-secondary);
+  font-style: italic;
+}
+
+.wrapper :global(hr) {
+  border: none;
+  border-top: 1px solid var(--border);
+  margin: 24px 0;
+}
+
+/* Estados */
+.loading {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 48px 24px;
+  color: var(--text-secondary);
+  font-size: 15px;
+}
+
+.error {
+  padding: 24px;
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  background: var(--bg-secondary);
+  color: var(--text-secondary);
+  font-size: 15px;
+  text-align: center;
+}
+
+.errorTitle {
+  font-weight: 600;
+  color: var(--text-primary);
+  margin-bottom: 8px;
+}
+
+/* Metadatos del documento */
+.docMeta {
+  font-size: 12px;
+  color: var(--text-tertiary, var(--text-secondary));
+  margin-bottom: 24px;
+  padding-bottom: 16px;
+  border-bottom: 1px solid var(--border);
+}
