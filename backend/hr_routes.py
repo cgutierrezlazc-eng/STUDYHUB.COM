@@ -371,15 +371,18 @@ except Exception as _e:
 #  CHILEAN PAYROLL CALCULATION ENGINE
 # ═══════════════════════════════════════════════════════════════════
 
-# AFP contribution rates (employee %) as of 2025-2026
+# AFP contribution rates (employee %) 2026
+# SIS unificado a 1.54% (Superintendencia Pensiones, enero 2026)
+# Fuente: https://www.spensiones.cl/portal/institucional/594/w3-propertyvalue-9917.html
+# Verificado: 2026-04-21 (Cristian Capa 0 batch §21 D-D unificación motor)
 AFP_RATES = {
-    "capital":   {"employee": 0.1144, "sis": 0.0141},
-    "cuprum":    {"employee": 0.1144, "sis": 0.0141},
-    "habitat":   {"employee": 0.1127, "sis": 0.0141},
-    "modelo":    {"employee": 0.1058, "sis": 0.0141},
-    "planvital": {"employee": 0.1116, "sis": 0.0141},
-    "provida":   {"employee": 0.1145, "sis": 0.0141},
-    "uno":       {"employee": 0.1069, "sis": 0.0141},
+    "capital":   {"employee": 0.1144, "sis": 0.0154},
+    "cuprum":    {"employee": 0.1144, "sis": 0.0154},
+    "habitat":   {"employee": 0.1127, "sis": 0.0154},
+    "modelo":    {"employee": 0.1058, "sis": 0.0154},
+    "planvital": {"employee": 0.1116, "sis": 0.0154},
+    "provida":   {"employee": 0.1145, "sis": 0.0154},
+    "uno":       {"employee": 0.1069, "sis": 0.0154},
 }
 
 # AFC (Seguro de Cesantia) rates
@@ -417,11 +420,16 @@ INCOME_TAX_BRACKETS = [
 
 # Tope imponible (max taxable base) ~ 81.6 UF
 TOPE_IMPONIBLE_UF = 81.6
-# Tope AFC ~ 126.6 UF (higher than AFP tope)
-TOPE_AFC_UF = 126.6
+# Tope AFC 135.2 UF desde febrero 2026 (Superintendencia Pensiones)
+# Fuente: https://www.spensiones.cl/portal/institucional/594/w3-article-16921.html
+# Verificado: 2026-04-21 (Cristian Capa 0 batch §21 D-B)
+TOPE_AFC_UF = 135.2
 
-# Gratificacion legal: 25% of gross, capped at 4.75 monthly minimum wages
-MINIMUM_WAGE_CLP = 500000.0  # Sueldo minimo approximate 2026
+# Sueldo mínimo $539.000 desde 2026-01-01 (Ley 21.751)
+# Fuente: https://www.mintrab.gob.cl/ya-es-una-realidad-diario-oficial-publica-ley-21-751-que-reajusta-el-monto-del-ingreso-minimo-mensual/
+# Verificado: 2026-04-21 (Cristian Capa 0 batch §21)
+# Gratificacion legal: 25% of gross, capped at 4.75 monthly minimum wages (Art. 50 CT)
+MINIMUM_WAGE_CLP = 539000.0
 GRATIFICACION_CAP = 4.75 * MINIMUM_WAGE_CLP / 12
 
 
