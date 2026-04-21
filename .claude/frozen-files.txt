@@ -2,7 +2,7 @@
 #
 # GENERADO AUTOMATICAMENTE - NO EDITAR DIRECTAMENTE
 #
-# Ultima regeneracion: 2026-04-20 15:36:27
+# Ultima regeneracion: 2026-04-21 18:51:30
 # Fuente: FROZEN.md (raiz del repo)
 # Regenerado por: .claude/scripts/regen-frozen-list.sh
 #

@@ -155,46 +155,58 @@ interface PreviredData {
 }
 
 // ─── Chilean Labor Law Constants (Auto-updatable) ──────────────
-// Fuente: Ministerio del Trabajo, SII, Superintendencia de Pensiones
-// IMPORTANTE: Actualizar estos valores cada vez que cambien por ley
+// Valores 2026 verificados el 2026-04-21 contra fuentes oficiales
+// (sii.cl, bcentral.cl, mintrab.gob.cl, spensiones.cl). Los valores
+// canónicos viven en shared/chile_constants.ts y backend/constants/
+// labor_chile.py con citas 4-líneas. Este bloque es la vista local
+// del HR Dashboard y debe mantenerse sincronizado byte-a-byte.
 const CHILE_LABOR = {
   // ─── Ingreso Minimo Mensual (IMM) — Art. 44 Codigo del Trabajo ───
-  // Ley 21.578: Reajuste escalonado del salario minimo
+  // Ley 21.751: $539.000 desde 2026-01-01.
+  // Fuente: https://www.mintrab.gob.cl/ya-es-una-realidad-diario-oficial-publica-ley-21-751
   IMM: {
-    current: 500000, // $500.000 desde 01-Jul-2024
-    effectiveDate: '2024-07-01',
+    current: 539000, // $539.000 desde 2026-01-01 (Ley 21.751)
+    effectiveDate: '2026-01-01',
     history: [
+      { from: '2026-01-01', amount: 539000 },
+      { from: '2025-05-01', amount: 529000 },
+      { from: '2025-01-01', amount: 510000 },
       { from: '2024-07-01', amount: 500000 },
       { from: '2024-01-01', amount: 460000 },
       { from: '2023-09-01', amount: 440000 },
       { from: '2023-05-01', amount: 410000 },
       { from: '2022-08-01', amount: 400000 },
     ],
-    // Minimo para jornada parcial (Art. 40 bis): proporcional a horas
-    partialRate: (weeklyHours: number) => Math.round((500000 * weeklyHours) / 40),
-    // Minimo para menores de 18 y mayores de 65
-    reduced: 372989,
+    // Jornada parcial (Art. 40 bis): proporcional a horas; base 42h desde 2026-04-26 (Ley 21.561 escalón 2).
+    partialRate: (weeklyHours: number) => Math.round((539000 * weeklyHours) / 42),
+    // Minimo para menores de 18 y mayores de 65 (reducido proporcional)
+    reduced: 402238,
     // Para fines no remuneracionales
-    nonRemunerational: 296514,
+    nonRemunerational: 319756,
   },
 
-  // ─── UF (Unidad de Fomento) — Actualizar mensualmente ───
+  // ─── UF (Unidad de Fomento) — Abril 2026 ───
+  // Fuente: https://www.sii.cl/valores_y_fechas/uf/uf2026.htm + bcentral.cl
   UF: {
-    value: 38700, // Valor aproximado Abril 2026 — ACTUALIZAR
+    value: 39842, // $39.841,72 (abril 2026)
     lastUpdate: '2026-04-01',
   },
 
-  // ─── UTM (Unidad Tributaria Mensual) ───
+  // ─── UTM (Unidad Tributaria Mensual) — Abril 2026 ───
+  // Fuente: https://www.sii.cl/valores_y_fechas/utm/utm2026.htm
   UTM: {
-    value: 67294, // Valor aproximado Abril 2026 — ACTUALIZAR
+    value: 69889, // $69.889 (abril 2026)
     lastUpdate: '2026-04-01',
   },
 
-  // ─── Topes Imponibles (Art. 16 DL 3.500) ───
+  // ─── Topes Imponibles ───
+  // AFP 81,6 UF (Art. 16 DL 3.500).
+  // AFC 135,2 UF desde 2026-02 (Ley 19.728 Art. 6°).
+  // Fuente: https://www.spensiones.cl/portal/institucional/594/w3-article-16921.html
   TOPES: {
-    afpUF: 81.6, // Tope AFP: 81,6 UF
-    afcUF: 122.6, // Tope AFC: 122,6 UF (Ley 19.728)
-    saludUF: 81.6, // Tope Salud: 81,6 UF
+    afpUF: 81.6,
+    afcUF: 135.2, // Actualizado 2026-02: 131,9 → 135,2 UF
+    saludUF: 81.6,
     get afpCLP() {
       return Math.round(CHILE_LABOR.UF.value * this.afpUF);
     },
@@ -223,8 +235,9 @@ const CHILE_LABOR = {
   },
 
   // ─── SIS — Seguro de Invalidez y Sobrevivencia (Art. 59 DL 3.500) ───
+  // Fuente: https://www.spensiones.cl/portal/institucional/594/w3-propertyvalue-9917.html
   SIS: {
-    rate: 0.0141, // 1,41% cargo empleador
+    rate: 0.0154, // 1,54% cargo empleador (Superintendencia Pensiones enero 2026)
   },
 
   // ─── Mutual de Seguridad (Ley 16.744) ───
@@ -6803,7 +6816,7 @@ function InspeccionTrabajoTab({ employees }: { employees: Employee[] }) {
                   const vacaciones = dailySalary * 15;
                   const gratificacionMensual = Math.min(
                     emp.grossSalary * 0.25,
-                    (500000 * 4.75) / 12
+                    (CHILE_LABOR.IMM.current * 4.75) / 12
                   );
                   const gratificacionProp = gratificacionMensual * (months / 12);
                   const diasTrabajados = dailySalary * 15;
@@ -7801,7 +7814,9 @@ function OwnerGuideTab() {
                 <strong>Ventajas:</strong>
               </p>
               <ul style={{ paddingLeft: 20, lineHeight: 1.8 }}>
-                <li>Retencion de 13.75% (2025) como PPM (puede recuperarse en renta anual)</li>
+                <li>
+                  Retencion de 15.25% (2026, Ley 21.133) como PPM (puede recuperarse en renta anual)
+                </li>
                 <li>Menor carga administrativa mensual</li>
                 <li>Flexibility en montos y frecuencia</li>
               </ul>
@@ -8196,7 +8211,7 @@ function FiniquitosTab({ employees }: { employees: Employee[] }) {
     const vacaciones = dailySalary * pendingVacationDays;
 
     // Gratificacion proporcional
-    const gratificacionMensual = Math.min(lastSalary * 0.25, (500000 * 4.75) / 12);
+    const gratificacionMensual = Math.min(lastSalary * 0.25, (CHILE_LABOR.IMM.current * 4.75) / 12);
     const gratificacionProp = gratificacionMensual * (monthsExtra / 12);
 
     // Dias trabajados del mes (estimado 15 dias)
@@ -8686,7 +8701,7 @@ function TutoresExternosTab({ month, year }: { month: number; year: number }) {
         </h3>
         <p style={{ fontSize: 13, opacity: 0.9, margin: 0 }}>
           Gestion de tutores con boleta de honorarios. Comision Conniku: 10%. El tutor recibe 90%
-          bruto y es responsable de pagar su retencion al SII (13.75%).
+          bruto y es responsable de pagar su retencion al SII (15.25% desde 2026).
         </p>
       </div>
 
@@ -8880,8 +8895,8 @@ function TutoresExternosTab({ month, year }: { month: number; year: number }) {
                 Conniku SpA.
               </p>
               <p>
-                <strong>Retencion SII:</strong> El tutor paga 13.75% al SII ($2,475). Neto tutor:
-                $15,525.
+                <strong>Retencion SII:</strong> El tutor paga 15.25% al SII ($2,745). Neto tutor:
+                $15,255.
               </p>
               <p>
                 <strong>Frecuencia de pago:</strong> Por clase, quincenal o mensual (a eleccion del

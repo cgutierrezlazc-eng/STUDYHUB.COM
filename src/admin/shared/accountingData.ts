@@ -66,7 +66,7 @@ export interface Transaction {
   neto: number; // monto neto (sin IVA)
   iva: number; // monto IVA (19% o 0)
   ivaRecuperable: boolean; // si el IVA es credito fiscal
-  retencion: number; // retencion (ej: 13.75% boleta honorarios)
+  retencion: number; // retencion boleta honorarios (15.25% vigente 2026 — Ley 21.133 Art. Transitorio)
   taxDeductible: boolean; // deducible de impuestos
   deductiblePercent: number; // % deducible (100%, 40% para luz, etc.)
   deductibleAmount: number; // monto efectivamente deducible

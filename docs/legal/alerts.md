@@ -1,6 +1,6 @@
 # Alertas activas del legal-docs-keeper
 
-Última actualización: **2026-04-21** (legal-docs-keeper, Capa 0 bloque-cookie-consent-banner-v1)
+Última actualización: **2026-04-21** (legal-docs-keeper, Capa 0 bloques cookie-consent-banner-v1 + nomina-chile-v1)
 
 ## Declaración obligatoria
 
@@ -525,6 +525,170 @@ posteriores las hayan introducido:
 - Inconsistencia sin resolver, requiere verificar Art. 3bis Ley 19.496
   en leychile.cl.
 
+## Alertas abiertas (Capa 0 nomina-chile-v1, 2026-04-21)
+
+### ALERTA-NOM-1 — TOPE_IMPONIBLE_AFP_UF = 81,6 UF sin verificar para 2026 (CRÍTICA)
+
+- **Origen**: legal-docs-keeper 2026-04-21, Capa 0 bloque
+  `nomina-chile-v1`, borrador
+  `docs/legal/drafts/2026-04-21-labor-chile-py.md`.
+- **Evidencia**: el valor 81,6 UF proviene de
+  `backend/payroll_calculator.py:149` y
+  `src/admin/shared/ChileLaborConstants.ts:26`. Es el valor histórico
+  2024-2025. La Superintendencia de Pensiones reajusta topes
+  anualmente por IPC (DL 3500 Art. 16). El brief verificado 2026-04-21
+  de Cristian NO trajo evidencia fresca del valor 2026.
+- **Impacto**: DL 3500 Art. 16. Si el tope oficial 2026 es superior
+  a 81,6 UF, Conniku calcularía base AFP sobre un tope menor al legal
+  y subaportaría. Liquidación incorrecta con riesgo de reliquidación
+  Art. 63 bis CT.
+- **Acción recomendada**: Cristian o contador verifica en
+  https://www.spensiones.cl/portal/institucional/594/w3-propertyvalue-9911.html
+  el tope AFP vigente 2026 antes de que el builder integre
+  `labor_chile.py` en producción. Si hay diferencia, actualizar la
+  constante + test de invariante + ejecutar paridad py↔ts.
+- **Bloqueo**: sí, para el merge del bloque `nomina-chile-v1`.
+
+### ALERTA-NOM-2 — MUTUAL_BASE_PCT = 0,93% sin verificar para 2026 (MODERADA)
+
+- **Origen**: legal-docs-keeper 2026-04-21, Capa 0 bloque
+  `nomina-chile-v1`, borrador
+  `docs/legal/drafts/2026-04-21-labor-chile-py.md`.
+- **Evidencia**: 0,93% proviene de
+  `backend/payroll_calculator.py:141` y
+  `src/admin/shared/ChileLaborConstants.ts:56`. Es la tasa base
+  Ley 16.744 Art. 15 histórica.
+- **Impacto**: Ley 16.744. La tasa puede variar por DS anual del
+  Ministerio del Trabajo. Si el giro de Conniku SpA (631200) tiene
+  tasa de siniestralidad específica por resolución de la Mutual, el
+  cálculo puede quedar bajo lo legalmente exigido.
+- **Acción recomendada**: Cristian verifica con la Mutual adherida
+  (ACHS, Mutual de Seguridad o IST) cuál es la tasa efectiva 2026
+  aplicable al giro 631200. Si hay recargo por siniestralidad,
+  agregar constante `MUTUAL_SINIESTRALIDAD_PCT` separada.
+- **Bloqueo**: no bloqueante para merge (Conniku SpA sin empleados
+  activos según D-A batch), pero debe resolverse antes del primer
+  empleado dependiente.
+
+### ALERTA-NOM-3 — Factores de rebaja tramos impuesto 2ª categoría 2026 sin verificar literalmente (MODERADA)
+
+- **Origen**: legal-docs-keeper 2026-04-21, Capa 0 bloque
+  `nomina-chile-v1`, borrador
+  `docs/legal/drafts/2026-04-21-tax-chile-py.md`.
+- **Evidencia**: los factores 0.54, 1.74, 4.49, 11.14, 17.80, 23.32,
+  38.82 se heredan de `backend/payroll_calculator.py:180-189`. El
+  SII reajusta anualmente estos factores cuando reajusta la UTM. El
+  brief 2026-04-21 confirmó "último tramo ~310 UTM / 40%" pero no
+  verificó literalmente cada factor contra la circular SII 2026.
+- **Impacto**: DL 824 Art. 43. Si los factores 2026 reajustados son
+  ligeramente distintos (centésimas de UTM por IPC), el impuesto
+  calculado por Conniku tendría un sesgo pequeño pero sistemático
+  en toda liquidación. Riesgo legal bajo en monto, alto en auditoría
+  fiscal agregada.
+- **Acción recomendada**: cotejar contra
+  https://www.sii.cl/valores_y_fechas/impuesto_2da_categoria/impuesto2026.htm
+  los 8 factores vigentes enero 2026 antes de commit. Dejar cita
+  de circular SII específica de 2026 en el comentario.
+- **Bloqueo**: no bloquea merge (último tramo 310 UTM está correcto
+  que es el que más importa para empleados de sueldo alto); sí
+  corregir en iteración post-merge.
+
+### ALERTA-NOM-4 — PPM_PROPYME_14D3_PCT sin verificar para Conniku SpA primer año (MODERADA)
+
+- **Origen**: legal-docs-keeper 2026-04-21, Capa 0 bloque
+  `nomina-chile-v1`, borrador
+  `docs/legal/drafts/2026-04-21-tax-chile-py.md`.
+- **Evidencia**: el valor 0,25% proviene de
+  `src/admin/shared/accountingData.ts:989`. Conniku SpA inició
+  actividades 2026-04-08 bajo régimen ProPyme Transparente 14 D3.
+  Para el primer año de actividad, la tasa PPM puede estar fijada
+  por resolución SII específica y no ser 0,25%.
+- **Impacto**: DL 824 Art. 14 D3. PPM mal calculado genera diferencia
+  de declaración F29 mensual con ajuste anual en F22. Impacto es de
+  flujo de caja, no de monto final del impuesto, pero riesgo de
+  multa por mal cálculo.
+- **Acción recomendada**: Cristian confirma con contador la tasa PPM
+  efectiva aplicable a Conniku SpA en 2026. Actualizar constante +
+  test antes del merge.
+- **Bloqueo**: no bloquea merge (constante existirá con valor legacy
+  + `[VERIFICAR]`), pero debe resolverse antes de primera declaración
+  F29 afectada.
+
+### ALERTA-NOM-5 — Retención honorarios 13,75% hardcoded en 8 ubicaciones frontend (CRÍTICA)
+
+- **Origen**: legal-docs-keeper 2026-04-21 cross-check con plan
+  `docs/plans/bloque-nomina-chile-v1/plan.md` §1.6.
+- **Evidencia**: el plan lista 8 ubicaciones frontend con `0.1375`
+  hardcoded:
+  - `src/admin/tools/OwnerGuideTab.tsx:118`
+  - `src/admin/tools/TutoresExternosTab.tsx:597, 760`
+  - `src/admin/finance/GastosTab.tsx:754, 1157`
+  - `src/admin/shared/accountingData.ts:69`
+  - `src/components/TermsOfService.tsx:1087`
+  - `src/pages/HRDashboard.tsx:7804, 8689, 8883`
+- **Impacto**: Ley 21.133. La tasa correcta vigente 2026-01-01 es
+  15,25% (D-C batch confirmado). Cada UI que muestre 13,75% induce
+  al usuario a cálculo erróneo (Ley 19.496 Art. 12 letra b —
+  información veraz).
+- **Acción recomendada**: builder reemplaza todos los literales por
+  import de `RETENCION_HONORARIOS_2026_PCT` o equivalente del
+  espejo `shared/chile_tax.ts`. Ya está en el plan §3.2. El gap es
+  legal hasta que el builder lo resuelva.
+- **Bloqueo**: sí, hasta merge del bloque `nomina-chile-v1`.
+
+### ALERTA-NOM-6 — Último tramo impuesto 2ª categoría frontend desfasado 150 UTM vs 310 UTM (CRÍTICA)
+
+- **Origen**: legal-docs-keeper 2026-04-21 cross-check con plan §1.5.
+- **Evidencia**: `src/admin/shared/ChileLaborConstants.ts:68`
+  define `{ from: 150, to: Infinity, rate: 0.4, deduction: 30.82 }`.
+  El valor correcto según SII 2026 y según backend
+  `payroll_calculator.py:188` es `(310.0, math.inf, 0.40, 38.82)`.
+  Divergencia de 160 UTM en el corte + factor de rebaja distinto.
+- **Impacto**: DL 824 Art. 43. Empleado con renta entre 150 UTM
+  (~$10,5M) y 310 UTM (~$21,9M) ve en la UI del admin un impuesto
+  distinto al que realmente se le retiene. Transparencia informativa
+  violada (Art. 12 letra b Ley 19.496); también afecta herramientas
+  de simulación para clientes del módulo HR.
+- **Acción recomendada**: builder corrige frontend importando desde
+  `shared/chile_tax.ts` los tramos 2026 correctos. Plan §3.2
+  renglón `ChileLaborConstants.ts` lo cubre.
+- **Bloqueo**: sí, hasta merge del bloque `nomina-chile-v1`.
+
+### ALERTA-NOM-7 — Divergencia TOPE_AFC entre motores duales (CRÍTICA)
+
+- **Origen**: legal-docs-keeper 2026-04-21 cross-check con plan §1.5.
+- **Evidencia**:
+  - `backend/payroll_calculator.py:155` → `TOPE_AFC_UF = 122.6`
+  - `backend/hr_routes.py` (según plan §1.5) → `TOPE_AFC_UF = 126.6`
+  - `src/admin/shared/ChileLaborConstants.ts:27` → `afcUF: 122.6`
+  - Valor verificado batch D-B = **135,2 UF** (spensiones.cl 2026-02).
+- **Impacto**: Ley 19.728. Los tres archivos están desfasados respecto
+  al valor oficial 2026 (135,2 UF). Cualquier empleado con sueldo
+  sobre 122,6 UF subaporta a AFC. Sobre 126,6 UF el desfase es mayor
+  en el motor de `hr_routes.py`. Riesgo laboral directo en
+  reliquidación.
+- **Acción recomendada**: builder unifica los tres archivos al valor
+  135,2 UF importando desde `backend/constants/labor_chile.py`
+  (constante `TOPE_IMPONIBLE_AFC_UF`). Eliminar los literales
+  divergentes.
+- **Bloqueo**: sí, hasta merge del bloque `nomina-chile-v1`.
+
+### ALERTA-NOM-8 — Tope imponible AFC sin referencia histórica previa a 2026-02 (INFORMATIVA)
+
+- **Origen**: legal-docs-keeper 2026-04-21.
+- **Evidencia**: el borrador `labor_chile.py` solo trae el valor
+  vigente 2026-02-01 (135,2 UF). Si Conniku necesita reliquidar
+  períodos anteriores a 2026-02-01, no tiene tabla histórica.
+- **Impacto**: Art. 63 bis CT (reliquidación por error). Bajo volumen
+  dado que Conniku SpA recién inició actividades 2026-04-08, pero
+  aplica al módulo HR que sirve a clientes externos con empleados
+  previos.
+- **Acción recomendada**: considerar agregar
+  `TOPE_IMPONIBLE_AFC_UF_HISTORICO: dict[date, float]` en bloque
+  futuro. Por ahora fuera de scope. Documentar en
+  `registry_issues.md` como id `afc-tope-historial`.
+- **Bloqueo**: ninguno.
+
 ---
 
 ## Alertas cerradas
@@ -533,7 +697,7 @@ Ninguna hasta la fecha (estructura nueva).
 
 ## Próxima revisión
 
-- Auditoría semanal programada: lunes 2026-04-20 a las 09:00 UTC.
+- Auditoría semanal programada: lunes 2026-04-27 a las 09:00 UTC.
 - Revisión manual cuando Cristian invoque `/legal-audit` o cuando un
   bloque con componente legal active trigger de detección.
 

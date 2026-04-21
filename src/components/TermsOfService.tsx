@@ -1084,7 +1084,7 @@ export default function TermsOfService({ onClose }: Props) {
           </p>
           <p>
             29.4. El tutor es íntegramente responsable del pago de la retención de impuestos al SII
-            sobre su boleta de honorarios (actualmente 13.75%).
+            sobre su boleta de honorarios (actualmente 15,25% desde 2026-01-01 según Ley N° 21.133).
           </p>
           <p>
             29.5. Una vez recibida y validada la boleta de honorarios, Conniku procederá al pago

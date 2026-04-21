@@ -12,6 +12,7 @@ import {
   RefreshCw,
 } from 'lucide-react';
 import { api } from '../../services/api';
+import { RETENCION_HONORARIOS_2026_PCT } from 'shared/chile_constants';
 
 // ─── helpers ──────────────────────────────────────────────────────
 const fmtClp = (n: number) => `$${(n || 0).toLocaleString('es-CL')} CLP`;
@@ -594,7 +595,8 @@ export default function TutoresExternosTab() {
         </h3>
         <p style={{ fontSize: 13, opacity: 0.9, margin: 0 }}>
           Gestión de tutores con boleta de honorarios. Comisión Conniku: 10%. El tutor recibe 90%
-          bruto y es responsable de pagar su retención al SII (13.75%).
+          bruto y es responsable de pagar su retención al SII (
+          {(RETENCION_HONORARIOS_2026_PCT * 100).toFixed(2)}%).
         </p>
       </div>
 
@@ -757,8 +759,13 @@ export default function TutoresExternosTab() {
                 Conniku SpA, RUT 78.395.702-7.
               </p>
               <p>
-                <strong>Retención SII:</strong> El tutor paga 13.75% al SII ($2.475). Neto tutor:
-                $15.525.
+                <strong>Retención SII:</strong> El tutor paga{' '}
+                {(RETENCION_HONORARIOS_2026_PCT * 100).toFixed(2)}% al SII. Neto tutor aprox. 84.75%
+                del bruto.
+                <br />
+                <small style={{ opacity: 0.75, fontSize: 11 }}>
+                  Ley 21.133 Art. Transitorio — vigencia 2026
+                </small>
               </p>
               <p>
                 <strong>Frecuencia de pago:</strong> Por clase, quincenal o mensual (a elección del
