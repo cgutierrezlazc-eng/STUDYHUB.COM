@@ -88,3 +88,21 @@ documents:
       ca527535a0f3f938b51d9a2e896e140233ecdd2286e13fdeecb7a32783d43706
       Ese es el hash que se almacena en user_agreements.text_version_hash
       y es INMUTABLE para no invalidar consentimientos históricos.
+
+  age-declaration-public:
+    version: "1.0.0"
+    sha256: "d08689443d6a804fb86cdb65922d7a2fee82322ec40920cac4a0a8df64392f93"
+    vigencia_desde: "2026-04-21"
+    vigencia_hasta: "actual"
+    archivo: "v3.2/age-declaration-public.md"
+    autor_aprobacion: "Cristian Gutiérrez Lazcano (CEO Conniku SpA)"
+    aprobacion_fecha: "2026-04-21"
+    nota: >
+      Vista pública navegable en /legal/age-declaration (Bloque 5 legal-viewer-v1,
+      decisión D-L8=A aprobada por Cristian). Expande el canónico interno
+      age-declaration.md con secciones educativas (§§1, 3, 4, 5, 6, 7) para
+      cumplir Ley 19.496 Art. 12 letra b (información comprensible) y GDPR
+      Art. 12 (lenguaje claro y sencillo). El texto literal del compromiso
+      (5 cláusulas entre separadores ---) es BYTE-A-BYTE IDÉNTICO al texto
+      firmado AGE_DECLARATION_TEXT_V1 (hash ca527535...). El canónico
+      interno age-declaration.md permanece intocado (hash 61dab2ec...).

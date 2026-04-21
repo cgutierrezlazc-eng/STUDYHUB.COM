@@ -30,6 +30,7 @@ validación de abogado antes de publicar cambios a producción.
 | Age Declaration (archivo .md, v3.1 cierre nota) | 1.0.0 | 90a0fc5887da | 2026-04-18 | 2026-04-20 | `archive/2026-04-20-v3.1-superseded/age-declaration.md` |
 | Age Declaration (archivo .md, v3.2 nota cerrada) | 1.0.0 | 61dab2ecf1b2 | 2026-04-20 | actual | `v3.2/age-declaration.md` |
 | Age Declaration (TEXTO canónico, inmutable) | 1.0.0 | ca527535a0f3 | 2026-04-18 | actual | hash del texto entre separadores, `user_agreements.text_version_hash` |
+| Age Declaration (vista pública) | 1.0.0 | d08689443d6a | 2026-04-21 | actual | `v3.2/age-declaration-public.md` — ruta pública `/legal/age-declaration` (D-L8 Bloque 5), preserva texto firmado byte-a-byte |
 
 **Notas**:
 - Hash de Privacy v2.1 calculado sobre `archive/2026-04-11-privacy-policy-v2.1.md`.
