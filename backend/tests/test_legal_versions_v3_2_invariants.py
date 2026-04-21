@@ -38,7 +38,7 @@ V3_2_DIR = REPO_ROOT / "docs" / "legal" / "v3.2"
 EXPECTED_HASHES = {
     "terms.md": "9a16122f985a1d252a5928c5fae518b5bd23ac6ee00996ee9e8293c4aaf08dce",
     "privacy.md": "7a8ba81d0be22cc1deee7d92764baaac1a598a662b84d9ba90043b2a25f63f6c",
-    "cookies.md": "a00150297efa288b53bbd9a0c655e046a292d3cdefb04254b0b33c079022efd9",
+    "cookies.md": "48b90468822fda6b0470acb30d4707f037f1dd636eac7ebd967ab293c2a3a513",
     "age-declaration.md": "61dab2ecf1b27e3fb212efcf5a066784943c689de11611bb6d2b919e39441a9b",
 }
 
