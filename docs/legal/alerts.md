@@ -1,6 +1,6 @@
 # Alertas activas del legal-docs-keeper
 
-Última actualización: **2026-04-19** (legal-docs-keeper, capa sub-sub-bloque 2d.7)
+Última actualización: **2026-04-21** (legal-docs-keeper, Capa 0 bloque-cookie-consent-banner-v1)
 
 ## Declaración obligatoria
 
@@ -13,6 +13,236 @@ de abogado antes de su aplicación al producto en producción.
   el próximo deploy que toque el área afectada).
 - **MODERADA**: actualización recomendada en próximas 2 semanas.
 - **INFORMATIVA**: mejora sugerida sin urgencia.
+
+---
+
+## Alertas CRÍTICAS abiertas (auditoría transversal 2026-04-21 pre-commit Bloque 1)
+
+### ALERTA-AUDIT-04-21-14 — Política de Cookies canónica es un stub firmado como "aprobado"
+
+- **Origen**: legal-docs-keeper 2026-04-21, §5.1 del weekly-audit-2026-04-21.md.
+- **Evidencia**:
+  - `docs/legal/v3.2/cookies.md` contiene frontmatter `estado: STUB — NO PUBLICAR` + aviso "Este documento está pendiente de redacción".
+  - `docs/legal/v3.2/METADATA.yaml` lo declara `version: "1.0.0"`, `vigencia_desde: "2026-04-20"`, `aprobacion_fecha: "2026-04-20"`, `autor_aprobacion: "Cristian Gutiérrez Lazcano"`.
+  - `backend/constants/legal_versions.py::COOKIES_HASH = "a00150297efa..."` coincide con el hash del stub.
+  - La tabla `cookie_consents` (Bloque 1) almacenará este hash como prueba irrefutable de aceptación.
+- **Impacto**: GDPR Art. 7(1) exige demostrabilidad del consentimiento sobre texto específico. Hash de archivo vacío no cumple. Art. 12 letra b Ley 19.496 (información veraz). Privacy v2.4.0 §8 remite a "la Política de Cookies (conniku.com/cookies)" que en disco está vacía.
+- **Acción requerida**: antes del commit del Bloque 1, publicar el texto canónico real de la Política de Cookies (sincronizar `src/pages/CookiesPolicy.tsx` con `docs/legal/v3.2/cookies.md`), recalcular hash, actualizar `COOKIES_HASH` y METADATA.yaml. O, alternativamente, diferir el campo `policy_hash` en cookie_consents hasta que exista el documento real.
+- **Bloqueo**: SÍ, bloquea commit del Bloque 1.
+
+### ALERTA-AUDIT-04-21-1 — Ley 21.719 no citada en Privacy v2.4.0
+
+- **Origen**: legal-docs-keeper 2026-04-21, §4 Área 1.
+- **Evidencia**: 5 archivos del código citan Ley 21.719 (`src/services/cookieConsentService.ts:13`, `src/legal/cookieTexts.ts:16`, `src/pages/HRDashboard.tsx:2652`, `src/admin/tools/BibliotecaDocumentos.tsx:210`, `src/admin/hr/ContratosTab.tsx:318`). `docs/legal/v3.2/privacy.md:16` solo menciona "Ley N° 19.628 · Ley N° 21.096" para Chile.
+- **Impacto**: incoherencia entre código visible al usuario y documento canónico que firma hash en `user_agreements`. El usuario logueado que lea Privacy no verá mencionada la ley más reciente. GDPR Art. 13 (información completa sobre marco legal aplicable).
+- **Acción**: bumpear Privacy a v2.5.0 agregando Ley 21.719 en §"Normativa aplicable" antes de que entre en vigor (diciembre 2026). No bloquea Bloque 1 porque 21.719 aún no vigente, pero sí exige preparación.
+- **Bloqueo**: no bloquea commit Bloque 1. Planificar para próximo bloque legal.
+
+### ALERTA-AUDIT-04-21-12 — Ley 21.561 (42 horas) entra en 5 días y `payroll_calculator.py` sigue en 45
+
+- **Origen**: legal-docs-keeper 2026-04-21, §4 Área 12.
+- **Evidencia**:
+  - `backend/payroll_calculator.py:56-57`: `MONTHLY_HOURS: float = 180.0 # 45 hrs * 4 weeks` / `WEEKLY_HOURS: float = 45.0`.
+  - `src/admin/hr/ContratosTab.tsx:116`, `:256`, `:1011` ya citan Ley 21.561 y 40 horas.
+  - Ley 21.561: escalón 42h/semana desde 2026-04-26 (**PENDIENTE VERIFICACIÓN BCN**).
+- **Impacto**: Art. 32 y 63 bis CT. `calculate_overtime` divide por 180; con jornada legal 42h, la base correcta sería 168. Cada hora extra calculada con divisor 180 resulta subremunerada en ~7.14%. Riesgo multa DT + reclamo trabajador.
+- **Acción**: bloque dedicado `nomina-chile-v1` debe crear `backend/constants/labor_chile.py` con `WEEKLY_HOURS_LEGAL` indexado por fecha efectiva (44h desde 2024-04-26, 42h desde 2026-04-26, 40h desde 2028-04-26) y cita verificada de la ley.
+- **Bloqueo**: no bloquea Bloque 1 (no hay empleados de Conniku SpA usando el módulo hoy), pero crítica para operación real de nómina a partir del 2026-04-26.
+
+### ALERTA-AUDIT-04-21-6 — Divergencia UF/UTM/SIS backend vs frontend
+
+- **Origen**: legal-docs-keeper 2026-04-21, §4 Área 7.
+- **Evidencia**:
+  - UF: backend `38_000.0` vs frontend `38700` (lastUpdate 2026-04-01).
+  - UTM: backend `66_000.0` vs frontend `67294` (lastUpdate 2026-04-01).
+  - SIS: backend `0.0153` vs frontend `0.0141`. Diferencia 0.12% sobre sueldo imponible.
+- **Impacto**: liquidación de nómina doble (si se computara desde ambos lados) con resultados distintos. La SIS es fijada mensualmente por Superintendencia de Pensiones. Valor incorrecto = subcotización o sobrecotización real.
+- **Acción**: crear `backend/constants/labor_chile.py` como única fuente de verdad. Implementar fetch mensual desde mindicadores.cl/bcentral.cl para UF/UTM. Citar Circular Superintendencia para SIS.
+- **Bloqueo**: no bloquea Bloque 1, crítica para módulo HR operacional.
+
+### ALERTA-AUDIT-04-21-7 — Último tramo impuesto 2ª categoría difiere backend vs frontend
+
+- **Origen**: legal-docs-keeper 2026-04-21, §4 Área 8.
+- **Evidencia**:
+  - `backend/payroll_calculator.py:187-189`: `(120, 310, 0.35, 23.32)` + `(310, ∞, 0.40, 38.82)`.
+  - `src/admin/shared/ChileLaborConstants.ts:67-68`: `(120, 150, 0.35, 23.32)` + `(150, ∞, 0.40, 30.82)`.
+- **Impacto**: para sueldo imponible > 150 UTM (~$10M CLP/mes), el backend aplica tramo 35% mientras el frontend aplica 40%. Diferencia de 5 puntos porcentuales + diferentes deducibles = cálculos de impuesto muy distintos. Riesgo declaración incorrecta ante SII.
+- **Acción**: verificar contra Art. 43 Ley de Renta (DL 824) vigente en 2026 cuál tabla es correcta. Una de las dos está desactualizada o errada. Consolidar en `backend/constants/tax_chile.py` con cita Art. 43.
+- **Bloqueo**: no bloquea Bloque 1; crítica para módulo HR/liquidaciones.
+
+### ALERTA-AUDIT-04-21-8 — Retención boleta honorarios 13.75% etiquetada "2025"
+
+- **Origen**: legal-docs-keeper 2026-04-21, §4 Área 8.
+- **Evidencia**:
+  - `src/admin/tools/OwnerGuideTab.tsx:118`: "Retencion de 13.75% (2025) como PPM".
+  - `src/admin/tools/TutoresExternosTab.tsx:597`, `:760`.
+  - `src/admin/finance/GastosTab.tsx:754`: `amountCLP * 0.1375`.
+- **Impacto**: la Ley 21.133 escalona la retención anualmente. A 2025 era 13.75%; para 2026 podría haber aumentado (ruta hacia 17% en 2028). Si efectivamente subió, todos los cálculos de gastos a contadora, pagos a tutores externos y honorarios a dueño de SpA están desfasados.
+- **Acción**: verificar SII Circular vigente 2026. Mover constante a `backend/constants/tax_chile.py::BOLETA_HONORARIOS_RATE_2026` con cita.
+- **Bloqueo**: no bloquea Bloque 1; crítica para TutoresExternosTab y finanzas internas.
+
+## Alertas MODERADAS abiertas (auditoría transversal 2026-04-21)
+
+### ALERTA-AUDIT-04-21-2 — Disposiciones transitorias Ley 19.628 ↔ 21.719
+
+- **Origen**: legal-docs-keeper 2026-04-21, §4 Área 2.
+- **Evidencia**: Privacy v2.4 cita 19.628 como base íntegra; no se verificó si 21.719 deroga parcialmente algún artículo de 19.628 antes de su vigencia total.
+- **Acción**: Cristian/abogado verifica en bcn.cl las disposiciones transitorias de 21.719.
+
+### ALERTA-AUDIT-04-21-3 — "10 días hábiles" hardcoded en 4 archivos tras decisión 1A
+
+- **Origen**: legal-docs-keeper 2026-04-21, §4 Área 3 + ALERTA-LEG-5 preexistente.
+- **Evidencia**: la decisión batch 2026-04-20 resolvió "10 días corridos" pero `src/pages/SupportPage.tsx:157`, `backend/notifications.py:1038`, `backend/paypal_routes.py:629`, `src/components/TermsOfService.tsx:385` seguían con "hábiles" al 2026-04-20. Verificar si el bloque legal-consolidation-v2 Pieza 4 ya los corrigió.
+- **Acción**: re-grep post-commit Bloque 1 para confirmar resolución.
+
+### ALERTA-AUDIT-04-21-5 — Estado ePrivacy Directive vs Regulation
+
+- **Origen**: legal-docs-keeper 2026-04-21, §4 Área 6.
+- **Evidencia**: el plan del banner asume ePrivacy Directive 2002/58 vigente. La Regulation ha estado bloqueada en el Consejo UE por años. A 2026-04 requiere confirmación externa.
+- **Acción**: consultar eur-lex. Si entró en vigor la Regulation, revisar base legal del banner.
+
+## Alertas INFORMATIVAS abiertas (auditoría transversal 2026-04-21)
+
+### ALERTA-AUDIT-04-21-4 — Cita precisa de Ley 21.096 como modificación Art. 19 N°4 CPR
+
+- **Origen**: legal-docs-keeper 2026-04-21, §4 Área 4.
+- **Acción**: Privacy v2.5 debe clarificar que 21.096 modifica el Art. 19 N°4 CPR (no es norma autónoma).
+
+### ALERTA-AUDIT-04-21-9 — Datos sensibles y Ley 21.121
+
+- **Origen**: legal-docs-keeper 2026-04-21, §4 Área 9.
+- **Acción**: evaluar en próximo bloque legal si Privacy requiere sección de datos sensibles.
+
+### ALERTA-AUDIT-04-21-10 — Circulares CMF 2024-2026
+
+- **Origen**: legal-docs-keeper 2026-04-21, §4 Área 10.
+- **Acción**: revisar antes del bloque checkout-pci-dss.
+
+### ALERTA-AUDIT-04-21-11 — Factura electrónica SII 2024-2026
+
+- **Origen**: legal-docs-keeper 2026-04-21, §4 Área 11.
+- **Acción**: revisar si Conniku planea emitir DTE vía API.
+
+### ALERTA-AUDIT-04-21-13 — Protocolo Ley Karin firmado y archivado
+
+- **Origen**: legal-docs-keeper 2026-04-21, §4 Área 13.
+- **Acción**: confirmar con Cristian que el Protocolo Ley Karin de Conniku SpA está aprobado, firmado y archivado conforme Art. 211-A CT (obligación del empleador, no del software).
+
+---
+
+
+## Alertas CRÍTICAS abiertas (bloque-cookie-consent-banner-v1)
+
+### ALERTA-COOKIE-1 — Fecha de vigencia Ley 21.719 no verificada ante fuente oficial
+
+- **Origen**: legal-docs-keeper Capa 0 2026-04-21 (reporte
+  `docs/reports/2026-04-21-capa-0-legal-cookies-v1.md`).
+- **Evidencia**: el trigger del usuario indica 2026-12-01. El plan en §2.2
+  indica 2026-12-13. El código en `src/services/cookieConsentService.ts:13`
+  y `src/legal/cookieTexts.ts:16` ambos citan 2026-12-13. Ninguna fecha fue
+  verificada ante `bcn.cl` o el Diario Oficial en este turno.
+- **Impacto**: CLAUDE.md §Prohibición de inventar información legal prohíbe
+  citar fecha específica sin fuente verificable. Publicar Política de
+  Cookies v1.1.0 y Política de Privacidad actualizada con fecha incorrecta
+  = riesgo reputacional y potencial Art. 12 letra b Ley 19.496
+  (información veraz).
+- **Acción requerida**: Cristian verifica en
+  `https://www.bcn.cl/leychile/navegar?idNorma=1212270` o Diario Oficial.
+  Mientras no se verifique: usar redacción "vigencia prevista en diciembre
+  de 2026" sin día específico en todos los documentos legales.
+- **Bloqueo**: sí, bloquea Pieza 6 del bloque (publicación de Política de
+  Cookies v1.1.0 y Privacy actualizada) si estas mencionan la fecha exacta.
+
+---
+
+## Alertas MODERADAS abiertas (bloque-cookie-consent-banner-v1)
+
+### ALERTA-COOKIE-2 — Texto canónico "marketing" potencialmente ambiguo
+
+- **Origen**: legal-docs-keeper Capa 0 2026-04-21 §4.1 del reporte.
+- **Evidencia**: el texto canónico en `shared/cookie_consent_texts.py`
+  (hash `766ee8e1...`) para la categoría marketing dice "Permitirían medir
+  campañas y mostrarte contenido relevante". La frase "mostrarte contenido
+  relevante" es ambigua y podría interpretarse como perfilado Art. 22 GDPR
+  (decisiones automatizadas con efectos significativos).
+- **Impacto**: GDPR Art. 4(11), Art. 13-14 (información clara e
+  inequívoca). Una redacción ambigua puede invalidar el consentimiento.
+- **Acción**: Cristian decide (D-02 del reporte): mantener texto actual o
+  reformular a versión propuesta en §4.1. Reformular obliga a bump de hash
+  y re-ejecución de Pieza 1 Backend.
+
+### ALERTA-COOKIE-3 — Falta aviso "funcionales post-login por ejecución de contrato" en modal
+
+- **Origen**: legal-docs-keeper Capa 0 2026-04-21 §3.3 y §4.3 del reporte.
+- **Evidencia**: el plan §3.2 declara que las claves funcionales
+  post-login (progreso académico, admin HR) se almacenan bajo Art. 6(1)(b)
+  RGPD (ejecución contrato) y NO se gatean por consentimiento. El modal de
+  personalización del plan §9.2 no explica esta distinción al usuario
+  logueado.
+- **Impacto**: GDPR Art. 13 (información al titular). Un usuario logueado
+  que rechaza "funcionales" espera que TODO lo funcional se bloquee, pero
+  el sistema seguirá escribiendo sus datos de progreso. Sin aviso, hay
+  expectativa frustrada.
+- **Acción**: agregar texto dinámico bajo toggle "Funcionales" visible
+  solo a logueados (D-06 del reporte).
+
+### ALERTA-COOKIE-4 — Clasificación `cc_visitor_uuid` requiere decisión humana
+
+- **Origen**: legal-docs-keeper Capa 0 2026-04-21 §3.1 del reporte.
+- **Evidencia**: el plan §3.5 clasifica `cc_visitor_uuid` como esencial
+  con duda documentada. Jurisprudencia EDPB y decisiones CNIL interpretan
+  la excepción Art. 5(3) ePrivacy restrictivamente.
+- **Impacto**: si un regulador europeo estricto audita, puede reclasificar
+  la cookie como no esencial y exigir que se gatée por consentimiento. El
+  UUID con vida de 5 años sería especialmente atacable.
+- **Acción**: Cristian decide (D-01 del reporte): (a) mantener como
+  esencial con las 4 condiciones de §3.1 (plazo 13 meses, uso restringido,
+  regeneración al retirar, declaración explícita); o (b) mover a funcional
+  y renombrar `cc_visitor_uuid_optional`.
+
+---
+
+## Alertas INFORMATIVAS abiertas (bloque-cookie-consent-banner-v1)
+
+### ALERTA-COOKIE-5 — Inventario IndexedDB/sessionStorage no verificado
+
+- **Origen**: legal-docs-keeper Capa 0 2026-04-21 §3.4.
+- **Evidencia**: el plan solo inventaria `localStorage` y cookies HTTP.
+  No se ejecutó Grep de `indexedDB` o `sessionStorage` en este turno.
+- **Acción**: ejecutar en auditoría semanal próxima o durante Pieza 2:
+  `grep -rn "indexedDB\|sessionStorage" src/`. Si hay usos, categorizar
+  y añadir a la política.
+
+### ALERTA-COOKIE-6 — Política de Cookies actual no desagrega pre/post-login
+
+- **Origen**: legal-docs-keeper Capa 0 2026-04-21 §3.3 del reporte.
+- **Evidencia**: `src/pages/CookiesPolicy.tsx` líneas 206-242 lista todas
+  las claves funcionales juntas sin distinguir "funcional por
+  consentimiento (pre-login)" de "funcional por ejecución de contrato
+  (post-login)".
+- **Acción**: Pieza 6 del bloque debe reestructurar la tabla del
+  inventario con 2 secciones. Bump `COOKIES_VERSION` a `1.1.0`.
+
+### ALERTA-COOKIE-7 — Falta campo `pseudonymized_at_utc` en schema cookie_consents
+
+- **Origen**: legal-docs-keeper Capa 0 2026-04-21 §5.1 del reporte.
+- **Evidencia**: el plan §5.1 propone pseudonimización a 12 meses pero no
+  define campo de auditoría en el schema. El job (Pieza 5) modifica IP y
+  UA a NULL sin dejar rastro de cuándo.
+- **Acción**: agregar columna opcional `pseudonymized_at_utc TIMESTAMP NULL`
+  al schema antes de que Pieza 1 se dé por cerrada. Decisión D-08 del
+  reporte.
+
+### ALERTA-COOKIE-8 — "Retirar todo el consentimiento" sin paridad visual
+
+- **Origen**: legal-docs-keeper Capa 0 2026-04-21 §4.3 del reporte.
+- **Evidencia**: el plan §9.2 propone mostrar el botón de retirar como
+  link text al costado de los 3 botones principales.
+- **Impacto**: GDPR Art. 7(3): retirar consentimiento debe ser "tan fácil
+  como otorgarlo". Un link discreto frente a botones grandes puede
+  considerarse dark pattern.
+- **Acción**: elevar a botón con contraste igual a los otros. Decisión
+  D-05 del reporte.
 
 ---
 

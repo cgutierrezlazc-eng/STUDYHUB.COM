@@ -1864,6 +1864,79 @@ class UserAgreement(Base):
     __table_args__ = (Index("ix_user_agreements_user_doc", "user_id", "document_type"),)
 
 
+# ─── Cookie Consents (bloque-cookie-consent-banner-v1) ────────────────────────
+# Registro probatorio de consentimiento granular de cookies por visitante.
+# A diferencia de user_agreements, esta tabla:
+# - Usa visitor_uuid (UUID4) para usuarios ANÓNIMOS además de autenticados.
+# - Tiene ON DELETE SET NULL en user_id: el registro SOBREVIVE al borrar el
+#   usuario como evidencia legal bajo GDPR Art. 17(3)(e) (defensa legal).
+# - Almacena categories_accepted como JSON array de categorías.
+# - Registra policy_hash para demostrabilidad (GDPR Art. 7(1)).
+#
+# Referencia legal:
+# - GDPR Art. 7(1): el responsable debe demostrar que el titular otorgó
+#   consentimiento (Orange Romania C-61/19, TJUE 2020-11-11).
+# - GDPR Art. 17(3)(e): retención de datos para ejercicio de defensa legal.
+# - Directiva 2002/58/CE Art. 5(3) (ePrivacy): consentimiento previo para
+#   cookies no esenciales.
+# - Ley 19.628 Art. 4°: información al titular al momento de recolectar.
+
+
+class CookieConsent(Base):
+    """Registro de consentimiento de cookies por visitante (anónimo o autenticado).
+
+    Política de retención (plan §5.2):
+    - retention_expires_at: usado por el frontend para re-pedir consentimiento.
+    - Los registros se preservan 5 años como evidencia legal bajo
+      GDPR Art. 17(3)(e) incluso tras eliminación del usuario.
+    - ON DELETE SET NULL en user_id preserva la fila; solo NULLifica user_id.
+    - IP y UA se NULLifican a los 12 meses por job de pseudonimización (Pieza 5).
+    """
+
+    __tablename__ = "cookie_consents"
+
+    id = Column(Integer, primary_key=True, autoincrement=True)
+    visitor_uuid = Column(String(36), nullable=False, index=True)
+    user_id = Column(
+        String(16),
+        ForeignKey("users.id", ondelete="SET NULL"),
+        nullable=True,
+        index=True,
+    )
+    accepted_at_utc = Column(DateTime, nullable=False, default=datetime.utcnow)
+    user_timezone = Column(String(64), nullable=True)
+    client_ip = Column(String(64), nullable=True)
+    user_agent = Column(Text, nullable=True)
+    policy_version = Column(String(20), nullable=False)
+    policy_hash = Column(String(64), nullable=False, index=True)
+    # JSON array de strings: ["necessary"] | ["necessary","functional"] | etc.
+    categories_accepted = Column(Text, nullable=False)
+    # "banner_initial" | "settings_update" | "dnt_auto" | "iframe_auto"
+    origin = Column(String(40), nullable=False)
+    retention_expires_at = Column(DateTime, nullable=False)
+    # Se setea cuando el usuario actualiza sus preferencias (revoca el consent
+    # anterior creando uno nuevo). La fila vieja queda con este campo seteado.
+    revoked_at_utc = Column(DateTime, nullable=True)
+    revocation_reason = Column(String(80), nullable=True)
+    created_at = Column(DateTime, default=datetime.utcnow)
+    # Fecha en que el job de pseudonimización a 12 meses nullificó client_ip y
+    # user_agent de esta fila. NULL = aún no pseudonimizada.
+    # Referencia legal:
+    # - GDPR Art. 5(1)(e): limitación del plazo de conservación de datos personales.
+    # - Ley 21.719 Art. 14 vigente 2026-12-01 (Diario Oficial CVE 2583630,
+    #   Art. 1° transitorio: día primero del mes vigésimo cuarto posterior
+    #   a la publicación 2024-12-13).
+    # - URL fuente: https://www.bcn.cl/leychile/navegar?idNorma=1212270
+    # - Fecha de verificación: 2026-04-21.
+    # - Verificador: backend-builder (Tori).
+    pseudonymized_at_utc = Column(DateTime, nullable=True)
+
+    # Relación sin cascade para preservar fila al eliminar usuario.
+    user = relationship("User", foreign_keys=[user_id])
+
+    __table_args__ = (Index("ix_cookie_consents_visitor_accepted", "visitor_uuid", "accepted_at_utc"),)
+
+
 # ─── Workspaces v2 (Bloque 2a Fundación) ──────────────────────────
 # Creados en bloque 2a. Los modelos AthenaUsage, WorkspaceAthenaChat y
 # WorkspaceAthenaSuggestion son consumidos desde bloque 2c (Athena IA).

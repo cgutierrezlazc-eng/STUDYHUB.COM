@@ -20,6 +20,12 @@ import PWAInstallPrompt from './components/PWAInstallPrompt';
 import AppAvailableBanner from './components/AppAvailableBanner';
 import SupportChat from './components/SupportChat';
 import CommandBar from './components/CommandBar';
+// ─── Cookie Consent (Bloque cookie-consent-banner-v1, Pieza 3) ───
+import { CookieConsentProvider } from './components/CookieConsent/CookieConsentProvider';
+import { useCookieConsent } from './hooks/useCookieConsent';
+import CookieBanner from './components/CookieConsent/CookieBanner';
+import CookieSettings from './components/CookieConsent/CookieSettings';
+import CookieSettingsFooterLink from './components/CookieConsent/CookieSettingsFooterLink';
 
 import { Project } from './types';
 import { api, initPushNotifications } from './services/api';
@@ -75,6 +81,7 @@ const NotFound = React.lazy(() => import('./pages/NotFound'));
 const AdminPanelRoutes = React.lazy(() => import('./admin/AdminPanelRoutes'));
 const TermsOfService = React.lazy(() => import('./pages/TermsOfService'));
 const PrivacyPolicy = React.lazy(() => import('./pages/PrivacyPolicy'));
+const CookiesPolicy = React.lazy(() => import('./pages/CookiesPolicy'));
 const DeleteAccount = React.lazy(() => import('./pages/DeleteAccount'));
 const AboutPage = React.lazy(() =>
   import('./pages/InfoPages').then((m) => ({ default: m.AboutPage }))
@@ -162,7 +169,8 @@ function SEORouter() {
   return <SEOHead title={seo?.title} description={seo?.description} path={path} />;
 }
 
-export default function App() {
+// AppContent es el árbol real. App lo envuelve con CookieConsentProvider.
+function AppContent() {
   const { user, isLoading, refreshUser } = useAuth();
   const device = useDevice();
   const showMobileUI = device.isMobile || isNative;
@@ -176,6 +184,17 @@ export default function App() {
   const { isFocusMode, exitFocus } = useFocusMode();
   const navigate = useNavigate();
   const location = useLocation();
+  // Cookie consent: estado y métodos del contexto (Pieza 3)
+  const {
+    bannerVisible,
+    settingsVisible,
+    acceptAll: cookieAcceptAll,
+    rejectAll: cookieRejectAll,
+    savePreferences: cookieSavePreferences,
+    openSettings: cookieOpenSettings,
+    closeSettings: cookieCloseSettings,
+    consent: cookieConsent,
+  } = useCookieConsent();
 
   // Close sidebar when navigating on mobile
   useEffect(() => {
@@ -244,11 +263,12 @@ export default function App() {
   }, [user]);
 
   // Initialize push notifications when user is logged in
+  // Gate: solo si el usuario consintió categoría "functional" (plan §7.3, I-11)
   useEffect(() => {
-    if (user) {
+    if (user && cookieConsent?.categoriesAccepted?.includes('functional')) {
       initPushNotifications();
     }
-  }, [user]);
+  }, [user, cookieConsent]);
 
   // Apply theme — opciones: corporativo (claro) | conniku (oscuro)
   useEffect(() => {
@@ -432,26 +452,48 @@ export default function App() {
       );
     }
 
-    // Legal pages accessible without authentication
+    // Legal pages accessible without authentication.
+    // Wrapper con scroll propio porque body tiene overflow:hidden globalmente.
+    const legalScrollWrapper: React.CSSProperties = {
+      height: '100vh',
+      width: '100%',
+      overflowY: 'auto',
+      background: 'var(--bg-primary)',
+    };
     if (location.pathname === '/terms') {
       return (
-        <Suspense fallback={<PageLoader />}>
-          <TermsOfService onNavigate={(path) => navigate(path)} />
-        </Suspense>
+        <div style={legalScrollWrapper}>
+          <Suspense fallback={<PageLoader />}>
+            <TermsOfService onNavigate={(path) => navigate(path)} />
+          </Suspense>
+        </div>
       );
     }
     if (location.pathname === '/privacy') {
       return (
-        <Suspense fallback={<PageLoader />}>
-          <PrivacyPolicy onNavigate={(path) => navigate(path)} />
-        </Suspense>
+        <div style={legalScrollWrapper}>
+          <Suspense fallback={<PageLoader />}>
+            <PrivacyPolicy onNavigate={(path) => navigate(path)} />
+          </Suspense>
+        </div>
+      );
+    }
+    if (location.pathname === '/cookies') {
+      return (
+        <div style={legalScrollWrapper}>
+          <Suspense fallback={<PageLoader />}>
+            <CookiesPolicy onNavigate={(path) => navigate(path)} />
+          </Suspense>
+        </div>
       );
     }
     if (location.pathname === '/delete-account') {
       return (
-        <Suspense fallback={<PageLoader />}>
-          <DeleteAccount onNavigate={(path) => navigate(path)} />
-        </Suspense>
+        <div style={legalScrollWrapper}>
+          <Suspense fallback={<PageLoader />}>
+            <DeleteAccount onNavigate={(path) => navigate(path)} />
+          </Suspense>
+        </div>
       );
     }
     if (location.pathname.startsWith('/cert/')) {
@@ -864,6 +906,10 @@ export default function App() {
                   element={<PrivacyPolicy onNavigate={(path) => navigate(path)} />}
                 />
                 <Route
+                  path="/cookies"
+                  element={<CookiesPolicy onNavigate={(path) => navigate(path)} />}
+                />
+                <Route
                   path="/delete-account"
                   element={<DeleteAccount onNavigate={(path) => navigate(path)} />}
                 />
@@ -955,6 +1001,52 @@ export default function App() {
       <PWAInstallPrompt />
       <AppAvailableBanner />
       <SupportChat />
+
+      {/* Ícono persistente "Configurar cookies" — visible cuando no hay banner activo
+          Invariante I-14: accesible desde cualquier página (plan §6.4).
+          UnderConstruction.tsx está frozen; este elemento global lo cubre. */}
+      {!bannerVisible && (
+        <div
+          style={{
+            position: 'fixed',
+            bottom: 12,
+            right: 12,
+            zIndex: 9000,
+          }}
+        >
+          <CookieSettingsFooterLink variant="icon" fontSize={11} />
+        </div>
+      )}
+
+      {/* Banner de consentimiento de cookies (Pieza 3, I-01) */}
+      {bannerVisible && (
+        <CookieBanner
+          onAcceptAll={cookieAcceptAll}
+          onRejectAll={cookieRejectAll}
+          onCustomize={cookieOpenSettings}
+        />
+      )}
+
+      {/* Modal de personalización de cookies */}
+      {settingsVisible && (
+        <CookieSettings
+          initialCategories={cookieConsent?.categoriesAccepted ?? []}
+          onAcceptAll={cookieAcceptAll}
+          onRejectAll={cookieRejectAll}
+          onSave={cookieSavePreferences}
+          onRevokeAll={cookieRejectAll}
+          onClose={cookieCloseSettings}
+        />
+      )}
     </div>
+  );
+}
+
+/** Componente raíz exportado. Envuelve AppContent con CookieConsentProvider. */
+export default function App() {
+  return (
+    <CookieConsentProvider>
+      <AppContent />
+    </CookieConsentProvider>
   );
 }

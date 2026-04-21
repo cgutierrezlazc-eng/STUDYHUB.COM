@@ -24,7 +24,7 @@ export default function TermsOfService({ onClose }: Props) {
                 : 'Términos de Servicio, Uso y Condiciones'}
         </h2>
         <p style={{ fontSize: 12, color: 'var(--text-muted)' }}>
-          Última actualización: Abril 2026 · Versión 2.0
+          Última actualización: 19 de abril de 2026 · Versión 3.2
         </p>
 
         <div style={{ fontSize: 14, lineHeight: 1.85, color: 'var(--text-secondary)' }}>
@@ -59,7 +59,7 @@ export default function TermsOfService({ onClose }: Props) {
             }}
           >
             <strong>AVISO LEGAL IMPORTANTE:</strong> Conniku SpA es una empresa de tecnología con
-            domicilio en Santiago de Chile.{' '}
+            domicilio en Antofagasta, Chile.{' '}
             <strong>
               Conniku NO es una institución educativa acreditada, reconocida ni regulada por el
               Ministerio de Educación de Chile ni por ninguna autoridad educativa nacional o
@@ -122,7 +122,13 @@ export default function TermsOfService({ onClose }: Props) {
           <p>
             1.4. Estos Términos constituyen un contrato vinculante entre el Usuario y Conniku SpA,
             sociedad constituida conforme a las leyes de la República de Chile, con domicilio en
-            Santiago de Chile.
+            Antofagasta, Chile.
+          </p>
+          <p>
+            1.5. El presente documento, aceptado por el Usuario al registrarse, constituye el texto
+            vinculante de los Términos y Condiciones. La versión publicada en conniku.com/terms es
+            una versión editorial con fines de difusión; en caso de discrepancia, prevalece este
+            texto.
           </p>
 
           <h3>Artículo 2. Definiciones</h3>
@@ -210,8 +216,9 @@ export default function TermsOfService({ onClose }: Props) {
             nuevos Términos.
           </p>
           <p>
-            4.3. Las modificaciones menores de carácter administrativo, ortográfico o de
-            clarificación podrán realizarse sin notificación previa.
+            4.3. Las modificaciones menores que no alteren los derechos ni obligaciones del Usuario,
+            tales como correcciones tipográficas, ajustes de estilo, actualización de enlaces o
+            datos de contacto, podrán realizarse sin notificación previa.
           </p>
 
           {/* ===== TÍTULO II: REGISTRO Y CUENTA ===== */}
@@ -382,7 +389,7 @@ export default function TermsOfService({ onClose }: Props) {
           </h4>
           <p>
             9.4.1. Los Usuarios residentes en Chile que hayan contratado una suscripción a distancia
-            (internet) tienen derecho a retractarse dentro de los 10 días hábiles siguientes al
+            (internet) tienen derecho a retractarse dentro de los 10 días corridos siguientes al
             pago, conforme al artículo 3 bis letra b) de la Ley N° 19.496 sobre Protección de los
             Derechos de los Consumidores. El reembolso se procesará en el método de pago original.
           </p>
@@ -523,10 +530,10 @@ export default function TermsOfService({ onClose }: Props) {
           <h3>Artículo 10. Impuestos y Obligaciones Tributarias</h3>
           <p>10.1. Los precios mostrados no incluyen impuestos locales aplicables.</p>
           <p>
-            10.2. En Chile, se aplica el Impuesto al Valor Agregado (IVA) del 19% sobre servicios
-            digitales, conforme a la Ley N° 21.713 y sus modificaciones. El impuesto se calcula
-            sobre el ingreso neto que recibe Conniku después de las comisiones del procesador de
-            pagos.
+            10.2. En Chile, los servicios prestados por Conniku están afectos al Impuesto al Valor
+            Agregado con tasa del 19% conforme al Decreto Ley N° 825 de 1974 sobre Impuesto al Valor
+            Agregado y sus modificaciones. Conniku emitirá los comprobantes fiscales
+            correspondientes de acuerdo con la normativa vigente.
           </p>
           <p>
             10.3. Los usuarios recibirán boleta electrónica o comprobante fiscal conforme a la
@@ -879,13 +886,23 @@ export default function TermsOfService({ onClose }: Props) {
 
           <h3>Artículo 22. Cookies y Tecnologías de Rastreo</h3>
           <p>
-            22.1. Conniku utiliza cookies esenciales y tecnologías similares para: (a) mantener la
-            sesión del Usuario; (b) recordar preferencias de idioma y tema; (c) analizar el uso de
-            la Plataforma con fines de mejora del servicio; (d) prevenir fraude y abuso.
+            22.1. El uso de cookies y tecnologías de rastreo en Conniku se rige por la{' '}
+            <a href="/cookies" style={{ color: 'var(--accent)', textDecoration: 'underline' }}>
+              Política de Cookies
+            </a>
+            , que es un documento separado y vinculante. Dicho documento describe en detalle qué
+            cookies se instalan en el dispositivo del Usuario, con qué finalidad, qué terceros
+            intervienen, y cómo el Usuario puede gestionar o revocar su consentimiento en cualquier
+            momento.
           </p>
           <p>
-            22.2. Conniku no utiliza cookies de terceros con fines publicitarios ni comparte datos
-            de navegación con redes publicitarias.
+            22.2. El Usuario reconoce haber leído la Política de Cookies al aceptar los presentes
+            Términos y Condiciones. La política vigente es la publicada en{' '}
+            <a href="/cookies" style={{ color: 'var(--accent)', textDecoration: 'underline' }}>
+              conniku.com/cookies
+            </a>{' '}
+            a la fecha de aceptación, y sus futuras actualizaciones serán notificadas conforme al
+            mecanismo de re-aceptación descrito en la Política de Privacidad.
           </p>
 
           {/* ===== TÍTULO VIII: CONDUCTA ===== */}
@@ -1280,7 +1297,10 @@ export default function TermsOfService({ onClose }: Props) {
             36.3. En ningún caso la responsabilidad total acumulada de Conniku frente al Usuario
             excederá el monto total efectivamente pagado por el Usuario a Conniku durante los doce
             (12) meses inmediatamente anteriores al hecho generador de la reclamación, o cien
-            dólares estadounidenses (USD $100), el que sea mayor.
+            dólares estadounidenses (USD $100), el que sea mayor. Lo anterior es sin perjuicio de
+            los derechos irrenunciables del consumidor conforme a la Ley N° 19.496 y de la
+            responsabilidad por dolo o culpa grave, en los términos del artículo 1465 del Código
+            Civil.
           </p>
           <p>
             36.4. Las respuestas del asistente de Conniku son de carácter orientativo y pueden
@@ -1344,9 +1364,11 @@ export default function TermsOfService({ onClose }: Props) {
           </p>
           <p>
             40.3. En caso de que la mediación no resulte en un acuerdo dentro de los sesenta (60)
-            días siguientes a su inicio, cualquier controversia será sometida a la jurisdicción
-            exclusiva de los Tribunales Ordinarios de Justicia de Santiago de Chile, renunciando las
-            partes expresamente a cualquier otro fuero que pudiera corresponderles.
+            días siguientes a su inicio, cualquier controversia será sometida a los Tribunales
+            Ordinarios de Justicia de la comuna de Antofagasta, República de Chile, sin perjuicio
+            del derecho irrenunciable del consumidor a recurrir al tribunal competente de su propio
+            domicilio conforme a los artículos 16 letra g) y 50 A de la Ley N° 19.496 sobre
+            Protección de los Derechos de los Consumidores.
           </p>
           <p>
             40.4. No obstante lo anterior, Conniku podrá solicitar medidas cautelares o
@@ -1359,7 +1381,10 @@ export default function TermsOfService({ onClose }: Props) {
           <p>
             41.1. En la máxima medida permitida por la ley aplicable, el Usuario renuncia al derecho
             de participar en acciones de clase, demandas colectivas o representativas contra
-            Conniku. Toda reclamación deberá ser presentada de forma individual.
+            Conniku. Toda reclamación deberá ser presentada de forma individual. La presente
+            cláusula no afectará los derechos irrenunciables del consumidor conforme a la Ley N°
+            19.496, incluyendo el derecho de adherirse a acciones colectivas bajo el procedimiento
+            especial de los artículos 51 y siguientes de dicha ley.
           </p>
 
           {/* ===== TÍTULO XIV: DISPOSICIONES FINALES ===== */}
@@ -1455,7 +1480,7 @@ export default function TermsOfService({ onClose }: Props) {
             <br />
             Cristian — Fundador, alma de Conniku y estudiante como tú
             <br />
-            Santiago, Chile
+            Antofagasta, Chile
             <br />
             www.conniku.com
           </p>

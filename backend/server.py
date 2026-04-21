@@ -13,6 +13,7 @@ import anthropic as anthropic_lib
 import uvicorn
 from admin_routes import router as admin_router
 from ai_detection_routes import router as ai_detection_router
+from cookie_consent_routes import router as cookie_consent_router
 from ai_engine import AIEngine
 from ai_workflow_routes import router as ai_workflow_router
 from auth_routes import router as auth_router
@@ -331,6 +332,8 @@ app.include_router(workspaces_ws_router)
 app.include_router(workspaces_athena_router)
 app.include_router(workspaces_export_router)
 # app.include_router(payment_router)  # Stripe removed
+# bloque-cookie-consent-banner-v1 Pieza 1
+app.include_router(cookie_consent_router)
 
 
 # ─── Contact Form (público, sin auth) ──────────────────────────────────────

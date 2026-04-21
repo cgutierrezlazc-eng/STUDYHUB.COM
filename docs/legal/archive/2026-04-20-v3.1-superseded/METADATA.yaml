@@ -1,0 +1,57 @@
+# METADATA.yaml — Directorio de versionado formal docs/legal/v3.1/
+#
+# Generado: 2026-04-20
+# Bloque: bloque-legal-consolidation-v2 (Pieza 7)
+#
+# Cada entrada corresponde a un archivo de este directorio.
+# El campo sha256 es el hash SHA-256 del archivo binario tal como existe en disco.
+# Si el archivo se modifica, se debe recalcular el hash y actualizar esta entrada.
+#
+# IMPORTANTE: El hash se calcula sobre el archivo completo (incluyendo frontmatter YAML).
+# Para recalcular: sha256sum docs/legal/v3.1/<archivo>
+# O con Python: python3 -c "import hashlib; print(hashlib.sha256(open('<archivo>','rb').read()).hexdigest())"
+
+documents:
+  privacy:
+    version: "2.3"
+    sha256: "0f7e0a3dc287da20bbbeede903622e005782cb4d927c4d01ebe35d22c3fd591f"
+    vigencia_desde: "2026-04-20"
+    vigencia_hasta: "actual"
+    archivo: "v3.1/privacy.md"
+    autor_aprobacion: "Cristian Gutiérrez Lazcano (cgutierrezlazc-eng)"
+    aprobacion_fecha: "2026-04-19"
+    nota: "Borrador aprobado visualmente 2026-04-19. Pendiente validación abogado antes de G3.5."
+
+  terms:
+    version: "3.1"
+    sha256: "e3780c975df95ef48b07147940b406e6b3fa8d374aa466d2dd86a3dd8a85a98f"
+    vigencia_desde: "2026-04-20"
+    vigencia_hasta: "actual"
+    archivo: "v3.1/terms.md"
+    autor_aprobacion: "Cristian Gutiérrez Lazcano (cgutierrezlazc-eng)"
+    aprobacion_fecha: "2026-04-19"
+    nota: "Borrador aprobado visualmente 2026-04-19. Pendiente validación abogado antes de G3.5."
+
+  cookies:
+    version: "1.0"
+    sha256: "a00150297efa288b53bbd9a0c655e046a292d3cdefb04254b0b33c079022efd9"
+    vigencia_desde: "[PENDIENTE — Pieza 5]"
+    vigencia_hasta: "[PENDIENTE — Pieza 5]"
+    archivo: "v3.1/cookies.md"
+    autor_aprobacion: "[PENDIENTE — Pieza 5]"
+    aprobacion_fecha: "[PENDIENTE — Pieza 5]"
+    nota: "STUB creado en Pieza 7 para que el registro exista. Contenido real en Pieza 5."
+
+  age-declaration:
+    version: "1.0.0"
+    sha256: "90a0fc5887dab32463dcbdefda5ad501626b67e7a7525ffdae95c06ac57e1815"
+    vigencia_desde: "2026-04-18"
+    vigencia_hasta: "actual"
+    archivo: "v3.1/age-declaration.md"
+    autor_aprobacion: "Cristian Gutiérrez Lazcano (cgutierrezlazc-eng)"
+    aprobacion_fecha: "2026-04-18"
+    nota: >
+      Snapshot del texto AGE_DECLARATION_TEXT_V1 de shared/legal_texts.{ts,py}.
+      Hash del texto canónico (distinto al hash de este .md):
+      ca527535a0f3f938b51d9a2e896e140233ecdd2286e13fdeecb7a32783d43706
+      Ese es el hash que se almacena en user_agreements.text_version_hash.

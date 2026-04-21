@@ -613,7 +613,7 @@ export default function Subscription({ onNavigate }: Props) {
               <strong style={{ color: 'var(--text-secondary)' }}>
                 Derecho de retracto (Ley 19.496, Art. 3 bis):
               </strong>{' '}
-              Puedes ejercer tu derecho de retracto dentro de los 10 días hábiles siguientes a la
+              Puedes ejercer tu derecho de retracto dentro de los 10 días corridos siguientes a la
               contratación. Para ejercerlo, utiliza la opción &quot;Solicitar reembolso&quot; en tu
               panel de suscripción o escríbenos a{' '}
               <span style={{ color: 'var(--accent)' }}>contacto@conniku.com</span>. El reembolso se
@@ -814,7 +814,7 @@ export default function Subscription({ onNavigate }: Props) {
                   >
                     <option value="guarantee_7d">Garantía 7 días (nuevo suscriptor)</option>
                     <option value="chile_retracto">
-                      Derecho de retracto Chile (10 días hábiles)
+                      Derecho de retracto Chile (10 días corridos)
                     </option>
                     <option value="eu_withdrawal">Derecho de desistimiento UE (14 días)</option>
                     <option value="duplicate_charge">Cargo duplicado</option>

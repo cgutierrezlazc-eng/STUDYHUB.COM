@@ -548,6 +548,70 @@ def migrate():
             )
             logger.info("Created athena_usage table with index.")
 
+    # ─── cookie_consents (bloque-cookie-consent-banner-v1 Pieza 1) ──────────
+    # Tabla probatoria de consentimiento granular de cookies por visitante.
+    # ON DELETE SET NULL en user_id: el registro SOBREVIVE al borrar el usuario
+    # como evidencia legal (GDPR Art. 17(3)(e)).
+    # SQLAlchemy Base.metadata.create_all() ya crea la tabla si no existía.
+    # Este bloque actúa como fallback para entornos con create_all manual.
+    if not inspector.has_table("cookie_consents"):  # type: ignore[union-attr]
+        with engine.begin() as conn:
+            conn.execute(
+                text("""
+                CREATE TABLE cookie_consents (
+                    id INTEGER PRIMARY KEY AUTOINCREMENT,
+                    visitor_uuid VARCHAR(36) NOT NULL,
+                    user_id VARCHAR(16) NULL,
+                    accepted_at_utc TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+                    user_timezone VARCHAR(64) NULL,
+                    client_ip VARCHAR(64) NULL,
+                    user_agent TEXT NULL,
+                    policy_version VARCHAR(20) NOT NULL,
+                    policy_hash VARCHAR(64) NOT NULL,
+                    categories_accepted TEXT NOT NULL,
+                    origin VARCHAR(40) NOT NULL,
+                    retention_expires_at TIMESTAMP NOT NULL,
+                    revoked_at_utc TIMESTAMP NULL,
+                    revocation_reason VARCHAR(80) NULL,
+                    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                    FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE SET NULL
+                )
+            """)
+            )
+            conn.execute(
+                text("CREATE INDEX IF NOT EXISTS ix_cookie_consents_visitor_uuid ON cookie_consents(visitor_uuid)")
+            )
+            conn.execute(text("CREATE INDEX IF NOT EXISTS ix_cookie_consents_user_id ON cookie_consents(user_id)"))
+            conn.execute(
+                text("CREATE INDEX IF NOT EXISTS ix_cookie_consents_policy_hash ON cookie_consents(policy_hash)")
+            )
+            conn.execute(
+                text(
+                    "CREATE INDEX IF NOT EXISTS ix_cookie_consents_visitor_accepted "
+                    "ON cookie_consents(visitor_uuid, accepted_at_utc DESC)"
+                )
+            )
+            logger.info("Created cookie_consents table with indexes.")
+
+    # ─── cookie_consents: columna pseudonymized_at_utc (D-08) ────────────
+    # Decisión D-07/D-08 Capa 0 bloque-cookie-consent-banner-v1.
+    # Registra cuándo el job de pseudonimización a 12 meses nullificó
+    # client_ip y user_agent de cada fila.
+    #
+    # Referencia legal:
+    # - GDPR Art. 5(1)(e): limitación del plazo de conservación de datos.
+    # - Ley 21.719 Art. 14 vigente 2026-12-01 (Diario Oficial CVE 2583630,
+    #   Art. 1° transitorio: día primero del mes vigésimo cuarto posterior
+    #   a la publicación 2024-12-13).
+    # - URL: https://www.bcn.cl/leychile/navegar?idNorma=1212270
+    # - Fecha de verificación: 2026-04-21. Verificador: backend-builder (Tori).
+    if inspector.has_table("cookie_consents"):
+        existing_cols = {c["name"] for c in inspector.get_columns("cookie_consents")}
+        if "pseudonymized_at_utc" not in existing_cols:
+            with engine.begin() as conn:
+                conn.execute(text("ALTER TABLE cookie_consents ADD COLUMN pseudonymized_at_utc TIMESTAMP NULL"))
+            logger.info("Added pseudonymized_at_utc column to cookie_consents.")
+
     logger.info("Migrations complete.")
 
 

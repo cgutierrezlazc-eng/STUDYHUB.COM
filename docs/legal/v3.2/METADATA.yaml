@@ -1,0 +1,90 @@
+# METADATA.yaml — Directorio de versionado formal docs/legal/v3.2/
+#
+# Generado: 2026-04-20
+# Bloque: bloque-legal-v3.2-post-audit (Pieza 1)
+# Supersede: docs/legal/v3.1/ (archivado en docs/legal/archive/2026-04-20-v3.1-superseded/)
+#
+# Cada entrada corresponde a un archivo de este directorio.
+# El campo sha256 es el hash SHA-256 del archivo binario tal como existe en disco.
+# Si el archivo se modifica, se debe recalcular el hash y actualizar esta entrada.
+#
+# IMPORTANTE: El hash se calcula sobre el archivo completo (incluyendo frontmatter YAML).
+# Para recalcular: shasum -a 256 docs/legal/v3.2/<archivo>
+# O con Python: python3 -c "import hashlib; print(hashlib.sha256(open('<archivo>','rb').read()).hexdigest())"
+
+documents:
+  privacy:
+    version: "2.4.0"
+    sha256: "7a8ba81d0be22cc1deee7d92764baaac1a598a662b84d9ba90043b2a25f63f6c"
+    vigencia_desde: "2026-04-20"
+    vigencia_hasta: "actual"
+    archivo: "v3.2/privacy.md"
+    autor_aprobacion: "abogado externo + Cristian"
+    aprobacion_fecha: "2026-04-21"
+    nota: >
+      Documento canónico autocontenido derivado de src/pages/PrivacyPolicy.tsx
+      con edits H-01 (domicilio Antofagasta), §5.3 (procesamiento al exportar
+      documentos), §2.1 bullet "Documentos exportados" y H-12 opción B
+      (Anthropic, redacción condicional). Supersede v3.1/privacy.md que era
+      un borrador marcado "NO publicar".
+
+  terms:
+    version: "3.2.0"
+    sha256: "9a16122f985a1d252a5928c5fae518b5bd23ac6ee00996ee9e8293c4aaf08dce"
+    vigencia_desde: "2026-04-20"
+    vigencia_hasta: "actual"
+    archivo: "v3.2/terms.md"
+    autor_aprobacion: "abogado externo + Cristian"
+    aprobacion_fecha: "2026-04-21"
+    nota: >
+      Documento canónico autocontenido de 49 artículos en 14 títulos,
+      derivado de src/components/TermsOfService.tsx con edits H-01 (domicilio
+      Antofagasta, CAM Santiago preservado como institución arbitral), H-02
+      (Versión 3.2), H-08 (jurisdicción Antofagasta no exclusiva con salvedad
+      Arts. 16 g y 50 A Ley 19.496), H-09 (salvedad acciones colectivas
+      Arts. 51 y ss. Ley 19.496), H-10 (salvedad derechos irrenunciables +
+      dolo/culpa grave Art. 1465 CC), H-11 (IVA DL 825 de 1974, no Ley
+      21.713), H-16 (acotar modificaciones de clarificación), H-17 (cláusula
+      1.5 prevalencia del modal). Supersede v3.1/terms.md que era un
+      borrador marcado "NO publicar".
+
+  cookies:
+    version: "1.0.0"
+    sha256: "48b90468822fda6b0470acb30d4707f037f1dd636eac7ebd967ab293c2a3a513"
+    vigencia_desde: "2026-04-21"
+    vigencia_hasta: "actual"
+    archivo: "v3.2/cookies.md"
+    autor_aprobacion: "Cristian Gutiérrez Lazcano (CEO Conniku SpA)"
+    aprobacion_fecha: "2026-04-21"
+    nota: >
+      Primera versión pública y canónica de la Política de Cookies
+      (Pieza 5 del bloque bloque-legal-consolidation-v2). Supersede al
+      stub anterior que compartía hash con v3.1/cookies.md y violaba
+      GDPR Art. 7(1) al tener usuarios aceptando implícitamente un
+      documento marcado "NO PUBLICAR". Documenta inventario real de
+      cookies y localStorage; clasifica cc_visitor_uuid como esencial
+      (Capa 0 D-01 Opción A) con las 4 condiciones: plazo 13 meses,
+      uso restringido, regeneración al retirar consentimiento,
+      declaración explícita; base legal Art. 6(1)(b) GDPR para
+      funcionales post-login; retención 5 años post-delete
+      (Art. 17(3)(e) GDPR + Art. 2515 Código Civil chileno);
+      pseudonimización de IP y User-Agent a 12 meses; vigencia
+      Ley 21.719 desde 2026-12-01 (CVE-2583630, Art. 1° transitorio).
+
+  age-declaration:
+    version: "1.0.0"
+    sha256: "61dab2ecf1b27e3fb212efcf5a066784943c689de11611bb6d2b919e39441a9b"
+    vigencia_desde: "2026-04-18"
+    vigencia_hasta: "actual"
+    archivo: "v3.2/age-declaration.md"
+    autor_aprobacion: "Cristian Gutiérrez Lazcano (cgutierrezlazc-eng)"
+    aprobacion_fecha: "2026-04-18"
+    nota: >
+      Snapshot del texto AGE_DECLARATION_TEXT_V1 de shared/legal_texts.{ts,py}.
+      El texto canónico (entre separadores ---) NO cambió respecto de v3.1.
+      Solo se actualizó la sección "Notas de cumplimiento" para cerrar H-37
+      (Art. 210 CP no aplica al checkbox privado). Por esta razón el hash
+      del archivo .md cambió, pero el hash del TEXTO canónico permanece:
+      ca527535a0f3f938b51d9a2e896e140233ecdd2286e13fdeecb7a32783d43706
+      Ese es el hash que se almacena en user_agreements.text_version_hash
+      y es INMUTABLE para no invalidar consentimientos históricos.

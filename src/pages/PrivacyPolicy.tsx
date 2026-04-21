@@ -121,7 +121,7 @@ export default function PrivacyPolicy({ onNavigate }: Props) {
         </button>
 
         <h1 style={styles.h1}>Política de Privacidad</h1>
-        <p style={styles.date}>Última actualización: 19 de abril de 2026 · Versión 2.3</p>
+        <p style={styles.date}>Última actualización: 20 de abril de 2026 · Versión 2.4</p>
 
         <p style={styles.p}>
           En Conniku SpA (en adelante, "Conniku", "nosotros" o "la empresa"), nos comprometemos a
@@ -168,7 +168,7 @@ export default function PrivacyPolicy({ onNavigate }: Props) {
             <strong>RUT:</strong> 78.395.702-7
           </li>
           <li>
-            <strong>Domicilio:</strong> Santiago, Chile
+            <strong>Domicilio:</strong> Antofagasta, Chile
           </li>
           <li>
             <strong>Sitio web:</strong>{' '}
@@ -457,6 +457,11 @@ export default function PrivacyPolicy({ onNavigate }: Props) {
                 inteligente sobre documentos del usuario: generación de resúmenes, análisis de
                 documentos, chat privado por documento, sugerencias de reescritura sobre fragmentos
                 seleccionados, y otras funciones equivalentes que se incorporen al asistente Athena.
+                Anthropic, PBC, con domicilio en San Francisco, California, Estados Unidos. Las
+                transferencias internacionales se realizan, cuando corresponda, bajo mecanismos
+                contractuales apropiados conforme al artículo 5 de la Ley N° 19.628 de Chile,
+                incluyendo Cláusulas Contractuales Tipo aprobadas por la Comisión Europea cuando
+                resulten aplicables según la jurisdicción del usuario.
               </td>
               <td style={styles.td}>
                 Título y materia del documento, contenido completo del documento cuando usted lo
@@ -465,6 +470,69 @@ export default function PrivacyPolicy({ onNavigate }: Props) {
                 recientes), y el texto específico que usted seleccione para pedir una sugerencia de
                 reescritura. No se envían contraseñas, tokens de sesión, datos de pago ni metadatos
                 de cuenta.
+              </td>
+            </tr>
+            <tr>
+              <td style={styles.td}>
+                <strong>Supabase</strong>
+              </td>
+              <td style={styles.td}>
+                Autenticación de usuarios y almacenamiento primario de la base de datos relacional
+                (PostgreSQL gestionado). Actúa como encargado de tratamiento conforme al artículo 28
+                del RGPD y equivalentes de la Ley 19.628.
+              </td>
+              <td style={styles.td}>
+                Credenciales de acceso (contraseña almacenada como hash, nunca en texto plano),
+                identificadores únicos de usuario, dirección de correo electrónico, metadatos de
+                sesión, y todos los contenidos que la plataforma almacene en la base de datos
+                (perfil, documentos, mensajes, registros de actividad).
+              </td>
+            </tr>
+            <tr>
+              <td style={styles.td}>
+                <strong>Firebase Cloud Messaging (Google)</strong>
+              </td>
+              <td style={styles.td}>
+                Entrega de notificaciones push al navegador y a las aplicaciones móviles, por
+                ejemplo recordatorios de suscripción, avisos de mensajes nuevos y alertas operativas
+                que usted haya habilitado.
+              </td>
+              <td style={styles.td}>
+                Token único del dispositivo generado por el propio Firebase (identificador técnico
+                de entrega), tipo de dispositivo y plataforma. No se envían contenidos sensibles
+                dentro del payload de la notificación; los datos completos se consultan solo después
+                de que usted abre la aplicación.
+              </td>
+            </tr>
+            <tr>
+              <td style={styles.td}>
+                <strong>Google OAuth</strong>
+              </td>
+              <td style={styles.td}>
+                Inicio de sesión federado "Entrar con Google" cuando usted decide utilizarlo.
+                Permite autenticar sin crear una contraseña separada.
+              </td>
+              <td style={styles.td}>
+                Dirección de correo electrónico asociada a la cuenta Google, nombre público y (si
+                usted lo autoriza) foto de perfil. Los permisos solicitados se limitan a los scopes
+                "openid", "email" y "profile". Usted puede revocar el acceso en cualquier momento
+                desde https://myaccount.google.com/permissions.
+              </td>
+            </tr>
+            <tr>
+              <td style={styles.td}>
+                <strong>Capacitor (app móvil)</strong>
+              </td>
+              <td style={styles.td}>
+                Empaquetado de la aplicación para iOS y Android. Permite acceder a almacenamiento
+                local del dispositivo (equivalente a localStorage del navegador) para funciones
+                offline y recordatorios de sesión.
+              </td>
+              <td style={styles.td}>
+                Datos locales del dispositivo: preferencias de interfaz, borradores no
+                sincronizados, identificadores de sesión. Estos datos no se envían a terceros;
+                residen en el dispositivo y se eliminan al desinstalar la aplicación o desde los
+                ajustes del sistema operativo.
               </td>
             </tr>
             <tr>
@@ -577,20 +645,27 @@ export default function PrivacyPolicy({ onNavigate }: Props) {
 
         {/* 8. Cookies */}
         <h2 style={styles.h2}>8. Cookies y Tecnologías Similares</h2>
-        <p style={styles.p}>Conniku utiliza las siguientes tecnologías de almacenamiento local:</p>
-        <ul style={styles.ul}>
-          <li>
-            <strong>localStorage:</strong> para almacenar el token de autenticación (JWT),
-            preferencias de tema visual y estado de sesión del usuario.
-          </li>
-          <li>
-            <strong>Service Worker:</strong> para habilitar funcionalidades offline y notificaciones
-            push como parte de nuestra aplicación web progresiva (PWA).
-          </li>
-        </ul>
         <p style={styles.p}>
-          No utilizamos cookies de seguimiento de terceros ni tecnologías de rastreo publicitario.
-          No realizamos fingerprinting de dispositivos con fines comerciales.
+          Conniku utiliza cookies y tecnologías equivalentes (localStorage, sessionStorage,
+          IndexedDB y caché del Service Worker de la PWA) exclusivamente para prestar el servicio
+          contratado: mantener la sesión del Usuario, recordar sus preferencias y permitir el
+          funcionamiento offline. Conniku no utiliza cookies de terceros con fines publicitarios ni
+          realiza fingerprinting de dispositivos con fines comerciales.
+        </p>
+        <p style={styles.p}>
+          El detalle íntegro de cada clave de almacenamiento, su categoría, su finalidad, su
+          duración y la forma en que el Usuario puede gestionarlas se encuentra en la{' '}
+          <a
+            href="#"
+            onClick={(e) => {
+              e.preventDefault();
+              onNavigate('/cookies');
+            }}
+            style={{ color: '#2D62C8' }}
+          >
+            Política de Cookies
+          </a>
+          , documento complementario y vinculante a la presente Política de Privacidad.
         </p>
 
         {/* 9. Retención */}
@@ -634,15 +709,18 @@ export default function PrivacyPolicy({ onNavigate }: Props) {
         {/* 10. Menores */}
         <h2 style={styles.h2}>10. Menores de Edad</h2>
         <p style={styles.p}>
-          Conniku es un servicio destinado a estudiantes universitarios y está diseñado para
-          personas mayores de 16 años. No recopilamos intencionalmente datos de menores de 16 años.
-          Si tomamos conocimiento de que hemos recopilado datos de un menor de 16 años sin el
-          consentimiento adecuado, procederemos a eliminar dichos datos a la brevedad.
+          Conniku es una plataforma exclusiva para personas mayores de 18 años. No recopilamos
+          intencionalmente datos personales de personas menores de 18 años. Si tomamos conocimiento
+          de que hemos recopilado datos de una persona menor de 18 años sin el consentimiento
+          adecuado, procederemos a eliminar dichos datos en un plazo máximo de 72 horas desde la
+          confirmación del hecho.
         </p>
         <p style={styles.p}>
-          Para usuarios de la Unión Europea: el umbral de edad para el tratamiento de datos basado
-          en consentimiento puede ser de 13 a 16 años según el Estado miembro. Conniku aplica 16
-          años como edad mínima uniforme a nivel global.
+          Para usuarios de la Unión Europea: el GDPR Art. 8 permite que algunos Estados miembros
+          fijen un umbral de edad mínima para el consentimiento digital inferior a 18 años. Conniku
+          aplica 18 años como edad mínima uniforme en todas las jurisdicciones, adoptando la
+          restricción más estricta de forma global, independientemente de lo que permita la
+          legislación local aplicable.
         </p>
 
         {/* 11. Cambios */}
@@ -918,7 +996,7 @@ export default function PrivacyPolicy({ onNavigate }: Props) {
             Esta Política de Privacidad ha sido redactada en conformidad con la Ley N° 19.628 sobre
             Protección de la Vida Privada (Chile), el Reglamento General de Protección de Datos
             (GDPR, UE 2016/679), la Lei Geral de Proteção de Dados Pessoais (LGPD, Brasil) y la
-            California Consumer Privacy Act (CCPA / CPRA, EE.UU.). Versión 2.3 — Abril 2026.
+            California Consumer Privacy Act (CCPA / CPRA, EE.UU.). Versión 2.4 — Abril 2026.
           </p>
         </div>
       </div>

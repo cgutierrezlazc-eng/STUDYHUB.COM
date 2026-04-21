@@ -95,8 +95,8 @@ export default function TermsOfService({ onNavigate }: Props) {
         <p style={styles.p}>
           El presente sitio web y la plataforma Conniku son operados por{' '}
           <strong>Conniku SpA</strong>, sociedad constituida conforme a las leyes de la República de
-          Chile, con domicilio en Santiago, Chile. El servicio se encuentra disponible a través del
-          sitio web{' '}
+          Chile, con domicilio en Antofagasta, Chile. El servicio se encuentra disponible a través
+          del sitio web{' '}
           <a href="https://conniku.com" style={{ color: '#2D62C8' }}>
             conniku.com
           </a>
@@ -132,8 +132,10 @@ export default function TermsOfService({ onNavigate }: Props) {
           </li>
         </ul>
         <p style={styles.p}>
-          El usuario debe ser mayor de 16 años para crear una cuenta. Al registrarse, declara
-          cumplir con este requisito.
+          Conniku es una plataforma exclusiva para personas mayores de 18 años. El usuario debe ser
+          mayor de 18 años para crear una cuenta. Al registrarse, declara cumplir con este
+          requisito. Esta restricción refleja la política operacional de Conniku (§Cumplimiento
+          Legal) y aplica sin excepción en todas las jurisdicciones donde opera el servicio.
         </p>
 
         {/* 4. Planes y pagos */}
@@ -162,6 +164,27 @@ export default function TermsOfService({ onNavigate }: Props) {
         <p style={styles.p}>
           Conniku se reserva el derecho de modificar los precios de los planes, notificando a los
           usuarios con al menos 30 días de anticipación.
+        </p>
+        <h3 style={styles.h3}>4.1. Derecho de retracto (Chile)</h3>
+        <p style={styles.p}>
+          Los usuarios residentes en Chile que contraten una suscripción a distancia por este sitio
+          tienen derecho a retractarse sin expresión de causa dentro de los{' '}
+          <strong>10 días corridos</strong> siguientes al pago, conforme al artículo 3 bis letra b)
+          de la Ley N° 19.496 sobre Protección de los Derechos de los Consumidores. Para ejercer
+          este derecho, el usuario puede utilizar la opción &quot;Solicitar reembolso&quot; dentro
+          de su panel de Suscripción o escribir a{' '}
+          <a href="mailto:contacto@conniku.com" style={{ color: 'var(--accent)' }}>
+            contacto@conniku.com
+          </a>
+          . El reembolso se procesará al mismo medio de pago original dentro de un plazo máximo de
+          30 días corridos. Este derecho no será aplicable cuando el servicio se haya prestado en su
+          integridad antes del vencimiento del plazo de retracto con consentimiento expreso del
+          consumidor.
+        </p>
+        <p style={styles.p}>
+          Para usuarios residentes en la Unión Europea, Reino Unido y territorios con normativas
+          equivalentes, el derecho de desistimiento aplicable se rige por la Directiva 2011/83/UE y
+          sus leyes nacionales de transposición (14 días).
         </p>
 
         {/* 5. Propiedad intelectual */}
@@ -327,8 +350,8 @@ export default function TermsOfService({ onNavigate }: Props) {
         <p style={styles.p}>
           Estos Términos se rigen por la legislación vigente de la República de Chile. Cualquier
           controversia derivada de la interpretación o cumplimiento de estos Términos será sometida
-          al conocimiento de los Tribunales Ordinarios de Justicia de la ciudad de Santiago de
-          Chile, renunciando las partes a cualquier otro fuero que pudiere corresponderles.
+          a los Tribunales Ordinarios de Justicia de Antofagasta, sin perjuicio del derecho del
+          consumidor a recurrir al tribunal competente de su domicilio conforme a la Ley 19.496.
         </p>
 
         {/* 12. Disposiciones generales */}
