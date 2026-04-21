@@ -1937,6 +1937,78 @@ class CookieConsent(Base):
     __table_args__ = (Index("ix_cookie_consents_visitor_accepted", "visitor_uuid", "accepted_at_utc"),)
 
 
+# ─── Document Views — Bloque legal-viewer-v1 (D-L5) ──────────────────────────
+#
+# Registra cada apertura de un documento legal por un usuario (autenticado o
+# anónimo). Sirve como evidencia probatoria de que se ofreció la lectura.
+#
+# Referencia legal:
+# - GDPR Art. 7(1) (Reglamento UE 2016/679): el responsable debe demostrar
+#   que el interesado consintió el tratamiento.
+#   URL fuente: https://eur-lex.europa.eu/legal-content/ES/TXT/?uri=CELEX:32016R0679
+#   Fecha de verificación: 2026-04-21. Verificador: backend-builder (Tori).
+# - GDPR Art. 6(1)(f): interés legítimo del responsable como base legal del
+#   tratamiento de IP y UA. Test de ponderación: Conniku tiene interés legítimo
+#   en demostrar que se ofreció la lectura; IP está almacenada cruda (no hasheada)
+#   pero se pseudonimiza a los 12 meses (campo pseudonymized_at_utc).
+# - GDPR Art. 17(3)(e): conservación para ejercicio/defensa de reclamaciones
+#   legales. Retención 5 años post-apertura.
+# - GDPR Art. 5(1)(c): minimización — user_agent truncado a 512 chars.
+# - Art. 2515 Código Civil Chile: prescripción ordinaria 5 años.
+#   URL fuente: https://www.bcn.cl/leychile/navegar?idNorma=172986
+#   Fecha de verificación: 2026-04-21. Verificador: backend-builder (Tori).
+
+
+class DocumentView(Base):
+    """Registro de apertura de documento legal (evidencia probatoria GDPR Art. 7(1)).
+
+    Política de retención (plan D-L5):
+    - retained_until_utc = viewed_at_utc + 1825 días (≈5 años).
+    - ON DELETE SET NULL en user_id preserva la fila tras eliminar el usuario.
+    - IP y UA se NULLifican a los 12 meses por job de pseudonimización
+      (mismo patrón que CookieConsent; campo pseudonymized_at_utc).
+    """
+
+    __tablename__ = "document_views"
+
+    id = Column(String(16), primary_key=True, default=gen_id)
+    # nullable: anónimos pre-registro no tienen user_id
+    user_id = Column(
+        String(16),
+        ForeignKey("users.id", ondelete="SET NULL"),
+        nullable=True,
+        index=True,
+    )
+    # uuid4 generado por el cliente para rastrear sesión anónima
+    session_token = Column(String(36), nullable=True, index=True)
+    # 'terms' | 'privacy' | 'cookies' | 'age-declaration'
+    doc_key = Column(String(40), nullable=False)
+    doc_version = Column(String(20), nullable=False)
+    # SHA-256 del archivo canónico (METADATA.yaml). Inmutable post-aceptación.
+    doc_hash = Column(String(64), nullable=False)
+    viewed_at_utc = Column(DateTime, nullable=False, default=datetime.utcnow)
+    scrolled_to_end = Column(Boolean, nullable=False, default=False)
+    # IP cruda almacenada; se pseudonimiza a 12 meses (pseudonymized_at_utc).
+    # GDPR Art. 5(1)(c): solo se usa para evidencia probatoria, no para perfilamiento.
+    ip_address = Column(String(64), nullable=True)
+    # UA truncado a 512 chars (minimización GDPR Art. 5(1)(c))
+    user_agent = Column(String(512), nullable=True)
+    # viewed_at_utc + 1825 días (Art. 17(3)(e) GDPR + Art. 2515 CC Chile)
+    retained_until_utc = Column(DateTime, nullable=False)
+    # Seteado por el job de pseudonimización a 12 meses (nullifica ip_address y
+    # user_agent). NULL = aún no pseudonimizada.
+    pseudonymized_at_utc = Column(DateTime, nullable=True)
+
+    # Relación sin cascade para preservar fila al eliminar usuario
+    user = relationship("User", foreign_keys=[user_id])
+
+    __table_args__ = (
+        Index("ix_document_views_user_doc", "user_id", "doc_key"),
+        Index("ix_document_views_session_doc", "session_token", "doc_key"),
+        Index("ix_document_views_doc_key_version", "doc_key", "doc_version"),
+    )
+
+
 # ─── Workspaces v2 (Bloque 2a Fundación) ──────────────────────────
 # Creados en bloque 2a. Los modelos AthenaUsage, WorkspaceAthenaChat y
 # WorkspaceAthenaSuggestion son consumidos desde bloque 2c (Athena IA).

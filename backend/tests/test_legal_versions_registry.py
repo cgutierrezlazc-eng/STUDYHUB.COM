@@ -84,10 +84,13 @@ def test_metadata_yaml_schema() -> None:
     docs = data["documents"]
     assert isinstance(docs, dict), "'documents' debe ser un dict"
 
-    # Verificar que hay exactamente los 4 documentos + age-declaration
-    expected_keys = {"privacy", "terms", "cookies", "age-declaration"}
+    # Verificar que estén los 4 documentos canónicos base (age-declaration-public
+    # es vista pública derivada agregada por Bloque 5 legal-viewer-v1 D-L8,
+    # no es documento base sino derivado — se permite pero no es obligatorio).
+    required_keys = {"privacy", "terms", "cookies", "age-declaration"}
     actual_keys = set(docs.keys())
-    assert expected_keys == actual_keys, f"'documents' debe contener {expected_keys}, encontrado {actual_keys}"
+    missing = required_keys - actual_keys
+    assert not missing, f"'documents' debe contener al menos {required_keys}, falta {missing}"
 
     for doc_name, meta in docs.items():
         for field in REQUIRED_METADATA_FIELDS:
@@ -118,6 +121,7 @@ def test_metadata_sha256_matches_files() -> None:
         "terms": "terms.md",
         "cookies": "cookies.md",
         "age-declaration": "age-declaration.md",
+        "age-declaration-public": "age-declaration-public.md",
     }
 
     for doc_name, fname in file_map.items():

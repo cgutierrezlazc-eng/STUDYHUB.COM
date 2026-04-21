@@ -334,6 +334,10 @@ app.include_router(workspaces_export_router)
 # app.include_router(payment_router)  # Stripe removed
 # bloque-cookie-consent-banner-v1 Pieza 1
 app.include_router(cookie_consent_router)
+# bloque-legal-viewer-v1 D-L5: registro de apertura de documentos legales
+from legal_document_views_routes import router as legal_document_views_router  # noqa: E402
+
+app.include_router(legal_document_views_router)
 
 
 # ─── Contact Form (público, sin auth) ──────────────────────────────────────

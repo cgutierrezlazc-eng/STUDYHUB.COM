@@ -79,6 +79,14 @@ const WorkspaceInvite = React.lazy(() => import('./pages/Workspaces/WorkspaceInv
 // ─────────────────────────────────────────────────────────────────
 const NotFound = React.lazy(() => import('./pages/NotFound'));
 const AdminPanelRoutes = React.lazy(() => import('./admin/AdminPanelRoutes'));
+// ─── Legal viewer v1 (Bloque legal-viewer-v1) ────────────────────
+const LegalLayout = React.lazy(() =>
+  import('./pages/Legal/LegalLayout').then((m) => ({ default: m.LegalLayout }))
+);
+const LegalDocumentPage = React.lazy(() =>
+  import('./pages/Legal/LegalDocumentPage').then((m) => ({ default: m.LegalDocumentPage }))
+);
+// ─────────────────────────────────────────────────────────────────
 const TermsOfService = React.lazy(() => import('./pages/TermsOfService'));
 const PrivacyPolicy = React.lazy(() => import('./pages/PrivacyPolicy'));
 const CookiesPolicy = React.lazy(() => import('./pages/CookiesPolicy'));
@@ -460,6 +468,29 @@ function AppContent() {
       overflowY: 'auto',
       background: 'var(--bg-primary)',
     };
+    // ── Rutas /legal/* — layout con sidebar (D-L3=B) ──
+    // Incluye /legal, /legal/terms, /legal/privacy, /legal/cookies, /legal/age-declaration
+    if (location.pathname === '/legal' || location.pathname.startsWith('/legal/')) {
+      return (
+        <div style={legalScrollWrapper}>
+          <Suspense fallback={<PageLoader />}>
+            <Routes>
+              <Route path="/legal" element={<LegalLayout />}>
+                <Route index element={<Navigate to="/legal/terms" replace />} />
+                <Route path="terms" element={<LegalDocumentPage docKey="terms" />} />
+                <Route path="privacy" element={<LegalDocumentPage docKey="privacy" />} />
+                <Route path="cookies" element={<LegalDocumentPage docKey="cookies" />} />
+                <Route
+                  path="age-declaration"
+                  element={<LegalDocumentPage docKey="age-declaration" />}
+                />
+              </Route>
+            </Routes>
+          </Suspense>
+        </div>
+      );
+    }
+
     if (location.pathname === '/terms') {
       return (
         <div style={legalScrollWrapper}>
@@ -897,6 +928,18 @@ function AppContent() {
                     ) : null
                   }
                 />
+                {/* Rutas /legal/* con sidebar (D-L3=B, D-L4=B) */}
+                <Route path="/legal" element={<LegalLayout />}>
+                  <Route index element={<Navigate to="/legal/terms" replace />} />
+                  <Route path="terms" element={<LegalDocumentPage docKey="terms" />} />
+                  <Route path="privacy" element={<LegalDocumentPage docKey="privacy" />} />
+                  <Route path="cookies" element={<LegalDocumentPage docKey="cookies" />} />
+                  <Route
+                    path="age-declaration"
+                    element={<LegalDocumentPage docKey="age-declaration" />}
+                  />
+                </Route>
+                {/* Rutas heredadas — convivencia 3 meses (D-L4=B) */}
                 <Route
                   path="/terms"
                   element={<TermsOfService onNavigate={(path) => navigate(path)} />}

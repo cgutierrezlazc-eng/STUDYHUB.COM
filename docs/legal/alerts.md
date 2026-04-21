@@ -1,6 +1,6 @@
 # Alertas activas del legal-docs-keeper
 
-Última actualización: **2026-04-21** (legal-docs-keeper, Capa 0 bloques cookie-consent-banner-v1 + nomina-chile-v1)
+Última actualización: **2026-04-21** (legal-docs-keeper, Capa 0 bloque legal-viewer-v1 — NOM-5/6/7 marcadas RESUELTA tras merge PR #22)
 
 ## Declaración obligatoria
 
@@ -614,7 +614,7 @@ posteriores las hayan introducido:
   + `[VERIFICAR]`), pero debe resolverse antes de primera declaración
   F29 afectada.
 
-### ALERTA-NOM-5 — Retención honorarios 13,75% hardcoded en 8 ubicaciones frontend (CRÍTICA)
+### ALERTA-NOM-5 — Retención honorarios 13,75% hardcoded en 8 ubicaciones frontend (CRÍTICA) — **RESUELTA 2026-04-21**
 
 - **Origen**: legal-docs-keeper 2026-04-21 cross-check con plan
   `docs/plans/bloque-nomina-chile-v1/plan.md` §1.6.
@@ -635,8 +635,9 @@ posteriores las hayan introducido:
   espejo `shared/chile_tax.ts`. Ya está en el plan §3.2. El gap es
   legal hasta que el builder lo resuelva.
 - **Bloqueo**: sí, hasta merge del bloque `nomina-chile-v1`.
+- **Resolución 2026-04-21**: PR #22 (`nomina-chile-v1`) mergeado 23:08 UTC. `backend/constants/tax_chile.py:33` define `RETENCION_HONORARIOS_2026_PCT = Decimal("0.1525")` con cita Ley 21.133. `shared/chile_constants.ts:117` espejo TS con el mismo valor. GAP RESIDUAL no bloqueante: `src/pages/HRDashboard.tsx` aún contiene `TAX_BRACKETS` con tramo viejo (verificado con Grep línea 266-267). Se eleva como ALERTA-VIEWER-2 porque es UI informativa, no motor de cálculo.
 
-### ALERTA-NOM-6 — Último tramo impuesto 2ª categoría frontend desfasado 150 UTM vs 310 UTM (CRÍTICA)
+### ALERTA-NOM-6 — Último tramo impuesto 2ª categoría frontend desfasado 150 UTM vs 310 UTM (CRÍTICA) — **RESUELTA 2026-04-21**
 
 - **Origen**: legal-docs-keeper 2026-04-21 cross-check con plan §1.5.
 - **Evidencia**: `src/admin/shared/ChileLaborConstants.ts:68`
@@ -653,8 +654,9 @@ posteriores las hayan introducido:
   `shared/chile_tax.ts` los tramos 2026 correctos. Plan §3.2
   renglón `ChileLaborConstants.ts` lo cubre.
 - **Bloqueo**: sí, hasta merge del bloque `nomina-chile-v1`.
+- **Resolución 2026-04-21**: PR #22 mergeado. `backend/constants/tax_chile.py:59` define `IMPUESTO_2A_CATEGORIA_TRAMOS_2026_UTM` con tramo `(310, ∞, 0.40, 38.82)` cita DL 824 Art. 43 + circular SII 2026. `shared/chile_constants.ts:149-150` espejo TS `[120, 310, 0.35, 23.32]` y `[310, null, 0.4, 38.82]`. GAP RESIDUAL no bloqueante: `src/pages/HRDashboard.tsx:266-267` mantiene tramo viejo.
 
-### ALERTA-NOM-7 — Divergencia TOPE_AFC entre motores duales (CRÍTICA)
+### ALERTA-NOM-7 — Divergencia TOPE_AFC entre motores duales (CRÍTICA) — **RESUELTA 2026-04-21**
 
 - **Origen**: legal-docs-keeper 2026-04-21 cross-check con plan §1.5.
 - **Evidencia**:
@@ -672,6 +674,7 @@ posteriores las hayan introducido:
   (constante `TOPE_IMPONIBLE_AFC_UF`). Eliminar los literales
   divergentes.
 - **Bloqueo**: sí, hasta merge del bloque `nomina-chile-v1`.
+- **Resolución 2026-04-21**: PR #22 mergeado. `backend/constants/labor_chile.py:111` define `TOPE_IMPONIBLE_AFC_UF: Decimal = Decimal("135.2")` con cita Ley 19.728 Art. 6°. Test `src/admin/shared/__tests__/ChileLaborConstants.test.ts:34` verifica invariante "TOPES.afcUF es 135.2 (no 122.6 desfasado)". Alertas ALERTA-NOM-5/6/7 en conjunto se consideran RESUELTAS en el core (backend + shared).
 
 ### ALERTA-NOM-8 — Tope imponible AFC sin referencia histórica previa a 2026-02 (INFORMATIVA)
 
@@ -688,6 +691,115 @@ posteriores las hayan introducido:
   futuro. Por ahora fuera de scope. Documentar en
   `registry_issues.md` como id `afc-tope-historial`.
 - **Bloqueo**: ninguno.
+
+## Alertas abiertas (Capa 0 legal-viewer-v1, 2026-04-21)
+
+### ALERTA-VIEWER-1 — Rate-limit propuesto 60/h puede ser muy agresivo para uso legítimo (MODERADA)
+
+- **Origen**: legal-docs-keeper 2026-04-21, Capa 0 bloque `legal-viewer-v1`,
+  cross-check con plan §3.3 (60 POST/h por IP-pseudo) y recomendación
+  gap-finder (subir a 300/h).
+- **Evidencia**:
+  - Plan §3.3 bullet de backend: "Rate-limit: máx 60 POST/hora por IP-pseudo".
+  - Plan §6.R-M2: idempotencia client-side con flag localStorage por
+    `<docKey>_<hash>` ya cubre el caso del F5 compulsivo de UN usuario.
+  - Caso real de usuario legítimo: un Usuario que lee Privacy, vuelve al
+    modal desde otra página (re-open), lee Cookies, re-open Privacy,
+    lee Terms, re-open Cookies = 4-6 aperturas en < 10 minutos sin ser
+    abuso. Si además Cristian abre internamente para revisión = +5 en
+    la misma IP NAT corporativa.
+  - Caso de red NAT (coworking, universidad, oficina): decenas de
+    usuarios legítimos comparten IP pública. 60/h por IP significa ~1
+    apertura cada minuto para TODA la red. Insuficiente.
+- **Análisis 300/h**:
+  - Pro: cubre uso legítimo NAT grande. Idempotencia client-side ya
+    absorbe el scroll-re-open.
+  - Contra: un bot que use solo 5/min puede igualmente inflar el log
+    hasta 7200/día por IP. Mitigación: pseudonimización IP a 12 meses,
+    + logs de `document_views` no se usan para consent (se usan sólo
+    como evidencia probatoria de "se ofreció la lectura").
+  - Contra adicional: si el atacante rota IP (proxy, VPN), el rate-limit
+    por IP es bypasseable de todos modos. 60 vs 300 no mueve la aguja
+    defensiva.
+- **Recomendación**: **subir a 300/h por IP-pseudo**, pero combinar con:
+  1. Idempotencia client-side con localStorage flag
+     `conniku_legal_viewed_<docKey>_<hash>_<sessionStart>` (una sola POST
+     por sesión del navegador por docKey por versión). Esto es lo más
+     efectivo contra el F5 compulsivo.
+  2. Rate-limit MÁS permisivo (300/h) para no frustrar NAT legítimos.
+  3. Middleware detecta burst anómalo (> 10 POST/min sostenido por 5
+     min) y responde 429 temporal con backoff, sin rechazar permanente.
+  4. Logs de burst se registran aparte (tabla o metric) para análisis
+     post-mortem, sin bloquear usuario.
+- **Alternativa considerada y descartada**: rate-limit por IP+session
+  (sessionStorage token). Descartada porque sessionStorage se resetea en
+  cada pestaña nueva, inflando el contador legítimo sin aportar defensa
+  adicional.
+- **Bloqueo**: no bloquea Capa 0 (es criterio de implementación). El
+  backend-builder debe implementar 300/h + idempotencia client-side en
+  Capa 1. Si Cristian prefiere 60/h por conservadurismo, respetar esa
+  decisión y documentarla aquí.
+
+### ALERTA-VIEWER-2 — HRDashboard.tsx con tramos impuesto 2024 tras merge PR #22 (MODERADA)
+
+- **Origen**: legal-docs-keeper 2026-04-21, Capa 0 bloque `legal-viewer-v1`,
+  cross-check con resolución de ALERTA-NOM-5/6/7.
+- **Evidencia**:
+  - `src/pages/HRDashboard.tsx:259-268` (verificado con Read 2026-04-21):
+    `TAX_BRACKETS` contiene 8 tramos con `{ from: 150, to: Infinity,
+    rate: 0.4, deduction: 30.82 }` como último tramo + comentario
+    "Tramos 2024 — en UTM. Actualizar anualmente."
+  - `backend/constants/tax_chile.py:59` (valores oficiales 2026):
+    último tramo `(310, ∞, 0.40, 38.82)`.
+  - `shared/chile_constants.ts:149-150`: espejo TS correcto `[120, 310,
+    0.35, 23.32]` y `[310, null, 0.4, 38.82]`.
+  - PR #22 no tocó `HRDashboard.tsx` (cross-check: `git log --oneline`
+    3ad731a mergeado no menciona HRDashboard en diff).
+- **Impacto**: Ley 19.496 Art. 12 letra b (información veraz). La UI del
+  módulo HR muestra cálculo de impuesto 2024 desfasado. Empleado simulado
+  con renta entre 150 UTM y 310 UTM ve un impuesto incorrecto en la
+  pantalla mientras que el motor real calcula según backend. Riesgo
+  reputacional bajo (es simulador, no afecta retención real) pero viola
+  principio de información consistente.
+- **Acción recomendada**:
+  (a) fuera de scope del bloque `legal-viewer-v1` actual. Este bloque toca
+      documentos legales, no simulador HR.
+  (b) abrir bloque correlativo `nomina-chile-v1.1` (hotfix residual) o
+      incluir en `bloque-nomina-chile-v2` posterior que migre frontend
+      HR a `shared/chile_constants.ts` como única fuente.
+  (c) alternativa rápida: reemplazar `TAX_BRACKETS` literal en
+      HRDashboard.tsx por import desde `shared/chile_constants.ts`.
+      Cambio de 10 líneas, no requiere bloque completo.
+- **Bloqueo**: no bloquea `legal-viewer-v1`. Se deja registrado para que
+  Cristian decida si (b) o (c) se ejecuta antes o después del
+  legal-viewer-v1.
+
+### ALERTA-VIEWER-3 — Riesgo GFM autolink implícito sin verificación exhaustiva (MODERADA)
+
+- **Origen**: legal-docs-keeper 2026-04-21, Capa 0 bloque `legal-viewer-v1`,
+  §3.3 del borrador
+  `docs/legal/drafts/2026-04-21-legal-viewer-render-fidelity.md`.
+- **Evidencia**: `remark-gfm` (plugin requerido para tablas) puede aplicar
+  GFM autolink literal, que convierte URLs "sueltas" sin sintaxis
+  `[](url)` en enlaces automáticamente. Si un documento canónico tiene
+  una URL suelta (ej. "visita conniku.com/soporte" sin corchetes), el
+  render tendría un `<a>` que el markdown no declara explícitamente. El
+  texto visible no cambia, pero el árbol HTML sí.
+- **Impacto**: Art. 7(1) GDPR demostrabilidad. No rompe equivalencia
+  semántica (el texto sigue diciendo lo mismo) pero introduce ambigüedad
+  en cualquier auditoría que compare DOM firmado ↔ DOM renderizado.
+- **Mitigación**:
+  1. Configurar `remark-gfm` con opción `{singleTilde: false}` y
+     deshabilitar autolink si el plugin lo permite.
+  2. Agregar test de regresión que grep los 4 markdowns canónicos
+     buscando patrones URL-like sin sintaxis explícita (regex
+     `(?<!\]\()https?://` o `(?<!\]\()www\.`). Si detecta: falla CI.
+  3. Si se detectan URLs sueltas en los markdown actuales: corregirlos a
+     sintaxis explícita antes del builder.
+- **Verificación realizada**: grep rápido en Capa 0 NO ejecutado por
+  tiempo. Queda como tarea del `frontend-builder` en Capa 1 antes de
+  instalar `react-markdown`.
+- **Bloqueo**: no bloquea Capa 0 legal. Es criterio de calidad de render.
 
 ---
 

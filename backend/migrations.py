@@ -612,6 +612,56 @@ def migrate():
                 conn.execute(text("ALTER TABLE cookie_consents ADD COLUMN pseudonymized_at_utc TIMESTAMP NULL"))
             logger.info("Added pseudonymized_at_utc column to cookie_consents.")
 
+    # ─── document_views (bloque-legal-viewer-v1 D-L5) ───────────────────────
+    # Tabla probatoria de apertura de documentos legales por visitante
+    # (autenticado o anónimo). Evidencia GDPR Art. 7(1).
+    # ON DELETE SET NULL en user_id: el registro SOBREVIVE al borrar el usuario
+    # como evidencia legal (GDPR Art. 17(3)(e) + Art. 2515 CC Chile).
+    # SQLAlchemy Base.metadata.create_all() ya crea la tabla si no existía.
+    # Este bloque actúa como fallback para entornos con create_all manual.
+    #
+    # Referencia legal:
+    # - GDPR Art. 7(1): demostrabilidad del consentimiento.
+    # - GDPR Art. 17(3)(e): retención 5 años para defensa de reclamaciones.
+    # - Art. 2515 Código Civil Chile: prescripción ordinaria 5 años.
+    #   URL: https://www.bcn.cl/leychile/navegar?idNorma=172986
+    # - Fecha de verificación: 2026-04-21. Verificador: backend-builder (Tori).
+    if not inspector.has_table("document_views"):
+        with engine.begin() as conn:
+            conn.execute(
+                text("""
+                CREATE TABLE document_views (
+                    id VARCHAR(16) PRIMARY KEY,
+                    user_id VARCHAR(16) NULL,
+                    session_token VARCHAR(36) NULL,
+                    doc_key VARCHAR(40) NOT NULL,
+                    doc_version VARCHAR(20) NOT NULL,
+                    doc_hash VARCHAR(64) NOT NULL,
+                    viewed_at_utc TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+                    scrolled_to_end BOOLEAN NOT NULL DEFAULT FALSE,
+                    ip_address VARCHAR(64) NULL,
+                    user_agent VARCHAR(512) NULL,
+                    retained_until_utc TIMESTAMP NOT NULL,
+                    pseudonymized_at_utc TIMESTAMP NULL,
+                    FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE SET NULL
+                )
+            """)
+            )
+            conn.execute(text("CREATE INDEX IF NOT EXISTS idx_document_views_user_id ON document_views(user_id)"))
+            conn.execute(
+                text("CREATE INDEX IF NOT EXISTS idx_document_views_session_token ON document_views(session_token)")
+            )
+            conn.execute(
+                text(
+                    "CREATE INDEX IF NOT EXISTS idx_document_views_doc_key_version "
+                    "ON document_views(doc_key, doc_version)"
+                )
+            )
+            conn.execute(
+                text("CREATE INDEX IF NOT EXISTS idx_document_views_user_doc ON document_views(user_id, doc_key)")
+            )
+            logger.info("Created document_views table with indexes.")
+
     logger.info("Migrations complete.")
 
 
