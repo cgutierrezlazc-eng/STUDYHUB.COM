@@ -4,7 +4,7 @@ Pieza 2a del bloque bloque-legal-v3.2-post-audit.
 
 Valida que:
 - Los hashes en backend/constants/legal_versions.py coinciden con los archivos
-  reales en docs/legal/v3.2/*.md (invariantes 1 y 2 del plan §6).
+  reales en docs/02-legal/vigentes/*.md (invariantes 1 y 2 del plan §6).
 - Las versiones TOS y PRIVACY fueron bumpeadas a 3.2.0 y 2.4.0 respectivamente.
 - Cookies mantiene 1.0.0 (sin cambio de texto).
 - El hash del TEXTO canónico de age-declaration (entre separadores ---) es
@@ -103,7 +103,7 @@ def _extract_canonical_text(age_decl_path: Path) -> str:
 
 @pytest.mark.legal
 def test_v3_2_directory_exists() -> None:
-    """El directorio docs/legal/v3.2/ debe existir con los 4 archivos canónicos."""
+    """El directorio docs/02-legal/vigentes/ debe existir con los 4 archivos canónicos."""
     assert V3_2_DIR.is_dir(), f"Directorio {V3_2_DIR} no existe"
     for fname in EXPECTED_HASHES:
         assert (V3_2_DIR / fname).is_file(), f"Archivo canónico ausente: {V3_2_DIR / fname}"
@@ -197,7 +197,7 @@ def test_legal_versions_py_cookies_version_unchanged() -> None:
 
 @pytest.mark.legal
 def test_legal_versions_py_tos_hash_matches_v3_2_file() -> None:
-    """TOS_HASH en legal_versions.py debe coincidir con el hash real de docs/legal/v3.2/terms.md.
+    """TOS_HASH en legal_versions.py debe coincidir con el hash real de docs/02-legal/vigentes/terms.md.
 
     Invariante 1 del plan §6: sha256(terms.md) == TOS_HASH en legal_versions.py.
     """
@@ -205,7 +205,7 @@ def test_legal_versions_py_tos_hash_matches_v3_2_file() -> None:
 
     terms_path = V3_2_DIR / "terms.md"
     if not terms_path.is_file():
-        pytest.skip("docs/legal/v3.2/terms.md no existe — skip")
+        pytest.skip("docs/02-legal/vigentes/terms.md no existe — skip")
 
     actual = _sha256_file(terms_path)
     assert actual == TOS_HASH, (
@@ -218,7 +218,7 @@ def test_legal_versions_py_tos_hash_matches_v3_2_file() -> None:
 
 @pytest.mark.legal
 def test_legal_versions_py_privacy_hash_matches_v3_2_file() -> None:
-    """PRIVACY_HASH en legal_versions.py debe coincidir con el hash real de docs/legal/v3.2/privacy.md.
+    """PRIVACY_HASH en legal_versions.py debe coincidir con el hash real de docs/02-legal/vigentes/privacy.md.
 
     Invariante 2 del plan §6: sha256(privacy.md) == PRIVACY_HASH en legal_versions.py.
     """
@@ -226,7 +226,7 @@ def test_legal_versions_py_privacy_hash_matches_v3_2_file() -> None:
 
     privacy_path = V3_2_DIR / "privacy.md"
     if not privacy_path.is_file():
-        pytest.skip("docs/legal/v3.2/privacy.md no existe — skip")
+        pytest.skip("docs/02-legal/vigentes/privacy.md no existe — skip")
 
     actual = _sha256_file(privacy_path)
     assert actual == PRIVACY_HASH, (
@@ -239,7 +239,7 @@ def test_legal_versions_py_privacy_hash_matches_v3_2_file() -> None:
 
 @pytest.mark.legal
 def test_legal_versions_py_cookies_hash_matches_v3_2_file() -> None:
-    """COOKIES_HASH en legal_versions.py debe coincidir con el hash real de docs/legal/v3.2/cookies.md.
+    """COOKIES_HASH en legal_versions.py debe coincidir con el hash real de docs/02-legal/vigentes/cookies.md.
 
     Invariante 3 del plan §6: sha256(cookies.md) == sha256(v3.1/cookies.md) (cookies estable).
     """
@@ -247,7 +247,7 @@ def test_legal_versions_py_cookies_hash_matches_v3_2_file() -> None:
 
     cookies_path = V3_2_DIR / "cookies.md"
     if not cookies_path.is_file():
-        pytest.skip("docs/legal/v3.2/cookies.md no existe — skip")
+        pytest.skip("docs/02-legal/vigentes/cookies.md no existe — skip")
 
     actual = _sha256_file(cookies_path)
     assert actual == COOKIES_HASH, (
