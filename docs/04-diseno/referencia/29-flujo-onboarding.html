@@ -1,0 +1,515 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Conniku — Flujo completo onboarding</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Funnel+Display:wght@400;500;600;700;800;900&family=Geist+Mono:wght@400;500;600;700&display=swap" />
+  <style>
+    :root {
+      --ink: #0D0F10; --ink-2: #2B2E30; --ink-3: #696C6F; --ink-4: #A0A3A7;
+      --paper: #F5F4EF; --paper-2: #EBE9E1; --line: #D2CFC3; --card: #FFFFFF;
+      --lime: #D9FF3A; --lime-ink: #181F08;
+      --pink: #FF4D3A; --cream: #FFE9B8;
+      --violet: #6B4EFF; --cyan: #00C2FF; --orange: #FF4A1C;
+      --font-display: 'Funnel Display', -apple-system, sans-serif;
+      --font-mono: 'Geist Mono', ui-monospace, monospace;
+      --ease: cubic-bezier(.2,.8,.2,1);
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    html, body { background: var(--paper); color: var(--ink); font-family: var(--font-display); min-height: 100vh; overflow-x: hidden; }
+    ::selection { background: var(--lime); color: var(--lime-ink); }
+
+    .header {
+      padding: 40px 32px 20px; text-align: center;
+    }
+    .h-logo { display: inline-flex; align-items: center; gap: 10px; margin-bottom: 18px; }
+    .h-tile { width: 30px; height: 30px; display: block; flex-shrink: 0; }
+    .h-text { font-weight: 700; font-size: 20px; letter-spacing: -.02em; }
+
+    .header-label {
+      display: inline-flex; align-items: center; gap: 10px;
+      font-family: var(--font-mono); font-size: 11px; letter-spacing: .14em;
+      text-transform: uppercase; color: var(--ink-3); font-weight: 700;
+      margin-bottom: 14px;
+    }
+    .header-label::before, .header-label::after { content: ""; width: 28px; height: 2px; background: var(--ink); }
+
+    .header h1 {
+      font-weight: 900; font-size: clamp(44px, 6vw, 76px);
+      line-height: .95; letter-spacing: -.04em; max-width: 920px; margin: 0 auto;
+    }
+    .header h1 .hl { background: var(--lime); color: var(--lime-ink); padding: 0 10px; border-radius: 12px; transform: rotate(-.8deg); display: inline-block; }
+
+    .header p {
+      margin-top: 22px; max-width: 680px; margin-left: auto; margin-right: auto;
+      font-size: 17px; color: var(--ink-2); line-height: 1.5; font-weight: 500;
+    }
+
+    /* Timeline flow */
+    .flow { max-width: 1320px; margin: 0 auto; padding: 40px 24px 120px; }
+
+    .flow-row {
+      display: grid; grid-template-columns: 1fr; gap: 40px;
+    }
+
+    .step-card {
+      background: var(--card); border: 2px solid var(--ink); border-radius: 24px;
+      padding: 28px 32px; display: grid; grid-template-columns: 80px 1fr 360px;
+      gap: 32px; align-items: center; position: relative;
+      transition: transform 200ms var(--ease);
+    }
+    .step-card:hover { transform: translateY(-3px); box-shadow: 8px 8px 0 var(--ink); }
+    .step-card:nth-child(odd) { transform: rotate(-.3deg); }
+    .step-card:nth-child(even) { transform: rotate(.3deg); }
+
+    /* Connector line between steps */
+    .step-card::after {
+      content: ""; position: absolute; left: 64px; bottom: -40px;
+      width: 2px; height: 40px; background: repeating-linear-gradient(to bottom, var(--ink) 0 6px, transparent 6px 12px);
+      z-index: 0;
+    }
+    .step-card:last-child::after { display: none; }
+
+    /* Numero */
+    .s-num {
+      width: 80px; height: 80px; border-radius: 24px;
+      display: grid; place-items: center;
+      font-family: var(--font-display); font-weight: 900; font-size: 36px;
+      letter-spacing: -.03em;
+      border: 3px solid var(--ink);
+    }
+    .s-num.lime { background: var(--lime); color: var(--lime-ink); }
+    .s-num.pink { background: var(--pink); color: #fff; }
+    .s-num.violet { background: var(--violet); color: #fff; }
+    .s-num.cream { background: var(--cream); color: var(--ink); }
+    .s-num.cyan { background: var(--cyan); color: var(--ink); }
+    .s-num.ink { background: var(--ink); color: var(--lime); }
+    .s-num.orange { background: var(--orange); color: #fff; }
+
+    /* Body del paso */
+    .s-body { padding-right: 16px; }
+    .s-file-label { font-family: var(--font-mono); font-size: 10px; letter-spacing: .12em; text-transform: uppercase; color: var(--ink-3); font-weight: 700; margin-bottom: 6px; display: flex; align-items: center; gap: 8px; }
+    .s-file-label .file-pill { background: var(--ink); color: var(--lime); padding: 2px 8px; border-radius: 999px; font-size: 9px; letter-spacing: .04em; font-weight: 800; }
+
+    .s-title { font-weight: 900; font-size: 28px; letter-spacing: -.025em; line-height: 1.05; margin-bottom: 8px; }
+    .s-title .hl { background: var(--lime); color: var(--lime-ink); padding: 0 6px; border-radius: 6px; }
+    .s-title .hl-cream { background: var(--cream); padding: 0 6px; border-radius: 6px; }
+    .s-title .hl-pink { background: var(--pink); color: #fff; padding: 0 6px; border-radius: 6px; }
+
+    .s-desc { font-size: 14px; line-height: 1.5; color: var(--ink-2); font-weight: 500; margin-bottom: 14px; max-width: 540px; }
+    .s-desc strong { background: var(--cream); padding: 0 3px; border-radius: 2px; font-weight: 700; }
+
+    .s-tags { display: flex; gap: 6px; flex-wrap: wrap; }
+    .s-tag { font-family: var(--font-mono); font-size: 9.5px; padding: 4px 10px; border-radius: 999px; background: var(--paper-2); color: var(--ink-2); font-weight: 700; letter-spacing: .06em; text-transform: uppercase; border: 1px solid var(--line); }
+    .s-tag.check { background: var(--lime); color: var(--lime-ink); border-color: var(--ink); }
+    .s-tag.check::before { content: "✓ "; font-weight: 900; }
+
+    /* Preview miniatura */
+    .s-preview {
+      background: var(--ink); border-radius: 16px; padding: 16px;
+      aspect-ratio: 16/10; position: relative; overflow: hidden;
+      border: 1.5px solid var(--ink);
+    }
+
+    .s-preview-label {
+      position: absolute; top: 10px; left: 12px;
+      font-family: var(--font-mono); font-size: 9px;
+      color: rgba(255,255,255,.4); letter-spacing: .1em;
+      text-transform: uppercase; font-weight: 700;
+    }
+
+    /* Preview content — miniatura representativa de cada paso */
+    .p-content { height: 100%; display: flex; flex-direction: column; justify-content: center; align-items: center; text-align: center; padding-top: 16px; }
+
+    .p-big-text {
+      font-family: var(--font-display); font-weight: 900;
+      font-size: 28px; line-height: .95; letter-spacing: -.025em;
+      color: #fff;
+    }
+    .p-big-text .hl-lime { background: var(--lime); color: var(--lime-ink); padding: 0 6px; border-radius: 6px; display: inline-block; transform: rotate(-2deg); }
+    .p-big-text .hl-pink { background: var(--pink); color: #fff; padding: 0 6px; border-radius: 6px; display: inline-block; transform: rotate(2deg); }
+
+    .p-caption { font-family: var(--font-mono); font-size: 9px; color: rgba(255,255,255,.5); letter-spacing: .08em; text-transform: uppercase; margin-top: 10px; font-weight: 700; }
+
+    .p-form-mini { background: rgba(255,255,255,.06); border-radius: 6px; padding: 8px; margin: 8px 0; width: 80%; }
+    .p-form-line { height: 4px; background: rgba(255,255,255,.25); border-radius: 2px; margin-bottom: 5px; }
+    .p-form-line.short { width: 50%; }
+    .p-form-line.sel { background: var(--lime); width: 70%; }
+
+    .p-code-dots { display: flex; gap: 4px; justify-content: center; margin: 6px 0; }
+    .p-code-dot { width: 18px; height: 22px; border: 1.5px solid rgba(255,255,255,.3); border-radius: 4px; }
+    .p-code-dot.filled { background: var(--lime); border-color: var(--lime); }
+
+    .p-stats-mini { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; width: 100%; }
+    .p-stat-mini { background: rgba(255,255,255,.06); border-radius: 6px; padding: 8px; text-align: center; }
+    .p-stat-mini.hl { background: var(--lime); color: var(--lime-ink); }
+    .p-stat-mv { font-weight: 900; font-size: 20px; line-height: 1; font-family: var(--font-display); letter-spacing: -.02em; font-feature-settings: 'tnum'; }
+    .p-stat-ml { font-family: var(--font-mono); font-size: 7px; letter-spacing: .08em; text-transform: uppercase; margin-top: 3px; color: rgba(255,255,255,.4); font-weight: 700; }
+    .p-stat-mini.hl .p-stat-ml { color: var(--lime-ink); opacity: .7; }
+
+    .p-list-mini { width: 100%; display: flex; flex-direction: column; gap: 4px; }
+    .p-list-row { background: rgba(255,255,255,.04); border-radius: 5px; padding: 5px 8px; display: flex; align-items: center; gap: 6px; }
+    .p-list-dot { width: 6px; height: 6px; border-radius: 50%; background: var(--lime); flex-shrink: 0; }
+    .p-list-text { height: 3px; background: rgba(255,255,255,.25); border-radius: 1px; flex: 1; }
+    .p-list-text.short { width: 40%; flex: none; }
+
+    .p-avatar-row { display: flex; gap: 4px; margin-top: 8px; }
+    .p-av-mini { width: 20px; height: 20px; border-radius: 50%; border: 1.5px solid var(--ink); font-family: var(--font-display); font-weight: 800; font-size: 9px; display: grid; place-items: center; }
+
+    /* Footer summary */
+    .summary {
+      margin-top: 60px; background: var(--ink); color: #fff; border-radius: 32px;
+      padding: 52px 44px; position: relative; overflow: hidden;
+      display: grid; grid-template-columns: 1fr 1fr; gap: 40px; align-items: center;
+    }
+    .summary::before { content: ""; position: absolute; top: -60px; right: -60px; width: 260px; height: 260px; background: var(--lime); border-radius: 50%; opacity: .2; filter: blur(80px); }
+
+    .sm-left { position: relative; z-index: 2; }
+    .sm-label { font-family: var(--font-mono); font-size: 11px; color: var(--lime); letter-spacing: .14em; text-transform: uppercase; font-weight: 700; margin-bottom: 16px; }
+    .sm-h2 { font-weight: 900; font-size: 44px; letter-spacing: -.035em; line-height: 1; }
+    .sm-h2 .hl { background: var(--lime); color: var(--lime-ink); padding: 0 8px; border-radius: 8px; display: inline-block; transform: rotate(-.8deg); }
+    .sm-desc { margin-top: 18px; font-size: 15px; color: rgba(255,255,255,.8); line-height: 1.5; font-weight: 500; }
+
+    .sm-right { position: relative; z-index: 2; display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+    .sm-metric { padding: 20px; background: rgba(255,255,255,.06); border: 1px solid rgba(255,255,255,.12); border-radius: 18px; }
+    .sm-metric.hl { background: var(--lime); color: var(--lime-ink); border-color: var(--lime); }
+    .sm-mv { font-family: var(--font-display); font-weight: 900; font-size: 40px; letter-spacing: -.035em; line-height: 1; font-feature-settings: 'tnum'; }
+    .sm-ml { font-family: var(--font-mono); font-size: 10px; color: rgba(255,255,255,.5); letter-spacing: .1em; text-transform: uppercase; margin-top: 8px; font-weight: 700; }
+    .sm-metric.hl .sm-ml { color: var(--lime-ink); opacity: .7; }
+
+    @media (max-width: 1080px) {
+      .step-card { grid-template-columns: 1fr; padding: 22px; gap: 18px; }
+      .step-card::after { display: none; }
+      .summary { grid-template-columns: 1fr; padding: 36px 24px; }
+      .sm-right { grid-template-columns: 1fr 1fr; }
+    }
+  </style>
+</head>
+<body>
+
+  <header class="header">
+    <div class="h-logo">
+      <div class="h-tile"><svg viewBox="0 0 100 100" aria-label="Conniku" style="width:100%;height:100%;display:block"><rect width="100" height="100" rx="22" fill="#0D0F10"/><mask id="ckA_29_flujo_onboarding" maskUnits="userSpaceOnUse"><rect width="100" height="100" fill="#fff"/><circle cx="58" cy="50" r="24" fill="#000"/></mask><rect x="12" y="12" width="76" height="76" rx="14" fill="#D9FF3A" mask="url(#ckA_29_flujo_onboarding)"/><circle cx="58" cy="50" r="5" fill="#FF4A1C"/></svg></div>
+      <div class="h-text">conniku</div>
+    </div>
+    <div class="header-label">★ flujo completo · onboarding</div>
+    <h1>Desde el primer click hasta <span class="hl">su primera clase</span>.</h1>
+    <p>Los 9 pasos que atraviesa un estudiante nuevo en Conniku, desde que descubre la página hasta que está trabajando en su primera asignatura. Cada paso conecta con el siguiente sin fricción.</p>
+  </header>
+
+  <div class="flow">
+
+    <div class="flow-row">
+
+      <!-- PASO 1: Landing -->
+      <div class="step-card">
+        <div class="s-num lime">01</div>
+        <div class="s-body">
+          <div class="s-file-label">
+            Primer contacto público
+            <span class="file-pill">25-landing-unificada.html</span>
+          </div>
+          <h3 class="s-title">Descubre Conniku en la <span class="hl">landing</span>.</h3>
+          <p class="s-desc">El estudiante llega al sitio. En menos de 5 segundos ve la promesa: "Tu U entera. En una sola app." Ve los planes Free y Pro, las formas de desbloquear Pro sin pagar, testimonios de estudiantes reales. Decide probar.</p>
+          <div class="s-tags">
+            <span class="s-tag check">hero editorial</span>
+            <span class="s-tag check">free visible</span>
+            <span class="s-tag check">pro sin tarjeta</span>
+            <span class="s-tag check">cero competencia</span>
+          </div>
+        </div>
+        <div class="s-preview">
+          <div class="s-preview-label">Landing</div>
+          <div class="p-content">
+            <div class="p-big-text">
+              Tu U<br>
+              <span class="hl-lime">entera</span>.<br>
+              Una <span class="hl-pink">app</span>.
+            </div>
+            <div class="p-caption">empezar gratis · sin tarjeta</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- PASO 2: Registro -->
+      <div class="step-card">
+        <div class="s-num pink">02</div>
+        <div class="s-body">
+          <div class="s-file-label">
+            Crear cuenta
+            <span class="file-pill">05-auth-editorial.html</span>
+          </div>
+          <h3 class="s-title">Se crea su <span class="hl-cream">cuenta</span> en 90 segundos.</h3>
+          <p class="s-desc">Formulario corto: nombre, correo, fecha de nacimiento, clave. Opción Google o correo universitario para acelerar. <strong>Checkbox obligatorio con declaración jurada de mayoría de edad</strong>, link a términos que el usuario debe abrir antes de aceptar.</p>
+          <div class="s-tags">
+            <span class="s-tag check">verificación 18+</span>
+            <span class="s-tag check">términos auditables</span>
+            <span class="s-tag check">hash sha-256</span>
+          </div>
+        </div>
+        <div class="s-preview">
+          <div class="s-preview-label">Register</div>
+          <div class="p-content">
+            <div class="p-big-text">Crea tu<br>cuenta</div>
+            <div class="p-form-mini">
+              <div class="p-form-line sel"></div>
+              <div class="p-form-line short"></div>
+              <div class="p-form-line"></div>
+            </div>
+            <div class="p-caption">★ declaración 18+ leída</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- PASO 3: Verificación email + U -->
+      <div class="step-card">
+        <div class="s-num cyan">03</div>
+        <div class="s-body">
+          <div class="s-file-label">
+            Verificación
+            <span class="file-pill">26-verificacion.html</span>
+          </div>
+          <h3 class="s-title">Verifica correo y <span class="hl">vincula su U</span>.</h3>
+          <p class="s-desc">Código de 6 dígitos al correo (válido 10 min). Al mismo tiempo, <strong>vincula opcionalmente su correo universitario</strong> para sincronización automática de calendario, materiales y comunidad oficial. Los beneficios de sincronizar están a la vista.</p>
+          <div class="s-tags">
+            <span class="s-tag check">código 6 dígitos</span>
+            <span class="s-tag check">sync U opcional</span>
+            <span class="s-tag check">calendario auto</span>
+          </div>
+        </div>
+        <div class="s-preview">
+          <div class="s-preview-label">Verificación</div>
+          <div class="p-content">
+            <div class="p-big-text">Te<br>mandamos<br>un código</div>
+            <div class="p-code-dots">
+              <div class="p-code-dot filled"></div>
+              <div class="p-code-dot filled"></div>
+              <div class="p-code-dot filled"></div>
+              <div class="p-code-dot"></div>
+              <div class="p-code-dot"></div>
+              <div class="p-code-dot"></div>
+            </div>
+            <div class="p-caption">★ expira en 08:42</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- PASO 4: Onboarding wizard -->
+      <div class="step-card">
+        <div class="s-num violet">04</div>
+        <div class="s-body">
+          <div class="s-file-label">
+            Wizard de perfil
+            <span class="file-pill">20-onboarding.html</span>
+          </div>
+          <h3 class="s-title">Configura su U, carrera e <span class="hl-pink">intereses</span>.</h3>
+          <p class="s-desc">Selecciona su universidad de una lista con 14+ conectadas. Elige carrera y año. Marca intereses: tutores, biblioteca, empleo, cursos. Cada paso muestra qué desbloquea. Wizard de 6 pasos con barra de progreso visible.</p>
+          <div class="s-tags">
+            <span class="s-tag check">14+ U sincronizadas</span>
+            <span class="s-tag check">carrera + año</span>
+            <span class="s-tag check">intereses personalizados</span>
+          </div>
+        </div>
+        <div class="s-preview">
+          <div class="s-preview-label">Onboarding</div>
+          <div class="p-content">
+            <div class="p-big-text">¿Cuál es<br>tu U?</div>
+            <div class="p-list-mini">
+              <div class="p-list-row" style="background: var(--lime); color: var(--lime-ink);">
+                <div class="p-list-dot" style="background: var(--ink);"></div>
+                <div class="p-list-text" style="background: var(--lime-ink); opacity: .4;"></div>
+                <div style="font-size: 8px; font-weight: 800;">✓</div>
+              </div>
+              <div class="p-list-row"><div class="p-list-dot" style="background: rgba(255,255,255,.3);"></div><div class="p-list-text short"></div></div>
+              <div class="p-list-row"><div class="p-list-dot" style="background: rgba(255,255,255,.3);"></div><div class="p-list-text"></div></div>
+            </div>
+            <div class="p-caption">paso 3 de 6</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- PASO 5: Bienvenida primera vez -->
+      <div class="step-card">
+        <div class="s-num cream">05</div>
+        <div class="s-body">
+          <div class="s-file-label">
+            Primera entrada
+            <span class="file-pill">27-bienvenida.html</span>
+          </div>
+          <h3 class="s-title">Ve su <span class="hl">semestre listo</span> y las 3 primeras acciones.</h3>
+          <p class="s-desc">Pantalla tipo hero "Hola, [nombre]" con las 4 detecciones automáticas hechas: 6 asignaturas, 5 profesores, 30 créditos, 127 compañeros. Vista de la semana con sus próximas clases y entregas. <strong>3 sugerencias concretas</strong> para empezar: CV, primera tutoría, comunidad.</p>
+          <div class="s-tags">
+            <span class="s-tag check">detección automática</span>
+            <span class="s-tag check">primera semana visible</span>
+            <span class="s-tag check">3 acciones guiadas</span>
+          </div>
+        </div>
+        <div class="s-preview">
+          <div class="s-preview-label">Bienvenida</div>
+          <div class="p-content">
+            <div class="p-big-text">Hola,<br><span class="hl-lime">Cristian</span></div>
+            <div class="p-stats-mini">
+              <div class="p-stat-mini hl"><div class="p-stat-mv">6</div><div class="p-stat-ml">Asignaturas</div></div>
+              <div class="p-stat-mini"><div class="p-stat-mv">127</div><div class="p-stat-ml">Compañeros</div></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- PASO 6: Dashboard -->
+      <div class="step-card">
+        <div class="s-num ink">06</div>
+        <div class="s-body">
+          <div class="s-file-label">
+            Panel principal
+            <span class="file-pill">01-dashboard-estudiante.html</span>
+          </div>
+          <h3 class="s-title">Llega al <span class="hl">dashboard</span> personalizado.</h3>
+          <p class="s-desc">Home del estudiante con progress bar del semestre, próxima clase, documentos recientes, últimos quizzes con notas, day timeline de hoy, stats de la semana, activity feed con lo que pasa con sus compañeros. Todo relevante para él, nada genérico.</p>
+          <div class="s-tags">
+            <span class="s-tag check">timeline del día</span>
+            <span class="s-tag check">stats personales</span>
+            <span class="s-tag check">activity feed en vivo</span>
+          </div>
+        </div>
+        <div class="s-preview">
+          <div class="s-preview-label">Dashboard</div>
+          <div class="p-content">
+            <div class="p-big-text" style="font-size: 22px;">Hoy · <span class="hl-lime">viernes</span></div>
+            <div class="p-stats-mini">
+              <div class="p-stat-mini hl"><div class="p-stat-mv">42h</div><div class="p-stat-ml">Estudiadas</div></div>
+              <div class="p-stat-mini"><div class="p-stat-mv">12d</div><div class="p-stat-ml">Racha</div></div>
+            </div>
+            <div class="p-caption">★ próxima clase 10:30</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- PASO 7: Mi Universidad -->
+      <div class="step-card">
+        <div class="s-num lime">07</div>
+        <div class="s-body">
+          <div class="s-file-label">
+            Mi U · sincronizada
+            <span class="file-pill">17-mi-universidad.html</span>
+          </div>
+          <h3 class="s-title">Explora su U <span class="hl">sincronizada</span>.</h3>
+          <p class="s-desc">Ve los datos reales de su universidad cargados automáticamente: 6 asignaturas con notas y asistencia, calendario académico del semestre, material oficial de profesores subido, fechas críticas próximas, progreso del semestre (34% completado, día 41 de 120).</p>
+          <div class="s-tags">
+            <span class="s-tag check">6 ramos cargados</span>
+            <span class="s-tag check">calendario real</span>
+            <span class="s-tag check">material oficial</span>
+          </div>
+        </div>
+        <div class="s-preview">
+          <div class="s-preview-label">Mi U</div>
+          <div class="p-content">
+            <div class="p-big-text" style="font-size: 22px;"><span class="hl-lime">6</span> ramos<br>sincronizados</div>
+            <div class="p-list-mini">
+              <div class="p-list-row"><div class="p-list-dot"></div><div class="p-list-text"></div></div>
+              <div class="p-list-row"><div class="p-list-dot"></div><div class="p-list-text short"></div></div>
+              <div class="p-list-row"><div class="p-list-dot"></div><div class="p-list-text"></div></div>
+            </div>
+            <div class="p-caption">promedio 6.4 · asist. 92%</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- PASO 8: Asignatura individual -->
+      <div class="step-card">
+        <div class="s-num orange">08</div>
+        <div class="s-body">
+          <div class="s-file-label">
+            Asignatura individual
+            <span class="file-pill">28-asignatura-detalle.html</span>
+          </div>
+          <h3 class="s-title">Entra a <span class="hl-pink">Cálculo Dif. II</span> y ve sus documentos.</h3>
+          <p class="s-desc">Página completa de la asignatura: profesora, sala, horario, promedio 6.8. Tabs: <strong>Documentos</strong> (con transcripts guardados de tutorías + sus apuntes + material oficial), Clases, Evaluaciones, Foro, Compañeros. Sidebar con próxima clase, progreso, evaluaciones pendientes y los 42 compañeros del ramo.</p>
+          <div class="s-tags">
+            <span class="s-tag check">transcripts clases</span>
+            <span class="s-tag check">material oficial</span>
+            <span class="s-tag check">evaluaciones + notas</span>
+            <span class="s-tag check">42 compañeros</span>
+          </div>
+        </div>
+        <div class="s-preview">
+          <div class="s-preview-label">Cálculo Dif. II</div>
+          <div class="p-content">
+            <div class="p-big-text" style="font-size: 20px;">Cálculo<br><span class="hl-pink">Dif II</span></div>
+            <div class="p-list-mini">
+              <div class="p-list-row" style="background: rgba(217,255,58,.15);"><div class="p-list-dot"></div><div class="p-list-text"></div><div style="font-size: 7px; color: var(--lime); font-weight: 800;">TR</div></div>
+              <div class="p-list-row"><div class="p-list-dot" style="background: var(--pink);"></div><div class="p-list-text short"></div></div>
+              <div class="p-list-row"><div class="p-list-dot" style="background: var(--cyan);"></div><div class="p-list-text"></div></div>
+            </div>
+            <div class="p-caption">14 docs · 2 transcripts</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- PASO 9: Primera clase con tutor -->
+      <div class="step-card">
+        <div class="s-num pink">09</div>
+        <div class="s-body">
+          <div class="s-file-label">
+            Primera tutoría en vivo
+            <span class="file-pill">14-classroom-envivo.html</span>
+          </div>
+          <h3 class="s-title">Toma su <span class="hl-cream">primera clase</span> con tutor verificado.</h3>
+          <p class="s-desc">Clase en vivo con Margarita Soto (Matemáticas UChile). Pizarra digital, chat con tutor, transcript automático en tiempo real. Al terminar puede <strong>guardar el transcript en su computador</strong> (PDF/DOCX/TXT) o <strong>enviarlo directamente a documentos de la asignatura</strong> para que quede junto al material del ramo. Pago protegido en custodia.</p>
+          <div class="s-tags">
+            <span class="s-tag check">pizarra en vivo</span>
+            <span class="s-tag check">transcript auto</span>
+            <span class="s-tag check">descarga post-clase</span>
+            <span class="s-tag check">enviar a asignatura</span>
+            <span class="s-tag check">pago protegido</span>
+          </div>
+        </div>
+        <div class="s-preview">
+          <div class="s-preview-label">Clase en vivo</div>
+          <div class="p-content">
+            <div class="p-big-text" style="font-size: 20px;"><span class="hl-pink">EN VIVO</span><br>42:18 min</div>
+            <div class="p-avatar-row">
+              <div class="p-av-mini" style="background: linear-gradient(135deg, #6B4EFF, #FF4D3A); color: #fff;">MS</div>
+              <div class="p-av-mini" style="background: linear-gradient(135deg, #FFE9B8, #D9FF3A); color: #181F08;">PR</div>
+            </div>
+            <div class="p-caption">★ transcript guardando</div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- Summary final -->
+    <div class="summary">
+      <div class="sm-left">
+        <div class="sm-label">★ resumen del flujo</div>
+        <h2 class="sm-h2">9 pasos.<br><span class="hl">12 minutos</span>.</h2>
+        <p class="sm-desc">Del primer click a trabajar con un tutor verificado. Cada paso está pensado para que el estudiante no se pierda, entienda el valor inmediato y no tenga que decidir cosas que puede decidir después. Free visible desde el inicio, Pro accesible sin tarjeta, todo sincronizado automáticamente.</p>
+      </div>
+      <div class="sm-right">
+        <div class="sm-metric hl">
+          <div class="sm-mv">9</div>
+          <div class="sm-ml">Pantallas del flujo</div>
+        </div>
+        <div class="sm-metric">
+          <div class="sm-mv">12min</div>
+          <div class="sm-ml">Tiempo total</div>
+        </div>
+        <div class="sm-metric">
+          <div class="sm-mv">6</div>
+          <div class="sm-ml">Wizard onboarding</div>
+        </div>
+        <div class="sm-metric">
+          <div class="sm-mv">0</div>
+          <div class="sm-ml">Fricción · sin tarjeta</div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+</body>
+</html>

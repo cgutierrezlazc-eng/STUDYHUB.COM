@@ -1,0 +1,640 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>LOGO.SPEC · Conniku</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Funnel+Display:wght@400;500;600;700;800;900&family=Geist+Mono:wght@400;500;600;700&display=swap" />
+  <style>
+    :root {
+      --ink: #0D0F10;
+      --paper: #F5F4EF;
+      --paper-2: #EBE9E1;
+      --line: #D2CFC3;
+      --card: #FFFFFF;
+      --lime: #D9FF3A;
+      --orange: #FF4A1C;
+      --ink-2: #2B2E30;
+      --ink-3: #696C6F;
+      --ink-4: #A0A3A7;
+      --font-display: 'Funnel Display', -apple-system, sans-serif;
+      --font-mono: 'Geist Mono', ui-monospace, monospace;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    html, body {
+      background: var(--paper); color: var(--ink);
+      font-family: var(--font-mono); font-size: 13px; line-height: 1.5;
+    }
+
+    /* ═══ Wordmark canónico · implementación oficial ═══ */
+    .wm {
+      display: inline-flex; align-items: baseline;
+      font-family: var(--font-display); font-weight: 900;
+      letter-spacing: -.055em; line-height: 1;
+      color: var(--ink); text-decoration: none; white-space: nowrap;
+    }
+    .wm .u-pack {
+      display: inline-flex; align-items: baseline;
+      background: var(--lime); color: var(--ink);
+      padding: .07em .14em .07em .09em;
+      border-radius: .2em; margin-left: .02em;
+    }
+    .wm .u-pack .dot { color: var(--orange); }
+    .wm.on-dark { color: var(--paper); }
+
+    /* ═══ Layout ═══ */
+    .doc-meta {
+      padding: 20px 32px;
+      background: var(--ink); color: var(--paper);
+      font-family: var(--font-mono);
+    }
+    .doc-meta table { width: 100%; font-size: 12px; }
+    .doc-meta td { padding: 3px 10px 3px 0; vertical-align: top; }
+    .doc-meta td:first-child { color: var(--lime); font-weight: 800; width: 160px; letter-spacing: .06em; }
+
+    main { padding: 32px; max-width: 1200px; margin: 0 auto; }
+
+    section {
+      border: 1.5px solid var(--ink);
+      border-radius: 10px;
+      margin-bottom: 24px;
+      background: var(--card);
+    }
+    section > .sec-head {
+      padding: 14px 20px;
+      background: var(--ink); color: var(--paper);
+      font-family: var(--font-mono);
+      display: flex; align-items: baseline; gap: 14px;
+      border-radius: 8px 8px 0 0;
+    }
+    section > .sec-head .id {
+      font-size: 11px; letter-spacing: .12em; color: var(--lime); font-weight: 800;
+    }
+    section > .sec-head .title {
+      font-family: var(--font-display); font-size: 18px; font-weight: 900; letter-spacing: -.02em;
+    }
+    section > .sec-body { padding: 20px; }
+
+    /* Tablas técnicas */
+    table.spec {
+      width: 100%;
+      border-collapse: collapse;
+      font-family: var(--font-mono); font-size: 12.5px;
+      border: 1px solid var(--line);
+    }
+    table.spec th {
+      background: var(--paper-2);
+      text-align: left; padding: 8px 12px;
+      font-size: 10.5px; letter-spacing: .08em; text-transform: uppercase;
+      font-weight: 800; color: var(--ink);
+      border-bottom: 2px solid var(--ink);
+    }
+    table.spec td {
+      padding: 7px 12px;
+      border-bottom: 1px solid var(--line);
+      vertical-align: top;
+    }
+    table.spec td:first-child { font-weight: 700; color: var(--ink); width: 30%; }
+    table.spec td:nth-child(2) { color: var(--ink-2); }
+    table.spec .val {
+      background: var(--ink); color: var(--lime);
+      padding: 1px 6px; border-radius: 3px;
+      font-weight: 800;
+    }
+
+    /* Código */
+    pre.code {
+      background: var(--ink); color: var(--paper);
+      padding: 16px 20px; border-radius: 6px;
+      font-family: var(--font-mono); font-size: 12px; line-height: 1.55;
+      overflow-x: auto;
+      border: 1px solid var(--ink);
+    }
+    pre.code.inline-example {
+      background: var(--paper-2); color: var(--ink); border: 1px solid var(--line);
+    }
+    .code-label {
+      font-family: var(--font-mono); font-size: 10px;
+      letter-spacing: .1em; text-transform: uppercase;
+      color: var(--ink-3); font-weight: 800;
+      margin-bottom: 6px; display: block;
+    }
+
+    /* Checklist */
+    ul.checklist { list-style: none; }
+    ul.checklist li {
+      padding: 6px 0 6px 26px;
+      position: relative;
+      font-family: var(--font-mono); font-size: 12.5px;
+      border-bottom: 1px dashed var(--line);
+    }
+    ul.checklist li:last-child { border-bottom: 0; }
+    ul.checklist li::before {
+      content: "[ ]";
+      position: absolute; left: 0; top: 6px;
+      font-weight: 800; color: var(--ink);
+    }
+    ul.checklist li.required::before { content: "[!]"; color: var(--orange); }
+
+    /* Forbidden */
+    ul.forbidden { list-style: none; }
+    ul.forbidden li {
+      padding: 5px 0 5px 26px;
+      position: relative;
+      font-family: var(--font-mono); font-size: 12.5px;
+    }
+    ul.forbidden li::before {
+      content: "✗";
+      position: absolute; left: 0; top: 5px;
+      color: var(--orange); font-weight: 900;
+    }
+
+    /* Palette swatches */
+    .palette {
+      display: grid; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+      gap: 10px;
+    }
+    .swatch {
+      border: 1px solid var(--ink);
+      border-radius: 6px; overflow: hidden;
+    }
+    .swatch .color-bar {
+      height: 52px; padding: 8px 12px;
+      display: flex; align-items: flex-end;
+    }
+    .swatch .color-bar .token {
+      font-family: var(--font-mono); font-size: 11px; font-weight: 800;
+      letter-spacing: .04em;
+    }
+    .swatch .info {
+      background: var(--card); padding: 8px 12px;
+      font-family: var(--font-mono); font-size: 11px;
+    }
+    .swatch .info .hex { font-weight: 800; color: var(--ink); }
+    .swatch .info .role { color: var(--ink-3); margin-top: 2px; }
+
+    /* Preview stage */
+    .preview-grid {
+      display: grid; grid-template-columns: 1fr 1fr; gap: 12px;
+      margin-bottom: 14px;
+    }
+    .preview {
+      border: 1.5px solid var(--ink); border-radius: 8px;
+      padding: 40px 20px;
+      display: grid; place-items: center;
+      min-height: 180px;
+      position: relative;
+    }
+    .preview.bg-paper { background: var(--paper); }
+    .preview.bg-ink { background: var(--ink); }
+    .preview .stage-label {
+      position: absolute; top: 8px; left: 10px;
+      font-family: var(--font-mono); font-size: 9px; font-weight: 800;
+      letter-spacing: .1em;
+    }
+    .preview.bg-paper .stage-label { color: var(--ink-3); }
+    .preview.bg-ink .stage-label { color: rgba(245,244,239,.5); }
+    .preview .wm { font-size: 48px; }
+
+    .icon-sizes {
+      display: flex; flex-wrap: wrap; gap: 24px; align-items: flex-end;
+      padding: 20px; background: var(--paper-2); border-radius: 6px;
+      border: 1px solid var(--line);
+      margin-top: 10px;
+    }
+    .icon-sizes .item { text-align: center; }
+    .icon-sizes .label {
+      font-family: var(--font-mono); font-size: 10px;
+      letter-spacing: .04em; color: var(--ink-3); margin-top: 6px;
+    }
+    .icon-sizes svg { display: block; }
+
+    /* Inline note */
+    .note {
+      background: var(--paper-2);
+      border-left: 3px solid var(--ink);
+      padding: 10px 14px;
+      margin: 12px 0;
+      font-family: var(--font-mono); font-size: 12px;
+      color: var(--ink-2); line-height: 1.6;
+    }
+    .note.rule {
+      border-left-color: var(--orange);
+      background: rgba(255,74,28,.06);
+    }
+    .note strong { color: var(--ink); font-weight: 800; }
+
+    @media (max-width: 720px) {
+      main { padding: 16px; }
+      .preview-grid { grid-template-columns: 1fr; }
+      .palette { grid-template-columns: 1fr; }
+    }
+  </style>
+</head>
+<body>
+
+<div class="doc-meta">
+  <table>
+    <tr><td>DOCUMENT_ID</td><td>LOGO.SPEC</td></tr>
+    <tr><td>SCOPE</td><td>Conniku brand mark · official and only · no prior versions</td></tr>
+    <tr><td>CONSUMER</td><td>Claude Code implementing the product UI / exporting assets</td></tr>
+    <tr><td>DATE</td><td>2026-04-19</td></tr>
+    <tr><td>APPROVER</td><td>Cristian Gutiérrez Lazcano (single source of approval)</td></tr>
+    <tr><td>ENCODING</td><td>HTML + SVG + CSS · self-contained · Google Fonts dependency</td></tr>
+    <tr><td>LOCATION</td><td>/Users/cristiang./Desktop/CONNIKU UPDATE DISENO/logo-final.html</td></tr>
+  </table>
+</div>
+
+<main>
+
+<!-- ═══ 01 · ASSETS.REQUIRED ═══ -->
+<section>
+  <div class="sec-head">
+    <span class="id">LOGO.01</span>
+    <span class="title">ASSETS.REQUIRED</span>
+  </div>
+  <div class="sec-body">
+    <table class="spec">
+      <thead>
+        <tr><th>asset_id</th><th>path</th><th>purpose</th></tr>
+      </thead>
+      <tbody>
+        <tr><td>logo-tile.svg</td><td>assets/branding/logo-tile.svg</td><td>App icon · color · primary</td></tr>
+        <tr><td>logo-tile-mono-dark.svg</td><td>assets/branding/logo-tile-mono-dark.svg</td><td>App icon · monochrome on light</td></tr>
+        <tr><td>logo-tile-mono-light.svg</td><td>assets/branding/logo-tile-mono-light.svg</td><td>App icon · monochrome on dark</td></tr>
+        <tr><td>logo-full.svg</td><td>assets/branding/logo-full.svg</td><td>Wordmark integrated · color · on paper</td></tr>
+        <tr><td>logo-full-white.svg</td><td>assets/branding/logo-full-white.svg</td><td>Wordmark integrated · color · on ink</td></tr>
+      </tbody>
+    </table>
+  </div>
+</section>
+
+<!-- ═══ 02 · PALETTE.TOKENS ═══ -->
+<section>
+  <div class="sec-head">
+    <span class="id">LOGO.02</span>
+    <span class="title">PALETTE.TOKENS</span>
+  </div>
+  <div class="sec-body">
+    <div class="palette">
+      <div class="swatch">
+        <div class="color-bar" style="background:#0D0F10"><span class="token" style="color:#F5F4EF">--ink</span></div>
+        <div class="info"><div class="hex">#0D0F10</div><div class="role">connik text · u inside tile · text on light bg</div></div>
+      </div>
+      <div class="swatch">
+        <div class="color-bar" style="background:#D9FF3A"><span class="token" style="color:#181F08">--lime</span></div>
+        <div class="info"><div class="hex">#D9FF3A</div><div class="role">u-pack tile fill · logo exclusive</div></div>
+      </div>
+      <div class="swatch">
+        <div class="color-bar" style="background:#FF4A1C"><span class="token" style="color:#F5F4EF">--orange</span></div>
+        <div class="info"><div class="hex">#FF4A1C</div><div class="role">final dot "." · logo exclusive</div></div>
+      </div>
+      <div class="swatch">
+        <div class="color-bar" style="background:#F5F4EF;border-bottom:1px solid var(--line)"><span class="token" style="color:#0D0F10">--paper</span></div>
+        <div class="info"><div class="hex">#F5F4EF</div><div class="role">connik text on dark bg · base background</div></div>
+      </div>
+    </div>
+
+    <div class="note rule">
+      <strong>CONSTRAINT:</strong> palette_size = 4. No gradients. No filters. No tints. No shadows on logo. No glows. No bevels.
+    </div>
+  </div>
+</section>
+
+<!-- ═══ 03 · WORDMARK.SPEC ═══ -->
+<section>
+  <div class="sec-head">
+    <span class="id">LOGO.03</span>
+    <span class="title">WORDMARK.SPEC</span>
+  </div>
+  <div class="sec-body">
+    <table class="spec">
+      <thead>
+        <tr><th>property</th><th>value</th><th>note</th></tr>
+      </thead>
+      <tbody>
+        <tr><td>structure</td><td><span class="val">connik + [u-pack: u + dot]</span></td><td>Single wordmark. u and dot are wrapped in a lime tile.</td></tr>
+        <tr><td>font_family</td><td><span class="val">Funnel Display</span></td><td>Weights 400 to 900 available.</td></tr>
+        <tr><td>font_weight</td><td><span class="val">900</span></td><td>Black. No other weight valid.</td></tr>
+        <tr><td>letter_spacing</td><td><span class="val">-0.055em</span></td><td>Compact tracking for tight feel.</td></tr>
+        <tr><td>line_height</td><td><span class="val">1</span></td><td>Zero extra leading.</td></tr>
+        <tr><td>white_space</td><td><span class="val">nowrap</span></td><td>Never wrap to two lines.</td></tr>
+        <tr><td>connik_color_on_paper</td><td><span class="val">#0D0F10</span></td><td>ink</td></tr>
+        <tr><td>connik_color_on_ink</td><td><span class="val">#F5F4EF</span></td><td>paper</td></tr>
+        <tr><td>u-pack_background</td><td><span class="val">#D9FF3A</span></td><td>lime · fixed across all modes</td></tr>
+        <tr><td>u-pack_u_color</td><td><span class="val">#0D0F10</span></td><td>ink · INVIOLABLE · never changes</td></tr>
+        <tr><td>u-pack_dot_color</td><td><span class="val">#FF4A1C</span></td><td>orange · fixed across all modes</td></tr>
+        <tr><td>u-pack_padding</td><td><span class="val">.07em .14em .07em .09em</span></td><td>top right bottom left</td></tr>
+        <tr><td>u-pack_border_radius</td><td><span class="val">.2em</span></td><td>Proportional to font-size.</td></tr>
+        <tr><td>u-pack_margin_left</td><td><span class="val">.02em</span></td><td>Tiny gap between "k" and tile.</td></tr>
+      </tbody>
+    </table>
+
+    <span class="code-label">VISUAL · SCALE 48px</span>
+    <div class="preview-grid">
+      <div class="preview bg-paper">
+        <span class="stage-label">on_paper</span>
+        <span class="wm">conn<span>i</span>k<span class="u-pack">u<span class="dot">.</span></span></span>
+      </div>
+      <div class="preview bg-ink">
+        <span class="stage-label">on_ink</span>
+        <span class="wm on-dark">conn<span>i</span>k<span class="u-pack">u<span class="dot">.</span></span></span>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══ 04 · APP_ICON.SPEC ═══ -->
+<section>
+  <div class="sec-head">
+    <span class="id">LOGO.04</span>
+    <span class="title">APP_ICON.SPEC</span>
+  </div>
+  <div class="sec-body">
+    <table class="spec">
+      <thead>
+        <tr><th>property</th><th>value</th><th>note</th></tr>
+      </thead>
+      <tbody>
+        <tr><td>canvas_viewbox</td><td><span class="val">0 0 100 100</span></td><td>Square, 100-unit grid.</td></tr>
+        <tr><td>tile_rect_width</td><td><span class="val">100</span></td><td>Fills full canvas.</td></tr>
+        <tr><td>tile_rect_height</td><td><span class="val">100</span></td><td>Fills full canvas.</td></tr>
+        <tr><td>tile_border_radius</td><td><span class="val">22</span></td><td>22% of side. Squircle-ish.</td></tr>
+        <tr><td>tile_fill</td><td><span class="val">#D9FF3A</span></td><td>lime</td></tr>
+        <tr><td>letter_u_element</td><td><span class="val">&lt;text&gt;</span></td><td>SVG text node.</td></tr>
+        <tr><td>letter_u_x</td><td><span class="val">50</span></td><td>Horizontal center of canvas.</td></tr>
+        <tr><td>letter_u_y</td><td><span class="val">71</span></td><td>Vertical baseline. Optical center.</td></tr>
+        <tr><td>letter_u_text_anchor</td><td><span class="val">middle</span></td><td>Horizontal centering.</td></tr>
+        <tr><td>letter_u_font_family</td><td><span class="val">Funnel Display, -apple-system, sans-serif</span></td><td>Fallback for export without font loaded.</td></tr>
+        <tr><td>letter_u_font_weight</td><td><span class="val">900</span></td><td>Black.</td></tr>
+        <tr><td>letter_u_font_size</td><td><span class="val">84</span></td><td>84% of canvas height.</td></tr>
+        <tr><td>letter_u_letter_spacing</td><td><span class="val">-4</span></td><td>Tight, visually compact.</td></tr>
+        <tr><td>letter_u_fill</td><td><span class="val">#0D0F10</span></td><td>ink · INVIOLABLE.</td></tr>
+        <tr><td>dot_element</td><td><span class="val">&lt;circle&gt;</span></td><td>SVG circle node.</td></tr>
+        <tr><td>dot_cx</td><td><span class="val">77</span></td><td>Horizontal position · right of u.</td></tr>
+        <tr><td>dot_cy</td><td><span class="val">68</span></td><td>Vertical position · relative to u baseline.</td></tr>
+        <tr><td>dot_r</td><td><span class="val">6</span></td><td>Radius.</td></tr>
+        <tr><td>dot_fill</td><td><span class="val">#FF4A1C</span></td><td>orange · INVIOLABLE.</td></tr>
+      </tbody>
+    </table>
+
+    <span class="code-label">VISUAL · MULTIPLE SCALES</span>
+    <div class="icon-sizes">
+      <div class="item">
+        <svg viewBox="0 0 100 100" width="16" height="16"><rect width="100" height="100" rx="22" fill="#D9FF3A"/><text x="50" y="71" text-anchor="middle" font-family="Funnel Display, -apple-system, sans-serif" font-weight="900" font-size="84" fill="#0D0F10" letter-spacing="-4">u</text><circle cx="77" cy="68" r="6" fill="#FF4A1C"/></svg>
+        <div class="label">16px</div>
+      </div>
+      <div class="item">
+        <svg viewBox="0 0 100 100" width="32" height="32"><rect width="100" height="100" rx="22" fill="#D9FF3A"/><text x="50" y="71" text-anchor="middle" font-family="Funnel Display, -apple-system, sans-serif" font-weight="900" font-size="84" fill="#0D0F10" letter-spacing="-4">u</text><circle cx="77" cy="68" r="6" fill="#FF4A1C"/></svg>
+        <div class="label">32px</div>
+      </div>
+      <div class="item">
+        <svg viewBox="0 0 100 100" width="64" height="64"><rect width="100" height="100" rx="22" fill="#D9FF3A"/><text x="50" y="71" text-anchor="middle" font-family="Funnel Display, -apple-system, sans-serif" font-weight="900" font-size="84" fill="#0D0F10" letter-spacing="-4">u</text><circle cx="77" cy="68" r="6" fill="#FF4A1C"/></svg>
+        <div class="label">64px</div>
+      </div>
+      <div class="item">
+        <svg viewBox="0 0 100 100" width="120" height="120"><rect width="100" height="100" rx="22" fill="#D9FF3A"/><text x="50" y="71" text-anchor="middle" font-family="Funnel Display, -apple-system, sans-serif" font-weight="900" font-size="84" fill="#0D0F10" letter-spacing="-4">u</text><circle cx="77" cy="68" r="6" fill="#FF4A1C"/></svg>
+        <div class="label">120px</div>
+      </div>
+      <div class="item">
+        <svg viewBox="0 0 100 100" width="180" height="180"><rect width="100" height="100" rx="22" fill="#D9FF3A"/><text x="50" y="71" text-anchor="middle" font-family="Funnel Display, -apple-system, sans-serif" font-weight="900" font-size="84" fill="#0D0F10" letter-spacing="-4">u</text><circle cx="77" cy="68" r="6" fill="#FF4A1C"/></svg>
+        <div class="label">180px</div>
+      </div>
+      <div class="item">
+        <svg viewBox="0 0 100 100" width="240" height="240"><rect width="100" height="100" rx="22" fill="#D9FF3A"/><text x="50" y="71" text-anchor="middle" font-family="Funnel Display, -apple-system, sans-serif" font-weight="900" font-size="84" fill="#0D0F10" letter-spacing="-4">u</text><circle cx="77" cy="68" r="6" fill="#FF4A1C"/></svg>
+        <div class="label">240px</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══ 05 · IMPLEMENTATION.SVG ═══ -->
+<section>
+  <div class="sec-head">
+    <span class="id">LOGO.05</span>
+    <span class="title">IMPLEMENTATION.SVG</span>
+  </div>
+  <div class="sec-body">
+    <span class="code-label">FILE · logo-tile.svg · canonical</span>
+    <pre class="code">&lt;svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg" aria-label="Conniku"&gt;
+  &lt;rect width="100" height="100" rx="22" fill="#D9FF3A"/&gt;
+  &lt;text x="50" y="71" text-anchor="middle"
+        font-family="Funnel Display, -apple-system, sans-serif"
+        font-weight="900" font-size="84" fill="#0D0F10"
+        letter-spacing="-4"&gt;u&lt;/text&gt;
+  &lt;circle cx="77" cy="68" r="6" fill="#FF4A1C"/&gt;
+&lt;/svg&gt;</pre>
+
+    <div class="note">
+      <strong>EXPORT.TO.PNG:</strong> ensure Funnel Display font is installed on the exporting machine.
+      IF font is absent THEN convert &lt;text&gt; to &lt;path&gt; before export.
+      Use Fontello, Inkscape "Object to Path", or an equivalent outliner.
+    </div>
+  </div>
+</section>
+
+<!-- ═══ 06 · IMPLEMENTATION.HTML_CSS ═══ -->
+<section>
+  <div class="sec-head">
+    <span class="id">LOGO.06</span>
+    <span class="title">IMPLEMENTATION.HTML_CSS</span>
+  </div>
+  <div class="sec-body">
+    <span class="code-label">HTML · wordmark markup · canonical</span>
+    <pre class="code">&lt;span class="wm"&gt;conn&lt;span&gt;i&lt;/span&gt;k&lt;span class="u-pack"&gt;u&lt;span class="dot"&gt;.&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;</pre>
+
+    <span class="code-label">CSS · wordmark styles · canonical</span>
+    <pre class="code">.wm {
+  display: inline-flex;
+  align-items: baseline;
+  font-family: 'Funnel Display', -apple-system, sans-serif;
+  font-weight: 900;
+  letter-spacing: -.055em;
+  line-height: 1;
+  color: #0D0F10;                    /* connik on light bg */
+  text-decoration: none;
+  white-space: nowrap;
+}
+.wm .u-pack {
+  display: inline-flex;
+  align-items: baseline;
+  background: #D9FF3A;
+  color: #0D0F10;                    /* u always ink · INVIOLABLE */
+  padding: .07em .14em .07em .09em;
+  border-radius: .2em;
+  margin-left: .02em;
+}
+.wm .u-pack .dot { color: #FF4A1C; }
+.wm.on-dark { color: #F5F4EF; }     /* connik on dark bg only */</pre>
+
+    <span class="code-label">REACT · component signature · proposed</span>
+    <pre class="code">interface BrandWordmarkProps {
+  onDark?: boolean;        // default false · use on dark backgrounds
+  size?: number;           // font-size in px · default inherited
+  className?: string;
+}
+
+&lt;BrandWordmark /&gt;
+&lt;BrandWordmark onDark size={48} /&gt;</pre>
+  </div>
+</section>
+
+<!-- ═══ 07 · CONSTRAINTS.SIZE ═══ -->
+<section>
+  <div class="sec-head">
+    <span class="id">LOGO.07</span>
+    <span class="title">CONSTRAINTS.SIZE</span>
+  </div>
+  <div class="sec-body">
+    <table class="spec">
+      <thead>
+        <tr><th>context</th><th>min_digital</th><th>min_print</th><th>recommended</th></tr>
+      </thead>
+      <tbody>
+        <tr><td>app_icon</td><td>16px</td><td>8mm</td><td>32–240px depending on surface</td></tr>
+        <tr><td>wordmark_integrated</td><td>96px width</td><td>24mm width</td><td>120–180px nav, 64–160px email, 40–48px footer</td></tr>
+        <tr><td>favicon</td><td>16px</td><td>N/A</td><td>32px for retina</td></tr>
+      </tbody>
+    </table>
+    <div class="note rule">
+      <strong>RULE:</strong> IF rendered_size &lt; min_digital THEN use app_icon instead of wordmark.
+      IF rendered_size_for_app_icon &lt; 16px THEN do not render logo. Use text only.
+    </div>
+  </div>
+</section>
+
+<!-- ═══ 08 · CONSTRAINTS.CLEAR_SPACE ═══ -->
+<section>
+  <div class="sec-head">
+    <span class="id">LOGO.08</span>
+    <span class="title">CONSTRAINTS.CLEAR_SPACE</span>
+  </div>
+  <div class="sec-body">
+    <table class="spec">
+      <thead>
+        <tr><th>target</th><th>clear_space_value</th><th>measurement_ref</th></tr>
+      </thead>
+      <tbody>
+        <tr><td>wordmark_integrated</td><td>x = height_of_u</td><td>~0.7em of font-size</td></tr>
+        <tr><td>app_icon</td><td>x = 24% of tile_side</td><td>Outside the rx border.</td></tr>
+      </tbody>
+    </table>
+    <div class="note">
+      <strong>FORBIDDEN INSIDE CLEAR_SPACE:</strong> text · other logos · decorative images · container borders · icons.
+    </div>
+  </div>
+</section>
+
+<!-- ═══ 09 · RULES.INVIOLABLE ═══ -->
+<section>
+  <div class="sec-head">
+    <span class="id">LOGO.09</span>
+    <span class="title">RULES.INVIOLABLE</span>
+  </div>
+  <div class="sec-body">
+    <ul class="checklist">
+      <li class="required">u_color == #0D0F10 · always · no exception</li>
+      <li class="required">dot_color == #FF4A1C · always · no exception</li>
+      <li class="required">u-pack_background == #D9FF3A · always · no exception</li>
+      <li class="required">palette_size == 4 · no additional colors</li>
+      <li class="required">u-pack contains u + dot · never separated</li>
+      <li class="required">wordmark rotation == 0deg · no rotation allowed</li>
+      <li class="required">font_family == Funnel Display 900 · no substitution</li>
+      <li class="required">final "." is present · never omitted</li>
+      <li class="required">aspect_ratio preserved · no stretch · no skew</li>
+      <li class="required">wordmark modification requires approval from Cristian Gutiérrez Lazcano</li>
+    </ul>
+  </div>
+</section>
+
+<!-- ═══ 10 · FORBIDDEN.LIST ═══ -->
+<section>
+  <div class="sec-head">
+    <span class="id">LOGO.10</span>
+    <span class="title">FORBIDDEN.LIST</span>
+  </div>
+  <div class="sec-body">
+    <ul class="forbidden">
+      <li>apply filter: blur / drop-shadow / hue-rotate / invert</li>
+      <li>apply transform: rotate(!=0) / skew / scaleY independent of scaleX</li>
+      <li>apply outline / border around the tile</li>
+      <li>apply glow or bevel</li>
+      <li>substitute font-family</li>
+      <li>change u fill from #0D0F10</li>
+      <li>change dot fill from #FF4A1C</li>
+      <li>change tile fill from #D9FF3A</li>
+      <li>use wordmark with opacity &lt; 30%</li>
+      <li>overlay text on top of the u-pack</li>
+      <li>wrap logo inside additional box / pill / ring</li>
+      <li>place logo within 2x clear_space of another logo without divider</li>
+      <li>animate with geometry distortion (squash / stretch / morph)</li>
+      <li>use logo as decorative typography inside illustrations</li>
+      <li>emit low-resolution raster below min_digital</li>
+    </ul>
+  </div>
+</section>
+
+<!-- ═══ 11 · VALIDATION.CHECKLIST ═══ -->
+<section>
+  <div class="sec-head">
+    <span class="id">LOGO.11</span>
+    <span class="title">VALIDATION.CHECKLIST</span>
+  </div>
+  <div class="sec-body">
+    <p style="margin-bottom:12px;font-family:var(--font-mono);font-size:11.5px;color:var(--ink-3)">Execute before merging any change that touches logo rendering.</p>
+    <ul class="checklist">
+      <li>Render app_icon at 16px · u is readable · dot is visible</li>
+      <li>Render app_icon at 1024px · geometry matches LOGO.04 spec</li>
+      <li>Render wordmark on --paper · connik is #0D0F10</li>
+      <li>Render wordmark on --ink · connik is #F5F4EF · tile and u unchanged</li>
+      <li>Render wordmark on all extended palette colors (pink, cyan, cream, violet) · tile stays #D9FF3A, u stays #0D0F10, dot stays #FF4A1C</li>
+      <li>Wordmark in one line · no wrap · no overflow ellipsis</li>
+      <li>No rotation applied</li>
+      <li>No filter CSS property applied to logo element</li>
+      <li>No shadow / glow / outline / border</li>
+      <li>Clear_space respected · no element inside the defined margin</li>
+      <li>Exported PNG preserves vector geometry · no blur · no rasterization artifacts</li>
+      <li>Font family loaded before logo renders · or &lt;text&gt; converted to &lt;path&gt;</li>
+      <li>WCAG AA contrast between connik and background · ratio &gt;= 4.5</li>
+      <li>WCAG AA contrast between u and tile · ratio &gt;= 4.5 · validated</li>
+    </ul>
+  </div>
+</section>
+
+<!-- ═══ 12 · CONTEXT.USAGE ═══ -->
+<section>
+  <div class="sec-head">
+    <span class="id">LOGO.12</span>
+    <span class="title">CONTEXT.USAGE</span>
+  </div>
+  <div class="sec-body">
+    <table class="spec">
+      <thead>
+        <tr><th>surface</th><th>variant</th><th>size_px_approx</th></tr>
+      </thead>
+      <tbody>
+        <tr><td>browser_favicon</td><td>app_icon</td><td>16 / 32</td></tr>
+        <tr><td>sidebar_collapsed</td><td>app_icon</td><td>32</td></tr>
+        <tr><td>sidebar_expanded</td><td>wordmark_integrated</td><td>120</td></tr>
+        <tr><td>auth_pages</td><td>wordmark_integrated</td><td>180</td></tr>
+        <tr><td>onboarding_nav</td><td>wordmark_integrated</td><td>24 font-size · ~60 width</td></tr>
+        <tr><td>splash_screen</td><td>app_icon_120 + wordmark_64 stacked</td><td>stacked</td></tr>
+        <tr><td>public_footer</td><td>wordmark_integrated</td><td>140</td></tr>
+        <tr><td>app_store_ios</td><td>app_icon · 1024x1024 master</td><td>per store spec</td></tr>
+        <tr><td>app_store_android</td><td>app_icon · adaptive_icon 432x432 + safe_area 264x264</td><td>per store spec</td></tr>
+        <tr><td>transactional_email</td><td>wordmark_integrated</td><td>160</td></tr>
+        <tr><td>og_image</td><td>wordmark_integrated + tagline</td><td>1200x630</td></tr>
+      </tbody>
+    </table>
+    <div class="note">
+      <strong>OUT_OF_SCOPE:</strong> logo does not appear outside surfaces listed above. Identity in remaining UI comes from design tokens (typography, palette, editorial particles), not logo repetition.
+    </div>
+  </div>
+</section>
+
+</main>
+
+</body>
+</html>

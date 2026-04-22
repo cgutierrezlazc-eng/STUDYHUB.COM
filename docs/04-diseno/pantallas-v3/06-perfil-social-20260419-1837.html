@@ -1,0 +1,581 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Conniku — Perfil Social (editorial)</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Funnel+Display:wght@400;500;600;700;800;900&family=Geist+Mono:wght@400;500;600;700&display=swap" />
+  <style>
+    :root {
+      --ink: #0D0F10; --ink-2: #2B2E30; --ink-3: #696C6F; --ink-4: #A0A3A7;
+      --paper: #F5F4EF; --paper-2: #EBE9E1; --paper-3: #DBD9CF;
+      --line: #D2CFC3; --line-soft: #E2DFD4; --card: #FFFFFF;
+      --lime: #D9FF3A; --lime-ink: #181F08;
+      --pink: #FF4D3A; --cream: #FFE9B8;
+      --violet: #6B4EFF; --cyan: #00C2FF; --orange: #FF4A1C;
+      --font-display: 'Funnel Display', -apple-system, sans-serif;
+      --font-mono: 'Geist Mono', ui-monospace, monospace;
+      --ease: cubic-bezier(.2,.8,.2,1);
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    html, body { background: var(--paper); color: var(--ink); font-family: var(--font-display); }
+    body { min-height: 100vh; overflow-x: hidden; }
+    ::selection { background: var(--lime); color: var(--lime-ink); }
+
+    .top-progress {
+      background: var(--ink); color: #fff; padding: 8px 28px;
+      display: flex; align-items: center; justify-content: space-between;
+      font-family: var(--font-mono); font-size: 11px;
+      letter-spacing: .08em; text-transform: uppercase;
+    }
+    .top-progress .left { display: flex; align-items: center; gap: 12px; }
+    .pulse { width: 8px; height: 8px; border-radius: 50%; background: var(--lime); animation: pulse 1.6s var(--ease) infinite; }
+    @keyframes pulse { 0% { box-shadow: 0 0 0 0 rgba(217,255,58,.7); } 70% { box-shadow: 0 0 0 10px rgba(217,255,58,0); } 100% { box-shadow: 0 0 0 0 rgba(217,255,58,0); } }
+
+    .nav-wrap { padding: 18px 28px 0; display: flex; justify-content: center; }
+    .nav {
+      max-width: 1240px; width: 100%;
+      background: var(--card); border: 1px solid var(--line);
+      border-radius: 999px; padding: 10px 14px 10px 18px;
+      display: flex; align-items: center; gap: 28px;
+    }
+    .logo-wrap { display: flex; align-items: center; gap: 10px; }
+    .logo-tile { width: 28px; height: 28px; display: block; flex-shrink: 0; }
+    .logo-text { font-weight: 700; font-size: 20px; letter-spacing: -.02em; }
+    .nav-links { display: flex; gap: 22px; flex: 1; }
+    .nav-link { font-size: 15px; font-weight: 600; color: var(--ink-2); cursor: pointer; }
+    .nav-link.active { color: var(--ink); border-bottom: 2px solid var(--lime); padding-bottom: 4px; }
+    .kbd { background: var(--paper-2); padding: 2px 7px; border-radius: 6px; font-size: 11px; }
+    .search-slot { font-family: var(--font-mono); font-size: 13px; color: var(--ink-3); border: 1px solid var(--line-soft); border-radius: 999px; padding: 6px 14px; display: flex; align-items: center; gap: 8px; }
+    .btn-primary { background: var(--ink); color: #fff; border: 0; padding: 10px 14px 10px 20px; display: flex; align-items: center; gap: 10px; font-weight: 700; font-size: 14px; border-radius: 999px; cursor: pointer; font-family: var(--font-display); }
+    .btn-primary .ring { width: 26px; height: 26px; border-radius: 50%; background: var(--lime); display: grid; place-items: center; color: var(--ink); font-weight: 900; font-size: 14px; }
+
+    .main { max-width: 1240px; margin: 0 auto; padding: 32px 28px 120px; }
+
+    /* Cover */
+    .cover {
+      height: 260px; border-radius: 32px; position: relative; overflow: hidden;
+      background: linear-gradient(135deg, var(--pink) 0%, var(--orange) 40%, var(--cream) 100%);
+      margin-bottom: 0;
+    }
+    .cover::before { content: ""; position: absolute; top: 30px; left: 30px; width: 20px; height: 20px; border-radius: 50%; background: var(--lime); box-shadow: 180px 60px 0 var(--cyan), 340px 20px 0 var(--violet), 80px 180px 0 var(--ink), 500px 130px 0 var(--lime), 680px 80px 0 var(--ink); }
+    .cover .label { position: absolute; bottom: 24px; right: 28px; font-family: var(--font-mono); font-size: 11px; letter-spacing: .14em; text-transform: uppercase; color: var(--ink); background: var(--card); border-radius: 999px; padding: 6px 14px; font-weight: 700; }
+
+    /* Profile head */
+    .profile-head { display: flex; gap: 32px; padding: 0 32px; margin-top: -72px; position: relative; z-index: 2; }
+    .avatar-wrap { flex-shrink: 0; }
+    .avatar-big {
+      width: 156px; height: 156px; border-radius: 50%;
+      background: var(--lime); color: var(--lime-ink);
+      display: grid; place-items: center;
+      font-family: var(--font-display); font-weight: 900; font-size: 56px;
+      letter-spacing: -.03em;
+      border: 6px solid var(--paper);
+      box-shadow: 0 4px 20px rgba(13,15,16,.15);
+      position: relative;
+    }
+    .avatar-big .online-dot { position: absolute; bottom: 14px; right: 14px; width: 24px; height: 24px; border-radius: 50%; background: var(--orange); border: 4px solid var(--paper); }
+
+    .identity { flex: 1; padding-top: 84px; }
+    .identity .meta-top { font-family: var(--font-mono); font-size: 11px; color: var(--ink-3); letter-spacing: .14em; text-transform: uppercase; margin-bottom: 10px; }
+    .identity h1 { font-weight: 900; font-size: clamp(48px, 6vw, 72px); line-height: 1; letter-spacing: -.04em; }
+    .identity h1 .chip { background: var(--cream); padding: 0 10px; border-radius: 10px; display: inline-block; transform: rotate(-.8deg); }
+    .identity .subtitle { margin-top: 10px; font-size: 16px; color: var(--ink-2); font-weight: 500; }
+    .identity .badges { margin-top: 18px; display: flex; gap: 8px; flex-wrap: wrap; }
+    .badge {
+      font-family: var(--font-mono); font-size: 10px; letter-spacing: .1em;
+      text-transform: uppercase; padding: 5px 12px; border-radius: 999px; font-weight: 700;
+      display: inline-flex; align-items: center; gap: 6px;
+    }
+    .badge.verified { background: var(--ink); color: var(--lime); }
+    .badge.verified::before { content: "★"; font-size: 12px; }
+    .badge.u { background: var(--lime); color: var(--lime-ink); }
+    .badge.pro { background: var(--pink); color: #fff; }
+    .badge.streak { background: var(--cream); color: var(--ink); }
+
+    .actions { display: flex; gap: 10px; padding-top: 88px; }
+    .btn { font-family: var(--font-display); border-radius: 999px; padding: 11px 18px; font-weight: 700; font-size: 14px; cursor: pointer; border: 0; display: flex; align-items: center; gap: 8px; transition: all 180ms var(--ease); }
+    .btn-ink { background: var(--ink); color: #fff; padding: 11px 14px 11px 20px; }
+    .btn-ink:hover { transform: translateY(-1px); }
+    .btn-ink .ring { width: 26px; height: 26px; border-radius: 50%; background: var(--lime); display: grid; place-items: center; color: var(--ink); font-weight: 900; font-size: 14px; }
+    .btn-ghost { background: var(--card); border: 2px solid var(--ink); color: var(--ink); }
+    .btn-ghost:hover { transform: translateY(-1px); box-shadow: 4px 4px 0 var(--ink); }
+
+    /* Stats strip */
+    .stats-strip { display: grid; grid-template-columns: repeat(5, 1fr); gap: 14px; margin: 40px 32px; }
+    .stat-box { background: var(--card); border: 2px solid var(--ink); border-radius: 20px; padding: 20px; text-align: center; transition: all 200ms var(--ease); }
+    .stat-box:hover { transform: translateY(-3px); box-shadow: 6px 6px 0 var(--ink); }
+    .stat-box:nth-child(2) { transform: rotate(-.6deg); }
+    .stat-box:nth-child(4) { transform: rotate(.4deg); }
+    .stat-box .stat-v { font-family: var(--font-display); font-weight: 900; font-size: 42px; line-height: 1; letter-spacing: -.03em; font-feature-settings: 'tnum'; }
+    .stat-box .stat-l { font-family: var(--font-mono); font-size: 10px; letter-spacing: .14em; text-transform: uppercase; color: var(--ink-3); margin-top: 8px; }
+    .stat-box.hl-lime { background: var(--lime); color: var(--lime-ink); }
+    .stat-box.hl-lime .stat-l { color: var(--lime-ink); opacity: .7; }
+    .stat-box.hl-pink { background: var(--pink); color: #fff; border-color: var(--ink); }
+    .stat-box.hl-pink .stat-l { color: #fff; opacity: .8; }
+
+    /* Tabs */
+    .tabs-row { display: flex; gap: 6px; margin: 40px 0 24px; padding: 0 32px; border-bottom: 2px solid var(--ink); }
+    .tab { padding: 12px 20px; font-weight: 700; font-size: 15px; cursor: pointer; color: var(--ink-3); position: relative; letter-spacing: -.01em; }
+    .tab .count { font-family: var(--font-mono); font-size: 11px; margin-left: 4px; color: var(--ink-3); letter-spacing: 0; background: var(--paper-2); padding: 2px 8px; border-radius: 999px; }
+    .tab.active { color: var(--ink); }
+    .tab.active::after { content: ""; position: absolute; bottom: -2px; left: 0; right: 0; height: 4px; background: var(--lime); }
+
+    /* Content grid */
+    .content-grid { display: grid; grid-template-columns: 1fr 340px; gap: 28px; padding: 0 32px; }
+
+    /* Posts feed */
+    .posts { display: flex; flex-direction: column; gap: 18px; }
+
+    .composer {
+      background: var(--card); border: 2px solid var(--ink); border-radius: 24px;
+      padding: 22px; display: flex; gap: 14px; align-items: start;
+    }
+    .composer .avatar-mini { width: 44px; height: 44px; border-radius: 50%; background: var(--cyan); color: var(--ink); display: grid; place-items: center; font-weight: 800; flex-shrink: 0; }
+    .composer .input-area { flex: 1; }
+    .composer .input-area .placeholder { font-size: 16px; color: var(--ink-3); padding: 10px 0; font-weight: 500; }
+    .composer .input-area .compose-actions { margin-top: 12px; display: flex; gap: 8px; }
+    .compose-chip { font-family: var(--font-mono); font-size: 10px; letter-spacing: .1em; text-transform: uppercase; padding: 5px 10px; border: 1px solid var(--line); border-radius: 999px; color: var(--ink-2); cursor: pointer; font-weight: 600; }
+    .compose-chip:hover { background: var(--paper-2); }
+
+    .post {
+      background: var(--card); border: 2px solid var(--ink); border-radius: 24px;
+      padding: 22px; transition: transform 200ms var(--ease);
+    }
+    .post:hover { transform: translateY(-2px); }
+    .post-header { display: flex; align-items: center; gap: 12px; margin-bottom: 14px; }
+    .post-avatar { width: 44px; height: 44px; border-radius: 50%; display: grid; place-items: center; font-weight: 800; flex-shrink: 0; color: var(--ink); }
+    .post-author .name { font-weight: 700; font-size: 15px; }
+    .post-author .sub { font-family: var(--font-mono); font-size: 11px; color: var(--ink-3); letter-spacing: .08em; text-transform: uppercase; margin-top: 2px; }
+    .post-type {
+      margin-left: auto; font-family: var(--font-mono); font-size: 10px;
+      letter-spacing: .12em; text-transform: uppercase; padding: 4px 10px;
+      border-radius: 999px; font-weight: 700;
+    }
+    .type-logro { background: var(--lime); color: var(--lime-ink); transform: rotate(-2deg); }
+    .type-pregunta { background: var(--pink); color: #fff; }
+    .type-ayuda { background: var(--cream); color: var(--ink); }
+    .type-evento { background: var(--violet); color: #fff; }
+
+    .post-body { font-size: 15px; line-height: 1.5; color: var(--ink); }
+    .post-body strong { background: var(--lime); padding: 1px 6px; border-radius: 4px; }
+
+    .post-attachment {
+      margin-top: 14px; background: var(--paper-2); border-radius: 16px; padding: 16px;
+      display: flex; align-items: center; gap: 14px;
+    }
+    .post-attachment .att-icon { width: 42px; height: 42px; border-radius: 10px; background: var(--ink); color: #fff; display: grid; place-items: center; font-weight: 800; }
+    .post-attachment .att-body { flex: 1; }
+    .post-attachment .att-title { font-weight: 700; font-size: 14px; }
+    .post-attachment .att-meta { font-family: var(--font-mono); font-size: 11px; color: var(--ink-3); margin-top: 2px; letter-spacing: .04em; }
+
+    .post-footer { display: flex; align-items: center; gap: 18px; margin-top: 16px; padding-top: 14px; border-top: 1px solid var(--line-soft); }
+    .reaction {
+      font-family: var(--font-mono); font-size: 12px; color: var(--ink-2);
+      display: flex; align-items: center; gap: 6px; cursor: pointer;
+      padding: 4px 10px; border-radius: 999px; font-weight: 600; letter-spacing: 0;
+    }
+    .reaction:hover { background: var(--paper-2); }
+    .reaction .icon { width: 20px; height: 20px; border-radius: 50%; border: 1.5px solid var(--ink); display: grid; place-items: center; font-size: 11px; }
+    .reaction.active .icon { background: var(--pink); border-color: var(--pink); color: #fff; }
+    .post-time { margin-left: auto; font-family: var(--font-mono); font-size: 10px; letter-spacing: .08em; color: var(--ink-3); text-transform: uppercase; }
+
+    /* Right sidebar */
+    .right-col { display: flex; flex-direction: column; gap: 18px; }
+    .side-card { background: var(--card); border: 2px solid var(--ink); border-radius: 24px; padding: 22px; }
+    .side-card.sticky-violet { background: var(--violet); color: #fff; transform: rotate(.6deg); }
+    .side-card h3 { font-weight: 900; font-size: 22px; letter-spacing: -.02em; margin-bottom: 16px; line-height: 1.1; }
+    .side-card.sticky-violet h3 .hl { background: var(--lime); color: var(--lime-ink); padding: 0 8px; border-radius: 8px; display: inline-block; transform: rotate(-1deg); }
+    .side-card p { font-size: 13px; line-height: 1.4; color: var(--ink-2); }
+    .side-card.sticky-violet p { color: rgba(255,255,255,.85); }
+
+    .achievements-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+    .achv {
+      border: 2px solid var(--ink); border-radius: 14px; padding: 14px 12px;
+      text-align: center; background: var(--card);
+    }
+    .achv:nth-child(odd) { transform: rotate(-1deg); }
+    .achv:nth-child(even) { transform: rotate(.8deg); }
+    .achv .icon { font-size: 26px; margin-bottom: 6px; font-weight: 900; }
+    .achv .achv-name { font-weight: 700; font-size: 12px; line-height: 1.2; }
+    .achv .achv-date { font-family: var(--font-mono); font-size: 9px; color: var(--ink-3); letter-spacing: .08em; margin-top: 4px; text-transform: uppercase; }
+    .achv.lime { background: var(--lime); color: var(--lime-ink); }
+    .achv.lime .achv-date { color: var(--lime-ink); opacity: .6; }
+    .achv.cream { background: var(--cream); }
+    .achv.pink { background: var(--pink); color: #fff; border-color: var(--ink); }
+    .achv.pink .achv-date { color: rgba(255,255,255,.7); }
+
+    .friends-row { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+    .friend-mini { width: 40px; height: 40px; border-radius: 50%; border: 2px solid var(--ink); display: grid; place-items: center; font-weight: 700; font-size: 13px; cursor: pointer; }
+    .f-lime { background: var(--lime); color: var(--lime-ink); }
+    .f-pink { background: var(--pink); color: #fff; }
+    .f-cyan { background: var(--cyan); color: var(--ink); }
+    .f-violet { background: var(--violet); color: #fff; }
+    .f-cream { background: var(--cream); }
+    .f-orange { background: var(--orange); color: #fff; }
+    .f-ink { background: var(--ink); color: var(--lime); }
+    .f-more { background: var(--paper-2); font-size: 11px; color: var(--ink-2); }
+
+    .comm-list { display: flex; flex-direction: column; gap: 10px; }
+    .comm-item { display: flex; align-items: center; gap: 12px; padding: 8px 0; border-bottom: 1px dashed var(--line); }
+    .comm-item:last-child { border-bottom: 0; }
+    .comm-icon { width: 40px; height: 40px; border-radius: 10px; display: grid; place-items: center; font-weight: 900; flex-shrink: 0; font-size: 18px; }
+    .comm-info { flex: 1; }
+    .comm-info .n { font-weight: 700; font-size: 13px; }
+    .comm-info .m { font-family: var(--font-mono); font-size: 10px; color: var(--ink-3); letter-spacing: .08em; text-transform: uppercase; margin-top: 2px; }
+
+    @media (max-width: 1080px) {
+      .profile-head { flex-direction: column; gap: 16px; padding: 0 16px; }
+      .actions { padding-top: 0; }
+      .stats-strip { grid-template-columns: repeat(2, 1fr); margin: 24px 16px; }
+      .tabs-row { overflow-x: auto; padding: 0 16px; }
+      .content-grid { grid-template-columns: 1fr; padding: 0 16px; }
+    }
+
+    /* ═══ Logo oficial wordmark integrado · 00-BRAND-LOGO.md · INVIOLABLE ═══ */
+    .brand {
+      display: inline-flex; align-items: baseline;
+      font-family: var(--font-display, 'Funnel Display'); font-weight: 900;
+      font-size: 24px; letter-spacing: -.055em; line-height: 1;
+      color: var(--ink, #0D0F10); text-decoration: none;
+      white-space: nowrap;
+    }
+    .brand .u-pack {
+      display: inline-flex; align-items: baseline;
+      background: var(--lime, #D9FF3A);
+      color: var(--ink, #0D0F10);
+      padding: .07em .14em .07em .09em;
+      border-radius: .2em;
+      margin-left: .02em;
+    }
+    .brand .u-pack .dot { color: var(--orange, #FF4A1C); }
+
+    /* ═══ Fotos reales · avatares SIEMPRE círculos + cara centrada ═══ */
+    .avatar-big:has(> img), .avatar-mini:has(> img), .post-avatar:has(> img), .friend-mini:has(> img) {
+      aspect-ratio: 1 / 1 !important;
+      border-radius: 50% !important;
+      overflow: hidden !important;
+      padding: 0 !important;
+    }
+    .avatar-big > img, .avatar-mini > img, .post-avatar > img, .friend-mini > img {
+      width: 100% !important;
+      height: 100% !important;
+      aspect-ratio: 1 / 1 !important;
+      border-radius: 50% !important;
+      object-fit: cover !important;
+      object-position: center 25% !important;
+      display: block !important;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="top-progress">
+    <div class="left">
+      <div class="pulse"></div>
+      <span>Viendo perfil público</span>
+    </div>
+    <span>conniku.com/u/cristian-gl</span>
+  </div>
+
+  <div class="nav-wrap">
+    <div class="nav">
+      <a class="brand" href="#" aria-label="Conniku">conn<span>i</span>k<span class="u-pack">u<span class="dot">.</span></span></a>
+      </div>
+      <div class="nav-links">
+        <div class="nav-link">Estudio</div>
+        <div class="nav-link">Biblioteca</div>
+        <div class="nav-link">Tutores</div>
+        <div class="nav-link">Empleo</div>
+        <div class="nav-link active">Comunidad</div>
+      </div>
+      <div class="search-slot">
+        <span>Buscar</span>
+        <span class="kbd">⌘K</span>
+      </div>
+      <button class="btn-primary">
+        Crear
+        <span class="ring">+</span>
+      </button>
+    </div>
+  </div>
+
+  <main class="main">
+
+    <div class="cover">
+      <div class="label">★ Semillero 2026</div>
+    </div>
+
+    <section class="profile-head">
+      <div class="avatar-wrap">
+        <div class="avatar-big">
+          <img src="../assets/people/cristian-gutierrez.jpg" alt="Cristian Gutiérrez">
+          <div class="online-dot"></div>
+        </div>
+      </div>
+
+      <div class="identity">
+        <div class="meta-top">@cristian-gl · Universidad del Alba</div>
+        <h1>Cristian <span class="chip">Gutiérrez</span></h1>
+        <div class="subtitle">Ingeniería Comercial · 4º año · Santiago, Chile</div>
+        <div class="badges">
+          <span class="badge verified">Verificado · U. del Alba</span>
+          <span class="badge u">Diploma Conniku 2025</span>
+          <span class="badge pro">Conniku Pro</span>
+          <span class="badge streak">Racha 12 días</span>
+        </div>
+      </div>
+
+      <div class="actions">
+        <button class="btn btn-ink">
+          Mensaje
+          <div class="ring">→</div>
+        </button>
+        <button class="btn btn-ghost">+ Agregar</button>
+        <button class="btn btn-ghost">⋯</button>
+      </div>
+    </section>
+
+    <div class="stats-strip">
+      <div class="stat-box">
+        <div class="stat-v">127</div>
+        <div class="stat-l">Amigos</div>
+      </div>
+      <div class="stat-box hl-lime">
+        <div class="stat-v">42</div>
+        <div class="stat-l">Posts</div>
+      </div>
+      <div class="stat-box">
+        <div class="stat-v">18</div>
+        <div class="stat-l">Comunidades</div>
+      </div>
+      <div class="stat-box hl-pink">
+        <div class="stat-v">8.4</div>
+        <div class="stat-l">Promedio</div>
+      </div>
+      <div class="stat-box">
+        <div class="stat-v">12</div>
+        <div class="stat-l">Logros</div>
+      </div>
+    </div>
+
+    <div class="tabs-row">
+      <div class="tab active">Posts <span class="count">42</span></div>
+      <div class="tab">Sobre mí</div>
+      <div class="tab">CV público</div>
+      <div class="tab">Comunidades <span class="count">18</span></div>
+      <div class="tab">Amigos <span class="count">127</span></div>
+      <div class="tab">Biblioteca</div>
+      <div class="tab">Logros <span class="count">12</span></div>
+    </div>
+
+    <div class="content-grid">
+
+      <div class="posts">
+
+        <div class="composer">
+          <div class="avatar-mini"><img src="../assets/people/cristian-gutierrez.jpg" alt="Cristian Gutiérrez"></div>
+          <div class="input-area">
+            <div class="placeholder">¿Qué estás estudiando hoy, Cristian?</div>
+            <div class="compose-actions">
+              <span class="compose-chip">▸ Foto</span>
+              <span class="compose-chip">▸ Encuesta</span>
+              <span class="compose-chip">▸ Pregunta</span>
+              <span class="compose-chip">▸ Documento</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="post">
+          <div class="post-header">
+            <div class="post-avatar" style="background: var(--lime);"><img src="../assets/people/cristian-gutierrez.jpg" alt="Cristian Gutiérrez"></div>
+            <div class="post-author">
+              <div class="name">Cristian Gutiérrez</div>
+              <div class="sub">hace 3 horas · público</div>
+            </div>
+            <span class="post-type type-logro">★ Logro</span>
+          </div>
+          <div class="post-body">
+            Acabo de completar la <strong>racha de 12 días estudiando</strong> sin parar. Próximo objetivo: llegar a 30 antes del quiz final de cálculo. ¿Alguien se apunta a estudiar Álgebra Lineal este fin de semana?
+          </div>
+          <div class="post-footer">
+            <div class="reaction active">
+              <div class="icon">♥</div>
+              <span>24</span>
+            </div>
+            <div class="reaction">
+              <div class="icon">✎</div>
+              <span>8 respuestas</span>
+            </div>
+            <div class="reaction">
+              <div class="icon">↗</div>
+              <span>Compartir</span>
+            </div>
+            <span class="post-time">18 abr</span>
+          </div>
+        </div>
+
+        <div class="post">
+          <div class="post-header">
+            <div class="post-avatar" style="background: var(--cyan);"><img src="../assets/people/cristian-gutierrez.jpg" alt="Cristian Gutiérrez"></div>
+            <div class="post-author">
+              <div class="name">Cristian Gutiérrez</div>
+              <div class="sub">ayer · público · Microeconomía II</div>
+            </div>
+            <span class="post-type type-pregunta">? Pregunta</span>
+          </div>
+          <div class="post-body">
+            ¿Alguien entendió el ejercicio 4 del capítulo 7 de Varian? Estoy trabado con la parte de excedente del consumidor y pérdida de eficiencia. <strong>Le chatié al libro</strong> y me ayudó un poco, pero quiero segunda opinión humana.
+          </div>
+          <div class="post-attachment">
+            <div class="att-icon">▸</div>
+            <div class="att-body">
+              <div class="att-title">Cap. 7 — Excedente y Bienestar · Varian</div>
+              <div class="att-meta">Biblioteca Conniku · 842 pp.</div>
+            </div>
+          </div>
+          <div class="post-footer">
+            <div class="reaction">
+              <div class="icon">♥</div>
+              <span>8</span>
+            </div>
+            <div class="reaction active">
+              <div class="icon">✎</div>
+              <span>14 respuestas</span>
+            </div>
+            <div class="reaction">
+              <div class="icon">↗</div>
+              <span>Compartir</span>
+            </div>
+            <span class="post-time">17 abr</span>
+          </div>
+        </div>
+
+        <div class="post">
+          <div class="post-header">
+            <div class="post-avatar" style="background: var(--cream);"><img src="../assets/people/cristian-gutierrez.jpg" alt="Cristian Gutiérrez"></div>
+            <div class="post-author">
+              <div class="name">Cristian Gutiérrez</div>
+              <div class="sub">hace 3 días · público</div>
+            </div>
+            <span class="post-type type-evento">◆ Evento</span>
+          </div>
+          <div class="post-body">
+            Organizando grupo de estudio colaborativo para el <strong>quiz de Álgebra Lineal del domingo 28</strong>. Tengo sala en el campus, traigo café. Apúntate si vas a rendir también. Espacio para 8 personas.
+          </div>
+          <div class="post-attachment" style="background: var(--violet); color: #fff;">
+            <div class="att-icon" style="background: var(--lime); color: var(--lime-ink);">◆</div>
+            <div class="att-body">
+              <div class="att-title" style="color: #fff;">Quiz Álgebra Lineal · grupo estudio</div>
+              <div class="att-meta" style="color: rgba(255,255,255,.7);">Dom 28 abril · 14:00 · Sala B-102 · 3/8 confirmados</div>
+            </div>
+          </div>
+          <div class="post-footer">
+            <div class="reaction active">
+              <div class="icon">♥</div>
+              <span>32</span>
+            </div>
+            <div class="reaction">
+              <div class="icon">✎</div>
+              <span>11 respuestas</span>
+            </div>
+            <div class="reaction">
+              <div class="icon">↗</div>
+              <span>Compartir</span>
+            </div>
+            <span class="post-time">15 abr</span>
+          </div>
+        </div>
+
+      </div>
+
+      <aside class="right-col">
+
+        <div class="side-card sticky-violet">
+          <h3>Próximo <span class="hl">logro</span> a 3 días</h3>
+          <p>Si mantienes la racha, desbloqueas "Mes entero" y ganas 500 puntos Conniku. Vas bien.</p>
+        </div>
+
+        <div class="side-card">
+          <h3>Logros recientes</h3>
+          <div class="achievements-grid">
+            <div class="achv lime">
+              <div class="icon">★</div>
+              <div class="achv-name">Constancia 12d</div>
+              <div class="achv-date">18 abr</div>
+            </div>
+            <div class="achv cream">
+              <div class="icon">◆</div>
+              <div class="achv-name">Biblioteca 70 libros</div>
+              <div class="achv-date">12 abr</div>
+            </div>
+            <div class="achv pink">
+              <div class="icon">♥</div>
+              <div class="achv-name">Amistad 100</div>
+              <div class="achv-date">8 abr</div>
+            </div>
+            <div class="achv">
+              <div class="icon">✎</div>
+              <div class="achv-name">100 posts</div>
+              <div class="achv-date">2 abr</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="side-card">
+          <h3>Amigos en línea · 14</h3>
+          <div class="friends-row">
+            <div class="friend-mini" title="Jennifer Ruiz Babin"><img src="../assets/people/jennifer-ruiz-babin.png" alt="Jennifer Ruiz Babin"></div>
+            <div class="friend-mini" title="Daniela Maturana"><img src="../assets/people/daniela-maturana.jpg" alt="Daniela Maturana"></div>
+            <div class="friend-mini" title="Felipe Gatica"><img src="../assets/people/felipe-gatica.png" alt="Felipe Gatica"></div>
+            <div class="friend-mini" title="Victoria Navarro Pacheco"><img src="../assets/people/victoria-navarro-pacheco.jpg" alt="Victoria Navarro Pacheco"></div>
+            <div class="friend-mini" title="Barbara Escalona"><img src="../assets/people/barbara-escalona.jpg" alt="Barbara Escalona"></div>
+            <div class="friend-mini" title="Pía Cisternas"><img src="../assets/people/pia-cisternas.jpg" alt="Pía Cisternas"></div>
+            <div class="friend-mini f-more">+9</div>
+          </div>
+        </div>
+
+        <div class="side-card">
+          <h3>Mis comunidades</h3>
+          <div class="comm-list">
+            <div class="comm-item">
+              <div class="comm-icon" style="background: var(--lime); color: var(--lime-ink);">∑</div>
+              <div class="comm-info">
+                <div class="n">Ing. Comercial U. del Alba</div>
+                <div class="m">2.1k miembros</div>
+              </div>
+            </div>
+            <div class="comm-item">
+              <div class="comm-icon" style="background: var(--pink); color: #fff;">⚙</div>
+              <div class="comm-info">
+                <div class="n">Semillero Emprendimiento</div>
+                <div class="m">340 miembros</div>
+              </div>
+            </div>
+            <div class="comm-item">
+              <div class="comm-icon" style="background: var(--cyan); color: var(--ink);">♪</div>
+              <div class="comm-info">
+                <div class="n">Música para estudiar</div>
+                <div class="m">8.4k miembros</div>
+              </div>
+            </div>
+            <div class="comm-item">
+              <div class="comm-icon" style="background: var(--violet); color: #fff;">◉</div>
+              <div class="comm-info">
+                <div class="n">Apuntes Cálculo II</div>
+                <div class="m">520 miembros</div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+      </aside>
+
+    </div>
+
+  </main>
+
+</body>
+</html>

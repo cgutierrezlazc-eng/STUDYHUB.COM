@@ -1,0 +1,601 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Conniku — Tutores verificados</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Funnel+Display:wght@400;500;600;700;800;900&family=Geist+Mono:wght@400;500;600;700&display=swap" />
+  <style>
+    :root {
+      --ink: #0D0F10; --ink-2: #2B2E30; --ink-3: #696C6F; --ink-4: #A0A3A7;
+      --paper: #F5F4EF; --paper-2: #EBE9E1; --paper-3: #DBD9CF;
+      --line: #D2CFC3; --line-soft: #E2DFD4; --card: #FFFFFF;
+      --lime: #D9FF3A; --lime-ink: #181F08;
+      --pink: #FF4D3A; --cream: #FFE9B8;
+      --violet: #6B4EFF; --cyan: #00C2FF; --orange: #FF4A1C;
+      --electric: #2F55F0;
+      --font-display: 'Funnel Display', -apple-system, sans-serif;
+      --font-mono: 'Geist Mono', ui-monospace, monospace;
+      --ease: cubic-bezier(.2,.8,.2,1);
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    html, body { background: var(--paper); color: var(--ink); font-family: var(--font-display); }
+    body { min-height: 100vh; overflow-x: hidden; }
+    ::selection { background: var(--lime); color: var(--lime-ink); }
+
+    .av { display: grid; place-items: center; font-weight: 800; font-family: var(--font-display); position: relative; overflow: hidden; }
+    .av img { width: 100%; height: 100%; border-radius: inherit; object-fit: cover; position: absolute; inset: 0; }
+    .av-felipe { background: linear-gradient(135deg, #D9FF3A 0%, #FFE9B8 100%); color: #181F08; }
+    .av-victoria { background: linear-gradient(135deg, #FF4D3A 0%, #FF4A1C 100%); color: #fff; }
+    .av-daniela { background: linear-gradient(135deg, #6B4EFF 0%, #2F55F0 100%); color: #fff; }
+    .av-luis { background: linear-gradient(135deg, #00C2FF 0%, #2F55F0 100%); color: #0D0F10; }
+    .av-pia { background: linear-gradient(135deg, #FFE9B8 0%, #D9FF3A 100%); color: #181F08; }
+    .av-barbara { background: linear-gradient(135deg, #FF4D3A 0%, #6B4EFF 100%); color: #fff; }
+    .av-cristian { background: linear-gradient(135deg, #0D0F10 0%, #6B4EFF 100%); color: #D9FF3A; }
+    /* Tutores avatars - more mature/professional gradients */
+    .av-margarita { background: linear-gradient(135deg, #6B4EFF 0%, #FF4D3A 100%); color: #fff; }
+    .av-eduardo { background: linear-gradient(135deg, #0D0F10 0%, #2F55F0 100%); color: #D9FF3A; }
+    .av-andrea { background: linear-gradient(135deg, #FFE9B8 0%, #FF4D3A 100%); color: #181F08; }
+    .av-rodrigo { background: linear-gradient(135deg, #00C2FF 0%, #0D0F10 100%); color: #fff; }
+
+    .top-progress { background: var(--ink); color: #fff; padding: 8px 28px; display: flex; align-items: center; justify-content: space-between; font-family: var(--font-mono); font-size: 11px; letter-spacing: .08em; text-transform: uppercase; }
+    .top-progress .left { display: flex; align-items: center; gap: 12px; }
+    .pulse { width: 8px; height: 8px; border-radius: 50%; background: var(--lime); animation: pulse 1.6s var(--ease) infinite; }
+    @keyframes pulse { 0% { box-shadow: 0 0 0 0 rgba(217,255,58,.7); } 70% { box-shadow: 0 0 0 10px rgba(217,255,58,0); } 100% { box-shadow: 0 0 0 0 rgba(217,255,58,0); } }
+
+    .nav-wrap { padding: 18px 28px 0; display: flex; justify-content: center; }
+    .nav { max-width: 1240px; width: 100%; background: var(--card); border: 1px solid var(--line); border-radius: 999px; padding: 10px 14px 10px 18px; display: flex; align-items: center; gap: 28px; }
+    .logo-wrap { display: flex; align-items: center; gap: 10px; }
+    .logo-tile { width: 28px; height: 28px; display: block; flex-shrink: 0; }
+    .logo-text { font-weight: 700; font-size: 20px; letter-spacing: -.02em; }
+    .nav-links { display: flex; gap: 22px; flex: 1; }
+    .nav-link { font-size: 15px; font-weight: 600; color: var(--ink-2); cursor: pointer; }
+    .nav-link.active { color: var(--ink); border-bottom: 2px solid var(--lime); padding-bottom: 4px; }
+    .search-slot { font-family: var(--font-mono); font-size: 13px; color: var(--ink-3); border: 1px solid var(--line-soft); border-radius: 999px; padding: 6px 14px; display: flex; align-items: center; gap: 8px; }
+    .kbd { background: var(--paper-2); padding: 2px 7px; border-radius: 6px; font-size: 11px; }
+    .btn-primary { background: var(--ink); color: #fff; border: 0; padding: 10px 14px 10px 20px; display: flex; align-items: center; gap: 10px; font-weight: 700; font-size: 14px; border-radius: 999px; cursor: pointer; font-family: var(--font-display); }
+    .btn-primary .ring { width: 26px; height: 26px; border-radius: 50%; background: var(--lime); display: grid; place-items: center; color: var(--ink); font-weight: 900; font-size: 14px; }
+
+    .main { max-width: 1240px; margin: 0 auto; padding: 48px 28px 120px; }
+
+    /* Hero */
+    .hero { display: grid; grid-template-columns: 1.2fr 1fr; gap: 50px; margin-bottom: 56px; align-items: center; position: relative; }
+    .hero::before { content: ""; position: absolute; top: -40px; right: -60px; width: 380px; height: 380px; background: var(--violet); border-radius: 50%; opacity: .25; filter: blur(100px); z-index: -1; }
+    .hero h1 { font-weight: 900; font-size: clamp(56px, 8vw, 104px); line-height: .92; letter-spacing: -.045em; }
+    .hero h1 .hl-violet { background: var(--violet); color: #fff; padding: 0 12px; border-radius: 14px; display: inline-block; transform: rotate(-1deg); }
+    .hero h1 .hl-cream { background: var(--cream); padding: 0 12px; border-radius: 14px; display: inline-block; transform: rotate(.6deg); }
+    .hero p { margin-top: 22px; font-size: 19px; color: var(--ink-2); max-width: 480px; line-height: 1.4; font-weight: 500; }
+    .hero p strong { background: var(--lime); padding: 1px 6px; border-radius: 4px; font-weight: 700; }
+
+    .trust-badge {
+      background: var(--card); border: 2px solid var(--ink); border-radius: 24px;
+      padding: 28px; transform: rotate(1deg); box-shadow: 8px 8px 0 var(--ink);
+    }
+    .trust-badge .shield {
+      width: 54px; height: 54px; background: var(--lime); color: var(--lime-ink);
+      border-radius: 14px; display: grid; place-items: center; font-weight: 900; font-size: 24px; margin-bottom: 16px;
+    }
+    .trust-badge h3 { font-weight: 900; font-size: 24px; letter-spacing: -.02em; line-height: 1.1; }
+    .trust-badge h3 .hl { background: var(--lime); color: var(--lime-ink); padding: 0 6px; border-radius: 6px; }
+    .trust-badge p { font-size: 13px; color: var(--ink-2); margin-top: 10px; line-height: 1.4; }
+    .trust-stats { margin-top: 16px; padding-top: 14px; border-top: 1px solid var(--line); display: flex; gap: 20px; }
+    .trust-stats .ts-v { font-weight: 900; font-size: 22px; letter-spacing: -.02em; font-feature-settings: 'tnum'; line-height: 1; }
+    .trust-stats .ts-l { font-family: var(--font-mono); font-size: 9.5px; color: var(--ink-3); letter-spacing: .1em; text-transform: uppercase; margin-top: 3px; }
+
+    /* Filters */
+    .sec-label { display: flex; align-items: center; gap: 12px; font-family: var(--font-mono); font-size: 11px; letter-spacing: .14em; text-transform: uppercase; color: var(--ink-3); margin-bottom: 18px; font-weight: 600; }
+    .sec-label::before { content: ""; width: 32px; height: 2px; background: var(--ink); }
+
+    .filter-row { display: grid; grid-template-columns: auto 1fr auto; gap: 14px; margin-bottom: 36px; }
+    .filter-chips { display: flex; gap: 8px; flex-wrap: wrap; }
+    .fchip { background: var(--card); border: 2px solid var(--ink); border-radius: 999px; padding: 8px 14px; font-weight: 700; font-size: 13px; cursor: pointer; transition: all 150ms var(--ease); }
+    .fchip:hover { transform: translateY(-1px); }
+    .fchip.active { background: var(--ink); color: #fff; }
+    .sort-select { display: flex; align-items: center; gap: 8px; background: var(--card); border: 2px solid var(--ink); border-radius: 999px; padding: 8px 14px; font-weight: 600; font-size: 13px; cursor: pointer; }
+
+    /* Featured tutor */
+    .featured {
+      background: var(--ink); color: #fff; border-radius: 32px; padding: 40px;
+      display: grid; grid-template-columns: 180px 1fr auto; gap: 32px; align-items: center;
+      margin-bottom: 48px; position: relative; overflow: hidden;
+    }
+    .featured::before { content: ""; position: absolute; top: -60px; right: -60px; width: 260px; height: 260px; background: var(--lime); border-radius: 50%; opacity: .15; filter: blur(60px); }
+    .featured .f-avatar { width: 180px; height: 180px; border-radius: 50%; border: 4px solid var(--lime); font-size: 56px; font-family: var(--font-display); letter-spacing: -.03em; }
+    .featured .f-content { position: relative; z-index: 2; }
+    .featured .f-label { font-family: var(--font-mono); font-size: 11px; color: var(--lime); letter-spacing: .14em; text-transform: uppercase; margin-bottom: 10px; font-weight: 700; display: flex; align-items: center; gap: 8px; }
+    .featured .f-label::before { content: "★"; font-size: 14px; }
+    .featured h2 { font-weight: 900; font-size: 44px; letter-spacing: -.03em; line-height: 1.05; margin-bottom: 12px; }
+    .featured .f-subtitle { font-size: 15px; color: rgba(255,255,255,.75); margin-bottom: 16px; line-height: 1.4; font-weight: 500; }
+    .featured .f-badges { display: flex; gap: 8px; flex-wrap: wrap; }
+    .f-badge { background: rgba(255,255,255,.1); padding: 5px 12px; border-radius: 999px; font-family: var(--font-mono); font-size: 10px; font-weight: 700; letter-spacing: .08em; text-transform: uppercase; }
+    .f-badge.verif { background: var(--lime); color: var(--lime-ink); }
+    .f-badge.rating { background: var(--cream); color: var(--ink); }
+    .featured .f-cta { text-align: right; position: relative; z-index: 2; }
+    .featured .f-price { font-weight: 900; font-size: 36px; letter-spacing: -.03em; line-height: 1; font-feature-settings: 'tnum'; }
+    .featured .f-per { font-family: var(--font-mono); font-size: 11px; color: rgba(255,255,255,.6); letter-spacing: .06em; text-transform: uppercase; margin-top: 3px; }
+    .f-btn { margin-top: 18px; background: var(--lime); color: var(--lime-ink); padding: 12px 16px 12px 22px; border-radius: 999px; border: 0; font-family: var(--font-display); font-weight: 700; font-size: 14px; cursor: pointer; display: flex; align-items: center; gap: 10px; }
+    .f-btn .ring-f { width: 28px; height: 28px; background: var(--ink); color: var(--lime); border-radius: 50%; display: grid; place-items: center; font-weight: 900; font-size: 14px; }
+
+    /* Grid of tutors */
+    .tutor-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; }
+    .tutor-card {
+      background: var(--card); border: 2px solid var(--ink); border-radius: 24px; padding: 24px;
+      cursor: pointer; transition: all 200ms var(--ease); position: relative;
+    }
+    .tutor-card:hover { transform: translateY(-3px); box-shadow: 8px 8px 0 var(--ink); }
+    .tutor-card:nth-child(3n+2) { transform: rotate(-.5deg); }
+    .tutor-card:nth-child(3n+3) { transform: rotate(.4deg); }
+    .tutor-card:nth-child(3n+2):hover, .tutor-card:nth-child(3n+3):hover { transform: translateY(-3px) rotate(0); }
+
+    .tc-top { display: flex; align-items: center; gap: 14px; margin-bottom: 18px; }
+    .tc-avatar { width: 64px; height: 64px; border-radius: 50%; font-size: 20px; flex-shrink: 0; }
+    .tc-info .tc-name { font-weight: 800; font-size: 18px; letter-spacing: -.015em; line-height: 1.1; }
+    .tc-info .tc-u { font-family: var(--font-mono); font-size: 10px; color: var(--ink-3); letter-spacing: .06em; text-transform: uppercase; margin-top: 4px; }
+    .verified-check { position: absolute; top: 20px; right: 20px; width: 28px; height: 28px; background: var(--ink); color: var(--lime); border-radius: 50%; display: grid; place-items: center; font-weight: 900; font-size: 14px; }
+
+    .tc-subjects { display: flex; gap: 6px; flex-wrap: wrap; margin-bottom: 14px; }
+    .tc-sub-chip { font-family: var(--font-mono); font-size: 10px; padding: 3px 8px; border-radius: 999px; font-weight: 700; letter-spacing: .08em; text-transform: uppercase; background: var(--paper-2); color: var(--ink); }
+    .tc-sub-chip.hl { background: var(--lime); color: var(--lime-ink); }
+
+    .tc-stats { display: flex; align-items: center; gap: 14px; padding: 10px 0; border-top: 1px solid var(--line-soft); border-bottom: 1px solid var(--line-soft); font-family: var(--font-mono); font-size: 11px; color: var(--ink-3); letter-spacing: .04em; }
+    .tc-stats .tcs-item { display: flex; align-items: baseline; gap: 4px; }
+    .tc-stats .tcs-v { font-weight: 700; color: var(--ink); font-size: 13px; }
+
+    .tc-desc { font-size: 13px; color: var(--ink-2); line-height: 1.4; margin: 14px 0; }
+    .tc-desc strong { background: var(--cream); padding: 0 4px; border-radius: 3px; font-weight: 600; }
+
+    .tc-bottom { display: flex; justify-content: space-between; align-items: end; margin-top: 14px; }
+    .tc-price-box .tc-price { font-weight: 900; font-size: 26px; letter-spacing: -.02em; line-height: 1; font-feature-settings: 'tnum'; }
+    .tc-price-box .tc-per { font-family: var(--font-mono); font-size: 10px; color: var(--ink-3); letter-spacing: .06em; text-transform: uppercase; margin-top: 3px; }
+    .tc-book { background: var(--ink); color: #fff; padding: 9px 12px 9px 16px; border-radius: 999px; border: 0; font-family: var(--font-display); font-weight: 700; font-size: 13px; cursor: pointer; display: flex; align-items: center; gap: 8px; }
+    .tc-book .ring-b { width: 22px; height: 22px; background: var(--lime); color: var(--ink); border-radius: 50%; display: grid; place-items: center; font-weight: 900; font-size: 11px; }
+
+    /* How it works */
+    .how-works { margin-top: 80px; background: var(--cream); border: 2px solid var(--ink); border-radius: 32px; padding: 56px; position: relative; overflow: hidden; }
+    .how-works::before { content: ""; position: absolute; top: 30px; left: 40px; width: 10px; height: 10px; border-radius: 50%; background: var(--pink); box-shadow: 130px 40px 0 var(--ink), 300px 15px 0 var(--violet), 500px 60px 0 var(--lime), 700px 30px 0 var(--cyan), 800px 90px 0 var(--ink); }
+    .how-works .hw-label { font-family: var(--font-mono); font-size: 11px; letter-spacing: .14em; text-transform: uppercase; color: var(--ink); font-weight: 700; margin-bottom: 14px; display: flex; align-items: center; gap: 10px; }
+    .how-works .hw-label::before { content: ""; width: 32px; height: 2px; background: var(--ink); }
+    .how-works h2 { font-weight: 900; font-size: clamp(42px, 5.5vw, 72px); line-height: .95; letter-spacing: -.04em; margin-bottom: 28px; max-width: 800px; }
+    .how-works h2 .hl-ink { background: var(--ink); color: var(--lime); padding: 0 10px; border-radius: 10px; display: inline-block; transform: rotate(-1deg); }
+
+    .steps-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; margin-top: 30px; position: relative; z-index: 2; }
+    .step-card { background: var(--card); border: 2px solid var(--ink); border-radius: 18px; padding: 22px; }
+    .step-card:nth-child(1) { transform: rotate(-1deg); }
+    .step-card:nth-child(3) { transform: rotate(.6deg); }
+    .step-num { width: 34px; height: 34px; background: var(--ink); color: var(--lime); border-radius: 50%; display: grid; place-items: center; font-weight: 900; font-size: 16px; margin-bottom: 14px; font-family: var(--font-display); }
+    .step-card h4 { font-weight: 800; font-size: 16px; letter-spacing: -.01em; line-height: 1.15; margin-bottom: 8px; }
+    .step-card p { font-size: 12.5px; color: var(--ink-2); line-height: 1.4; }
+
+    /* Recent activity */
+    .recent-tutorings { margin-top: 60px; }
+    .rt-strip { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; }
+    .rt-card { background: var(--card); border: 2px solid var(--ink); border-radius: 20px; padding: 20px; display: flex; flex-direction: column; gap: 14px; }
+    .rt-head { display: flex; align-items: center; gap: 12px; }
+    .rt-av-pair { display: flex; }
+    .rt-av-pair .av { width: 36px; height: 36px; border-radius: 50%; font-size: 12px; border: 2px solid var(--card); }
+    .rt-av-pair .av:nth-child(2) { margin-left: -10px; }
+    .rt-head .rt-info .rt-people { font-size: 13px; font-weight: 700; }
+    .rt-head .rt-info .rt-date { font-family: var(--font-mono); font-size: 10px; color: var(--ink-3); letter-spacing: .06em; text-transform: uppercase; margin-top: 3px; }
+    .rt-subject { font-weight: 800; font-size: 15px; letter-spacing: -.015em; }
+    .rt-status-bar { display: flex; justify-content: space-between; align-items: center; padding-top: 12px; border-top: 1px solid var(--line-soft); }
+    .rt-status { font-family: var(--font-mono); font-size: 10px; padding: 4px 10px; border-radius: 999px; letter-spacing: .1em; text-transform: uppercase; font-weight: 700; }
+    .rt-status.done { background: var(--lime); color: var(--lime-ink); }
+    .rt-status.upcoming { background: var(--cream); color: var(--ink); }
+    .rt-status.live { background: var(--orange); color: #fff; display: flex; align-items: center; gap: 5px; }
+    .rt-status.live::before { content: ""; width: 6px; height: 6px; border-radius: 50%; background: #fff; animation: pulse 1.6s var(--ease) infinite; }
+    .rt-price { font-family: var(--font-mono); font-size: 11px; font-weight: 700; color: var(--ink); }
+
+    @media (max-width: 1080px) {
+      .hero { grid-template-columns: 1fr; }
+      .featured { grid-template-columns: 1fr; text-align: left; }
+      .featured .f-cta { text-align: left; }
+      .tutor-grid { grid-template-columns: 1fr; }
+      .steps-grid { grid-template-columns: 1fr 1fr; }
+      .rt-strip { grid-template-columns: 1fr; }
+    }
+
+    /* ═══ Logo oficial wordmark integrado · 00-BRAND-LOGO.md · INVIOLABLE ═══ */
+    .brand {
+      display: inline-flex; align-items: baseline;
+      font-family: var(--font-display, 'Funnel Display'); font-weight: 900;
+      font-size: 24px; letter-spacing: -.055em; line-height: 1;
+      color: var(--ink, #0D0F10); text-decoration: none;
+      white-space: nowrap;
+    }
+    .brand .u-pack {
+      display: inline-flex; align-items: baseline;
+      background: var(--lime, #D9FF3A);
+      color: var(--ink, #0D0F10);
+      padding: .07em .14em .07em .09em;
+      border-radius: .2em;
+      margin-left: .02em;
+    }
+    .brand .u-pack .dot { color: var(--orange, #FF4A1C); }
+
+    /* ═══ Fotos reales · avatares SIEMPRE círculos + cara centrada ═══ */
+    .av:has(> img), .tc-avatar:has(> img), .f-avatar:has(> img) {
+      aspect-ratio: 1 / 1 !important;
+      border-radius: 50% !important;
+      overflow: hidden !important;
+      padding: 0 !important;
+      display: block !important;
+    }
+    .av > img, .tc-avatar > img, .f-avatar > img {
+      width: 100% !important;
+      height: 100% !important;
+      aspect-ratio: 1 / 1 !important;
+      border-radius: 50% !important;
+      object-fit: cover !important;
+      object-position: center 25% !important;
+      display: block !important;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="top-progress">
+    <div class="left">
+      <div class="pulse"></div>
+      <span>Tutores verificados</span>
+    </div>
+    <span>284 tutores activos · pagos 100% protegidos</span>
+  </div>
+
+  <div class="nav-wrap">
+    <div class="nav">
+      <a class="brand" href="#" aria-label="Conniku">conn<span>i</span>k<span class="u-pack">u<span class="dot">.</span></span></a>
+      </div>
+      <div class="nav-links">
+        <div class="nav-link">Estudio</div>
+        <div class="nav-link">Biblioteca</div>
+        <div class="nav-link">Cursos</div>
+        <div class="nav-link active">Tutores</div>
+        <div class="nav-link">Empleo</div>
+        <div class="nav-link">Comunidad</div>
+      </div>
+      <div class="search-slot">
+        <span>Buscar</span>
+        <span class="kbd">⌘K</span>
+      </div>
+      <button class="btn-primary">
+        Crear
+        <span class="ring">+</span>
+      </button>
+    </div>
+  </div>
+
+  <main class="main">
+
+    <section class="hero">
+      <div>
+        <h1>
+          Tutores<br>
+          <span class="hl-violet">titulados</span>.<br>
+          Pagos <span class="hl-cream">protegidos</span>.
+        </h1>
+        <p>
+          Cada tutor pasa por verificación de título, experiencia y antecedentes. <strong>Conniku intermedia el pago</strong>: si la clase no cumple, te devolvemos la plata.
+        </p>
+      </div>
+      <div class="trust-badge">
+        <div class="shield">★</div>
+        <h3>Garantía <span class="hl">antifraude</span> Conniku</h3>
+        <p>Tu dinero queda en custodia hasta que confirmes que la clase funcionó. 100% reembolso si no llegó el tutor o no cumplió.</p>
+        <div class="trust-stats">
+          <div><div class="ts-v">$0</div><div class="ts-l">Estafas 2026</div></div>
+          <div><div class="ts-v">4.9★</div><div class="ts-l">Rating promedio</div></div>
+          <div><div class="ts-v">98%</div><div class="ts-l">Cumplimiento</div></div>
+        </div>
+      </div>
+    </section>
+
+    <div class="sec-label">★ Top del mes</div>
+    <section class="featured">
+      <div class="av av-daniela f-avatar" style="background:#FF4D3A;color:#F5F4EF;"><img src="../assets/people/daniela-maturana.jpg" alt="Daniela Maturana"></div>
+      <div class="f-content">
+        <div class="f-label">Tutora destacada · abril 2026</div>
+        <h2>Daniela Maturana</h2>
+        <div class="f-subtitle">Ingeniera Comercial · Universidad del Alba · ayudante de cátedra. Contabilidad financiera, costos, finanzas corporativas y preparación de certámenes.</div>
+        <div class="f-badges">
+          <div class="f-badge verif">★ Verificada</div>
+          <div class="f-badge rating">★ 5.0 (128 reviews)</div>
+          <div class="f-badge">142 clases</div>
+          <div class="f-badge">Respuesta &lt; 30 min</div>
+        </div>
+      </div>
+      <div class="f-cta">
+        <div class="f-price">$18.900</div>
+        <div class="f-per">por hora · CLP</div>
+        <button class="f-btn">
+          Reservar
+          <div class="ring-f">→</div>
+        </button>
+      </div>
+    </section>
+
+    <div class="filter-row">
+      <div class="filter-chips">
+        <div class="fchip active">Todas las materias</div>
+        <div class="fchip">Matemáticas</div>
+        <div class="fchip">Ciencias</div>
+        <div class="fchip">Derecho</div>
+        <div class="fchip">Medicina</div>
+        <div class="fchip">Economía</div>
+      </div>
+      <div></div>
+      <div class="sort-select">Mejor rating ▾</div>
+    </div>
+
+    <div class="sec-label">Tutores verificados cerca de ti</div>
+    <div class="tutor-grid">
+
+      <div class="tutor-card">
+        <div class="verified-check">✓</div>
+        <div class="tc-top">
+          <div class="av av-daniela tc-avatar" style="background:#FF4D3A;color:#F5F4EF;"><img src="../assets/people/daniela-maturana.jpg" alt="Daniela Maturana"></div>
+          <div class="tc-info">
+            <div class="tc-name">Daniela Maturana</div>
+            <div class="tc-u">Ing. Comercial · U. del Alba</div>
+          </div>
+        </div>
+        <div class="tc-subjects">
+          <div class="tc-sub-chip hl">Contabilidad</div>
+          <div class="tc-sub-chip hl">Costos</div>
+          <div class="tc-sub-chip">Finanzas</div>
+        </div>
+        <div class="tc-stats">
+          <div class="tcs-item"><span class="tcs-v">5.0</span><span>★</span></div>
+          <div class="tcs-item"><span class="tcs-v">128</span><span>reseñas</span></div>
+          <div class="tcs-item"><span class="tcs-v">142</span><span>clases</span></div>
+        </div>
+        <p class="tc-desc">Me enfoco en <strong>conectar la teoría con casos reales</strong> de empresas chilenas. Ideal para preparar certámenes y examen de grado.</p>
+        <div class="tc-bottom">
+          <div class="tc-price-box">
+            <div class="tc-price">$18.900</div>
+            <div class="tc-per">por hora</div>
+          </div>
+          <button class="tc-book">Reservar <div class="ring-b">→</div></button>
+        </div>
+      </div>
+
+      <div class="tutor-card">
+        <div class="verified-check">✓</div>
+        <div class="tc-top">
+          <div class="av av-felipe tc-avatar" style="background:#00C2FF;color:#0D0F10;"><img src="../assets/people/felipe-gatica.png" alt="Felipe Gatica"></div>
+          <div class="tc-info">
+            <div class="tc-name">Felipe Gatica</div>
+            <div class="tc-u">Ing. Comercial · U. del Alba</div>
+          </div>
+        </div>
+        <div class="tc-subjects">
+          <div class="tc-sub-chip hl">Derecho Comercial</div>
+          <div class="tc-sub-chip">Sociedades</div>
+          <div class="tc-sub-chip">Tributario</div>
+        </div>
+        <div class="tc-stats">
+          <div class="tcs-item"><span class="tcs-v">4.8</span><span>★</span></div>
+          <div class="tcs-item"><span class="tcs-v">72</span><span>reseñas</span></div>
+          <div class="tcs-item"><span class="tcs-v">89</span><span>clases</span></div>
+        </div>
+        <p class="tc-desc">Método <strong>casos reales + análisis estructurado</strong>. Preparación de examen de grado con ejemplos aplicados al mundo empresarial.</p>
+        <div class="tc-bottom">
+          <div class="tc-price-box">
+            <div class="tc-price">$22.000</div>
+            <div class="tc-per">por hora</div>
+          </div>
+          <button class="tc-book">Reservar <div class="ring-b">→</div></button>
+        </div>
+      </div>
+
+      <div class="tutor-card">
+        <div class="verified-check">✓</div>
+        <div class="tc-top">
+          <div class="av av-victoria tc-avatar" style="background:#FFE9B8;color:#0D0F10;"><img src="../assets/people/victoria-navarro-pacheco.jpg" alt="Victoria Navarro Pacheco"></div>
+          <div class="tc-info">
+            <div class="tc-name">Victoria Navarro</div>
+            <div class="tc-u">Ing. Comercial · U. del Alba</div>
+          </div>
+        </div>
+        <div class="tc-subjects">
+          <div class="tc-sub-chip hl">Marketing</div>
+          <div class="tc-sub-chip">Comport. Consumidor</div>
+          <div class="tc-sub-chip">Publicidad</div>
+        </div>
+        <div class="tc-stats">
+          <div class="tcs-item"><span class="tcs-v">5.0</span><span>★</span></div>
+          <div class="tcs-item"><span class="tcs-v">58</span><span>reseñas</span></div>
+          <div class="tcs-item"><span class="tcs-v">74</span><span>clases</span></div>
+        </div>
+        <p class="tc-desc">Te ayudo con <strong>resúmenes clave y casos de marcas chilenas</strong>. Ideal para entender marketing aplicado al mercado local.</p>
+        <div class="tc-bottom">
+          <div class="tc-price-box">
+            <div class="tc-price">$16.500</div>
+            <div class="tc-per">por hora</div>
+          </div>
+          <button class="tc-book">Reservar <div class="ring-b">→</div></button>
+        </div>
+      </div>
+
+      <div class="tutor-card">
+        <div class="verified-check">✓</div>
+        <div class="tc-top">
+          <div class="av av-jennifer tc-avatar" style="background:#D9FF3A;color:#0D0F10;"><img src="../assets/people/jennifer-ruiz-babin.png" alt="Jennifer Ruiz Babin"></div>
+          <div class="tc-info">
+            <div class="tc-name">Jennifer Ruiz Babin</div>
+            <div class="tc-u">Ing. Gestión Logística · USS</div>
+          </div>
+        </div>
+        <div class="tc-subjects">
+          <div class="tc-sub-chip hl">Logística</div>
+          <div class="tc-sub-chip hl">Operaciones</div>
+          <div class="tc-sub-chip">Supply Chain</div>
+        </div>
+        <div class="tc-stats">
+          <div class="tcs-item"><span class="tcs-v">4.7</span><span>★</span></div>
+          <div class="tcs-item"><span class="tcs-v">94</span><span>reseñas</span></div>
+          <div class="tcs-item"><span class="tcs-v">118</span><span>clases</span></div>
+        </div>
+        <p class="tc-desc">Experiencia en logística portuaria. Clases que <strong>conectan modelos teóricos con operaciones reales</strong> de la industria chilena.</p>
+        <div class="tc-bottom">
+          <div class="tc-price-box">
+            <div class="tc-price">$20.500</div>
+            <div class="tc-per">por hora</div>
+          </div>
+          <button class="tc-book">Reservar <div class="ring-b">→</div></button>
+        </div>
+      </div>
+
+      <div class="tutor-card">
+        <div class="verified-check">✓</div>
+        <div class="tc-top">
+          <div class="av av-barbara tc-avatar" style="background:#FF7A6F;color:#0D0F10;"><img src="../assets/people/barbara-escalona.jpg" alt="Barbara Escalona"></div>
+          <div class="tc-info">
+            <div class="tc-name">Barbara Escalona</div>
+            <div class="tc-u">Ing. Comercial · U. del Alba</div>
+          </div>
+        </div>
+        <div class="tc-subjects">
+          <div class="tc-sub-chip hl">Finanzas Corp.</div>
+          <div class="tc-sub-chip">Eval. Proyectos</div>
+          <div class="tc-sub-chip">Excel avanzado</div>
+        </div>
+        <div class="tc-stats">
+          <div class="tcs-item"><span class="tcs-v">4.9</span><span>★</span></div>
+          <div class="tcs-item"><span class="tcs-v">41</span><span>reseñas</span></div>
+          <div class="tcs-item"><span class="tcs-v">56</span><span>clases</span></div>
+        </div>
+        <p class="tc-desc">Clases prácticas con <strong>modelos financieros en Excel</strong>. Flujos descontados, VAN, TIR aplicados a casos chilenos reales.</p>
+        <div class="tc-bottom">
+          <div class="tc-price-box">
+            <div class="tc-price">$24.000</div>
+            <div class="tc-per">por hora</div>
+          </div>
+          <button class="tc-book">Reservar <div class="ring-b">→</div></button>
+        </div>
+      </div>
+
+      <div class="tutor-card">
+        <div class="verified-check">✓</div>
+        <div class="tc-top">
+          <div class="av av-cristian tc-avatar" style="background:#6B4EFF;color:#F5F4EF;"><img src="../assets/people/cristian-gutierrez.jpg" alt="Cristian Gutiérrez"></div>
+          <div class="tc-info">
+            <div class="tc-name">Cristian Gutiérrez</div>
+            <div class="tc-u">Ing. Comercial · U. del Alba</div>
+          </div>
+        </div>
+        <div class="tc-subjects">
+          <div class="tc-sub-chip hl">Microeconomía</div>
+          <div class="tc-sub-chip">Estadística</div>
+          <div class="tc-sub-chip">Teoría de Juegos</div>
+        </div>
+        <div class="tc-stats">
+          <div class="tcs-item"><span class="tcs-v">4.9</span><span>★</span></div>
+          <div class="tcs-item"><span class="tcs-v">86</span><span>reseñas</span></div>
+          <div class="tcs-item"><span class="tcs-v">102</span><span>clases</span></div>
+        </div>
+        <p class="tc-desc">Me enfoco en que entiendas la <strong>intuición detrás de las fórmulas</strong>. Paso de lo simple a lo complejo con ejercicios guiados.</p>
+        <div class="tc-bottom">
+          <div class="tc-price-box">
+            <div class="tc-price">$19.500</div>
+            <div class="tc-per">por hora</div>
+          </div>
+          <button class="tc-book">Reservar <div class="ring-b">→</div></button>
+        </div>
+      </div>
+
+    </div>
+
+    <section class="how-works">
+      <div class="hw-label">cómo funciona</div>
+      <h2>Reservar tutor,<br>pagar <span class="hl-ink">sin miedo</span>, aprender.</h2>
+      <div class="steps-grid">
+        <div class="step-card">
+          <div class="step-num">1</div>
+          <h4>Elige tutor + fecha</h4>
+          <p>Filtra por materia, horario y presupuesto. Chatea con el tutor antes de agendar.</p>
+        </div>
+        <div class="step-card">
+          <div class="step-num">2</div>
+          <h4>Pagas con seguridad</h4>
+          <p>Tu dinero queda en custodia Conniku. El tutor no lo recibe hasta que confirmes que la clase funcionó.</p>
+        </div>
+        <div class="step-card">
+          <div class="step-num">3</div>
+          <h4>Toma la clase</h4>
+          <p>Video + pizarra digital + documentos compartidos. Todo queda grabado para revisar después.</p>
+        </div>
+        <div class="step-card">
+          <div class="step-num">4</div>
+          <h4>Confirma o reclama</h4>
+          <p>Si cumplió, liberas pago. Si no, reembolso automático. Sin preguntas, sin demoras.</p>
+        </div>
+      </div>
+    </section>
+
+    <div class="sec-label" style="margin-top: 80px;">Tutorías recientes · estudiantes como tú</div>
+    <section class="recent-tutorings">
+      <div class="rt-strip">
+
+        <div class="rt-card">
+          <div class="rt-head">
+            <div class="rt-av-pair">
+              <div class="av av-pia" style="background:#C9B581;color:#0D0F10;"><img src="../assets/people/pia-cisternas.jpg" alt="Pía Cisternas"></div>
+              <div class="av av-daniela" style="background:#FF4D3A;color:#F5F4EF;"><img src="../assets/people/daniela-maturana.jpg" alt="Daniela Maturana"></div>
+            </div>
+            <div class="rt-info">
+              <div class="rt-people">Pía Cisterna · Daniela Maturana</div>
+              <div class="rt-date">jueves 24 abril · 17:00</div>
+            </div>
+          </div>
+          <div class="rt-subject">Contabilidad Financiera — Preparación examen</div>
+          <div class="rt-status-bar">
+            <div class="rt-status live">En curso</div>
+            <div class="rt-price">$18.900</div>
+          </div>
+        </div>
+
+        <div class="rt-card">
+          <div class="rt-head">
+            <div class="rt-av-pair">
+              <div class="av av-barbara" style="background:#FF7A6F;color:#0D0F10;"><img src="../assets/people/barbara-escalona.jpg" alt="Barbara Escalona"></div>
+              <div class="av av-felipe" style="background:#00C2FF;color:#0D0F10;"><img src="../assets/people/felipe-gatica.png" alt="Felipe Gatica"></div>
+            </div>
+            <div class="rt-info">
+              <div class="rt-people">Barbara Escalona · Felipe Gatica</div>
+              <div class="rt-date">sábado 26 abril · 10:00</div>
+            </div>
+          </div>
+          <div class="rt-subject">Derecho Comercial — Caso práctico sociedades</div>
+          <div class="rt-status-bar">
+            <div class="rt-status upcoming">En 2 días</div>
+            <div class="rt-price">$22.000</div>
+          </div>
+        </div>
+
+        <div class="rt-card">
+          <div class="rt-head">
+            <div class="rt-av-pair">
+              <div class="av av-victoria" style="background:#FFE9B8;color:#0D0F10;"><img src="../assets/people/victoria-navarro-pacheco.jpg" alt="Victoria Navarro Pacheco"></div>
+              <div class="av av-jennifer" style="background:#D9FF3A;color:#0D0F10;"><img src="../assets/people/jennifer-ruiz-babin.png" alt="Jennifer Ruiz Babin"></div>
+            </div>
+            <div class="rt-info">
+              <div class="rt-people">Victoria Navarro · Jennifer Ruiz Babin</div>
+              <div class="rt-date">martes 22 abril · 20:00</div>
+            </div>
+          </div>
+          <div class="rt-subject">Logística — Ejercicios cadena de suministro</div>
+          <div class="rt-status-bar">
+            <div class="rt-status done">Completada · ★ 5</div>
+            <div class="rt-price">$20.500</div>
+          </div>
+        </div>
+
+      </div>
+    </section>
+
+  </main>
+
+</body>
+</html>

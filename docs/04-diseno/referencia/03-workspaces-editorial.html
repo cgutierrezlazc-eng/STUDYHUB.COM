@@ -1,0 +1,443 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Conniku — Workspaces (editorial)</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Funnel+Display:wght@400;500;600;700;800;900&family=Geist+Mono:wght@400;500;600;700&display=swap" />
+  <style>
+    :root {
+      --ink: #0D0F10; --ink-2: #2B2E30; --ink-3: #696C6F; --ink-4: #A0A3A7;
+      --paper: #F5F4EF; --paper-2: #EBE9E1; --paper-3: #DBD9CF;
+      --line: #D2CFC3; --line-soft: #E2DFD4; --card: #FFFFFF;
+      --lime: #D9FF3A; --lime-ink: #181F08;
+      --pink: #FF4D3A; --cream: #FFE9B8;
+      --violet: #6B4EFF; --cyan: #00C2FF; --orange: #FF4A1C;
+      --font-display: 'Funnel Display', -apple-system, sans-serif;
+      --font-mono: 'Geist Mono', ui-monospace, monospace;
+      --ease: cubic-bezier(.2,.8,.2,1);
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    html, body { background: var(--paper); color: var(--ink); font-family: var(--font-display); }
+    body { min-height: 100vh; overflow-x: hidden; }
+    ::selection { background: var(--lime); color: var(--lime-ink); }
+
+    .top-progress {
+      background: var(--ink); color: #fff; padding: 8px 28px;
+      display: flex; align-items: center; justify-content: space-between;
+      font-family: var(--font-mono); font-size: 11px;
+      letter-spacing: .08em; text-transform: uppercase;
+    }
+    .top-progress .left { display: flex; align-items: center; gap: 12px; }
+    .pulse { width: 8px; height: 8px; border-radius: 50%; background: var(--lime); animation: pulse 1.6s var(--ease) infinite; }
+    @keyframes pulse { 0% { box-shadow: 0 0 0 0 rgba(217,255,58,.7); } 70% { box-shadow: 0 0 0 10px rgba(217,255,58,0); } 100% { box-shadow: 0 0 0 0 rgba(217,255,58,0); } }
+
+    .nav-wrap { padding: 18px 28px 0; display: flex; justify-content: center; }
+    .nav {
+      max-width: 1240px; width: 100%;
+      background: var(--card); border: 1px solid var(--line);
+      border-radius: 999px; padding: 10px 14px 10px 18px;
+      display: flex; align-items: center; gap: 28px;
+    }
+    .logo-wrap { display: flex; align-items: center; gap: 10px; }
+    .logo-tile { width: 28px; height: 28px; display: block; flex-shrink: 0; }
+    .logo-text { font-weight: 700; font-size: 20px; letter-spacing: -.02em; }
+    .nav-links { display: flex; gap: 22px; flex: 1; }
+    .nav-link { font-size: 15px; font-weight: 600; color: var(--ink-2); cursor: pointer; }
+    .nav-link.active { color: var(--ink); border-bottom: 2px solid var(--lime); padding-bottom: 4px; }
+    .search-slot { font-family: var(--font-mono); font-size: 13px; color: var(--ink-3); border: 1px solid var(--line-soft); border-radius: 999px; padding: 6px 14px; display: flex; align-items: center; gap: 8px; }
+    .kbd { background: var(--paper-2); padding: 2px 7px; border-radius: 6px; font-size: 11px; }
+    .btn-primary { background: var(--ink); color: #fff; border: 0; padding: 10px 14px 10px 20px; display: flex; align-items: center; gap: 10px; font-weight: 700; font-size: 14px; border-radius: 999px; cursor: pointer; font-family: var(--font-display); }
+    .btn-primary .ring { width: 26px; height: 26px; border-radius: 50%; background: var(--lime); display: grid; place-items: center; color: var(--ink); font-weight: 900; font-size: 14px; }
+
+    .main { max-width: 1240px; margin: 0 auto; padding: 60px 28px 120px; }
+
+    /* Hero workspaces */
+    .hero { display: grid; grid-template-columns: 1.3fr 1fr; gap: 60px; margin-bottom: 72px; align-items: end; }
+    .hero h1 { font-weight: 900; font-size: clamp(56px, 9vw, 120px); line-height: .88; letter-spacing: -.045em; }
+    .hero h1 .line-1 { display: block; }
+    .hero h1 .chip-pink { background: var(--pink); color: #fff; padding: 0 16px; border-radius: 14px; display: inline-block; transform: rotate(-1deg); position: relative; }
+    .hero h1 .chip-pink::after { content: ""; position: absolute; right: -14px; top: -4px; width: 6px; height: 6px; border-radius: 50%; background: var(--cyan); box-shadow: -12px 18px 0 var(--lime), 8px 28px 0 var(--cream); }
+    .hero p { font-size: 18px; line-height: 1.5; color: var(--ink-2); max-width: 380px; font-weight: 500; }
+    .hero p strong { background: var(--lime); padding: 2px 8px; border-radius: 6px; font-weight: 700; }
+
+    /* Filter tabs */
+    .filter-tabs { display: flex; gap: 10px; margin-bottom: 32px; flex-wrap: wrap; }
+    .tab {
+      background: var(--card); border: 2px solid var(--ink); border-radius: 999px;
+      padding: 10px 18px; font-weight: 700; font-size: 14px; cursor: pointer;
+      display: flex; align-items: center; gap: 10px; transition: all 180ms var(--ease);
+    }
+    .tab:hover { transform: translateY(-1px); }
+    .tab.active { background: var(--ink); color: #fff; }
+    .tab .count { font-family: var(--font-mono); font-size: 11px; background: var(--paper-2); color: var(--ink); padding: 2px 8px; border-radius: 999px; letter-spacing: 0; }
+    .tab.active .count { background: var(--lime); color: var(--lime-ink); }
+
+    /* Create new card + workspaces grid */
+    .workspaces-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; }
+    .ws-card {
+      background: var(--card); border: 2px solid var(--ink); border-radius: 24px;
+      padding: 24px; cursor: pointer; transition: all 200ms var(--ease);
+      display: flex; flex-direction: column; min-height: 260px;
+    }
+    .ws-card:hover { transform: translateY(-4px); box-shadow: 8px 8px 0 var(--ink); }
+    .ws-card:nth-child(4n+1) { transform: rotate(-.8deg); }
+    .ws-card:nth-child(4n+3) { transform: rotate(.6deg); }
+    .ws-card:nth-child(4n+1):hover, .ws-card:nth-child(4n+3):hover { transform: translateY(-4px) rotate(0); }
+
+    .ws-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 20px; }
+    .ws-tag {
+      font-family: var(--font-mono); font-size: 10px; letter-spacing: .12em;
+      text-transform: uppercase; padding: 4px 10px; border-radius: 999px; font-weight: 700;
+    }
+    .ws-tag.estudio { background: var(--lime); color: var(--lime-ink); }
+    .ws-tag.grupal { background: var(--pink); color: #fff; }
+    .ws-tag.personal { background: var(--cream); color: var(--ink); }
+    .ws-tag.tesis { background: var(--violet); color: #fff; }
+    .ws-tag.proyecto { background: var(--cyan); color: var(--ink); }
+
+    .live-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--orange); animation: pulse 1.6s var(--ease) infinite; }
+
+    .ws-title { font-weight: 800; font-size: 24px; line-height: 1.1; letter-spacing: -.02em; margin-bottom: 8px; }
+    .ws-subject { font-family: var(--font-mono); font-size: 11px; color: var(--ink-3); letter-spacing: .08em; text-transform: uppercase; margin-bottom: 20px; }
+
+    .ws-meta { margin-top: auto; display: flex; justify-content: space-between; align-items: center; }
+    .avatars { display: flex; }
+    .avatar {
+      width: 32px; height: 32px; border-radius: 50%; border: 2px solid var(--card);
+      margin-left: -10px; display: grid; place-items: center; font-weight: 700; font-size: 12px;
+      font-family: var(--font-display);
+    }
+    .avatar:first-child { margin-left: 0; }
+    .avatar.a1 { background: var(--lime); color: var(--lime-ink); }
+    .avatar.a2 { background: var(--pink); color: #fff; }
+    .avatar.a3 { background: var(--cyan); color: var(--ink); }
+    .avatar.a4 { background: var(--violet); color: #fff; }
+    .avatar.a5 { background: var(--cream); color: var(--ink); }
+    .avatar.more { background: var(--paper-2); color: var(--ink-2); font-size: 10px; }
+
+    .ws-time { font-family: var(--font-mono); font-size: 11px; color: var(--ink-3); letter-spacing: .08em; text-transform: uppercase; }
+
+    /* Create new especial */
+    .ws-new {
+      background: var(--paper); border: 2px dashed var(--ink); border-radius: 24px;
+      padding: 24px; cursor: pointer; display: flex; flex-direction: column;
+      align-items: center; justify-content: center; min-height: 260px; text-align: center;
+      transition: all 200ms var(--ease);
+    }
+    .ws-new:hover { background: var(--cream); transform: translateY(-4px); border-style: solid; }
+    .ws-new .plus { width: 60px; height: 60px; background: var(--ink); color: var(--lime); border-radius: 50%; display: grid; place-items: center; font-size: 40px; font-weight: 300; margin-bottom: 16px; line-height: 1; }
+    .ws-new .title { font-weight: 800; font-size: 20px; letter-spacing: -.02em; margin-bottom: 4px; }
+    .ws-new .hint { font-family: var(--font-mono); font-size: 11px; color: var(--ink-3); letter-spacing: .08em; text-transform: uppercase; }
+
+    /* Actividad en vivo */
+    .section-label {
+      display: flex; align-items: center; gap: 12px;
+      font-family: var(--font-mono); font-size: 11px; font-weight: 600;
+      letter-spacing: .14em; text-transform: uppercase; color: var(--ink-3);
+      margin: 72px 0 24px;
+    }
+    .section-label::before { content: ""; width: 32px; height: 2px; background: var(--ink); }
+
+    .live-panel {
+      background: var(--ink); color: #fff; border-radius: 32px; padding: 40px;
+      display: grid; grid-template-columns: 1fr 1fr; gap: 48px;
+    }
+    .live-panel .label { font-family: var(--font-mono); font-size: 11px; color: var(--lime); letter-spacing: .14em; text-transform: uppercase; margin-bottom: 14px; display: flex; align-items: center; gap: 8px; }
+    .live-panel .label::before { content: ""; width: 8px; height: 8px; border-radius: 50%; background: var(--lime); animation: pulse 1.6s var(--ease) infinite; }
+    .live-panel h3 { font-weight: 900; font-size: 40px; line-height: 1; letter-spacing: -.03em; margin-bottom: 18px; }
+    .live-panel h3 .hl { background: var(--lime); color: var(--lime-ink); padding: 0 10px; border-radius: 10px; display: inline-block; transform: rotate(-1deg); }
+    .live-panel p { color: rgba(255,255,255,.75); line-height: 1.5; font-size: 15px; }
+    .live-feed .feed-item { display: flex; gap: 14px; padding: 10px 0; border-bottom: 1px solid rgba(255,255,255,.1); }
+    .live-feed .feed-item:last-child { border-bottom: 0; }
+    .feed-avatar { width: 32px; height: 32px; border-radius: 50%; display: grid; place-items: center; font-weight: 700; font-size: 12px; flex-shrink: 0; }
+    .feed-content { flex: 1; font-size: 13px; }
+    .feed-content strong { color: #fff; font-weight: 700; }
+    .feed-content .action-text { color: rgba(255,255,255,.7); }
+    .feed-time { font-family: var(--font-mono); font-size: 10px; color: var(--lime); letter-spacing: .08em; text-transform: uppercase; margin-top: 3px; }
+
+    /* Recently shared docs */
+    .docs-strip { display: grid; grid-template-columns: repeat(4, 1fr); gap: 14px; }
+    .doc-pill {
+      background: var(--card); border: 2px solid var(--ink); border-radius: 16px;
+      padding: 16px 18px; cursor: pointer; transition: all 180ms var(--ease);
+    }
+    .doc-pill:hover { transform: translateY(-2px); box-shadow: 4px 4px 0 var(--ink); }
+    .doc-pill .doc-type { font-family: var(--font-mono); font-size: 10px; letter-spacing: .1em; text-transform: uppercase; color: var(--ink-3); margin-bottom: 8px; }
+    .doc-pill .doc-name { font-weight: 700; font-size: 15px; line-height: 1.2; letter-spacing: -.01em; }
+    .doc-pill .doc-meta { margin-top: 10px; display: flex; justify-content: space-between; align-items: center; font-family: var(--font-mono); font-size: 10px; color: var(--ink-3); letter-spacing: .08em; text-transform: uppercase; }
+
+    @media (max-width: 1080px) {
+      .hero { grid-template-columns: 1fr; gap: 20px; }
+      .workspaces-grid { grid-template-columns: 1fr; }
+      .live-panel { grid-template-columns: 1fr; padding: 32px; }
+      .docs-strip { grid-template-columns: 1fr 1fr; }
+    }
+  </style>
+</head>
+<body>
+
+  <div class="top-progress">
+    <div class="left">
+      <div class="pulse"></div>
+      <span>Tus workspaces</span>
+    </div>
+    <span>7 activos · 14 colaboradores esta semana</span>
+  </div>
+
+  <div class="nav-wrap">
+    <div class="nav">
+      <div class="logo-wrap">
+        <div class="logo-tile"><svg viewBox="0 0 100 100" aria-label="Conniku" style="width:100%;height:100%;display:block"><rect width="100" height="100" rx="22" fill="#0D0F10"/><mask id="ckL_03_workspaces_editorial" maskUnits="userSpaceOnUse"><rect width="100" height="100" fill="#fff"/><circle cx="58" cy="50" r="24" fill="#000"/></mask><rect x="12" y="12" width="76" height="76" rx="14" fill="#D9FF3A" mask="url(#ckL_03_workspaces_editorial)"/><circle cx="58" cy="50" r="5" fill="#FF4A1C"/></svg></div>
+        <div class="logo-text">conniku.</div>
+      </div>
+      <div class="nav-links">
+        <div class="nav-link active">Estudio</div>
+        <div class="nav-link">Biblioteca</div>
+        <div class="nav-link">Tutores</div>
+        <div class="nav-link">Empleo</div>
+        <div class="nav-link">Comunidad</div>
+      </div>
+      <div class="search-slot">
+        <span>Buscar</span>
+        <span class="kbd">⌘K</span>
+      </div>
+      <button class="btn-primary">
+        Crear
+        <span class="ring">+</span>
+      </button>
+    </div>
+  </div>
+
+  <main class="main">
+
+    <section class="hero">
+      <div>
+        <h1>
+          <span class="line-1">Tus espacios</span>
+          <span class="chip-pink">vivos</span>.
+        </h1>
+      </div>
+      <p>
+        Workspaces colaborativos con documentos, chat y ediciones en tiempo real. <strong>Trabaja con tu grupo</strong> sin enviarse archivos por WhatsApp.
+      </p>
+    </section>
+
+    <div class="filter-tabs">
+      <div class="tab active">Todos <span class="count">7</span></div>
+      <div class="tab">Estudio solo <span class="count">2</span></div>
+      <div class="tab">Grupales <span class="count">4</span></div>
+      <div class="tab">Tesis <span class="count">1</span></div>
+      <div class="tab">Archivados <span class="count">12</span></div>
+    </div>
+
+    <div class="workspaces-grid">
+
+      <div class="ws-card">
+        <div class="ws-header">
+          <span class="ws-tag grupal">Grupal</span>
+          <div class="live-dot"></div>
+        </div>
+        <div class="ws-title">Informe final Termodinámica</div>
+        <div class="ws-subject">Grupo 4 · entrega 25 de abril</div>
+        <div class="ws-meta">
+          <div class="avatars">
+            <div class="avatar a1">C</div>
+            <div class="avatar a2">J</div>
+            <div class="avatar a3">D</div>
+            <div class="avatar more">+2</div>
+          </div>
+          <span class="ws-time">editando ahora</span>
+        </div>
+      </div>
+
+      <div class="ws-card">
+        <div class="ws-header">
+          <span class="ws-tag estudio">Estudio</span>
+        </div>
+        <div class="ws-title">Apuntes Cálculo II</div>
+        <div class="ws-subject">Personal · semestre 2026-1</div>
+        <div class="ws-meta">
+          <div class="avatars">
+            <div class="avatar a1">C</div>
+          </div>
+          <span class="ws-time">hace 2 horas</span>
+        </div>
+      </div>
+
+      <div class="ws-card">
+        <div class="ws-header">
+          <span class="ws-tag tesis">Tesis</span>
+        </div>
+        <div class="ws-title">Memoria de Título</div>
+        <div class="ws-subject">Prof. guía: Soto · 38% avance</div>
+        <div class="ws-meta">
+          <div class="avatars">
+            <div class="avatar a1">C</div>
+            <div class="avatar a5">MS</div>
+          </div>
+          <span class="ws-time">ayer 19:30</span>
+        </div>
+      </div>
+
+      <div class="ws-card">
+        <div class="ws-header">
+          <span class="ws-tag grupal">Grupal</span>
+          <div class="live-dot"></div>
+        </div>
+        <div class="ws-title">Caso Derecho Constitucional</div>
+        <div class="ws-subject">Grupo 2 · debate viernes</div>
+        <div class="ws-meta">
+          <div class="avatars">
+            <div class="avatar a1">C</div>
+            <div class="avatar a2">J</div>
+            <div class="avatar a4">P</div>
+            <div class="avatar a3">L</div>
+            <div class="avatar more">+3</div>
+          </div>
+          <span class="ws-time">hace 8 min</span>
+        </div>
+      </div>
+
+      <div class="ws-card">
+        <div class="ws-header">
+          <span class="ws-tag personal">Personal</span>
+        </div>
+        <div class="ws-title">Cuaderno de ideas</div>
+        <div class="ws-subject">Pensamientos · tareas · notas</div>
+        <div class="ws-meta">
+          <div class="avatars">
+            <div class="avatar a1">C</div>
+          </div>
+          <span class="ws-time">ayer</span>
+        </div>
+      </div>
+
+      <div class="ws-card">
+        <div class="ws-header">
+          <span class="ws-tag proyecto">Proyecto</span>
+        </div>
+        <div class="ws-title">App Semillero 2026</div>
+        <div class="ws-subject">Equipo interdisciplinario · 6 personas</div>
+        <div class="ws-meta">
+          <div class="avatars">
+            <div class="avatar a1">C</div>
+            <div class="avatar a2">J</div>
+            <div class="avatar a3">D</div>
+            <div class="avatar a4">P</div>
+            <div class="avatar more">+2</div>
+          </div>
+          <span class="ws-time">hace 1 día</span>
+        </div>
+      </div>
+
+      <div class="ws-card">
+        <div class="ws-header">
+          <span class="ws-tag grupal">Grupal</span>
+        </div>
+        <div class="ws-title">Preparación quiz Álgebra</div>
+        <div class="ws-subject">Grupo 3 · este domingo</div>
+        <div class="ws-meta">
+          <div class="avatars">
+            <div class="avatar a1">C</div>
+            <div class="avatar a5">MA</div>
+            <div class="avatar a4">N</div>
+          </div>
+          <span class="ws-time">hace 3 días</span>
+        </div>
+      </div>
+
+      <div class="ws-new">
+        <div class="plus">+</div>
+        <div class="title">Crear workspace</div>
+        <div class="hint">solo tú · grupal · tesis</div>
+      </div>
+
+    </div>
+
+    <div class="section-label">Actividad en vivo</div>
+    <section class="live-panel">
+      <div>
+        <div class="label">ocurriendo ahora</div>
+        <h3>
+          <span class="hl">3 personas</span><br>
+          editando tus workspaces.
+        </h3>
+        <p>
+          Colaboración real con cursores en vivo, comentarios con mención y versiones automáticas por minuto. Nadie pierde su trabajo, nadie se queda atrás.
+        </p>
+      </div>
+      <div class="live-feed">
+        <div class="feed-item">
+          <div class="feed-avatar" style="background: var(--pink); color: #fff;">J</div>
+          <div class="feed-content">
+            <strong>Javiera S.</strong> <span class="action-text">editó "Informe final Termodinámica"</span>
+            <div class="feed-time">justo ahora</div>
+          </div>
+        </div>
+        <div class="feed-item">
+          <div class="feed-avatar" style="background: var(--cyan); color: var(--ink);">D</div>
+          <div class="feed-content">
+            <strong>Diego R.</strong> <span class="action-text">agregó comentario en "Caso Derecho Constitucional"</span>
+            <div class="feed-time">hace 2 min</div>
+          </div>
+        </div>
+        <div class="feed-item">
+          <div class="feed-avatar" style="background: var(--violet); color: #fff;">P</div>
+          <div class="feed-content">
+            <strong>Paula M.</strong> <span class="action-text">aceptó tu invitación a "App Semillero"</span>
+            <div class="feed-time">hace 12 min</div>
+          </div>
+        </div>
+        <div class="feed-item">
+          <div class="feed-avatar" style="background: var(--lime); color: var(--lime-ink);">L</div>
+          <div class="feed-content">
+            <strong>Lucas P.</strong> <span class="action-text">resolvió un hilo en "Termodinámica"</span>
+            <div class="feed-time">hace 23 min</div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <div class="section-label">Documentos recientes</div>
+    <div class="docs-strip">
+      <div class="doc-pill">
+        <div class="doc-type">▸ Informe · Word</div>
+        <div class="doc-name">Conclusiones v3</div>
+        <div class="doc-meta">
+          <span>Termodinámica</span>
+          <span>hace 12 min</span>
+        </div>
+      </div>
+      <div class="doc-pill">
+        <div class="doc-type">▸ Apuntes</div>
+        <div class="doc-name">Clase 14 · derivadas</div>
+        <div class="doc-meta">
+          <span>Cálculo II</span>
+          <span>ayer</span>
+        </div>
+      </div>
+      <div class="doc-pill">
+        <div class="doc-type">▸ Pauta</div>
+        <div class="doc-name">Rúbrica entrega final</div>
+        <div class="doc-meta">
+          <span>Memoria</span>
+          <span>hace 3 días</span>
+        </div>
+      </div>
+      <div class="doc-pill">
+        <div class="doc-type">▸ Quiz prep</div>
+        <div class="doc-name">Ejercicios resueltos 1-20</div>
+        <div class="doc-meta">
+          <span>Álgebra</span>
+          <span>hace 1 sem</span>
+        </div>
+      </div>
+    </div>
+
+  </main>
+
+</body>
+</html>

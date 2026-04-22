@@ -1,0 +1,556 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Conniku — CV Editor inteligente</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Funnel+Display:wght@400;500;600;700;800;900&family=Geist+Mono:wght@400;500;600;700&display=swap" />
+  <style>
+    :root {
+      --ink: #0D0F10; --ink-2: #2B2E30; --ink-3: #696C6F; --ink-4: #A0A3A7;
+      --paper: #F5F4EF; --paper-2: #EBE9E1; --line: #D2CFC3; --card: #FFFFFF;
+      --lime: #D9FF3A; --lime-ink: #181F08;
+      --pink: #FF4D3A; --cream: #FFE9B8;
+      --violet: #6B4EFF; --cyan: #00C2FF; --orange: #FF4A1C;
+      --font-display: 'Funnel Display', -apple-system, sans-serif;
+      --font-mono: 'Geist Mono', ui-monospace, monospace;
+      --font-cv: 'Funnel Display', -apple-system, sans-serif;
+      --ease: cubic-bezier(.2,.8,.2,1);
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    html, body { background: var(--paper); color: var(--ink); font-family: var(--font-display); height: 100vh; overflow: hidden; }
+    body { display: flex; flex-direction: column; }
+
+    /* Top bar */
+    .top { background: var(--card); border-bottom: 1px solid var(--line); padding: 10px 20px; display: flex; align-items: center; gap: 16px; flex-shrink: 0; }
+    .logo-tile { width: 28px; height: 28px; display: block; flex-shrink: 0; }
+    .breadcrumb { display: flex; align-items: center; gap: 8px; font-family: var(--font-mono); font-size: 11px; letter-spacing: .06em; color: var(--ink-3); text-transform: uppercase; }
+    .bc-c { color: var(--ink); font-weight: 700; }
+
+    .top-right { margin-left: auto; display: flex; align-items: center; gap: 14px; }
+    .completeness {
+      display: flex; align-items: center; gap: 10px;
+      font-family: var(--font-mono); font-size: 11px; letter-spacing: .06em;
+      text-transform: uppercase; color: var(--ink-2); font-weight: 600;
+    }
+    .compl-bar { width: 100px; height: 6px; background: var(--paper-2); border-radius: 999px; overflow: hidden; }
+    .compl-fill { width: 94%; height: 100%; background: linear-gradient(90deg, var(--lime), var(--pink)); }
+    .compl-pct { color: var(--ink); font-weight: 800; font-size: 13px; }
+
+    .top-btn { background: var(--card); border: 1.5px solid var(--ink); padding: 8px 14px; border-radius: 999px; font-family: var(--font-display); font-weight: 700; font-size: 13px; cursor: pointer; }
+    .top-btn.primary { background: var(--ink); color: #fff; border-color: var(--ink); padding: 8px 14px 8px 18px; display: flex; align-items: center; gap: 10px; }
+    .top-btn.primary .ring { width: 22px; height: 22px; border-radius: 50%; background: var(--lime); color: var(--ink); display: grid; place-items: center; font-weight: 900; font-size: 12px; }
+
+    /* Layout */
+    .shell { flex: 1; display: grid; grid-template-columns: 340px 1fr 340px; min-height: 0; }
+
+    /* Left: sections nav */
+    .left-nav { background: var(--paper); padding: 20px 18px; overflow-y: auto; border-right: 1px solid var(--line); }
+    .left-nav::-webkit-scrollbar { width: 4px; }
+    .section-header { font-family: var(--font-mono); font-size: 10px; letter-spacing: .14em; text-transform: uppercase; color: var(--ink-3); padding: 10px 10px 6px; font-weight: 700; }
+    .sec-item {
+      padding: 12px 12px; border-radius: 10px; cursor: pointer;
+      display: flex; align-items: center; gap: 10px; font-size: 13px; font-weight: 600;
+      color: var(--ink-2); transition: all 120ms var(--ease); margin-bottom: 2px;
+    }
+    .sec-item:hover { background: var(--paper-2); color: var(--ink); }
+    .sec-item.active { background: var(--ink); color: #fff; font-weight: 700; }
+    .sec-item .sec-num { width: 22px; height: 22px; border-radius: 50%; background: var(--paper-2); color: var(--ink-2); display: grid; place-items: center; font-family: var(--font-mono); font-size: 10px; font-weight: 700; flex-shrink: 0; letter-spacing: 0; }
+    .sec-item.active .sec-num { background: var(--lime); color: var(--lime-ink); }
+    .sec-item.complete .sec-num::before { content: "✓"; font-family: var(--font-display); }
+    .sec-item.complete .sec-num { background: var(--lime); color: var(--lime-ink); }
+    .sec-item.complete.active .sec-num { background: var(--lime); }
+    .sec-item .sec-count { margin-left: auto; font-family: var(--font-mono); font-size: 10px; color: var(--ink-3); letter-spacing: 0; }
+    .sec-item.active .sec-count { color: rgba(255,255,255,.6); }
+
+    .tip-box {
+      margin-top: 20px; padding: 18px;
+      background: var(--cream); border: 2px solid var(--ink); border-radius: 16px;
+      transform: rotate(-1deg);
+    }
+    .tip-box .tp-label { font-family: var(--font-mono); font-size: 10px; letter-spacing: .12em; text-transform: uppercase; color: var(--ink); font-weight: 700; margin-bottom: 8px; display: flex; align-items: center; gap: 8px; }
+    .tip-box .tp-label::before { content: "★"; font-size: 14px; }
+    .tip-box h4 { font-weight: 900; font-size: 17px; line-height: 1.15; letter-spacing: -.01em; margin-bottom: 8px; }
+    .tip-box p { font-size: 12.5px; color: var(--ink-2); line-height: 1.4; }
+
+    /* Center: CV preview (paper-like) */
+    .cv-stage { background: #e8eae5; padding: 30px 20px; overflow-y: auto; }
+    .cv-stage::-webkit-scrollbar { width: 8px; }
+    .cv-stage::-webkit-scrollbar-thumb { background: rgba(0,0,0,.2); border-radius: 4px; }
+
+    .cv-paper {
+      background: var(--card); max-width: 780px; margin: 0 auto;
+      border-radius: 6px; box-shadow: 0 1px 3px rgba(13,15,16,.1), 0 12px 40px rgba(13,15,16,.15);
+      overflow: hidden; position: relative;
+    }
+    .cv-paper::before { content: ""; position: absolute; top: 0; left: 0; right: 0; height: 6px; background: linear-gradient(90deg, var(--lime), var(--pink)); }
+    .cv-header {
+      padding: 56px 56px 32px; background: var(--paper);
+      display: grid; grid-template-columns: 1fr auto; gap: 30px; align-items: center;
+    }
+    .cv-header-info .cv-name { font-weight: 900; font-size: 40px; letter-spacing: -.035em; line-height: 1; color: var(--ink); }
+    .cv-header-info .cv-title { font-family: var(--font-mono); font-size: 12px; letter-spacing: .1em; text-transform: uppercase; color: var(--ink-3); margin-top: 8px; font-weight: 700; }
+    .cv-header-info .cv-meta { margin-top: 14px; display: flex; flex-wrap: wrap; gap: 6px 14px; font-size: 12.5px; color: var(--ink-2); font-weight: 500; }
+    .cv-header-info .cv-meta span::before { content: "· "; color: var(--ink-4); }
+    .cv-header-info .cv-meta span:first-child::before { content: ""; }
+    .cv-photo {
+      width: 120px; height: 120px; border-radius: 50%;
+      background: linear-gradient(135deg, #0D0F10, #6B4EFF); color: #D9FF3A;
+      display: grid; place-items: center;
+      font-family: var(--font-display); font-weight: 900; font-size: 44px;
+      letter-spacing: -.03em; border: 3px solid var(--ink);
+    }
+
+    .cv-badges { padding: 16px 56px; background: var(--ink); color: #fff; display: flex; gap: 10px; flex-wrap: wrap; }
+    .cv-badge { font-family: var(--font-mono); font-size: 10px; padding: 5px 11px; border-radius: 999px; font-weight: 700; letter-spacing: .08em; text-transform: uppercase; }
+    .cv-badge.lime { background: var(--lime); color: var(--lime-ink); }
+    .cv-badge.cream { background: var(--cream); color: var(--ink); }
+    .cv-badge.ghost { background: rgba(255,255,255,.1); color: #fff; }
+
+    .cv-body { padding: 36px 56px 48px; }
+    .cv-section { margin-bottom: 28px; }
+    .cv-sec-head { display: flex; align-items: baseline; gap: 14px; border-bottom: 2px solid var(--ink); padding-bottom: 8px; margin-bottom: 14px; }
+    .cv-sec-head h3 { font-weight: 900; font-size: 20px; letter-spacing: -.02em; }
+    .cv-sec-head .cs-meta { margin-left: auto; font-family: var(--font-mono); font-size: 10px; color: var(--ink-3); letter-spacing: .08em; text-transform: uppercase; }
+
+    .cv-entry { margin-bottom: 18px; }
+    .cv-entry-top { display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 4px; }
+    .cv-entry-title { font-weight: 800; font-size: 15.5px; letter-spacing: -.01em; }
+    .cv-entry-date { font-family: var(--font-mono); font-size: 10.5px; color: var(--ink-3); letter-spacing: .06em; text-transform: uppercase; font-weight: 600; }
+    .cv-entry-org { font-family: var(--font-mono); font-size: 11.5px; color: var(--ink-2); letter-spacing: .04em; font-weight: 500; text-transform: uppercase; margin-bottom: 6px; }
+    .cv-entry-body { font-size: 13.5px; line-height: 1.5; color: var(--ink-2); font-weight: 500; }
+    .cv-entry-body strong { background: var(--cream); padding: 1px 4px; border-radius: 3px; font-weight: 700; }
+    .cv-entry-body ul { margin-left: 18px; margin-top: 6px; }
+    .cv-entry-body li { margin-bottom: 4px; }
+
+    .cv-grid-row { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+    .skill-chip-group { display: flex; gap: 6px; flex-wrap: wrap; }
+    .skill-chip {
+      background: var(--paper); border: 1.5px solid var(--ink); border-radius: 999px;
+      padding: 4px 12px; font-size: 12px; font-weight: 700;
+    }
+    .skill-chip.hl { background: var(--lime); color: var(--lime-ink); border-color: var(--ink); }
+    .skill-chip .skill-level { font-family: var(--font-mono); font-size: 9px; color: var(--ink-3); margin-left: 4px; font-weight: 600; }
+
+    .cv-lang-row { display: flex; gap: 14px; }
+    .cv-lang { flex: 1; padding: 10px 14px; border: 1.5px solid var(--ink); border-radius: 12px; }
+    .cv-lang .l-code { font-family: var(--font-mono); font-size: 10px; color: var(--ink-3); letter-spacing: .1em; text-transform: uppercase; }
+    .cv-lang .l-name { font-weight: 800; font-size: 14px; margin-top: 2px; }
+    .cv-lang .l-level { font-family: var(--font-mono); font-size: 11px; color: var(--ink); font-weight: 700; margin-top: 4px; }
+
+    .cv-ref { display: flex; align-items: start; gap: 12px; padding: 12px 0; border-bottom: 1px solid var(--line-soft); }
+    .cv-ref:last-child { border-bottom: 0; }
+    .cv-ref-av { width: 36px; height: 36px; border-radius: 50%; background: linear-gradient(135deg, #6B4EFF, #FF4D3A); color: #fff; display: grid; place-items: center; font-weight: 700; font-size: 13px; font-family: var(--font-display); flex-shrink: 0; }
+    .cv-ref-info .cv-ref-name { font-weight: 800; font-size: 13px; }
+    .cv-ref-info .cv-ref-role { font-family: var(--font-mono); font-size: 10px; color: var(--ink-3); letter-spacing: .06em; text-transform: uppercase; margin-top: 2px; }
+    .cv-ref-info .cv-ref-q { font-size: 12px; color: var(--ink-2); margin-top: 5px; line-height: 1.4; font-style: italic; }
+
+    .cv-footer-verify {
+      padding: 14px 56px; background: var(--paper-2);
+      font-family: var(--font-mono); font-size: 10px; color: var(--ink-3);
+      letter-spacing: .06em; text-transform: uppercase;
+      border-top: 1px solid var(--line); display: flex; justify-content: space-between;
+    }
+    .cv-footer-verify strong { color: var(--ink); font-weight: 700; }
+
+    /* Right: Asistente + Ofertas sugeridas */
+    .right-aside { background: var(--card); border-left: 1px solid var(--line); overflow-y: auto; display: flex; flex-direction: column; }
+    .right-aside::-webkit-scrollbar { width: 4px; }
+
+    .assistant-box {
+      padding: 20px 18px; background: var(--ink); color: #fff;
+    }
+    .assistant-box h3 { font-weight: 800; font-size: 16px; letter-spacing: -.01em; margin-bottom: 4px; display: flex; align-items: center; gap: 10px; }
+    .assistant-box h3 .ass-ico { width: 28px; height: 28px; border-radius: 8px; background: var(--lime); color: var(--lime-ink); display: grid; place-items: center; font-weight: 900; font-size: 14px; }
+    .assistant-box .sub { font-family: var(--font-mono); font-size: 10px; color: rgba(255,255,255,.5); letter-spacing: .06em; text-transform: uppercase; }
+
+    .assist-suggestion {
+      margin-top: 14px; background: rgba(255,255,255,.05); border: 1px solid rgba(255,255,255,.1);
+      border-radius: 12px; padding: 12px 14px;
+    }
+    .assist-suggestion .as-label { font-family: var(--font-mono); font-size: 9.5px; color: var(--lime); letter-spacing: .12em; text-transform: uppercase; font-weight: 700; margin-bottom: 6px; }
+    .assist-suggestion .as-text { font-size: 12.5px; color: rgba(255,255,255,.85); line-height: 1.4; font-weight: 500; }
+    .assist-suggestion .as-text strong { color: #fff; }
+    .assist-suggestion .as-actions { display: flex; gap: 6px; margin-top: 10px; }
+    .as-btn { background: var(--lime); color: var(--lime-ink); padding: 5px 10px; border-radius: 999px; border: 0; font-family: var(--font-mono); font-size: 9.5px; letter-spacing: .08em; text-transform: uppercase; font-weight: 700; cursor: pointer; }
+    .as-btn.ghost { background: rgba(255,255,255,.06); color: rgba(255,255,255,.7); }
+
+    .matches-box { padding: 18px; }
+    .matches-box h4 { font-family: var(--font-mono); font-size: 10px; letter-spacing: .14em; text-transform: uppercase; color: var(--ink-3); font-weight: 700; margin-bottom: 14px; display: flex; align-items: center; gap: 10px; }
+    .matches-box h4::before { content: ""; width: 24px; height: 2px; background: var(--ink); }
+
+    .match-row { display: flex; gap: 12px; padding: 12px; background: var(--paper); border: 1.5px solid var(--ink); border-radius: 12px; cursor: pointer; margin-bottom: 10px; transition: all 150ms var(--ease); }
+    .match-row:hover { transform: translateX(-2px); box-shadow: 2px 2px 0 var(--ink); }
+    .match-logo { width: 36px; height: 36px; border-radius: 8px; color: #fff; display: grid; place-items: center; font-weight: 900; font-size: 12px; flex-shrink: 0; font-family: var(--font-display); }
+    .match-logo.blue { background: linear-gradient(135deg, #2F55F0, #6B4EFF); }
+    .match-logo.pink { background: linear-gradient(135deg, #FF4D3A, #FF4A1C); }
+    .match-logo.green { background: linear-gradient(135deg, #00C2FF, #D9FF3A); color: var(--lime-ink); }
+    .match-info .m-title { font-weight: 800; font-size: 13px; line-height: 1.2; letter-spacing: -.01em; }
+    .match-info .m-company { font-family: var(--font-mono); font-size: 10px; letter-spacing: .06em; color: var(--ink-3); margin-top: 2px; text-transform: uppercase; }
+    .match-info .m-bottom { display: flex; justify-content: space-between; align-items: center; margin-top: 6px; }
+    .match-info .m-pct { background: var(--lime); color: var(--lime-ink); padding: 2px 8px; border-radius: 999px; font-family: var(--font-mono); font-size: 10px; font-weight: 700; letter-spacing: 0; }
+    .match-info .m-sal { font-family: var(--font-mono); font-size: 11px; font-weight: 700; }
+  
+    /* ═══ Logo oficial wordmark integrado · 00-BRAND-LOGO.md · INVIOLABLE ═══ */
+    .brand {
+      display: inline-flex; align-items: baseline;
+      font-family: var(--font-display, 'Funnel Display'); font-weight: 900;
+      font-size: 24px; letter-spacing: -.055em; line-height: 1;
+      color: var(--ink, #0D0F10); text-decoration: none;
+      white-space: nowrap;
+    }
+    .brand .u-pack {
+      display: inline-flex; align-items: baseline;
+      background: var(--lime, #D9FF3A);
+      color: var(--ink, #0D0F10);
+      padding: .07em .14em .07em .09em;
+      border-radius: .2em;
+      margin-left: .02em;
+    }
+    .brand .u-pack .dot { color: var(--orange, #FF4A1C); }
+  
+    /* ═══ Fotos catálogo: SIEMPRE círculo + cara centrada ═══ */
+    [class*="avatar"]:has(> img), [class*="-av"]:has(> img),
+    .av:has(> img), .tutor-av:has(> img), .prof-av:has(> img),
+    .f-avatar:has(> img), .friend-mini:has(> img), .friend:has(> img) {
+      aspect-ratio: 1 / 1 !important;
+      border-radius: 50% !important;
+      overflow: hidden !important;
+      padding: 0 !important;
+    }
+    [class*="avatar"] > img, [class*="-av"] > img,
+    .av > img, .tutor-av > img, .prof-av > img,
+    .f-avatar > img, .friend-mini > img, .friend > img {
+      width: 100% !important;
+      height: 100% !important;
+      aspect-ratio: 1 / 1 !important;
+      border-radius: 50% !important;
+      object-fit: cover !important;
+      object-position: center 25% !important;
+      display: block !important;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="top">
+    <a class="brand" href="#" aria-label="Conniku">conn<span>i</span>k<span class="u-pack">u<span class="dot">.</span></span></a>
+    <div class="breadcrumb">
+      <span>Empleo</span>
+      <span>/</span>
+      <span class="bc-c">Mi CV Conniku</span>
+    </div>
+    <div class="top-right">
+      <div class="completeness">
+        <span>Completitud</span>
+        <div class="compl-bar"><div class="compl-fill"></div></div>
+        <span class="compl-pct">94%</span>
+      </div>
+      <button class="top-btn">Vista previa PDF</button>
+      <button class="top-btn primary">
+        Guardar cambios
+        <div class="ring">→</div>
+      </button>
+    </div>
+  </div>
+
+  <div class="shell">
+
+    <aside class="left-nav">
+      <div class="section-header">Datos básicos</div>
+      <div class="sec-item complete"><span class="sec-num"></span>Foto + datos</div>
+      <div class="sec-item complete"><span class="sec-num"></span>Resumen profesional</div>
+
+      <div class="section-header" style="margin-top: 14px;">Académico</div>
+      <div class="sec-item complete active"><span class="sec-num"></span>Educación <span class="sec-count">2</span></div>
+      <div class="sec-item complete"><span class="sec-num"></span>Diploma Conniku <span class="sec-count">4/6</span></div>
+      <div class="sec-item complete"><span class="sec-num"></span>Cursos extra <span class="sec-count">6</span></div>
+
+      <div class="section-header" style="margin-top: 14px;">Experiencia</div>
+      <div class="sec-item complete"><span class="sec-num"></span>Práctica + pasantías <span class="sec-count">3</span></div>
+      <div class="sec-item"><span class="sec-num">○</span>Voluntariados <span class="sec-count">0</span></div>
+
+      <div class="section-header" style="margin-top: 14px;">Habilidades</div>
+      <div class="sec-item complete"><span class="sec-num"></span>Técnicas <span class="sec-count">12</span></div>
+      <div class="sec-item complete"><span class="sec-num"></span>Idiomas <span class="sec-count">3</span></div>
+      <div class="sec-item complete"><span class="sec-num"></span>Blandas <span class="sec-count">6</span></div>
+
+      <div class="section-header" style="margin-top: 14px;">Referencias</div>
+      <div class="sec-item complete"><span class="sec-num"></span>Tutores + profes <span class="sec-count">3</span></div>
+
+      <div class="tip-box">
+        <div class="tp-label">Tip del asistente</div>
+        <h4>Agrega voluntariados.</h4>
+        <p>Subes tu completitud al 98% y mejoras match con ofertas sociales. Tenemos 4 voluntariados sugeridos para ti.</p>
+      </div>
+    </aside>
+
+    <main class="cv-stage">
+      <div class="cv-paper">
+
+        <header class="cv-header">
+          <div class="cv-header-info">
+            <h1 class="cv-name">Cristian Gutiérrez Lazcano</h1>
+            <div class="cv-title">Ing. Comercial — 4º año · U. del Alba</div>
+            <div class="cv-meta">
+              <span>cristian@conniku.com</span>
+              <span>+56 9 3456 7890</span>
+              <span>Santiago, Chile</span>
+              <span>conniku.com/u/cristian-gl</span>
+            </div>
+          </div>
+          <div class="cv-photo">CG</div>
+        </header>
+
+        <div class="cv-badges">
+          <span class="cv-badge lime">★ Diploma Conniku 2026 · en curso 4/6</span>
+          <span class="cv-badge cream">Promedio 8.4</span>
+          <span class="cv-badge ghost">★ Verificado U de Chile</span>
+          <span class="cv-badge ghost">+12 cursos Conniku Academy</span>
+        </div>
+
+        <div class="cv-body">
+
+          <section class="cv-section">
+            <div class="cv-sec-head">
+              <h3>Resumen profesional</h3>
+            </div>
+            <p style="font-size: 14px; line-height: 1.55; color: var(--ink); font-weight: 500;">
+              Estudiante de 4º año de Ingeniería Comercial con foco en <strong>excelencia operacional y análisis de datos</strong>. Experiencia en levantamiento de procesos y optimización KPI. Dominio avanzado de Excel y Python. Busco práctica 2026 S2 en retail, operaciones o manufactura.
+            </p>
+          </section>
+
+          <section class="cv-section">
+            <div class="cv-sec-head">
+              <h3>Educación</h3>
+              <div class="cs-meta">2 entradas</div>
+            </div>
+
+            <div class="cv-entry">
+              <div class="cv-entry-top">
+                <div class="cv-entry-title">Ingeniería Comercial</div>
+                <div class="cv-entry-date">2022 · cursando</div>
+              </div>
+              <div class="cv-entry-org">Universidad del Alba · Facultad CFM</div>
+              <div class="cv-entry-body">
+                Promedio acumulado <strong>8.4 / 10</strong>. Estudiante destacado 2024-2025.
+                <ul>
+                  <li>Tesis en preparación: optimización de rutas de distribución en supermercados chilenos</li>
+                  <li>Ayudantía en cátedra de Investigación Operativa (2025)</li>
+                </ul>
+              </div>
+            </div>
+
+            <div class="cv-entry">
+              <div class="cv-entry-top">
+                <div class="cv-entry-title">Enseñanza Media Completa</div>
+                <div class="cv-entry-date">2018 — 2021</div>
+              </div>
+              <div class="cv-entry-org">Colegio San Ignacio de Alonso Ovalle · Santiago</div>
+              <div class="cv-entry-body">
+                NEM 6.8 · PSU Matemáticas 790 · Lenguaje 712 · Ciencias 768
+              </div>
+            </div>
+          </section>
+
+          <section class="cv-section">
+            <div class="cv-sec-head">
+              <h3>Experiencia</h3>
+              <div class="cs-meta">3 entradas</div>
+            </div>
+
+            <div class="cv-entry">
+              <div class="cv-entry-top">
+                <div class="cv-entry-title">Pasantía Ing. Industrial · CMPC</div>
+                <div class="cv-entry-date">ene — feb 2025</div>
+              </div>
+              <div class="cv-entry-org">CMPC Celulosa · Planta Laja</div>
+              <div class="cv-entry-body">
+                Pasantía profesional de 6 semanas. Participación en equipo de Procesos Continuos.
+                <ul>
+                  <li>Levantamiento de <strong>8 procesos productivos críticos</strong> en línea de celulosa</li>
+                  <li>Propuesta de mejora que redujo tiempo de cambio de producto en 14%</li>
+                  <li>Presentación final a gerencia de operaciones</li>
+                </ul>
+              </div>
+            </div>
+
+            <div class="cv-entry">
+              <div class="cv-entry-top">
+                <div class="cv-entry-title">Consultoría voluntaria · Semillero Emprendimiento</div>
+                <div class="cv-entry-date">mar 2024 — actual</div>
+              </div>
+              <div class="cv-entry-org">Semillero U. del Alba · 18 horas mensuales</div>
+              <div class="cv-entry-body">
+                Mentor de 3 emprendimientos estudiantiles en viabilidad operativa y pricing.
+              </div>
+            </div>
+          </section>
+
+          <section class="cv-section">
+            <div class="cv-sec-head">
+              <h3>Habilidades</h3>
+            </div>
+            <div class="cv-grid-row">
+              <div>
+                <div style="font-family: var(--font-mono); font-size: 10px; letter-spacing: .1em; text-transform: uppercase; color: var(--ink-3); font-weight: 700; margin-bottom: 8px;">Técnicas</div>
+                <div class="skill-chip-group">
+                  <div class="skill-chip hl">Excel avanzado<span class="skill-level">★★★★★</span></div>
+                  <div class="skill-chip hl">Python<span class="skill-level">★★★★</span></div>
+                  <div class="skill-chip">R<span class="skill-level">★★★</span></div>
+                  <div class="skill-chip">Power BI<span class="skill-level">★★★</span></div>
+                  <div class="skill-chip">SQL<span class="skill-level">★★★</span></div>
+                  <div class="skill-chip">SAP<span class="skill-level">★★</span></div>
+                </div>
+              </div>
+              <div>
+                <div style="font-family: var(--font-mono); font-size: 10px; letter-spacing: .1em; text-transform: uppercase; color: var(--ink-3); font-weight: 700; margin-bottom: 8px;">Metodologías</div>
+                <div class="skill-chip-group">
+                  <div class="skill-chip">Lean Manufacturing</div>
+                  <div class="skill-chip">Six Sigma básico</div>
+                  <div class="skill-chip">Kaizen</div>
+                  <div class="skill-chip">Mapeo BPMN</div>
+                </div>
+              </div>
+            </div>
+          </section>
+
+          <section class="cv-section">
+            <div class="cv-sec-head">
+              <h3>Idiomas</h3>
+            </div>
+            <div class="cv-lang-row">
+              <div class="cv-lang">
+                <div class="l-code">ES</div>
+                <div class="l-name">Español</div>
+                <div class="l-level">Nativo</div>
+              </div>
+              <div class="cv-lang">
+                <div class="l-code">EN</div>
+                <div class="l-name">Inglés</div>
+                <div class="l-level">B1 · Intermedio</div>
+              </div>
+              <div class="cv-lang">
+                <div class="l-code">PT</div>
+                <div class="l-name">Portugués</div>
+                <div class="l-level">A2 · Básico</div>
+              </div>
+            </div>
+          </section>
+
+          <section class="cv-section">
+            <div class="cv-sec-head">
+              <h3>Referencias</h3>
+              <div class="cs-meta">Tutores + profesores que me avalan</div>
+            </div>
+
+            <div class="cv-ref">
+              <div class="cv-ref-av"><img src="../assets/people/daniela-maturana.jpg" alt="Daniela Maturana"></div>
+              <div class="cv-ref-info">
+                <div class="cv-ref-name">Daniela Maturana</div>
+                <div class="cv-ref-role">Tutora Matemáticas · U. del Alba</div>
+                <div class="cv-ref-q">"Cristian destaca por su análisis sistemático y capacidad de traducir teoría en acción. Preparamos juntos 3 cátedras — siempre llegó con preguntas inteligentes."</div>
+              </div>
+            </div>
+
+            <div class="cv-ref">
+              <div class="cv-ref-av" style="background: linear-gradient(135deg, #00C2FF, #0D0F10);"><img src="../assets/people/jennifer-ruiz-babin.png" alt="Jennifer Ruiz Babin"></div>
+              <div class="cv-ref-info">
+                <div class="cv-ref-name">Dr. Jennifer Ruiz Babin</div>
+                <div class="cv-ref-role">Ing. Gestión Logística · U. del Alba · Tutor Termodinámica</div>
+                <div class="cv-ref-q">"Estudiante muy comprometido, trabajo grupo excelente, aplica conceptos a problemas reales."</div>
+              </div>
+            </div>
+          </section>
+
+        </div>
+
+        <div class="cv-footer-verify">
+          <span>CV Conniku · <strong>Verificado con hash SHA-256</strong> · editado 18 abr 2026 · 14:32 UTC</span>
+          <span>conniku.com/cv/cristian-gl · <strong>cve-9f3a82</strong></span>
+        </div>
+
+      </div>
+    </main>
+
+    <aside class="right-aside">
+
+      <div class="assistant-box">
+        <h3><span class="ass-ico">A</span> Asistente de CV</h3>
+        <div class="sub">Reviso tu CV en tiempo real</div>
+
+        <div class="assist-suggestion">
+          <div class="as-label">★ Sugerencia</div>
+          <div class="as-text">Tu sección de <strong>experiencia</strong> es excelente. Un verbo más fuerte en la pasantía CMPC puede sumar: "Redujo" en vez de "redujo".</div>
+          <div class="as-actions">
+            <button class="as-btn">Aplicar</button>
+            <button class="as-btn ghost">Ignorar</button>
+          </div>
+        </div>
+
+        <div class="assist-suggestion">
+          <div class="as-label">★ Falta</div>
+          <div class="as-text">Para la oferta de <strong>Falabella</strong> que estás mirando, conviene agregar un voluntariado. Te recomiendo: "Mentor Juntos SpA 2024".</div>
+          <div class="as-actions">
+            <button class="as-btn">Ver detalles</button>
+          </div>
+        </div>
+
+        <div class="assist-suggestion">
+          <div class="as-label">★ Atención</div>
+          <div class="as-text">Tu nivel de inglés B1 puede ser barrera. Tenemos cursos internos para llegar a B2 en 6 semanas.</div>
+          <div class="as-actions">
+            <button class="as-btn">Inscribirme</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="matches-box">
+        <h4>Ofertas que podrías tomar</h4>
+
+        <div class="match-row">
+          <div class="match-logo blue">FR</div>
+          <div class="match-info">
+            <div class="m-title">Practicante Ing. Industrial 2026</div>
+            <div class="m-company">Falabella Retail</div>
+            <div class="m-bottom">
+              <div class="m-pct">93%</div>
+              <div class="m-sal">$650k</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="match-row">
+          <div class="match-logo pink">CS</div>
+          <div class="match-info">
+            <div class="m-title">Analista de Operaciones Jr.</div>
+            <div class="m-company">Cornershop</div>
+            <div class="m-bottom">
+              <div class="m-pct">88%</div>
+              <div class="m-sal">$780k</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="match-row">
+          <div class="match-logo green">GL</div>
+          <div class="match-info">
+            <div class="m-title">Practicante Data Operations</div>
+            <div class="m-company">Globant</div>
+            <div class="m-bottom">
+              <div class="m-pct">82%</div>
+              <div class="m-sal">$700k</div>
+            </div>
+          </div>
+        </div>
+
+      </div>
+
+    </aside>
+
+  </div>
+
+</body>
+</html>

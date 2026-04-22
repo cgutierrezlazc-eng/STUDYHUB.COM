@@ -1,0 +1,680 @@
+<!DOCTYPE html>
+<html lang="es-CL">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Conniku — Clase en vivo · Contabilidad</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Funnel+Display:wght@400;500;600;700;800;900&family=Geist+Mono:wght@400;500;600;700&display=swap" />
+  <style>
+    :root {
+      --ink: #0D0F10; --ink-2: #1A1D24; --ink-3: #696C6F; --ink-4: #A0A3A7;
+      --paper: #F5F4EF; --paper-2: #EBE9E1; --line: #D2CFC3; --card: #FFFFFF;
+      --lime: #D9FF3A; --lime-ink: #181F08;
+      --pink: #FF4D3A; --cream: #FFE9B8;
+      --violet: #6B4EFF; --cyan: #00C2FF; --orange: #FF4A1C;
+      --sand: #C9B581;
+      --font-display: 'Funnel Display', -apple-system, sans-serif;
+      --font-mono: 'Geist Mono', ui-monospace, monospace;
+      --ease: cubic-bezier(.2,.8,.2,1);
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    html, body { background: var(--ink); color: #fff; font-family: var(--font-display); height: 100vh; overflow: hidden; }
+    body { display: grid; grid-template-rows: 56px auto 1fr 64px; }
+    ::selection { background: var(--lime); color: var(--lime-ink); }
+    button { font-family: inherit; cursor: pointer; border: 0; background: transparent; color: inherit; }
+
+    /* ═══ ROW 1 · TOP BAR · minimal ═══ */
+    .top {
+      background: var(--ink);
+      border-bottom: 1px solid rgba(255,255,255,.08);
+      padding: 0 22px;
+      display: flex; align-items: center; gap: 18px;
+    }
+    .brand { display: inline-flex; align-items: baseline; font-family: var(--font-display); font-weight: 900; font-size: 18px; letter-spacing: -.045em; white-space: nowrap; }
+    .brand .u-pack { display: inline-flex; align-items: baseline; background: var(--lime); color: var(--ink); padding: .07em .14em .07em .09em; border-radius: .2em; margin-left: .02em; }
+    .brand .u-pack .dot { color: var(--orange); }
+
+    .top-live { display: inline-flex; align-items: center; gap: 7px; background: var(--pink); color: #fff; padding: 4px 10px; border-radius: 999px; font-family: var(--font-mono); font-size: 9.5px; font-weight: 800; letter-spacing: .12em; text-transform: uppercase; }
+    .top-live .lr { width: 6px; height: 6px; border-radius: 50%; background: #fff; animation: pulse 1.6s var(--ease) infinite; }
+    @keyframes pulse { 0% { box-shadow: 0 0 0 0 rgba(255,255,255,.7); } 70% { box-shadow: 0 0 0 8px rgba(255,255,255,0); } 100% { box-shadow: 0 0 0 0 rgba(255,255,255,0); } }
+
+    .top-class {
+      flex: 1;
+      display: flex; flex-direction: column; justify-content: center;
+      overflow: hidden;
+    }
+    .tc-subject { font-family: var(--font-mono); font-size: 9.5px; letter-spacing: .12em; text-transform: uppercase; color: rgba(255,255,255,.5); font-weight: 700; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .tc-with { font-weight: 700; font-size: 14px; letter-spacing: -.015em; margin-top: 2px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .tc-with strong { color: var(--lime); font-weight: 800; }
+
+    .top-timer {
+      font-family: var(--font-mono); font-size: 13px; color: var(--lime);
+      font-weight: 800; letter-spacing: .04em;
+      padding: 6px 12px; background: rgba(217,255,58,.1); border-radius: 999px;
+      font-feature-settings: 'tnum';
+    }
+
+    .top-escrow {
+      display: inline-flex; align-items: center; gap: 6px;
+      background: rgba(217,255,58,.08); border: 1px solid rgba(217,255,58,.25);
+      color: var(--lime); padding: 4px 10px; border-radius: 999px;
+      font-family: var(--font-mono); font-size: 9.5px; font-weight: 800;
+      letter-spacing: .08em; text-transform: uppercase;
+    }
+
+    .top-end {
+      background: var(--pink); color: #fff;
+      padding: 7px 14px; border-radius: 10px;
+      font-family: var(--font-display); font-weight: 800; font-size: 12px;
+      letter-spacing: -.01em;
+    }
+    .top-end:hover { background: #FF3524; }
+
+    /* ═══ ROW 2 · PROGRESS PLAN (horizontal · 5 pasos) ═══ */
+    .plan {
+      background: #0A0C10;
+      border-bottom: 1px solid rgba(255,255,255,.05);
+      padding: 10px 22px;
+      display: grid; grid-template-columns: auto 1fr auto; gap: 18px; align-items: center;
+    }
+    .plan-label {
+      font-family: var(--font-mono); font-size: 10px;
+      letter-spacing: .12em; text-transform: uppercase;
+      color: rgba(255,255,255,.45); font-weight: 700;
+      white-space: nowrap;
+    }
+    .plan-label strong { color: var(--lime); font-weight: 800; }
+    .plan-steps {
+      display: grid; grid-template-columns: repeat(5, 1fr); gap: 6px;
+    }
+    .plan-step {
+      height: 6px; border-radius: 3px;
+      background: rgba(255,255,255,.08);
+      position: relative;
+    }
+    .plan-step.done { background: rgba(217,255,58,.6); }
+    .plan-step.active {
+      background: var(--lime);
+    }
+    .plan-step.active::after {
+      content: ""; position: absolute;
+      right: -3px; top: 50%; transform: translateY(-50%);
+      width: 10px; height: 10px; border-radius: 50%;
+      background: var(--lime); border: 2px solid var(--ink);
+      animation: step-pulse 1.4s var(--ease) infinite;
+    }
+    @keyframes step-pulse { 0%, 100% { transform: translateY(-50%) scale(1); } 50% { transform: translateY(-50%) scale(1.3); } }
+    .plan-current {
+      font-family: var(--font-mono); font-size: 10.5px;
+      letter-spacing: .04em;
+      color: rgba(255,255,255,.75); font-weight: 600;
+      white-space: nowrap;
+    }
+    .plan-current strong { color: #fff; font-weight: 800; }
+
+    /* ═══ ROW 3 · STAGE · 2 columnas ═══ */
+    .stage {
+      display: grid;
+      grid-template-columns: 1fr 340px;
+      min-height: 0;
+      overflow: hidden;
+    }
+
+    /* ── CENTRO · pizarra foco ── */
+    .center {
+      padding: 14px;
+      position: relative;
+      min-height: 0;
+      display: grid; grid-template-rows: 1fr auto;
+      gap: 12px;
+    }
+    .stage-main {
+      background: var(--paper); color: var(--ink);
+      border-radius: 16px;
+      position: relative;
+      overflow: hidden;
+      display: grid; grid-template-columns: 1fr 48px;
+    }
+
+    /* Overlay tutor (chico · sup izq) */
+    .ov-tutor {
+      position: absolute; top: 14px; left: 14px; z-index: 5;
+      display: flex; align-items: center; gap: 10px;
+      background: rgba(13,15,16,.85); backdrop-filter: blur(10px);
+      border-radius: 999px; padding: 6px 12px 6px 6px;
+      color: #fff;
+    }
+    .ov-tutor .av {
+      width: 28px; height: 28px; border-radius: 50%;
+      background: var(--pink); color: var(--paper);
+      display: grid; place-items: center;
+      font-family: var(--font-display); font-weight: 900; font-size: 11px;
+      letter-spacing: -.02em;
+    }
+    .ov-tutor .meta { line-height: 1.15; }
+    .ov-tutor .name { font-weight: 700; font-size: 12px; }
+    .ov-tutor .status {
+      font-family: var(--font-mono); font-size: 9px;
+      color: var(--lime); letter-spacing: .06em;
+      text-transform: uppercase; font-weight: 700;
+      margin-top: 2px; display: flex; align-items: center; gap: 5px;
+    }
+    .wave { display: inline-flex; gap: 1.5px; align-items: flex-end; }
+    .wave span { width: 2px; background: var(--lime); border-radius: 1px; animation: wave 1s ease infinite; }
+    .wave span:nth-child(1) { height: 4px; }
+    .wave span:nth-child(2) { height: 9px; animation-delay: .15s; }
+    .wave span:nth-child(3) { height: 6px; animation-delay: .3s; }
+    @keyframes wave { 0%, 100% { transform: scaleY(.4); } 50% { transform: scaleY(1); } }
+
+    /* Self PIP (discreto · inf izq) */
+    .self-pip {
+      position: absolute; bottom: 80px; left: 14px; z-index: 4;
+      width: 128px; height: 96px; border-radius: 10px;
+      background: var(--sand); color: var(--ink);
+      display: grid; place-items: center;
+      font-family: var(--font-display); font-weight: 900; font-size: 30px;
+      letter-spacing: -.03em;
+      box-shadow: 0 4px 16px rgba(0,0,0,.3);
+      overflow: hidden;
+    }
+    .self-pip .tag {
+      position: absolute; bottom: 6px; left: 7px;
+      background: rgba(13,15,16,.82); color: #fff;
+      padding: 2px 6px; border-radius: 4px;
+      font-family: var(--font-mono); font-size: 8px;
+      letter-spacing: .06em; text-transform: uppercase; font-weight: 700;
+    }
+    .self-pip .mic {
+      position: absolute; top: 6px; right: 6px;
+      width: 18px; height: 18px;
+      background: rgba(13,15,16,.82);
+      border-radius: 50%;
+      display: grid; place-items: center;
+      color: var(--lime);
+      font-size: 9px; font-weight: 900;
+    }
+
+    /* Pizarra body */
+    .wb {
+      padding: 44px 52px;
+      overflow-y: auto;
+      color: var(--ink);
+    }
+    .wb::-webkit-scrollbar { width: 4px; }
+    .wb::-webkit-scrollbar-thumb { background: rgba(0,0,0,.12); border-radius: 2px; }
+    .wb-title {
+      font-family: var(--font-display); font-weight: 900;
+      font-size: 30px; letter-spacing: -.028em;
+      color: var(--ink); margin-bottom: 4px;
+    }
+    .wb-sub {
+      font-family: var(--font-mono); font-size: 11px;
+      letter-spacing: .1em; text-transform: uppercase;
+      color: var(--ink-3); font-weight: 600;
+      margin-bottom: 22px;
+    }
+    .wb-text {
+      font-size: 15.5px; line-height: 1.65;
+      color: var(--ink-2); margin-bottom: 14px;
+      font-weight: 450;
+    }
+    .wb-text strong {
+      background: var(--cream);
+      padding: 1px 6px; border-radius: 4px;
+      font-weight: 700; color: var(--ink);
+    }
+
+    .wb-eq {
+      margin: 16px 0;
+      padding: 14px 20px;
+      background: var(--paper-2);
+      border-radius: 10px;
+      font-family: var(--font-mono); font-weight: 600;
+      font-size: 15px; color: var(--ink);
+      text-align: center;
+      letter-spacing: .01em;
+    }
+    .wb-eq.solved {
+      background: var(--lime); color: var(--lime-ink);
+      font-weight: 700;
+    }
+
+    .wb-example {
+      margin: 20px 0;
+      padding: 18px 22px;
+      background: #FFFDF2;
+      border: 1.5px solid var(--line);
+      border-left: 4px solid var(--lime);
+      border-radius: 0 12px 12px 0;
+    }
+    .wb-example .exl {
+      font-family: var(--font-mono); font-size: 10px;
+      letter-spacing: .12em; text-transform: uppercase;
+      color: var(--ink-3); font-weight: 700;
+      margin-bottom: 8px;
+    }
+    .wb-example h4 {
+      font-family: var(--font-display); font-size: 16px;
+      font-weight: 800; letter-spacing: -.015em;
+      color: var(--ink); margin-bottom: 10px;
+      line-height: 1.3;
+    }
+    .wb-example p {
+      font-size: 14px; line-height: 1.55;
+      color: var(--ink-2);
+    }
+
+    /* Banner ejercicio · NO flotante · anclado al pie de la pizarra */
+    .exercise-banner {
+      margin: 20px 0 0;
+      padding: 14px 18px;
+      background: var(--ink); color: #fff;
+      border-radius: 12px;
+      display: grid; grid-template-columns: auto 1fr auto; gap: 16px;
+      align-items: center;
+    }
+    .exercise-banner .eb-label {
+      font-family: var(--font-mono); font-size: 10px;
+      letter-spacing: .14em; text-transform: uppercase;
+      color: var(--lime); font-weight: 800;
+    }
+    .exercise-banner .eb-text {
+      font-weight: 600; font-size: 13.5px;
+      line-height: 1.4; color: #fff;
+    }
+    .exercise-banner .eb-timer {
+      font-family: var(--font-mono); font-weight: 800;
+      font-size: 22px; color: var(--lime);
+      font-feature-settings: 'tnum';
+      letter-spacing: .02em;
+      line-height: 1;
+    }
+
+    /* Tools verticales de la pizarra */
+    .wb-tools {
+      display: flex; flex-direction: column;
+      border-left: 1px solid var(--line);
+      background: var(--paper-2);
+      padding: 12px 0; gap: 3px;
+    }
+    .wb-tool {
+      width: 36px; height: 36px; border-radius: 8px;
+      color: var(--ink-3);
+      display: grid; place-items: center;
+      font-size: 14px; font-weight: 800;
+      margin: 0 auto;
+      transition: all 120ms var(--ease);
+    }
+    .wb-tool:hover { background: rgba(13,15,16,.06); color: var(--ink); }
+    .wb-tool.active { background: var(--lime); color: var(--lime-ink); }
+    .wb-tool-sep {
+      height: 1px; background: var(--line);
+      margin: 6px 10px;
+    }
+
+    /* ── DERECHA · sidebar 3 tabs ── */
+    .right {
+      background: #0A0C10;
+      border-left: 1px solid rgba(255,255,255,.06);
+      display: flex; flex-direction: column;
+      overflow: hidden;
+      min-height: 0;
+    }
+    .r-tabs {
+      display: flex;
+      padding: 12px 16px 0;
+      gap: 4px;
+      border-bottom: 1px solid rgba(255,255,255,.06);
+      flex-shrink: 0;
+    }
+    .r-tab {
+      padding: 9px 12px;
+      font-family: var(--font-display); font-weight: 600; font-size: 12px;
+      color: rgba(255,255,255,.45);
+      border-bottom: 2px solid transparent;
+      display: flex; align-items: center; gap: 6px;
+      transition: color 150ms var(--ease);
+    }
+    .r-tab:hover { color: rgba(255,255,255,.75); }
+    .r-tab.active {
+      color: #fff;
+      border-bottom-color: var(--lime);
+      font-weight: 700;
+    }
+    .r-tab .n {
+      background: rgba(255,255,255,.08);
+      color: rgba(255,255,255,.65);
+      font-family: var(--font-mono); font-size: 9px;
+      padding: 1px 6px; border-radius: 999px;
+      letter-spacing: 0; font-weight: 700;
+    }
+    .r-tab.active .n { background: var(--lime); color: var(--lime-ink); }
+    .r-tab .live-dot {
+      width: 6px; height: 6px; border-radius: 50%;
+      background: var(--pink);
+      animation: pulse 1.6s var(--ease) infinite;
+    }
+
+    /* Transcript body */
+    .transcript {
+      flex: 1;
+      overflow-y: auto;
+      padding: 16px 18px 14px;
+      min-height: 0;
+    }
+    .transcript::-webkit-scrollbar { width: 3px; }
+    .transcript::-webkit-scrollbar-thumb { background: rgba(255,255,255,.08); border-radius: 2px; }
+
+    .tr-entry { margin-bottom: 16px; }
+    .tr-meta {
+      display: flex; align-items: baseline; gap: 8px;
+      margin-bottom: 5px;
+    }
+    .tr-who { font-weight: 700; font-size: 11.5px; letter-spacing: -.01em; }
+    .tr-who.tutor { color: var(--lime); }
+    .tr-who.student { color: var(--pink); }
+    .tr-time {
+      font-family: var(--font-mono); font-size: 9px;
+      color: rgba(255,255,255,.3); letter-spacing: .04em;
+      font-weight: 600;
+    }
+    .tr-mark {
+      font-family: var(--font-mono); font-size: 8.5px;
+      letter-spacing: .08em; text-transform: uppercase;
+      font-weight: 800; padding: 2px 7px; border-radius: 999px;
+      margin-left: auto;
+    }
+    .tr-mark.key { background: rgba(217,255,58,.15); color: var(--lime); }
+    .tr-mark.q { background: rgba(255,77,58,.18); color: var(--pink); }
+    .tr-text {
+      font-size: 12.5px; line-height: 1.55;
+      color: rgba(255,255,255,.75);
+      font-weight: 450;
+      padding-left: 11px;
+      border-left: 2px solid rgba(255,255,255,.05);
+    }
+    .tr-entry.key .tr-text { border-left-color: var(--lime); color: rgba(255,255,255,.92); }
+    .tr-entry.question .tr-text { border-left-color: var(--pink); color: rgba(255,255,255,.92); }
+    .tr-formula {
+      background: rgba(13,15,16,.5);
+      padding: 1px 6px; border-radius: 4px;
+      font-family: var(--font-mono); font-size: 11.5px;
+      color: var(--cyan);
+      border: 1px solid rgba(0,194,255,.2);
+    }
+
+    /* Composer (chat con tutor) */
+    .r-composer {
+      padding: 10px 16px 14px;
+      border-top: 1px solid rgba(255,255,255,.06);
+      flex-shrink: 0;
+      display: grid; grid-template-columns: 1fr auto; gap: 8px;
+    }
+    .r-composer input {
+      background: rgba(255,255,255,.06);
+      border: 0; border-radius: 999px;
+      padding: 9px 13px;
+      font-family: var(--font-display); font-size: 12.5px;
+      color: #fff; outline: none;
+      font-weight: 500;
+    }
+    .r-composer input::placeholder { color: rgba(255,255,255,.4); }
+    .r-send {
+      width: 32px; height: 32px; border-radius: 50%;
+      background: var(--lime); color: var(--lime-ink);
+      display: grid; place-items: center;
+      font-size: 13px; font-weight: 900;
+    }
+    .r-send:hover { transform: scale(1.05); }
+
+    /* ═══ ROW 4 · CONTROLES · 3 grupos claros ═══ */
+    .controls {
+      background: #06080B;
+      border-top: 1px solid rgba(255,255,255,.06);
+      padding: 0 22px;
+      display: grid; grid-template-columns: auto 1fr auto; gap: 14px; align-items: center;
+    }
+    .ctrl-group {
+      display: flex; gap: 6px; align-items: center;
+    }
+    .ctrl-group.center { justify-content: center; }
+    .ctrl-btn {
+      background: rgba(255,255,255,.06);
+      color: #fff;
+      width: 40px; height: 40px; border-radius: 10px;
+      display: grid; place-items: center;
+      font-size: 15px;
+      transition: all 150ms var(--ease);
+    }
+    .ctrl-btn:hover { background: rgba(255,255,255,.14); }
+    .ctrl-btn.active { background: var(--lime); color: var(--lime-ink); }
+    .ctrl-btn.muted { background: var(--pink); color: #fff; }
+
+    .ctrl-labeled {
+      background: rgba(255,255,255,.06);
+      color: #fff;
+      padding: 8px 14px; border-radius: 10px;
+      font-family: var(--font-display); font-weight: 700; font-size: 12.5px;
+      display: inline-flex; align-items: center; gap: 7px;
+      letter-spacing: -.01em;
+      transition: all 150ms var(--ease);
+    }
+    .ctrl-labeled:hover { background: rgba(255,255,255,.14); }
+    .ctrl-labeled.hand { background: var(--orange); color: #fff; }
+    .ctrl-labeled.hand:hover { background: #FF5E2C; }
+
+    .ctrl-status {
+      display: inline-flex; align-items: center; gap: 8px;
+      font-family: var(--font-mono); font-size: 10.5px;
+      color: rgba(255,255,255,.6);
+      letter-spacing: .04em; font-weight: 600;
+    }
+    .ctrl-status .dot {
+      width: 6px; height: 6px; border-radius: 50%;
+      background: var(--pink);
+      animation: pulse 1.6s var(--ease) infinite;
+    }
+    .ctrl-status strong { color: #fff; font-weight: 800; }
+    .ctrl-cost {
+      display: inline-flex; align-items: center; gap: 6px;
+      background: rgba(217,255,58,.08); border: 1px solid rgba(217,255,58,.25);
+      color: var(--lime); padding: 5px 11px; border-radius: 999px;
+      font-family: var(--font-mono); font-size: 10.5px; font-weight: 800;
+      letter-spacing: .04em;
+    }
+
+    @media (max-width: 1280px) {
+      .stage { grid-template-columns: 1fr 300px; }
+      .wb { padding: 36px 40px; }
+    }
+    @media (max-width: 1100px) {
+      body { grid-template-rows: 52px auto 1fr 60px; }
+      .self-pip { width: 104px; height: 78px; font-size: 24px; }
+      .ctrl-labeled { padding: 7px 12px; font-size: 12px; }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- ═══ ROW 1 · TOP ═══ -->
+  <header class="top">
+    <a class="brand" href="#">conn<span>i</span>k<span class="u-pack">u<span class="dot">.</span></span></a>
+    <div class="top-live"><span class="lr"></span>EN VIVO</div>
+    <div class="top-class">
+      <div class="tc-subject">Contabilidad Financiera I · Depreciación activos fijos</div>
+      <div class="tc-with">Clase con <strong>Daniela Maturana</strong></div>
+    </div>
+    <div class="top-timer">42:18 / 60:00</div>
+    <div class="top-escrow">★ Pago en custodia</div>
+    <button class="top-end" type="button">Terminar clase</button>
+  </header>
+
+  <!-- ═══ ROW 2 · PLAN (progress horizontal) ═══ -->
+  <section class="plan" aria-label="Plan de clase">
+    <div class="plan-label">Plan · <strong>3/5</strong></div>
+    <div class="plan-steps">
+      <div class="plan-step done" title="Repaso activos fijos"></div>
+      <div class="plan-step done" title="Método lineal de depreciación"></div>
+      <div class="plan-step active" title="Ejercicios depreciación acumulada"></div>
+      <div class="plan-step" title="Método de unidades producidas"></div>
+      <div class="plan-step" title="Cierre + tarea"></div>
+    </div>
+    <div class="plan-current">paso 3 · <strong>Ejercicios depreciación acumulada</strong></div>
+  </section>
+
+  <!-- ═══ ROW 3 · STAGE ═══ -->
+  <div class="stage">
+
+    <!-- CENTRO · pizarra -->
+    <main class="center">
+      <div class="stage-main">
+
+        <!-- Overlay tutor -->
+        <div class="ov-tutor">
+          <div class="av" aria-label="Daniela Maturana">DM</div>
+          <div class="meta">
+            <div class="name">Daniela Maturana</div>
+            <div class="status"><div class="wave"><span></span><span></span><span></span></div>explicando</div>
+          </div>
+        </div>
+
+        <!-- Self PIP -->
+        <div class="self-pip" aria-label="Pía Cisterna">
+          PC
+          <div class="mic">🎤</div>
+          <div class="tag">Tú · Pía</div>
+        </div>
+
+        <!-- Pizarra -->
+        <div class="wb">
+          <h1 class="wb-title">Depreciación · Método lineal</h1>
+          <div class="wb-sub">Reconocimiento del gasto de un activo fijo a lo largo de su vida útil</div>
+
+          <p class="wb-text">Cuando una empresa adquiere un activo fijo (máquina, vehículo, oficina), el costo se <strong>distribuye contablemente</strong> durante los años que se espera usarlo. No se registra todo el gasto en el año de compra · eso distorsionaría los resultados del período.</p>
+
+          <div class="wb-eq">depreciación anual = (valor inicial − valor residual) / vida útil</div>
+
+          <div class="wb-example">
+            <div class="exl">Ejemplo resuelto</div>
+            <h4>Camioneta de reparto · costo $12.000.000 · residual $2.000.000 · vida útil 5 años</h4>
+            <p>Depreciación anual = (12.000.000 − 2.000.000) / 5 = $2.000.000 por año.</p>
+            <div class="wb-eq solved">$2.000.000 CLP / año · durante 5 años</div>
+          </div>
+
+          <!-- Banner ejercicio · anclado al pie del contenido, NO flotante -->
+          <div class="exercise-banner">
+            <div class="eb-label">tu turno · ejercicio 3</div>
+            <div class="eb-text">Equipo computacional · costo $3.500.000 · residual $500.000 · vida útil 4 años. Calcula la depreciación anual y la acumulada al año 2.</div>
+            <div class="eb-timer">03:42</div>
+          </div>
+        </div>
+
+        <!-- Tools verticales -->
+        <div class="wb-tools" aria-label="Herramientas pizarra">
+          <button class="wb-tool active" title="Pluma">✎</button>
+          <button class="wb-tool" title="Resaltador">▬</button>
+          <button class="wb-tool" title="Borrador">◯</button>
+          <div class="wb-tool-sep"></div>
+          <button class="wb-tool" title="Texto">T</button>
+          <button class="wb-tool" title="Fórmula">∑</button>
+          <button class="wb-tool" title="Adjuntar">▢</button>
+        </div>
+
+      </div>
+    </main>
+
+    <!-- DERECHA · sidebar 3 tabs -->
+    <aside class="right" aria-label="Transcript y chat">
+      <div class="r-tabs">
+        <button class="r-tab active" type="button">
+          Transcript
+          <span class="live-dot"></span>
+        </button>
+        <button class="r-tab" type="button">Chat <span class="n">4</span></button>
+        <button class="r-tab" type="button">Al terminar <span class="n">★</span></button>
+      </div>
+
+      <div class="transcript">
+
+        <div class="tr-entry">
+          <div class="tr-meta"><span class="tr-who tutor">Daniela</span><span class="tr-time">17:00</span></div>
+          <div class="tr-text">Hola Pía, ¿cómo estás? Vamos a cerrar depreciación con los ejercicios que te dejaron en el curso.</div>
+        </div>
+
+        <div class="tr-entry">
+          <div class="tr-meta"><span class="tr-who student">Pía</span><span class="tr-time">17:00</span></div>
+          <div class="tr-text">Bien. Tengo el Kieso y los ejercicios del capítulo 10.</div>
+        </div>
+
+        <div class="tr-entry key">
+          <div class="tr-meta"><span class="tr-who tutor">Daniela</span><span class="tr-time">17:04</span><span class="tr-mark key">concepto</span></div>
+          <div class="tr-text">Depreciar no es perder plata, es reconocer el gasto en el período que corresponde. Por eso existe el método lineal y el de unidades producidas.</div>
+        </div>
+
+        <div class="tr-entry key">
+          <div class="tr-meta"><span class="tr-who tutor">Daniela</span><span class="tr-time">17:12</span><span class="tr-mark key">regla clave</span></div>
+          <div class="tr-text">Fórmula base del método lineal: <span class="tr-formula">(valor inicial − residual) / vida útil</span>. El residual es lo que esperas vender el activo al final.</div>
+        </div>
+
+        <div class="tr-entry question">
+          <div class="tr-meta"><span class="tr-who student">Pía</span><span class="tr-time">17:18</span><span class="tr-mark q">pregunta</span></div>
+          <div class="tr-text">¿Y el valor residual cómo lo estimo si nunca vendí un activo?</div>
+        </div>
+
+        <div class="tr-entry">
+          <div class="tr-meta"><span class="tr-who tutor">Daniela</span><span class="tr-time">17:19</span></div>
+          <div class="tr-text">Con experiencia del rubro o por tablas del SII. Para los ejercicios del curso se da explícito · no lo tienes que estimar tú.</div>
+        </div>
+
+        <div class="tr-entry key">
+          <div class="tr-meta"><span class="tr-who tutor">Daniela</span><span class="tr-time">17:26</span><span class="tr-mark key">ejemplo</span></div>
+          <div class="tr-text">Camioneta $12MM, residual $2MM, vida 5 años. Depreciación anual: <span class="tr-formula">(12.000.000 − 2.000.000) / 5 = 2.000.000</span>.</div>
+        </div>
+
+        <div class="tr-entry question">
+          <div class="tr-meta"><span class="tr-who student">Pía</span><span class="tr-time">17:31</span><span class="tr-mark q">pregunta</span></div>
+          <div class="tr-text">¿Y la depreciación acumulada al año 3 sería simplemente 2.000.000 × 3?</div>
+        </div>
+
+        <div class="tr-entry">
+          <div class="tr-meta"><span class="tr-who tutor">Daniela</span><span class="tr-time">17:32</span></div>
+          <div class="tr-text">Exacto. En método lineal la cuota anual no cambia, así que al año 3 llevas $6.000.000 depreciados y el valor libro es $6.000.000.</div>
+        </div>
+
+        <div class="tr-entry key">
+          <div class="tr-meta"><span class="tr-who tutor">Daniela</span><span class="tr-time">17:40</span><span class="tr-mark key">ejercicio</span></div>
+          <div class="tr-text">Tu turno: equipo computacional, costo $3.500.000, residual $500.000, vida 4 años. Calcula anual y acumulada al año 2. Tienes 5 minutos.</div>
+        </div>
+
+      </div>
+
+      <div class="r-composer">
+        <input type="text" placeholder="Mensaje privado a Daniela..." aria-label="Mensaje privado" />
+        <button class="r-send" type="button" aria-label="Enviar">→</button>
+      </div>
+    </aside>
+
+  </div>
+
+  <!-- ═══ ROW 4 · CONTROLES ═══ -->
+  <div class="controls">
+    <div class="ctrl-group">
+      <button class="ctrl-btn" title="Micrófono" aria-label="Mic">🎤</button>
+      <button class="ctrl-btn active" title="Cámara" aria-label="Cámara">◉</button>
+      <button class="ctrl-btn" title="Compartir pantalla" aria-label="Compartir">▣</button>
+    </div>
+    <div class="ctrl-group center">
+      <button class="ctrl-labeled hand" type="button">✋ Mano arriba</button>
+      <button class="ctrl-labeled" type="button">👍 Reacción</button>
+      <button class="ctrl-labeled" type="button">⚙ Ajustes</button>
+    </div>
+    <div class="ctrl-group">
+      <div class="ctrl-status"><span class="dot"></span>Grabando <strong>42:18</strong></div>
+      <div class="ctrl-cost">$18.900 CLP</div>
+    </div>
+  </div>
+
+</body>
+</html>
