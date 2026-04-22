@@ -50,7 +50,7 @@ documents:
 
   cookies:
     version: "1.0.0"
-    sha256: "48b90468822fda6b0470acb30d4707f037f1dd636eac7ebd967ab293c2a3a513"
+    sha256: "80d41f71f075ae954a4e5f1763266b9830d38849bbe79a7bb931c2a4ee30e38c"
     vigencia_desde: "2026-04-21"
     vigencia_hasta: "actual"
     archivo: "v3.2/cookies.md"

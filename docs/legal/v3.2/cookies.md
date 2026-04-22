@@ -371,8 +371,8 @@ utilizadas, se incorporen nuevos proveedores o evolucione el marco
 regulatorio. Cada actualización:
 
 - Se publicará en este mismo documento con nueva fecha y número de versión.
-- Quedará registrada en `docs/legal/LEGAL_VERSIONS.md` con hash SHA-256 del
-  archivo.
+- Quedará registrada en nuestro archivo interno de versiones con hash
+  SHA-256 del documento para efectos probatorios.
 - Cuando el cambio sea material (por ejemplo, nueva categoría de cookies,
   nuevos proveedores terceros, cambio de base legal), se notificará al
   Usuario mediante el mecanismo de re-aceptación descrito en la Política de
@@ -399,7 +399,7 @@ Domicilio: Antofagasta, Chile
 
 | Versión | Fecha de vigencia | Resumen de cambios |
 |---|---|---|
-| 1.0.0 | 2026-04-21 | Primera versión pública y canónica. Supersede al stub `v3.2/cookies.md` anterior (que compartía hash con `v3.1/cookies.md`). Documenta explícitamente: inventario real de cookies y localStorage de la plataforma; clasificación de `cc_visitor_uuid` como cookie esencial con cuatro condiciones (plazo 13 meses, uso restringido, regeneración al retirar consentimiento, declaración explícita); base legal Art. 6(1)(b) GDPR para cookies funcionales post-login; retención 5 años post-delete con fundamento Art. 17(3)(e) GDPR + Art. 2515 Código Civil chileno; pseudonimización de IP y User-Agent a los 12 meses; referencia a vigencia de Ley 21.719 a partir del 1 de diciembre de 2026. |
+| 1.0.0 | 2026-04-21 | Primera versión pública y canónica de la Política de Cookies de Conniku. Documenta explícitamente: inventario real de cookies y localStorage de la plataforma; clasificación de `cc_visitor_uuid` como cookie esencial con cuatro condiciones (plazo 13 meses, uso restringido, regeneración al retirar consentimiento, declaración explícita); base legal Art. 6(1)(b) GDPR para cookies funcionales post-login; retención 5 años post-delete con fundamento Art. 17(3)(e) GDPR + Art. 2515 Código Civil chileno; pseudonimización de IP y User-Agent a los 12 meses; referencia a vigencia de Ley 21.719 a partir del 1 de diciembre de 2026. |
 
 ---
 

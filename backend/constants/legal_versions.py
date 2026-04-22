@@ -55,7 +55,7 @@ COOKIES_VERSION: str = "1.0.0"
 # base legal Art. 6(1)(b) GDPR para funcionales post-login, retención
 # 5 años (Art. 17(3)(e) GDPR + Art. 2515 CC chileno), pseudonimización
 # 12 meses, vigencia Ley 21.719 desde 2026-12-01.
-COOKIES_HASH: str = "48b90468822fda6b0470acb30d4707f037f1dd636eac7ebd967ab293c2a3a513"
+COOKIES_HASH: str = "80d41f71f075ae954a4e5f1763266b9830d38849bbe79a7bb931c2a4ee30e38c"
 
 
 # --- Declaración de Edad (checkbox declarativo) ----------------------------

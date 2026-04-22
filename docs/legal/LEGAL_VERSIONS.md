@@ -26,7 +26,7 @@ validación de abogado antes de publicar cambios a producción.
 | Terms of Service | 3.1 | e3780c975df9 | 2026-04-20 | 2026-04-20 | `archive/2026-04-20-v3.1-superseded/terms.md` |
 | Terms of Service | 3.2.0 | 9a16122f985a | 2026-04-20 | actual | `v3.2/terms.md` |
 | Cookies Policy (stub v3.1) | 1.0.0 | a00150297efa | 2026-04-20 | 2026-04-21 | `archive/2026-04-20-v3.1-superseded/cookies.md` (idéntico byte a byte al stub v3.2 anterior) |
-| Cookies Policy | 1.0.0 | 48b90468822f | 2026-04-21 | actual | `v3.2/cookies.md` |
+| Cookies Policy | 1.0.0 | 80d41f71f075 | 2026-04-21 | actual | `v3.2/cookies.md` |
 | Age Declaration (archivo .md, v3.1 cierre nota) | 1.0.0 | 90a0fc5887da | 2026-04-18 | 2026-04-20 | `archive/2026-04-20-v3.1-superseded/age-declaration.md` |
 | Age Declaration (archivo .md, v3.2 nota cerrada) | 1.0.0 | 61dab2ecf1b2 | 2026-04-20 | actual | `v3.2/age-declaration.md` |
 | Age Declaration (TEXTO canónico, inmutable) | 1.0.0 | ca527535a0f3 | 2026-04-18 | actual | hash del texto entre separadores, `user_agreements.text_version_hash` |
