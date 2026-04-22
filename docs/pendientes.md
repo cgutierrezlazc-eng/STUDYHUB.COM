@@ -217,6 +217,19 @@ Commits candidatos para cherry-pick selectivo en bloques futuros (ordenados por 
 - Panel admin Conniku ADS
 - Universidades LATAM (expansión post-launch)
 
+### Herramienta matemática interactiva tipo GeoGebra para estudiantes
+- **Origen**: solicitud de Cristian 2026-04-22
+- **Referencia**: https://www.geogebra.org/classic?lang=es
+- **Qué es**: GeoGebra Classic es un entorno matemático interactivo que incluye geometría dinámica, álgebra, hoja de cálculo, gráficas, estadística y cálculo — todo en el navegador, sin instalación.
+- **Idea**: integrar una experiencia equivalente dentro de Conniku para los estudiantes. Podría vivir dentro de la sección "Mi Universidad" o como herramienta accesible desde el Dashboard del estudiante.
+- **Opciones de implementación a evaluar**:
+  - **Opción A (recomendada):** Embeber GeoGebra directamente vía `<iframe>` con su API pública — sin desarrollo propio, listo en horas.
+  - **Opción B:** Usar la GeoGebra JavaScript API (gratuita, open source) para integración nativa en el frontend React con mayor control de UX.
+  - **Opción C:** Usar una alternativa open source como Desmos API (más simple, solo gráficas 2D) o JSXGraph (más técnico).
+- **Consideraciones legales**: GeoGebra es gratuito para uso educativo no comercial. Verificar licencia antes de integrar si Conniku tiene planes de pago.
+- **Bloque sugerido**: post-launch, como feature premium o gratuita del módulo educativo
+- **Cuándo presentarlo**: cuando Cristian pida avanzar en features de la plataforma educativa
+
 ---
 
 ## 🆕 Módulos nuevos que Cristian quiere (fuera del Bloque 2 Workspaces)
