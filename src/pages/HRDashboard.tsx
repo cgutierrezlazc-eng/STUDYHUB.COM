@@ -255,7 +255,13 @@ const CHILE_LABOR = {
   },
 
   // ─── Impuesto Unico de Segunda Categoria (Art. 43 N°1 LIR) ───
-  // Tramos 2024 — en UTM. Actualizar anualmente.
+  // Tramos 2026 en UTM. Coherente con backend/constants/tax_chile.py
+  // IMPUESTO_2A_CATEGORIA_TRAMOS_2026_UTM y shared/chile_constants.ts
+  // IMPUESTO_2A_CATEGORIA_TRAMOS_2026_UTM.
+  // Fuente: https://www.sii.cl/valores_y_fechas/impuesto_2da_categoria/impuesto2026.htm
+  // Verificado: 2026-04-21 (PR #22 bloque-nomina-chile-v1)
+  // Ultimo tramo corregido de 150 UTM a 310 UTM (resolucion ALERTA-VIEWER-2
+  // del gap-finder 2026-04-21).
   TAX_BRACKETS: [
     { from: 0, to: 13.5, rate: 0, deduction: 0 },
     { from: 13.5, to: 30, rate: 0.04, deduction: 0.54 },
@@ -263,8 +269,8 @@ const CHILE_LABOR = {
     { from: 50, to: 70, rate: 0.135, deduction: 4.49 },
     { from: 70, to: 90, rate: 0.23, deduction: 11.14 },
     { from: 90, to: 120, rate: 0.304, deduction: 17.8 },
-    { from: 120, to: 150, rate: 0.35, deduction: 23.32 },
-    { from: 150, to: Infinity, rate: 0.4, deduction: 30.82 },
+    { from: 120, to: 310, rate: 0.35, deduction: 23.32 },
+    { from: 310, to: Infinity, rate: 0.4, deduction: 38.82 },
   ],
 
   // ─── APV — Ahorro Previsional Voluntario (Art. 20-20L DL 3.500) ───
