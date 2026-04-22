@@ -140,12 +140,14 @@ MODAL_BLOCK = f"""
       'cookies': {{ file: 'legal-cookies.html', title: 'Política de Cookies' }},
       'age-declaration': {{ file: 'legal-age-declaration.html', title: 'Declaración de Edad' }}
     }};
-    // Hashes canónicos v2.4.1 (sincronizados con CANONICAL_HASHES del backend)
+    // Hashes canónicos v2.4.2 (sincronizados con CANONICAL_HASHES del backend
+    // en backend/legal_document_views_routes.py — si aquí quedan stale, el
+    // endpoint POST /legal/documents/:doc/viewed devuelve 409).
     const DOC_HASHES = {{
-      'terms': 'db17b9f2c14bfaa2b8d1b6f7f8a3e6b9a1c0d5e8f2a3b4c5d6e7f8a9b0c1d2e3',
-      'privacy': '9f4b2a1c3e5d7f8b0a2c4e6f8b0d2a4c6e8f0b2d4f6a8c0e2f4b6d8a0c2e4f6b8',
-      'cookies': 'a1b2c3d4e5f6a7b8c9d0e1f2a3b4c5d6e7f8a9b0c1d2e3f4a5b6c7d8e9f0a1b2',
-      'age-declaration': 'b2c3d4e5f6a7b8c9d0e1f2a3b4c5d6e7f8a9b0c1d2e3f4a5b6c7d8e9f0a1b2c3'
+      'terms': '9a16122f985a1d252a5928c5fae518b5bd23ac6ee00996ee9e8293c4aaf08dce',
+      'privacy': 'a09d799c7f34d7100b9393ad7c55c54931ab7e396d0f03b559a59545638e6962',
+      'cookies': '80d41f71f075ae954a4e5f1763266b9830d38849bbe79a7bb931c2a4ee30e38c',
+      'age-declaration': '61dab2ecf1b27e3fb212efcf5a066784943c689de11611bb6d2b919e39441a9b'
     }};
     const VISITOR_UUID_KEY = 'conniku_visitor_uuid';
     const API_BASE = 'https://studyhub-api-bpco.onrender.com';

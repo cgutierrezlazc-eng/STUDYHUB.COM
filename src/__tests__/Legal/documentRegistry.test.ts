@@ -36,10 +36,10 @@ describe('documentRegistry', () => {
       '9a16122f985a1d252a5928c5fae518b5bd23ac6ee00996ee9e8293c4aaf08dce'
     );
     expect(LEGAL_DOCUMENT_REGISTRY['privacy'].sha256).toBe(
-      'b5b9fed8fd5e4e600c7fa33fbd8dddaec5c627be189b5382e8b7cf81dbcfa288'
+      'a09d799c7f34d7100b9393ad7c55c54931ab7e396d0f03b559a59545638e6962'
     );
     expect(LEGAL_DOCUMENT_REGISTRY['cookies'].sha256).toBe(
-      '48b90468822fda6b0470acb30d4707f037f1dd636eac7ebd967ab293c2a3a513'
+      '80d41f71f075ae954a4e5f1763266b9830d38849bbe79a7bb931c2a4ee30e38c'
     );
     // age-declaration: hash del archivo .md (no del texto canónico)
     expect(LEGAL_DOCUMENT_REGISTRY['age-declaration'].sha256).toBe(

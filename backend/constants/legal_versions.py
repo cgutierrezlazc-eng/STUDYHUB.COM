@@ -35,12 +35,16 @@ TOS_HASH: str = "9a16122f985a1d252a5928c5fae518b5bd23ac6ee00996ee9e8293c4aaf08dc
 
 # --- Política de Privacidad -------------------------------------------------
 PRIVACY_DOCUMENT_TYPE: str = "privacy"
-PRIVACY_VERSION: str = "2.4.1"
+PRIVACY_VERSION: str = "2.4.2"
 # SHA-256 de docs/legal/v3.2/privacy.md (encargados Supabase, FCM,
 # Capacitor, Google OAuth, Anthropic, MercadoPago, PayPal, Zoho,
 # Vercel, Render).
-# Aprobado por abogado externo en auditoría 2026-04-20.
-PRIVACY_HASH: str = "b5b9fed8fd5e4e600c7fa33fbd8dddaec5c627be189b5382e8b7cf81dbcfa288"
+# Bump v2.4.1 → v2.4.2 por bloque-sandbox-integrity-v1 (2026-04-23):
+# agrega §2ter canal sandbox + §2quater support_feedback + §2.2
+# document_views. Hash anterior v2.4.1 conservado en METADATA.yaml
+# entrada privacy-v2_4_1 para trazabilidad de user_agreements.
+# Pendiente revisión abogado externo post-merge del PR.
+PRIVACY_HASH: str = "a09d799c7f34d7100b9393ad7c55c54931ab7e396d0f03b559a59545638e6962"
 
 
 # --- Política de Cookies ----------------------------------------------------
