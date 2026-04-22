@@ -3,10 +3,10 @@
  *
  * Pieza 2 del bloque bloque-legal-consolidation-v2.
  * Actualizado en bloque legal-viewer-v1 (D-L7=A): la fuente de verdad
- * es ahora docs/legal/v3.2/privacy.md (markdown canónico).
+ * es ahora docs/02-legal/vigentes/privacy.md (markdown canónico).
  * PrivacyPolicy.tsx es un wrapper del renderer — no contiene contenido inline.
  *
- * Valida que docs/legal/v3.2/privacy.md declara explícitamente a los
+ * Valida que docs/02-legal/vigentes/privacy.md declara explícitamente a los
  * encargados de tratamiento requeridos por el GDPR Art. 13 y la
  * Ley 19.628 Art. 4° (Chile):
  *   Supabase, Firebase Cloud Messaging, Capacitor, Google OAuth,
@@ -23,7 +23,7 @@ import * as path from 'path';
 import { describe, expect, it } from 'vitest';
 
 const ROOT = path.resolve(__dirname, '../../');
-const PRIVACY_MD = path.join(ROOT, 'docs/legal/v3.2/privacy.md');
+const PRIVACY_MD = path.join(ROOT, 'docs/02-legal/vigentes/privacy.md');
 const PRIVACY_FILE = path.join(ROOT, 'src/pages/PrivacyPolicy.tsx');
 
 const REQUIRED_PROCESSORS = [

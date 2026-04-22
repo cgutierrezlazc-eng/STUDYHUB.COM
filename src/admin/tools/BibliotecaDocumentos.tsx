@@ -585,7 +585,7 @@ function generateRIOHS(): string {
 <p><strong>Artículo 5°</strong>: La progresión de contratos se regirá conforme al artículo 159 N°4 del CT: primer contrato plazo fijo máximo 30 días, segundo máximo 60 días, tercero indefinido. El CEO/RRHH podrá contratar directamente bajo contrato indefinido cuando las condiciones así lo ameriten.</p></div>
 
 <div class="article"><h2>Título III — Jornada de Trabajo y Descanso</h2>
-<p><strong>Artículo 6°</strong>: La jornada ordinaria de trabajo es de hasta 45 horas semanales distribuidas en 5 días, conforme al artículo 22 del CT. Los trabajadores bajo modalidad Art. 22 inciso 2° (teletrabajo/alta dirección) están excluidos del control de jornada.</p>
+<p><strong>Artículo 6°</strong>: La jornada ordinaria de trabajo es de hasta 42 horas semanales distribuidas en 5 días, conforme al artículo 22 del CT y a la Ley N° 21.561 (escalón vigente desde el 26/04/2026; escalón final 40h desde el 26/04/2028). Los trabajadores bajo modalidad Art. 22 inciso 2° (teletrabajo/alta dirección) están excluidos del control de jornada.</p>
 <p><strong>Artículo 7°</strong>: Las horas extraordinarias solo podrán pactarse por escrito y hasta un máximo de 2 horas diarias (Art. 31 CT), con recargo del 50% sobre el valor hora normal.</p>
 <p><strong>Artículo 8°</strong>: El descanso semanal mínimo es de 2 días continuos, preferentemente sábado y domingo. El feriado anual es de 15 días hábiles, más días progresivos desde los 10 años de servicio (Art. 67-68 CT).</p></div>
 

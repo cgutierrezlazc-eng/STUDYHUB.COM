@@ -30,14 +30,14 @@ import pytest
 
 REPO_ROOT = Path(__file__).resolve().parent.parent.parent
 
-V3_2_DIR = REPO_ROOT / "docs" / "legal" / "v3.2"
+V3_2_DIR = REPO_ROOT / "docs" / "02-legal" / "vigentes"
 
 # Hashes calculados por legal-docs-keeper en Pieza 1 y verificados con shasum.
 # Son los valores de referencia para esta suite. Si los archivos .md cambian,
 # estos valores deben ser actualizados en el mismo commit que los archivos.
 EXPECTED_HASHES = {
-    "terms.md": "9a16122f985a1d252a5928c5fae518b5bd23ac6ee00996ee9e8293c4aaf08dce",
-    "privacy.md": "a09d799c7f34d7100b9393ad7c55c54931ab7e396d0f03b559a59545638e6962",
+    "terms.md": "b2b834b61e19db6b2f7aa8176e8958f4e001d49a02606097c462811f6e008d73",
+    "privacy.md": "cc9332741bea7ad4539fd6a8a049946e44521b9ae8ed97833dd112412b8c746e",
     "cookies.md": "80d41f71f075ae954a4e5f1763266b9830d38849bbe79a7bb931c2a4ee30e38c",
     "age-declaration.md": "61dab2ecf1b27e3fb212efcf5a066784943c689de11611bb6d2b919e39441a9b",
 }
@@ -167,11 +167,11 @@ def test_age_declaration_canonical_text_hash_unchanged() -> None:
 
 @pytest.mark.legal
 def test_legal_versions_py_tos_version_bumped() -> None:
-    """TOS_VERSION debe ser '3.2.0' (bumpeado desde 3.1.0 en v3.2)."""
+    """TOS_VERSION debe ser '3.2.2' (actualizado a 22/04/2026 — Ley Karin)."""
     from backend.constants.legal_versions import TOS_VERSION
 
-    assert TOS_VERSION == "3.2.0", (
-        f"TOS_VERSION debe ser '3.2.0', encontrado '{TOS_VERSION}'. "
+    assert TOS_VERSION == "3.2.2", (
+        f"TOS_VERSION debe ser '3.2.2', encontrado '{TOS_VERSION}'. "
         "Aplicar bump en backend/constants/legal_versions.py."
     )
 
@@ -285,7 +285,7 @@ def test_reaccept_documents_list_reflects_v3_2_versions() -> None:
     assert "privacy" in versions, "REACCEPT_DOCUMENTS debe incluir 'privacy'"
     assert "cookies" in versions, "REACCEPT_DOCUMENTS debe incluir 'cookies'"
 
-    assert versions["tos"][0] == "3.2.0", f"Versión TOS en REACCEPT_DOCUMENTS: '{versions['tos'][0]}', esperada '3.2.0'"
+    assert versions["tos"][0] == "3.2.2", f"Versión TOS en REACCEPT_DOCUMENTS: '{versions['tos'][0]}', esperada '3.2.2'"
     assert versions["privacy"][0] == "2.4.2", (
         f"Versión PRIVACY en REACCEPT_DOCUMENTS: '{versions['privacy'][0]}', esperada '2.4.2'"
     )

@@ -45,7 +45,7 @@ PRIVACY_VERSION: str = "2.4.2"
 # document_views. Hash anterior v2.4.1 conservado en METADATA.yaml
 # entrada privacy-v2_4_1 para trazabilidad de user_agreements.
 # Pendiente revisión abogado externo post-merge del PR.
-PRIVACY_HASH: str = "a09d799c7f34d7100b9393ad7c55c54931ab7e396d0f03b559a59545638e6962"
+PRIVACY_HASH: str = "cc9332741bea7ad4539fd6a8a049946e44521b9ae8ed97833dd112412b8c746e"
 
 
 # --- Política de Cookies ----------------------------------------------------

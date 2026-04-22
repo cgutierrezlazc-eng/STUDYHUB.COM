@@ -21,9 +21,9 @@ import yaml
 # Ruta absoluta a la raíz del repo (dos niveles arriba de backend/tests/)
 REPO_ROOT = Path(__file__).resolve().parent.parent.parent
 
-V3_2_DIR = REPO_ROOT / "docs" / "legal" / "v3.2"
+V3_2_DIR = REPO_ROOT / "docs" / "02-legal" / "vigentes"
 METADATA_PATH = V3_2_DIR / "METADATA.yaml"
-LEGAL_VERSIONS_PATH = REPO_ROOT / "docs" / "legal" / "LEGAL_VERSIONS.md"
+LEGAL_VERSIONS_PATH = REPO_ROOT / "docs" / "02-legal" / "archivo" / "LEGAL_VERSIONS.md"
 
 # Archivos canónicos requeridos en v3.2/
 REQUIRED_FILES = [

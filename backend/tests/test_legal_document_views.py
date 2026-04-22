@@ -52,24 +52,24 @@ for _path in (_BACKEND_DIR, _REPO_ROOT):
 
 VALID_DOC_KEYS = ["terms", "privacy", "cookies", "age-declaration"]
 
-# Hashes canónicos tomados de docs/legal/v3.2/METADATA.yaml
+# Hashes canónicos — docs/02-legal/vigentes/ (actualizados 22/04/2026)
 CANONICAL_HASHES: dict[str, str] = {
-    "privacy": "a09d799c7f34d7100b9393ad7c55c54931ab7e396d0f03b559a59545638e6962",
-    "terms": "9a16122f985a1d252a5928c5fae518b5bd23ac6ee00996ee9e8293c4aaf08dce",
+    "privacy": "cc9332741bea7ad4539fd6a8a049946e44521b9ae8ed97833dd112412b8c746e",
+    "terms": "b2b834b61e19db6b2f7aa8176e8958f4e001d49a02606097c462811f6e008d73",
     "cookies": "80d41f71f075ae954a4e5f1763266b9830d38849bbe79a7bb931c2a4ee30e38c",
     "age-declaration": "61dab2ecf1b27e3fb212efcf5a066784943c689de11611bb6d2b919e39441a9b",
 }
 
 CANONICAL_VERSIONS: dict[str, str] = {
     "privacy": "2.4.2",
-    "terms": "3.2.0",
+    "terms": "3.2.2",
     "cookies": "1.0.0",
     "age-declaration": "1.0.0",
 }
 
 VIGENCIAS: dict[str, str] = {
-    "privacy": "2026-04-20",
-    "terms": "2026-04-20",
+    "privacy": "2026-04-22",
+    "terms": "2026-04-22",
     "cookies": "2026-04-21",
     "age-declaration": "2026-04-18",
 }

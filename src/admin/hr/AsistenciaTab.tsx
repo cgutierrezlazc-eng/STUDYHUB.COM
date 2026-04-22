@@ -520,8 +520,8 @@ export default function AsistenciaTab() {
         <FileText size={14} />
         <span>
           <strong>Art. 33 CT:</strong> El empleador debe llevar un registro de asistencia para todo
-          trabajador no exceptuado por el Art. 22 inc. 2. Jornada maxima: 45h/sem en max 6 dias.
-          Horas extra: max 2h/dia al 150%.
+          trabajador no exceptuado por el Art. 22 inc. 2. Jornada maxima: 42h/sem (Ley 21.561, vig.
+          26/04/2026) en max 6 dias. Horas extra: max 2h/dia al 150%.
         </span>
       </div>
 
@@ -1434,7 +1434,7 @@ export default function AsistenciaTab() {
                   position: 'relative',
                 }}
               >
-                {/* 45h/week / 5 days = 9h/day limit line */}
+                {/* 42h/week / 5 days = 8.4h/day limit line (Ley 21.561 desde 26/04/2026) */}
                 <div
                   style={{
                     position: 'absolute',
@@ -1455,7 +1455,7 @@ export default function AsistenciaTab() {
                       fontWeight: 600,
                     }}
                   >
-                    9h/dia (45h/sem)
+                    8,4h/dia (42h/sem)
                   </span>
                 </div>
 
@@ -1585,8 +1585,8 @@ export default function AsistenciaTab() {
                 textAlign: 'center',
               }}
             >
-              Art. 22 inc. 1 CT: La duracion de la jornada ordinaria de trabajo no excedera de 45
-              horas semanales, distribuidas en no mas de 6 ni menos de 5 dias.
+              Art. 22 inc. 1 CT (mod. Ley 21.561): La jornada ordinaria no excedera de 42 horas
+              semanales desde el 26/04/2026 (escalon final: 40h desde 26/04/2028).
             </div>
           </div>
         </div>
