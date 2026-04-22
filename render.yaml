@@ -15,7 +15,8 @@ services:
       - key: PYTHON_VERSION
         value: 3.11.0
       - key: CORS_ORIGINS
-        value: "https://conniku.com,https://www.conniku.com,https://studyhub-com.vercel.app,http://localhost:5173,http://localhost:8899"
+        value: "https://conniku.com,https://www.conniku.com,https://conniku.vercel.app"
+        # Dev: agrega http://localhost:5173 solo en tu .env.local — NUNCA en producción
       - key: ENVIRONMENT
         value: production
       - key: DATABASE_URL
@@ -24,8 +25,6 @@ services:
           property: connectionString
       # AI features — set these in Render dashboard
       - key: ANTHROPIC_API_KEY
-        sync: false
-      - key: GEMINI_API_KEY
         sync: false
       # Email notifications — Zoho Mail (cada cuenta necesita su propia contraseña)
       - key: SMTP_HOST
