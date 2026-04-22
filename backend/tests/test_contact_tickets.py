@@ -275,16 +275,18 @@ def test_post_contact_routing_por_motivo(client: TestClient, db_session: Session
     """Cada motivo genera el label y routed_to_email correcto en el ticket."""
     from database import ContactTicket
 
-    motivos_labels = {
-        "comercial": "consulta comercial",
-        "universidad": "alianza con universidad",
-        "prensa": "prensa y medios",
-        "legal": "asuntos legales o privacidad",
-        "seguridad": "reporte de seguridad",
-        "otro": "consulta general",
+    # Mapeo canonico: motivo → (label, email_destino)
+    # Alias provisionados en Zoho (reference_email_accounts.md).
+    motivos_config = {
+        "comercial":   ("consulta comercial",        "contacto@conniku.com"),
+        "universidad": ("alianza con universidad",   "contacto@conniku.com"),
+        "prensa":      ("prensa y medios",           "prensa@conniku.com"),
+        "legal":       ("asuntos legales o privacidad", "legal@conniku.com"),
+        "seguridad":   ("reporte de seguridad",      "seguridad@conniku.com"),
+        "otro":        ("consulta general",          "contacto@conniku.com"),
     }
 
-    for i, (motivo, label_esperado) in enumerate(motivos_labels.items()):
+    for i, (motivo, (label_esperado, email_esperado)) in enumerate(motivos_config.items()):
         payload = {**VALID_PAYLOAD, "reason": motivo, "email": f"{motivo}@example.com"}
         # IPs distintas por motivo para no disparar el rate-limit
         with patch("contact_tickets_routes._send_email_async"):
@@ -301,7 +303,9 @@ def test_post_contact_routing_por_motivo(client: TestClient, db_session: Session
         assert ticket.routed_label == label_esperado, (
             f"Motivo '{motivo}': esperado label '{label_esperado}', recibido '{ticket.routed_label}'"
         )
-        assert ticket.routed_to_email == "contacto@conniku.com"
+        assert ticket.routed_to_email == email_esperado, (
+            f"Motivo '{motivo}': esperado email '{email_esperado}', recibido '{ticket.routed_to_email}'"
+        )
 
 
 def test_post_contact_honeypot_silent_accept(client: TestClient, db_session: Session) -> None:
