@@ -1,6 +1,6 @@
 # Alertas activas del legal-docs-keeper
 
-Última actualización: **2026-04-21** (legal-docs-keeper, Capa 0 bloque legal-viewer-v1 — NOM-5/6/7 marcadas RESUELTA tras merge PR #22)
+Última actualización: **2026-04-21** (legal-docs-keeper, Capa 0 bloque multi-document-consent-v1 — CONSENT-1 y CONSENT-2 agregadas; VIEWER-1/2/3 revisadas sin cerrar)
 
 ## Declaración obligatoria
 
@@ -739,6 +739,14 @@ posteriores las hayan introducido:
   backend-builder debe implementar 300/h + idempotencia client-side en
   Capa 1. Si Cristian prefiere 60/h por conservadurismo, respetar esa
   decisión y documentarla aquí.
+- **Revisión 2026-04-21 post-merge PR #23 (Capa 0 multi-document-consent-v1)**:
+  `backend/legal_document_views_routes.py:33` documenta en comentario
+  "Rate limit: 300 POST/hora por IP (aprobado por legal-docs-keeper D-L5)".
+  Queda PENDIENTE verificar en merge PR #23 que el decorador
+  `@limiter.limit("300/hour")` esté aplicado efectivamente al endpoint
+  POST. Si no lo está, abrir ALERTA-VIEWER-1-REAL. Truth-auditor de
+  bloque multi-document-consent-v1 debe ejecutar esa verificación.
+  Estado: ABIERTA (verificación pendiente).
 
 ### ALERTA-VIEWER-2 — HRDashboard.tsx con tramos impuesto 2024 tras merge PR #22 (MODERADA)
 
@@ -773,6 +781,9 @@ posteriores las hayan introducido:
 - **Bloqueo**: no bloquea `legal-viewer-v1`. Se deja registrado para que
   Cristian decida si (b) o (c) se ejecuta antes o después del
   legal-viewer-v1.
+- **Revisión 2026-04-21 post-merge PR #23**: sigue ABIERTA. Fuera de scope
+  de multi-document-consent-v1. Se mantiene como deuda residual de
+  nomina-chile-v1 para hotfix separado o inclusión en nomina-chile-v2.
 
 ### ALERTA-VIEWER-3 — Riesgo GFM autolink implícito sin verificación exhaustiva (MODERADA)
 
@@ -800,6 +811,77 @@ posteriores las hayan introducido:
   tiempo. Queda como tarea del `frontend-builder` en Capa 1 antes de
   instalar `react-markdown`.
 - **Bloqueo**: no bloquea Capa 0 legal. Es criterio de calidad de render.
+- **Revisión 2026-04-21 post-merge PR #23**: sigue ABIERTA. El render
+  fidelity es responsabilidad del bloque legal-viewer-v1 (ya mergeado).
+  Si el merge PR #23 no incluyó test de regresión de autolink, abrir
+  tarea de deuda técnica. No bloquea multi-document-consent-v1 porque
+  este bloque CONSUME el viewer, no lo construye.
+
+---
+
+## Alertas abiertas (Capa 0 multi-document-consent-v1, 2026-04-21)
+
+### ALERTA-CONSENT-1 — Idempotencia de document_views sin índice único (MODERADA)
+
+- **Origen**: legal-docs-keeper 2026-04-21, Capa 0 bloque
+  `multi-document-consent-v1`, GAP-2 del borrador
+  `docs/legal/drafts/2026-04-21-multi-document-consent-text.md`.
+- **Evidencia**:
+  - `backend/database.py:1972-2009` modelo `DocumentView`: tiene 3
+    índices (`ix_document_views_user_doc`, `ix_document_views_session_doc`,
+    `ix_document_views_doc_key_version`) pero NINGUNO es UNIQUE sobre
+    `(session_token, doc_key, doc_hash)`.
+  - `backend/legal_document_views_routes.py:238-253`: el endpoint hace
+    `db.add(row)` sin `ON CONFLICT` ni check previo de duplicado.
+  - Un usuario que abre un doc, cierra y re-abre crea N filas en
+    `document_views` para el mismo `(session_token, doc_key)`.
+- **Impacto**: GDPR Art. 7(1) demostrabilidad. Si la última fila tiene
+  `scrolled_to_end=false` pero una fila anterior tenía `true`, una
+  query naive podría leer la última fila y declarar "no leído"
+  invalidando la evidencia real. También infla volumen de tabla con
+  retención de 5 años (no crítico pero subóptimo).
+- **Acción requerida al backend-builder de multi-document-consent-v1**:
+  al validar en `POST /auth/register` que existen los 4
+  `document_views` con `scrolled_to_end=true` para el `session_token`,
+  usar agregación con `MAX(scrolled_to_end)` por `(session_token,
+  doc_key)`. Consulta sugerida en §5.3 GAP-2 del borrador.
+- **Bloqueo**: no bloquea Capa 0 legal. Sí bloquea Capa 3 truth-auditor
+  del bloque multi-document-consent-v1 si el backend-builder no usa
+  agregación correcta.
+
+### ALERTA-CONSENT-2 — Stub de cookies.md contamina evidencia probatoria (CRÍTICA)
+
+- **Origen**: legal-docs-keeper 2026-04-21, Capa 0 bloque
+  `multi-document-consent-v1`, GAP-3 del borrador
+  `docs/legal/drafts/2026-04-21-multi-document-consent-text.md`.
+- **Evidencia**:
+  - ALERTA-AUDIT-04-21-14 (CRÍTICA, abierta) indica:
+    `docs/legal/v3.2/cookies.md` tiene frontmatter
+    `estado: STUB — NO PUBLICAR`.
+  - `backend/legal_document_views_routes.py:66` declara
+    `CANONICAL_HASHES["cookies"] = "48b90468822fda6b0470acb30d4707f037f1dd636eac7ebd967ab293c2a3a513"`.
+  - Premisa §22 NO verificada en este turno: el estado real de
+    `docs/legal/v3.2/cookies.md` frente al texto vigente en producción
+    requiere `head -n 20` del archivo + `shasum -a 256`.
+- **Impacto**: si el stub sigue en disco y el bloque
+  multi-document-consent-v1 se implementa:
+  - Usuario "acepta" Política de Cookies leyendo un documento vacío.
+  - Hash hasheado `48b90468...` apunta a contenido stub "NO PUBLICAR".
+  - Evidencia probatoria en `user_agreements` + `document_views`
+    queda invalidada ante regulador que pida "probar qué leyó el
+    usuario". Contradice GDPR Art. 7(1) y Ley 19.496 Art. 12 letra b
+    (información veraz).
+- **Acción requerida ANTES de Capa 1 del bloque multi-document-consent-v1**:
+  1. Verificar estado real del archivo:
+     `head -n 5 docs/legal/v3.2/cookies.md` → frontmatter debe decir
+     `estado: VIGENTE`, no `STUB`.
+  2. Recalcular hash: `shasum -a 256 docs/legal/v3.2/cookies.md` debe
+     coincidir con `CANONICAL_HASHES["cookies"]` en
+     `legal_document_views_routes.py:66`.
+  3. Si contenido es stub: BLOQUEAR Capa 1 del bloque
+     multi-document-consent-v1. Resolver ALERTA-AUDIT-04-21-14 primero
+     publicando Cookies v1.1.0 canónico con texto real.
+- **Bloqueo**: SÍ, BLOQUEA Capa 1 del bloque multi-document-consent-v1.
 
 ---
 
