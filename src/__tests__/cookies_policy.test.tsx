@@ -3,11 +3,11 @@
  *
  * Pieza 5 del bloque bloque-legal-consolidation-v2.
  * Actualizado en bloque legal-viewer-v1 (D-L7=A): la fuente de verdad
- * es ahora docs/legal/v3.2/cookies.md (markdown canónico).
+ * es ahora docs/02-legal/vigentes/cookies.md (markdown canónico).
  * CookiesPolicy.tsx es un wrapper del renderer — no contiene contenido inline.
  *
  * Valida que la Política de Cookies canónica:
- *  - Existe en docs/legal/v3.2/cookies.md
+ *  - Existe en docs/02-legal/vigentes/cookies.md
  *  - Declara las categorías mínimas requeridas por GDPR y ePrivacy.
  *  - Incluye las claves reales de localStorage que Conniku instala hoy.
  *  - Afirma que Conniku no usa cookies de terceros publicitarios.
@@ -22,14 +22,14 @@ import * as path from 'path';
 import { describe, expect, it } from 'vitest';
 
 const ROOT = path.resolve(__dirname, '../../');
-const COOKIES_MD = path.join(ROOT, 'docs/legal/v3.2/cookies.md');
+const COOKIES_MD = path.join(ROOT, 'docs/02-legal/vigentes/cookies.md');
 
 function readMarkdown(): string {
   return fs.readFileSync(COOKIES_MD, 'utf-8');
 }
 
 describe('CookiesPolicy', () => {
-  it('existe el markdown canónico docs/legal/v3.2/cookies.md', () => {
+  it('existe el markdown canónico docs/02-legal/vigentes/cookies.md', () => {
     expect(fs.existsSync(COOKIES_MD)).toBe(true);
   });
 

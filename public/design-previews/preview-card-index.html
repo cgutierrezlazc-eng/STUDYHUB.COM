@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="es-CL">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Preview-card · 3 variantes para elegir</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Funnel+Display:wght@400;600;700;800;900&family=Geist+Mono:wght@400;500;600;700&display=swap" />
+<style>
+:root{
+  --ink:#0D0F10; --ink-3:#696C6F;
+  --paper:#F5F4EF; --paper-2:#EBE9E1;
+  --lime:#D9FF3A; --orange:#FF4A1C; --violet:#6B4EFF;
+  --fd:'Funnel Display',sans-serif;
+  --fm:'Geist Mono',monospace;
+  --ease:cubic-bezier(.2,.8,.2,1);
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{background:#E8E5DB;color:var(--ink);font-family:var(--fd);padding:60px 40px;min-height:100vh}
+.wrap{max-width:960px;margin:0 auto}
+.kicker{font-family:var(--fm);font-size:11px;letter-spacing:.2em;text-transform:uppercase;color:var(--ink-3);margin-bottom:14px}
+h1{font-family:var(--fd);font-weight:800;font-size:clamp(36px,5vw,56px);line-height:.95;letter-spacing:-.03em;margin-bottom:18px}
+.lead{font-family:var(--fd);font-size:17px;line-height:1.5;color:var(--ink-3);max-width:680px;margin-bottom:42px}
+.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:22px;margin-bottom:42px}
+a.card{
+  display:block;background:var(--paper);border:2px solid var(--ink);box-shadow:8px 8px 0 var(--ink);
+  padding:22px;color:inherit;text-decoration:none;transition:transform .2s var(--ease),box-shadow .2s var(--ease);
+}
+a.card:hover{transform:translate(-3px,-4px);box-shadow:12px 12px 0 var(--ink)}
+.badge{display:inline-block;font-family:var(--fd);font-weight:900;font-size:13px;padding:4px 10px;border:1.5px solid var(--ink);margin-bottom:14px;letter-spacing:.05em}
+.badge.v1{background:var(--lime);color:var(--ink)}
+.badge.v2{background:var(--violet);color:#fff}
+.badge.v3{background:var(--orange);color:#fff}
+h2{font-family:var(--fd);font-weight:800;font-size:22px;letter-spacing:-.02em;margin-bottom:8px;line-height:1}
+p{font-family:var(--fd);font-size:14px;line-height:1.5;color:var(--ink-3);margin-bottom:14px}
+.open{font-family:var(--fd);font-size:13px;font-weight:700;color:var(--ink);display:inline-flex;align-items:center;gap:8px}
+.open::after{content:"→";display:inline-block;width:22px;height:22px;border:1.5px solid var(--ink);border-radius:50%;text-align:center;line-height:19px;font-size:12px}
+.foot{border-top:1.5px solid var(--ink);padding-top:22px;margin-top:12px;font-family:var(--fm);font-size:12px;color:var(--ink-3);letter-spacing:.05em;line-height:1.7}
+.foot strong{color:var(--ink);font-weight:700}
+.foot code{background:var(--paper-2);padding:1px 6px;font-size:11px;color:var(--ink)}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="kicker">Conniku · sandbox diseño</div>
+  <h1>Preview-card · 3 variantes</h1>
+  <p class="lead">El cuadro clickeable actual del hero (grid 12 placeholders numerados) reemplazado por 3 propuestas más grandes con pantallas reales de la plataforma. Abre cada una y dime cuál aplicar.</p>
+
+  <div class="grid">
+    <a class="card" href="./preview-v1-macbook.html">
+      <span class="badge v1">V1</span>
+      <h2>Macbook frame</h2>
+      <p>UNA pantalla grande tipo laptop mostrando el Dashboard real: sidebar + topbar + widgets de progreso + chat del asistente. Inspirado en landing pages de productos SaaS.</p>
+      <span class="open">Abrir V1</span>
+    </a>
+    <a class="card" href="./preview-v2-dual.html">
+      <span class="badge v2">V2</span>
+      <h2>Dual device</h2>
+      <p>Laptop con pantalla de Perfil + móvil (sobresaliendo con rotación) con pantalla de Chat asistente. Comunica multiplataforma de un vistazo.</p>
+      <span class="open">Abrir V2</span>
+    </a>
+    <a class="card" href="./preview-v3-polaroids.html">
+      <span class="badge v3">V3</span>
+      <h2>Polaroids apilados</h2>
+      <p>3 polaroids rotados (Perfil · Chat · Biblioteca) con cinta adhesiva simulada. Mantiene el sabor sticker/halftone de la landing actual pero con contenido real en vez de placeholders.</p>
+      <span class="open">Abrir V3</span>
+    </a>
+  </div>
+
+  <div class="foot">
+    <strong>Nota:</strong> las pantallas son mockups CSS (no capturas reales de la app). Representan el lenguaje visual de Conniku con tokens del sistema (<code>--lime --orange --violet --cream</code>). Cuando elijas una, la adapto al <code>landing-preview.html</code> y Cristian la valida en contexto real.<br>
+    <br>
+    <strong>Ubicación:</strong> <code>/public/design-previews/preview-v{1,2,3}-*.html</code>
+  </div>
+</div>
+</body>
+</html>

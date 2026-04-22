@@ -1,23 +1,24 @@
 ---
 documento: "Política de Privacidad"
-version: "2.4.1"
-vigencia_desde: "2026-04-22"
+version: "2.4.2"
+vigencia_desde: "2026-04-23"
 vigencia_hasta: "actual"
 hash_texto_canonico: "se_calcula_al_final"
 changelog:
+  - "v2.4.2 (2026-04-23): agregado canal de sandbox público de vista previa (§2ter) con declaración de registro real en cookie_consents + document_views y origin='sandbox'; agregado sistema de feedback de ayuda (§2quater) con tabla support_feedback, retención 2 años y pseudonimización a 12 meses bajo GDPR Art. 6(1)(f) interés legítimo + Art. 5(1)(c) minimización; enumerado tratamiento document_views (Bloque legal-viewer-v1) en §2.2 y §9."
   - "v2.4.1 (2026-04-22): agregado sistema de tickets de contacto (/contacto) con routing por motivo, retención 5 años (Art. 17(3)(e) GDPR + Art. 2515 CC Chile + Ley 19.496 Art. 50), bidireccionalidad desde panel admin con remitente noreply@ y Reply-To contacto@. Confirmación y ampliación de Zoho Mail como encargado de tratamiento para el canal email."
   - "v2.4.0 (2026-04-20): documento canónico autocontenido post auditoría externa, edits H-01/H-12/§5.3."
 ---
 
 # Política de Privacidad
 
-Última actualización: 22 de abril de 2026 · Versión 2.4.1
+Última actualización: 23 de abril de 2026 · Versión 2.4.2
 
 En Conniku SpA (en adelante, "Conniku", "nosotros" o "la empresa"), nos comprometemos a proteger la privacidad y los datos personales de nuestros usuarios conforme a la normativa vigente en cada jurisdicción donde operamos:
 
 **Normativa aplicable según jurisdicción:**
 
-- **Chile:** Ley N° 19.628 sobre Protección de la Vida Privada · Ley N° 21.096
+- **Chile:** Ley N° 19.628 sobre Protección de la Vida Privada · Ley N° 21.096 · Ley N° 21.719 (vigente 01/12/2026 — reemplaza Ley 19.628)
 - **Unión Europea / EEE:** Reglamento General de Protección de Datos (RGPD / GDPR) — Reglamento UE 2016/679
 - **Brasil:** Lei Geral de Proteção de Dados Pessoais (LGPD) — Lei N° 13.709/2018
 - **California, EE.UU.:** California Consumer Privacy Act (CCPA) · California Privacy Rights Act (CPRA)
@@ -51,9 +52,10 @@ Recopilamos las siguientes categorías de datos personales:
 - **Datos académicos:** universidad, carrera, año de ingreso.
 - **Datos de perfil:** biografía, intereses académicos, idiomas.
 - **Contenido del usuario:** documentos, apuntes y materiales subidos a la plataforma.
-- **Interacciones con asistentes inteligentes:** mensajes que usted envía al chat privado de Athena dentro de sus documentos, selecciones de texto que solicita reescribir o analizar, y el historial de dichas interacciones asociado a cada documento. Estas interacciones son privadas por usuario: no son visibles para colaboradores del mismo documento.
+- **Interacciones con el Asistente Virtual Athena:** mensajes que usted envía al chat privado de Athena dentro de sus documentos, selecciones de texto que solicita reescribir o analizar, y el historial de dichas interacciones asociado a cada documento. Estas interacciones son privadas por usuario: no son visibles para colaboradores del mismo documento.
 - **Documentos exportados:** cuando usted solicita exportar un documento de Workspaces a PDF o DOCX, el contenido del documento es procesado por nuestros servidores para generar un archivo descargable. Ese archivo se entrega a su dispositivo y, una vez descargado, queda fuera del control de Conniku: usted es el único responsable de su almacenamiento, distribución, copias, respaldo y eliminación posterior.
 - **Tickets de contacto:** cuando usted envía un mensaje a través del formulario público de contacto (`/contacto`), recopilamos su nombre, correo electrónico, motivo seleccionado, organización (opcional), el contenido de su mensaje y el hash de la versión de esta Política de Privacidad que usted marcó como aceptada en ese momento. El tratamiento específico de este canal se describe en la Sección 2bis.
+- **Feedback de soporte:** cuando usted interactúa con el widget de ayuda 👍/👎 debajo de una pregunta frecuente del centro de soporte, o completa el comentario opcional asociado a un 👎, recopilamos su valoración (útil / no útil), el identificador estable de la pregunta (`faq_id`), el comentario textual si usted lo escribe, y los metadatos técnicos descritos en la Sección 2quater. El detalle específico de este tratamiento se describe en la Sección 2quater.
 
 ### 2.2. Datos recopilados automáticamente
 
@@ -61,6 +63,7 @@ Recopilamos las siguientes categorías de datos personales:
 - **Datos de gamificación:** puntos, rachas de estudio, logros, nivel del usuario.
 - **Datos técnicos:** dirección IP, tipo de navegador, sistema operativo, dispositivo utilizado.
 - **Datos de comunicación:** mensajes enviados a través de la plataforma (entre usuarios y al soporte).
+- **Registro de lectura de documentos legales:** cuando usted abre cualquiera de los documentos legales publicados (Términos, Política de Privacidad, Política de Cookies, Declaración de Mayoría de Edad) desde cualquier canal (producto logueado, landing público, sandbox de vista previa o modal in-app), registramos un evento `document_views` que captura el identificador del documento, el hash SHA-256 de la versión leída, un identificador pseudónimo de visitante (`session_token`, UUID v4 sin PII directa), un indicador booleano de "llegó al final del scroll" y la marca de tiempo UTC. Este registro existe para demostrar la trazabilidad de la lectura en caso de disputa (GDPR Art. 7(1)) y no se cruza con datos de marketing.
 
 ---
 
@@ -143,12 +146,83 @@ Estas solicitudes se envían a [privacidad@conniku.com](mailto:privacidad@connik
 
 ---
 
+## 2ter. Canal de sandbox de vista previa
+
+Conniku publica, con propósito de iteración de diseño y revisión pública acotada, un entorno de vista previa navegable en la ruta `conniku.com/sandbox/` (y su equivalente en dominios de preview de Vercel). Este entorno reproduce visualmente las pantallas del producto y de los documentos legales, pero **no** es un entorno simulado: las interacciones que el visitante realiza en el banner de cookies y en los modales legales generan **filas reales** en las bases de datos de Conniku, con idéntica validez probatoria que las mismas acciones ejecutadas en el producto logueado.
+
+### 2ter.1. Tratamientos que el sandbox activa
+
+- **Consentimiento de cookies (`cookie_consents`):** al aceptar, rechazar o personalizar el banner en el sandbox, se crea una fila en la tabla `cookie_consents` con el valor `origin = "sandbox"`, el `visitor_uuid` pseudónimo persistido por localStorage, el hash de la versión de la Política de Cookies vigente, la IP pública, el User-Agent truncado a 512 caracteres y el timestamp UTC.
+- **Registro de lectura (`document_views`):** al abrir un modal legal en el sandbox, se crea una fila en `document_views` con el `session_token` (mismo valor que `visitor_uuid` por diseño de coherencia), el hash canónico del documento leído y la marca de scroll.
+
+### 2ter.2. Base legal
+
+- **Consentimiento de cookies:** GDPR Art. 6(1)(a) + Directiva 2002/58/CE Art. 5(3) + Ley 19.628 Art. 4°.
+- **`document_views`:** GDPR Art. 6(1)(f) — interés legítimo en demostrar la trazabilidad de la lectura de documentos legales (Art. 7(1)), proporcional y no prevaleciente sobre derechos del titular.
+
+### 2ter.3. Retención
+
+- Consentimientos `origin = "sandbox"`: idéntica a los consentimientos de los demás canales, **5 años** desde la fecha de creación, fundada en GDPR Art. 17(3)(e) y Art. 2515 del Código Civil de Chile (ver Política de Cookies §5).
+- `document_views` desde sandbox: **5 años** desde la fecha del evento, bajo el mismo fundamento.
+
+### 2ter.4. Vinculación posterior al registro de usuario
+
+Si un visitante del sandbox posteriormente se registra como usuario autenticado de Conniku, el `visitor_uuid` persistido en localStorage permite vincular retrospectivamente el consentimiento anónimo y las lecturas registradas con el `user_id` creado. Esta vinculación se realiza con la sola finalidad de preservar la cadena probatoria del consentimiento (Art. 7(1) GDPR) y de evitar requerir al usuario una segunda aceptación inmediatamente después del registro. El usuario puede oponerse a esta vinculación escribiendo a `privacidad@conniku.com`.
+
+---
+
+## 2quater. Sistema de feedback de ayuda (`support_feedback`)
+
+El centro de soporte de Conniku incluye, debajo de cada pregunta frecuente, un widget que permite al Usuario declarar si la respuesta le resultó útil (👍) o no (👎), y abrir opcionalmente un comentario textual adicional. Este sistema se denomina internamente `support_feedback` y se rige por las reglas siguientes.
+
+### 2quater.1. Datos recolectados por evento
+
+- **Valoración:** booleano `útil = true` o `útil = false`.
+- **Identificador de la pregunta:** `faq_id` textual estable (slug), versionado en `docs/support/faq-catalog.md`.
+- **Comentario:** opcional, de hasta 2.000 caracteres, únicamente cuando el Usuario lo escribe libremente. El sistema no pre-rellena este campo.
+- **Identificador de sesión:** `session_token` (UUID v4, mismo que el `visitor_uuid` del consentimiento de cookies cuando existe) o `user_id` si el Usuario está autenticado.
+- **Metadatos técnicos:** dirección IP pública al momento del envío, User-Agent truncado a 512 caracteres (GDPR Art. 5(1)(c) minimización) y marca de tiempo UTC.
+
+### 2quater.2. Base legal
+
+- **GDPR Art. 6(1)(f) — interés legítimo:** mejorar iterativamente el contenido del centro de soporte reduce el volumen de tickets y mejora la calidad del producto. La prueba del balance con derechos del titular (Art. 6(1)(f) segundo párrafo) se documenta en el registro interno de actividades de tratamiento (Art. 30 GDPR). El Usuario puede oponerse en cualquier momento (Art. 21 GDPR) sin afectar al servicio.
+- **Ley 19.628 Art. 4°:** aplicable en Chile — el acto de hacer clic en el botón 👍 o 👎 con conocimiento del banner de cookies previamente aceptado constituye manifestación inequívoca de voluntad respecto de la finalidad declarada.
+- **GDPR Art. 5(1)(c) minimización:** no se recolectan identificadores de producto, no se crea perfil cruzado con el comportamiento en otras pantallas; solo el `faq_id` y la valoración binaria viajan al backend.
+
+### 2quater.3. Retención y pseudonimización
+
+- **Retención total:** **2 años** (730 días) contados desde la fecha de creación de la fila, almacenada explícitamente en el campo `retained_until_utc`.
+- **Pseudonimización a 12 meses:** a los 12 meses de cada fila, los campos `ip_address` y `user_agent` se reemplazan por sus respectivos hashes SHA-256 (o por el valor `NULL` según el procedimiento operativo descrito en `bloque-privacy-jobs-v1`). Subsisten únicamente `faq_id`, `útil`, `comment`, `session_token`, `created_at` y `retained_until_utc`. El campo `pseudonymized_at_utc` se registra al momento de la operación.
+- **Eliminación definitiva:** cumplidos los 2 años, la fila se elimina por completo o se agrega de manera irreversible en métricas estadísticas sin identificadores.
+
+**Fundamento del plazo de 2 años:**
+
+- **GDPR Art. 5(1)(e) — limitación del plazo de conservación:** se conservan los datos durante el tiempo estrictamente necesario para las finalidades (análisis y-1 y y-2 del contenido de soporte). Dos años cubren dos ciclos anuales comparables.
+- **GDPR Art. 5(1)(c) — minimización:** la pseudonimización a 12 meses asegura que los datos identificables existan solo durante el horizonte útil (detección de abuso y validación de rate-limit). Pasado ese plazo, el valor analítico del dato no requiere identificadores.
+- **Artículo 2515 del Código Civil de Chile:** el plazo general de prescripción de acciones personales es de 5 años. Este plazo aplica a la conservación de datos cuya retención pueda ser necesaria para la defensa o el ejercicio de reclamaciones. El feedback anónimo no constituye acto jurídico ni prueba de contratación; por ello el plazo de 5 años del Código Civil **no impone** una retención obligatoria de 5 años sobre este tratamiento, y la elección de 2 años es defendible bajo el principio de proporcionalidad (Ley 19.628 Art. 9°; GDPR Art. 5(1)(c)).
+- **Ley 19.628 Art. 6°:** los datos "deben ser eliminados o cancelados cuando su almacenamiento carezca de fundamento legal o cuando hubieren caducado". Pasados 2 años, el fundamento de interés legítimo ya no se sostiene porque los comentarios cubren iteraciones de producto ya completadas.
+
+### 2quater.4. Derechos del Usuario sobre el feedback
+
+- **Acceso:** solicitar copia de todos los registros `support_feedback` asociados a su `session_token` o `user_id` escribiendo a `privacidad@conniku.com` con el identificador.
+- **Rectificación:** solicitar modificación del comentario textual si contiene datos inexactos.
+- **Supresión:** solicitar eliminación anticipada (antes de cumplirse los 2 años). Conniku eliminará la fila en un plazo máximo de 30 días calendario.
+- **Oposición al tratamiento por interés legítimo (Art. 21 GDPR):** el Usuario puede oponerse en cualquier momento; el sistema dejará de considerar sus envíos previos en análisis agregados y los eliminará.
+
+### 2quater.5. Medidas técnicas
+
+- **Rate-limit:** el endpoint `POST /support/feedback` aplica un límite de 60 solicitudes por hora por IP para prevenir abuso, mismo patrón que el canal de tickets (§2bis.5).
+- **Sanitización del comentario:** el texto se almacena en crudo, sin renderizar HTML, y se sanitiza antes de mostrarse en el panel interno admin para evitar XSS.
+- **No export:** el widget no exporta los comentarios fuera de Conniku; no hay integración con terceros analytics.
+
+---
+
 ## 3. Finalidad del Tratamiento
 
 Utilizamos sus datos personales para las siguientes finalidades:
 
-- **Prestación del servicio:** crear y gestionar su cuenta, procesar sus materiales de estudio y generar contenido personalizado con tecnologia inteligente.
-- **Asistencia inteligente sobre documentos (Athena):** procesar el contenido de los documentos y sus mensajes de chat privado cuando usted invoca deliberadamente al asistente Athena, con el fin de devolverle análisis, resúmenes, respuestas a preguntas y sugerencias de reescritura sobre fragmentos específicos que usted seleccione. El tratamiento se ejecuta únicamente cuando usted acciona la función; no opera automáticamente sobre documentos inactivos.
+- **Prestación del servicio:** crear y gestionar su cuenta, procesar sus materiales de estudio y generar contenido personalizado mediante tecnología de procesamiento automatizado.
+- **Asistente Virtual Athena:** procesar el contenido de los documentos y sus mensajes de chat privado cuando usted invoca deliberadamente al Asistente Virtual Athena, con el fin de devolverle análisis, resúmenes, respuestas a preguntas y sugerencias de reescritura sobre fragmentos específicos que usted seleccione. El tratamiento se ejecuta únicamente cuando usted acciona la función; no opera automáticamente sobre documentos inactivos.
 - **Personalización:** adaptar la experiencia de usuario según sus preferencias académicas, carrera e intereses.
 - **Gamificación:** gestionar el sistema de puntos, logros, rachas de estudio y clasificaciones.
 - **Notificaciones:** enviar alertas sobre actividad relevante, recordatorios de estudio, mensajes y actualizaciones del servicio.
@@ -169,7 +243,7 @@ Utilizamos sus datos personales para las siguientes finalidades:
 ### 4.2. Unión Europea / EEE — GDPR Art. 6(1)
 
 - **Consentimiento [Art. 6(1)(a)]:** para comunicaciones de marketing, cookies no esenciales y envío de tickets de contacto (Sección 2bis.2).
-- **Ejecución de contrato [Art. 6(1)(b)]:** para la prestación del servicio solicitado por el usuario, incluido el procesamiento de los contenidos que usted envía explícitamente al asistente Athena (documento, chat privado, selecciones de texto para sugerencia) cuando dicha función forma parte del plan contratado.
+- **Ejecución de contrato [Art. 6(1)(b)]:** para la prestación del servicio solicitado por el usuario, incluido el procesamiento de los contenidos que usted envía explícitamente al Asistente Virtual Athena (documento, chat privado, selecciones de texto para sugerencia) cuando dicha función forma parte del plan contratado.
 - **Obligación legal [Art. 6(1)(c)]:** cuando el tratamiento es requerido por ley aplicable.
 - **Interés legítimo [Art. 6(1)(f)]:** para seguridad de la plataforma, prevención de fraude y mejora del servicio, incluido el registro de metadatos técnicos y controles anti-abuso del canal de contacto (rate-limit, honeypot), siempre que no prevalezcan los derechos del interesado.
 
@@ -226,7 +300,7 @@ Conniku puede compartir datos personales con los siguientes terceros, exclusivam
 
 | Tercero | Finalidad | Datos compartidos |
 |---|---|---|
-| **Anthropic** | Procesamiento automatizado de lenguaje natural para las funciones de asistencia inteligente sobre documentos del usuario: generación de resúmenes, análisis de documentos, chat privado por documento, sugerencias de reescritura sobre fragmentos seleccionados, y otras funciones equivalentes que se incorporen al asistente Athena. Anthropic, PBC, con domicilio en San Francisco, California, Estados Unidos. Las transferencias internacionales se realizan, cuando corresponda, bajo mecanismos contractuales apropiados conforme al artículo 5 de la Ley N° 19.628 de Chile, incluyendo Cláusulas Contractuales Tipo aprobadas por la Comisión Europea cuando resulten aplicables según la jurisdicción del usuario. | Título y materia del documento, contenido completo del documento cuando usted lo envía a analizar, últimos mensajes del chat privado de Athena asociado al documento (enviados como contexto en cada consulta, con un máximo de los 10 mensajes más recientes), y el texto específico que usted seleccione para pedir una sugerencia de reescritura. No se envían contraseñas, tokens de sesión, datos de pago ni metadatos de cuenta. |
+| **Anthropic** | Procesamiento de lenguaje natural para las funciones del Asistente Virtual Athena: generación de resúmenes, análisis de documentos, chat privado por documento, sugerencias de reescritura sobre fragmentos seleccionados, y otras funciones equivalentes que se incorporen al Asistente Virtual. Anthropic, PBC, con domicilio en San Francisco, California, Estados Unidos. Las transferencias internacionales se realizan, cuando corresponda, bajo mecanismos contractuales apropiados conforme al artículo 5 de la Ley N° 19.628 de Chile, incluyendo Cláusulas Contractuales Tipo aprobadas por la Comisión Europea cuando resulten aplicables según la jurisdicción del usuario. | Título y materia del documento, contenido completo del documento cuando usted lo envía a analizar, últimos mensajes del chat privado de Athena asociado al documento (enviados como contexto en cada consulta, con un máximo de los 10 mensajes más recientes), y el texto específico que usted seleccione para pedir una sugerencia de reescritura. No se envían contraseñas, tokens de sesión, datos de pago ni metadatos de cuenta. |
 | **Supabase** | Autenticación de usuarios y almacenamiento primario de la base de datos relacional (PostgreSQL gestionado). Actúa como encargado de tratamiento conforme al artículo 28 del RGPD y equivalentes de la Ley 19.628. | Credenciales de acceso (contraseña almacenada como hash, nunca en texto plano), identificadores únicos de usuario, dirección de correo electrónico, metadatos de sesión, y todos los contenidos que la plataforma almacene en la base de datos (perfil, documentos, mensajes, registros de actividad, tickets de contacto y sus mensajes asociados). |
 | **Firebase Cloud Messaging (Google)** | Entrega de notificaciones push al navegador y a las aplicaciones móviles, por ejemplo recordatorios de suscripción, avisos de mensajes nuevos y alertas operativas que usted haya habilitado. | Token único del dispositivo generado por el propio Firebase (identificador técnico de entrega), tipo de dispositivo y plataforma. No se envían contenidos sensibles dentro del payload de la notificación; los datos completos se consultan solo después de que usted abre la aplicación. |
 | **Google OAuth** | Inicio de sesión federado "Entrar con Google" cuando usted decide utilizarlo. Permite autenticar sin crear una contraseña separada. | Dirección de correo electrónico asociada a la cuenta Google, nombre público y (si usted lo autoriza) foto de perfil. Los permisos solicitados se limitan a los scopes "openid", "email" y "profile". Usted puede revocar el acceso en cualquier momento desde https://myaccount.google.com/permissions. |
@@ -280,8 +354,10 @@ Conservamos sus datos personales de acuerdo con los siguientes criterios:
 - **Cuenta activa:** mientras su cuenta permanezca activa, conservaremos sus datos para la prestación del servicio.
 - **Post-eliminación:** tras la eliminación de su cuenta, conservaremos datos anonimizados o agregados por un período de 2 años para fines estadísticos. Los datos identificables serán eliminados dentro de los 30 días siguientes a la solicitud.
 - **Historial de chat con Athena:** los mensajes del chat privado de Athena asociados a un documento se conservan mientras el documento exista en su cuenta. Al eliminar un documento, el historial de chat asociado se elimina en cascada de manera automática. Usted también puede borrar manualmente todo el historial de chat de un documento desde el propio panel de Athena, sin eliminar el documento. Las sugerencias de reescritura resueltas (aplicadas, modificadas o rechazadas) se conservan como registro histórico del documento bajo el mismo criterio.
-- **Métricas de uso de Athena:** la tabla interna de cuotas (cantidad de consultas diarias al asistente) se conserva por tiempo indefinido en forma de contador agregado por usuario, sin el contenido procesado. Esta información se utiliza exclusivamente para aplicar los límites por plan descritos en los Términos y Condiciones.
+- **Métricas de uso de Athena:** la tabla interna de cuotas (cantidad de consultas diarias al Asistente Virtual) se conserva por tiempo indefinido en forma de contador agregado por usuario, sin el contenido procesado. Esta información se utiliza exclusivamente para aplicar los límites por plan descritos en los Términos y Condiciones.
 - **Tickets de contacto:** 5 años (1.825 días) desde la fecha de creación del ticket, fundado en GDPR Art. 17(3)(e), Art. 2515 del Código Civil de Chile y Ley N° 19.496 Art. 50 (ver Sección 2bis.7).
+- **Registro de lectura de documentos legales (`document_views`):** 5 años (1.825 días) desde la fecha del evento, fundado en GDPR Art. 17(3)(e) y Art. 2515 del Código Civil de Chile (evidencia probatoria del consentimiento informado). Los campos IP y User-Agent se pseudonimizan a los 12 meses conforme al procedimiento `bloque-privacy-jobs-v1`.
+- **Feedback de soporte (`support_feedback`):** 2 años (730 días) desde la fecha del evento. A los 12 meses se pseudonimizan IP y User-Agent. Fundamento: GDPR Art. 5(1)(c) y 5(1)(e); Ley 19.628 Art. 6° y 9°. Art. 2515 CC no aplica por no tratarse de evidencia de acto jurídico.
 - **Obligaciones legales:** ciertos datos podrán conservarse por períodos adicionales cuando sea requerido por ley (registros de facturación, normativa tributaria).
 
 ---
@@ -308,6 +384,8 @@ Para usuarios en la UE/EEE: si los cambios implican una nueva finalidad de trata
 | 2.3 | 2026-04-20 | Borrador v3.1 superseded (archivado). |
 | 2.4.0 | 2026-04-20 | Documento canónico autocontenido derivado de `PrivacyPolicy.tsx` con edits H-01 (domicilio Antofagasta), §5.3 (procesamiento al exportar documentos) y H-12 opción B (Anthropic, redacción condicional). |
 | 2.4.1 | 2026-04-22 | Agregado sistema de tickets de contacto (`/contacto`) con routing por motivo a buzones internos, retención 5 años fundada en Art. 17(3)(e) GDPR + Art. 2515 Código Civil de Chile + Ley 19.496 Art. 50, bidireccionalidad desde panel admin con remitente `noreply@conniku.com` y `Reply-To: contacto@conniku.com`. Confirmación y ampliación de Zoho Mail como encargado de tratamiento para el canal email. |
+| 2.4.2 | 2026-04-23 | Agregado canal sandbox público (§2ter): consent real + document_views reales con `origin = "sandbox"`, retención 5 años alineada con canales principales. Agregado sistema de feedback de soporte (§2quater): tabla `support_feedback`, base legal Art. 6(1)(f), retención 2 años con pseudonimización a 12 meses, rate-limit 60/h/IP. Enumerado `document_views` como tratamiento automático (§2.2) y en §9 retención. |
+| 2.4.3 | 2026-04-22 | Actualización normativa: agregada Ley N° 21.719 (vigente 01/12/2026) en sección de normativa Chile. Terminología: "asistencia inteligente" → "Asistente Virtual Athena" en toda la política (instrucción permanente del proyecto). Corregida versión en pie de página (2.4.1 → 2.4.3). |
 
 ---
 
@@ -381,7 +459,7 @@ Si reside en México, la Ley Federal de Protección de Datos Personales en Poses
 
 ## 14. Transferencias Internacionales de Datos
 
-Conniku transfiere datos personales a servidores ubicados en Estados Unidos (Render, Vercel, y Anthropic cuando usted invoca funciones de asistencia inteligente) y, en el caso del canal de correo electrónico, a la infraestructura global de Zoho Corporation (ver Sección 6). Para garantizar la protección de sus datos en estas transferencias:
+Conniku transfiere datos personales a servidores ubicados en Estados Unidos (Render, Vercel, y Anthropic cuando usted invoca funciones del Asistente Virtual Athena) y, en el caso del canal de correo electrónico, a la infraestructura global de Zoho Corporation (ver Sección 6). Para garantizar la protección de sus datos en estas transferencias:
 
 - **Usuarios de la UE/EEE (GDPR Art. 46):** utilizamos las Cláusulas Contractuales Tipo (Standard Contractual Clauses — SCCs) aprobadas por la Comisión Europea (Decisión 2021/914) como salvaguardia adecuada. Puede solicitar una copia de estas cláusulas escribiendo a privacidad@conniku.com.
 - **Usuarios de Brasil (LGPD Art. 33):** la transferencia internacional se realiza con garantías equivalentes de protección, conforme a los mecanismos aprobados por la ANPD.
@@ -391,4 +469,4 @@ Todos nuestros proveedores de infraestructura cuentan con certificaciones de seg
 
 ---
 
-Esta Política de Privacidad ha sido redactada en conformidad con la Ley N° 19.628 sobre Protección de la Vida Privada (Chile), el Reglamento General de Protección de Datos (GDPR, UE 2016/679), la Lei Geral de Proteção de Dados Pessoais (LGPD, Brasil) y la California Consumer Privacy Act (CCPA / CPRA, EE.UU.). Versión 2.4.1 — Abril 2026.
+Esta Política de Privacidad ha sido redactada en conformidad con la Ley N° 19.628 sobre Protección de la Vida Privada (Chile), la Ley N° 21.719 sobre Protección de Datos Personales (Chile, vigente 01/12/2026), el Reglamento General de Protección de Datos (GDPR, UE 2016/679), la Lei Geral de Proteção de Dados Pessoais (LGPD, Brasil) y la California Consumer Privacy Act (CCPA / CPRA, EE.UU.). Versión 2.4.3 — Abril 2026.

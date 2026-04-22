@@ -3,11 +3,11 @@
  *
  * Pieza 1 del bloque bloque-legal-consolidation-v2.
  * Actualizado en bloque legal-viewer-v1 (D-L7=A): la fuente de verdad
- * es ahora docs/legal/v3.2/terms.md (markdown canónico), no el TSX.
+ * es ahora docs/02-legal/vigentes/terms.md (markdown canónico), no el TSX.
  * El TSX es un wrapper del renderer.
  *
  * Valida invariantes que deben cumplirse simultáneamente en:
- *  - docs/legal/v3.2/terms.md            (fuente canónica, renderizada en /terms y /legal/terms)
+ *  - docs/02-legal/vigentes/terms.md            (fuente canónica, renderizada en /terms y /legal/terms)
  *  - src/components/TermsOfService.tsx   (modal de registro)
  *
  * La sincronización se garantiza por render runtime (react-markdown).
@@ -19,7 +19,7 @@ import { describe, expect, it } from 'vitest';
 
 const ROOT = path.resolve(__dirname, '../../');
 // D-L7=A: el contenido legal canónico vive ahora en el markdown
-const MARKDOWN_TOS = path.join(ROOT, 'docs/legal/v3.2/terms.md');
+const MARKDOWN_TOS = path.join(ROOT, 'docs/02-legal/vigentes/terms.md');
 const MODAL_TOS = path.join(ROOT, 'src/components/TermsOfService.tsx');
 
 function read(p: string): string {

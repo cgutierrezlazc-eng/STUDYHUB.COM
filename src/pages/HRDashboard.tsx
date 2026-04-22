@@ -1576,9 +1576,13 @@ function PersonalTab({
                   {
                     label: 'Ingreso Mínimo Mensual',
                     value: `$${CHILE_LABOR.IMM.current.toLocaleString('es-CL')}`,
-                    ref: 'Ley 21.578 · Art. 44 CT',
+                    ref: 'Ley 21.751 · Art. 44 CT',
                   },
-                  { label: 'Jornada máxima semanal', value: '45 horas', ref: 'Art. 22 CT' },
+                  {
+                    label: 'Jornada máxima semanal',
+                    value: '42 horas',
+                    ref: 'Ley 21.561 (actualiz. 26/04/2026)',
+                  },
                   { label: 'Horas extras máx. diarias', value: '2 hrs (+50%)', ref: 'Art. 30 CT' },
                   { label: 'Feriado legal anual', value: '15 días hábiles', ref: 'Art. 67 CT' },
                   {
@@ -1590,8 +1594,8 @@ function PersonalTab({
                   { label: 'AFC — Seguro Cesantía', value: '0,6% trabajador', ref: 'Ley 19.728' },
                   {
                     label: 'SIS — Inv. y Sobrev.',
-                    value: '1,41% empleador',
-                    ref: 'Art. 59 DL 3.500',
+                    value: '1,54% empleador',
+                    ref: 'Art. 59 DL 3.500 · Sup. Pensiones 2026',
                   },
                 ].map((m, i) => (
                   <div
@@ -1843,7 +1847,7 @@ function PersonalTab({
                 value={form.workSchedule}
                 onChange={(v) => setForm({ ...form, workSchedule: v })}
                 options={[
-                  { value: 'full_time', label: 'Completa (45 hrs/sem)' },
+                  { value: 'full_time', label: 'Completa (42 hrs/sem · Ley 21.561)' },
                   { value: 'part_time', label: 'Parcial' },
                 ]}
               />

@@ -26,22 +26,22 @@ export interface LegalDocumentMeta {
 export const LEGAL_DOCUMENT_REGISTRY: Record<DocumentKey, LegalDocumentMeta> = {
   terms: {
     title: 'Términos y Condiciones',
-    version: '3.2.0',
-    sha256: '9a16122f985a1d252a5928c5fae518b5bd23ac6ee00996ee9e8293c4aaf08dce',
+    version: '3.2.2',
+    sha256: 'b2b834b61e19db6b2f7aa8176e8958f4e001d49a02606097c462811f6e008d73',
     slug: 'terms',
     filename: 'terms.md',
   },
   privacy: {
     title: 'Política de Privacidad',
-    version: '2.4.0',
-    sha256: 'b5b9fed8fd5e4e600c7fa33fbd8dddaec5c627be189b5382e8b7cf81dbcfa288',
+    version: '2.4.2',
+    sha256: 'cc9332741bea7ad4539fd6a8a049946e44521b9ae8ed97833dd112412b8c746e',
     slug: 'privacy',
     filename: 'privacy.md',
   },
   cookies: {
     title: 'Política de Cookies',
     version: '1.0.0',
-    sha256: '48b90468822fda6b0470acb30d4707f037f1dd636eac7ebd967ab293c2a3a513',
+    sha256: '80d41f71f075ae954a4e5f1763266b9830d38849bbe79a7bb931c2a4ee30e38c',
     slug: 'cookies',
     filename: 'cookies.md',
   },

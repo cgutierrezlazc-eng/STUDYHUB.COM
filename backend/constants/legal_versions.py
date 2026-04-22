@@ -1,13 +1,13 @@
 """Versiones canónicas de los documentos legales publicados por Conniku.
 
-Cada documento publicado en ``docs/legal/v3.2/`` tiene tres coordenadas:
+Cada documento publicado en ``docs/02-legal/vigentes/`` tiene tres coordenadas:
 - ``document_type``: identificador estable usado en la tabla
   ``user_agreements`` (no cambia entre versiones).
 - ``version``: número semántico del documento (MAJOR.MINOR.PATCH). Un
   cambio MAJOR o MINOR fuerza re-aceptación del usuario conforme al
   mecanismo de la Pieza 6 del bloque ``bloque-legal-consolidation-v2``.
 - ``hash``: hash SHA-256 del archivo Markdown canónico registrado en
-  ``docs/legal/v3.2/METADATA.yaml``. Se almacena en
+  ``docs/02-legal/vigentes/METADATA.yaml``. Se almacena en
   ``user_agreements.text_version_hash`` al aceptar como prueba
   irrefutable de qué texto exacto fue aceptado.
 
@@ -17,9 +17,9 @@ Cambios a estos valores requieren commit dedicado con tipo ``legal:`` y
 aprobación humana explícita antes de merge (CLAUDE.md §18.7). El hash de
 cada documento se recalcula con::
 
-    sha256sum docs/legal/v3.2/<archivo>.md
+    sha256sum docs/02-legal/vigentes/<archivo>.md
 
-y se actualiza tanto aquí como en ``docs/legal/v3.2/METADATA.yaml``.
+y se actualiza tanto aquí como en ``docs/02-legal/vigentes/METADATA.yaml``.
 """
 
 from __future__ import annotations
@@ -27,26 +27,31 @@ from __future__ import annotations
 
 # --- Términos y Condiciones -------------------------------------------------
 TOS_DOCUMENT_TYPE: str = "tos"
-TOS_VERSION: str = "3.2.0"
-# SHA-256 de docs/legal/v3.2/terms.md (Art. 3 bis letra b Ley 19.496 + 18+).
-# Aprobado por abogado externo en auditoría 2026-04-20.
-TOS_HASH: str = "9a16122f985a1d252a5928c5fae518b5bd23ac6ee00996ee9e8293c4aaf08dce"
+TOS_VERSION: str = "3.2.2"
+# SHA-256 de docs/02-legal/vigentes/terms.md (v3.2.2).
+# Cambios: Ley Karin (21.643) Art. 33bis · IMM ref Ley 21.751 · Art. 33.4-33.5
+# Verificado: 2026-04-22 — Tori (auditoría legal bloque-sandbox-integrity-v1)
+TOS_HASH: str = "b2b834b61e19db6b2f7aa8176e8958f4e001d49a02606097c462811f6e008d73"
 
 
 # --- Política de Privacidad -------------------------------------------------
 PRIVACY_DOCUMENT_TYPE: str = "privacy"
-PRIVACY_VERSION: str = "2.4.1"
-# SHA-256 de docs/legal/v3.2/privacy.md (encargados Supabase, FCM,
+PRIVACY_VERSION: str = "2.4.2"
+# SHA-256 de docs/02-legal/vigentes/privacy.md (encargados Supabase, FCM,
 # Capacitor, Google OAuth, Anthropic, MercadoPago, PayPal, Zoho,
 # Vercel, Render).
-# Aprobado por abogado externo en auditoría 2026-04-20.
-PRIVACY_HASH: str = "b5b9fed8fd5e4e600c7fa33fbd8dddaec5c627be189b5382e8b7cf81dbcfa288"
+# Bump v2.4.1 → v2.4.2 por bloque-sandbox-integrity-v1 (2026-04-23):
+# agrega §2ter canal sandbox + §2quater support_feedback + §2.2
+# document_views. Hash anterior v2.4.1 conservado en METADATA.yaml
+# entrada privacy-v2_4_1 para trazabilidad de user_agreements.
+# Pendiente revisión abogado externo post-merge del PR.
+PRIVACY_HASH: str = "cc9332741bea7ad4539fd6a8a049946e44521b9ae8ed97833dd112412b8c746e"
 
 
 # --- Política de Cookies ----------------------------------------------------
 COOKIES_DOCUMENT_TYPE: str = "cookies"
 COOKIES_VERSION: str = "1.0.0"
-# SHA-256 de docs/legal/v3.2/cookies.md (versión 1.0.0 canónica publicada
+# SHA-256 de docs/02-legal/vigentes/cookies.md (versión 1.0.0 canónica publicada
 # 2026-04-21 como Pieza 5 del bloque bloque-legal-consolidation-v2).
 # Supersede al stub anterior que compartía hash con v3.1/cookies.md y
 # violaba GDPR Art. 7(1) al tener usuarios aceptando implícitamente un
@@ -67,7 +72,7 @@ AGE_DECLARATION_VERSION: str = "1.0.0"
 # Si este valor cambia, invalida los registros de aceptación existentes.
 # Fuente: shared/legal_texts.py::AGE_DECLARATION_TEXT_V1.
 AGE_DECLARATION_TEXT_HASH: str = "ca527535a0f3f938b51d9a2e896e140233ecdd2286e13fdeecb7a32783d43706"
-# SHA-256 del archivo docs/legal/v3.2/age-declaration.md (snapshot completo).
+# SHA-256 del archivo docs/02-legal/vigentes/age-declaration.md (snapshot completo).
 # Este hash sí puede cambiar cuando se actualizan las notas de cumplimiento
 # sin modificar el texto canónico del checkbox.
 AGE_DECLARATION_FILE_HASH: str = "61dab2ecf1b27e3fb212efcf5a066784943c689de11611bb6d2b919e39441a9b"

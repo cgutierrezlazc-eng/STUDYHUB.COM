@@ -1,0 +1,228 @@
+<!DOCTYPE html>
+<html lang="es-CL">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>V3 · Polaroids apilados — preview-card Conniku</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Funnel+Display:wght@400;600;700;800;900&family=Geist+Mono:wght@400;500;600;700&family=Patrick+Hand&display=swap" />
+<style>
+:root{
+  --ink:#0D0F10; --ink-2:#2B2E30; --ink-3:#696C6F;
+  --paper:#F5F4EF; --paper-2:#EBE9E1;
+  --lime:#D9FF3A; --orange:#FF4A1C; --cream:#FFE9B8; --violet:#6B4EFF; --cyan:#00C2FF; --pink:#FF4D3A;
+  --fd:'Funnel Display',-apple-system,sans-serif;
+  --fm:'Geist Mono',ui-monospace,monospace;
+  --fh:'Patrick Hand',cursive;
+  --ease:cubic-bezier(.2,.8,.2,1);
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{min-height:100%}
+body{background:#E8E5DB;color:var(--ink);font-family:var(--fd);padding:60px 40px;position:relative;overflow-x:hidden}
+body::before{content:"";position:fixed;inset:0;pointer-events:none;opacity:.07;mix-blend-mode:multiply;z-index:1;background-image:radial-gradient(circle at 1px 1px,var(--ink) 1px,transparent 0);background-size:3px 3px}
+.halftone{position:fixed;inset:0;pointer-events:none;z-index:0;overflow:hidden}
+.d1{position:absolute;top:-140px;left:-140px;width:620px;height:620px;background:radial-gradient(circle,var(--lime) 8%,transparent 10%);background-size:16px 16px;-webkit-mask:radial-gradient(circle at 40% 40%,#000 0%,transparent 42%);mask:radial-gradient(circle at 40% 40%,#000 0%,transparent 42%);opacity:.9;mix-blend-mode:multiply}
+.d2{position:absolute;bottom:-160px;right:-160px;width:640px;height:640px;background:radial-gradient(circle,var(--orange) 12%,transparent 14%);background-size:14px 14px;-webkit-mask:radial-gradient(circle at 60% 60%,#000 0%,transparent 42%);mask:radial-gradient(circle at 60% 60%,#000 0%,transparent 42%);opacity:.65;mix-blend-mode:multiply}
+
+.wrap{max-width:1100px;margin:0 auto;position:relative;z-index:5}
+.variant-header{font-family:var(--fm);font-size:11px;letter-spacing:.2em;text-transform:uppercase;color:var(--ink-3);margin-bottom:32px;display:flex;gap:24px;align-items:center}
+.variant-header::before{content:"V3";background:var(--orange);color:#fff;padding:3px 9px;border:1.5px solid var(--ink);font-weight:900;letter-spacing:.05em}
+.variant-header span.nav{margin-left:auto;display:flex;gap:14px}
+.variant-header span.nav a{color:var(--ink-3)}
+.variant-header span.nav a:hover{color:var(--ink)}
+
+/* ===== PREVIEW CARD V3 — Polaroids apilados ===== */
+.preview-card{
+  display:block;
+  position:relative;
+  width:100%;
+  max-width:660px;
+  margin:0 auto;
+  padding:32px 28px 26px;
+  background:var(--paper);
+  border:2px solid var(--ink);
+  box-shadow:12px 12px 0 var(--ink);
+  transform:rotate(-1deg);
+  transition:transform .25s var(--ease), box-shadow .25s var(--ease);
+  text-decoration:none;
+  color:inherit;
+}
+.preview-card:hover{
+  transform:rotate(-1deg) translate(-3px,-5px);
+  box-shadow:16px 16px 0 var(--ink);
+}
+.preview-card:hover .poly{transform:rotate(var(--r)) translate(var(--tx),var(--ty))}
+.poly{transition:transform .3s var(--ease)}
+
+.poly-stage{
+  position:relative;
+  height:320px;
+  margin-bottom:26px;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+}
+
+/* Cada polaroid */
+.poly{
+  position:absolute;
+  background:var(--paper);
+  border:1.5px solid var(--ink);
+  padding:10px 10px 38px;
+  box-shadow:6px 6px 0 var(--ink);
+  width:200px;
+}
+.poly .scr{
+  aspect-ratio:3/4;
+  background:var(--paper-2);
+  border:1.5px solid var(--ink);
+  overflow:hidden;
+  display:flex;
+  flex-direction:column;
+}
+.poly .tag{
+  position:absolute;
+  bottom:10px;
+  left:12px;
+  right:12px;
+  font-family:var(--fh);
+  font-size:15px;
+  color:var(--ink);
+  line-height:1;
+}
+
+/* Perfil · izquierda */
+.poly-1{--r:-7deg;--tx:-220px;--ty:-10px;transform:rotate(var(--r)) translate(var(--tx),var(--ty));z-index:1}
+.poly-1 .scr{background:var(--lime)}
+.poly-1 .p-head{background:var(--ink);padding:10px 8px;display:flex;align-items:center;gap:8px}
+.poly-1 .p-head .av{width:24px;height:24px;border-radius:50%;background:var(--violet);border:1.5px solid var(--lime);display:flex;align-items:center;justify-content:center;color:#fff;font-weight:900;font-size:10px}
+.poly-1 .p-head .n{font-family:var(--fd);font-weight:800;font-size:10px;color:var(--paper)}
+.poly-1 .p-body{padding:10px;display:flex;flex-direction:column;gap:7px;flex:1}
+.poly-1 .p-avatar-big{width:60px;height:60px;border-radius:50%;background:var(--violet);border:2px solid var(--ink);margin:8px auto 4px;display:flex;align-items:center;justify-content:center;color:#fff;font-weight:900;font-size:22px}
+.poly-1 .p-name{font-family:var(--fd);font-weight:800;font-size:11px;text-align:center;line-height:1}
+.poly-1 .p-uni{font-family:var(--fm);font-size:7px;letter-spacing:.15em;text-transform:uppercase;color:var(--ink-2);text-align:center;margin-top:2px}
+.poly-1 .p-stats{display:grid;grid-template-columns:repeat(3,1fr);gap:4px;margin-top:6px}
+.poly-1 .p-stats div{background:var(--ink);color:var(--lime);padding:4px 3px;text-align:center;font-family:var(--fd);font-weight:900;font-size:11px;border-radius:2px;line-height:1.1}
+.poly-1 .p-stats div small{display:block;font-size:5.5px;font-family:var(--fm);letter-spacing:.1em;color:var(--paper);font-weight:400;margin-top:2px}
+
+/* Chat · centro-arriba */
+.poly-2{--r:3deg;--tx:0px;--ty:-40px;transform:rotate(var(--r)) translate(var(--tx),var(--ty));z-index:3}
+.poly-2 .scr{background:var(--paper)}
+.poly-2 .c-head{background:var(--ink);padding:8px 10px;display:flex;align-items:center;gap:6px}
+.poly-2 .c-head .av{width:18px;height:18px;border-radius:50%;background:var(--lime);display:flex;align-items:center;justify-content:center;color:var(--ink);font-weight:900;font-size:10px;position:relative}
+.poly-2 .c-head .av::after{content:".";color:var(--orange);font-weight:900;position:absolute;right:2px;bottom:1px;font-size:10px}
+.poly-2 .c-head .t{font-family:var(--fd);font-weight:800;font-size:9px;color:var(--paper)}
+.poly-2 .c-head .s{font-family:var(--fm);font-size:6px;color:var(--lime);letter-spacing:.15em;text-transform:uppercase;margin-top:1px}
+.poly-2 .c-body{padding:9px 8px;display:flex;flex-direction:column;gap:5px;flex:1}
+.poly-2 .b{padding:5px 7px;border-radius:8px;font-size:8px;line-height:1.3;max-width:85%;color:var(--ink-2)}
+.poly-2 .b.them{background:var(--paper-2);align-self:flex-start;border-bottom-left-radius:2px}
+.poly-2 .b.me{background:var(--ink);color:var(--paper);align-self:flex-end;border-bottom-right-radius:2px}
+
+/* Biblioteca · centro-abajo */
+.poly-3{--r:5deg;--tx:220px;--ty:-5px;transform:rotate(var(--r)) translate(var(--tx),var(--ty));z-index:2}
+.poly-3 .scr{background:var(--cream)}
+.poly-3 .b-head{background:var(--ink);padding:8px 10px;display:flex;align-items:center;justify-content:space-between}
+.poly-3 .b-head .t{font-family:var(--fd);font-weight:800;font-size:9px;color:var(--paper)}
+.poly-3 .b-head .c{font-family:var(--fm);font-size:7px;color:var(--cream);letter-spacing:.1em}
+.poly-3 .b-grid{padding:9px;display:grid;grid-template-columns:1fr 1fr;gap:6px;flex:1}
+.poly-3 .bk{background:var(--paper);border:1.5px solid var(--ink);padding:5px 5px 7px;display:flex;flex-direction:column;gap:3px}
+.poly-3 .bk .sp{height:14px;background:var(--violet)}
+.poly-3 .bk:nth-child(2) .sp{background:var(--orange)}
+.poly-3 .bk:nth-child(3) .sp{background:var(--cyan)}
+.poly-3 .bk:nth-child(4) .sp{background:var(--pink)}
+.poly-3 .bk .tt{font-family:var(--fd);font-weight:800;font-size:7.5px;line-height:1}
+.poly-3 .bk .au{font-family:var(--fm);font-size:5.5px;color:var(--ink-3);letter-spacing:.08em;text-transform:uppercase}
+
+/* Tape simulada en una polaroid */
+.tape{position:absolute;top:-8px;left:50%;transform:translateX(-50%) rotate(-4deg);width:60px;height:16px;background:rgba(217,255,58,.7);border:1px solid rgba(13,15,16,.2);box-shadow:1px 1px 0 rgba(13,15,16,.15)}
+
+.preview-label{display:flex;align-items:flex-end;justify-content:space-between;gap:16px}
+.preview-kicker{font-family:var(--fm);font-size:11px;letter-spacing:.2em;text-transform:uppercase;color:var(--ink-3);display:inline-block;margin-bottom:10px}
+.preview-title{font-family:var(--fd);font-weight:800;font-size:clamp(26px,3vw,40px);line-height:.95;letter-spacing:-.03em;margin-bottom:8px;max-width:400px}
+.preview-cta{font-family:var(--fd);font-size:14px;font-weight:700;color:var(--ink);display:inline-flex;align-items:center;gap:6px}
+.arrow-ico{display:inline-block;width:22px;height:22px;border:1.5px solid var(--ink);border-radius:50%;display:flex;align-items:center;justify-content:center;font-weight:700}
+
+.note{max-width:660px;margin:28px auto 0;font-family:var(--fm);font-size:11px;letter-spacing:.1em;text-transform:uppercase;color:var(--ink-3);text-align:center;line-height:1.7}
+.note strong{color:var(--ink);font-weight:700}
+</style>
+</head>
+<body>
+<div class="halftone"><div class="d1"></div><div class="d2"></div></div>
+<div class="wrap">
+  <div class="variant-header">
+    <span>Polaroids apilados · 3 pantallas rotadas (perfil · chat · biblioteca)</span>
+    <span class="nav">
+      <a href="./preview-v1-macbook.html">← V1 macbook</a>
+      <a href="./preview-v2-dual.html">← V2 dual</a>
+    </span>
+  </div>
+
+  <a class="preview-card" href="#" aria-label="Abrir la página de Plataforma">
+    <div class="poly-stage">
+
+      <div class="poly poly-1">
+        <div class="scr">
+          <div class="p-head"><div class="av">CG</div><div class="n">Mi perfil</div></div>
+          <div class="p-body">
+            <div class="p-avatar-big">CG</div>
+            <div class="p-name">Cristian G.</div>
+            <div class="p-uni">U. de Chile · 3º año</div>
+            <div class="p-stats">
+              <div>47<small>logros</small></div>
+              <div>12<small>cursos</small></div>
+              <div>89<small>avance</small></div>
+            </div>
+          </div>
+        </div>
+        <div class="tag">perfil</div>
+      </div>
+
+      <div class="poly poly-2">
+        <div class="tape"></div>
+        <div class="scr">
+          <div class="c-head">
+            <div class="av">u</div>
+            <div>
+              <div class="t">Asistente</div>
+              <div class="s">En línea</div>
+            </div>
+          </div>
+          <div class="c-body">
+            <div class="b them">Hola, ¿empezamos con el capítulo 7?</div>
+            <div class="b me">Sí, dale</div>
+            <div class="b them">Listo, te armé un resumen y 6 preguntas.</div>
+            <div class="b me">Las difíciles primero</div>
+            <div class="b them">Perfecto, vamos.</div>
+          </div>
+        </div>
+        <div class="tag">chat asistente</div>
+      </div>
+
+      <div class="poly poly-3">
+        <div class="scr">
+          <div class="b-head"><div class="t">Biblioteca</div><div class="c">124 libros</div></div>
+          <div class="b-grid">
+            <div class="bk"><div class="sp"></div><div class="tt">Cálculo I</div><div class="au">Stewart</div></div>
+            <div class="bk"><div class="sp"></div><div class="tt">Química Org.</div><div class="au">Wade</div></div>
+            <div class="bk"><div class="sp"></div><div class="tt">Física Uni.</div><div class="au">Sears</div></div>
+            <div class="bk"><div class="sp"></div><div class="tt">Inglés B2</div><div class="au">Oxford</div></div>
+          </div>
+        </div>
+        <div class="tag">biblioteca</div>
+      </div>
+
+    </div>
+    <div class="preview-label">
+      <div>
+        <span class="preview-kicker">Vistazo a la plataforma</span>
+        <h2 class="preview-title">Perfil, asistente y biblioteca · siempre cerca.</h2>
+      </div>
+      <p class="preview-cta">Ver más <span class="arrow-ico">→</span></p>
+    </div>
+  </a>
+
+  <p class="note"><strong>V3</strong> · 3 polaroids rotados · mantiene el sabor sticker del actual pero con contenido real · hover los despliega</p>
+</div>
+</body>
+</html>

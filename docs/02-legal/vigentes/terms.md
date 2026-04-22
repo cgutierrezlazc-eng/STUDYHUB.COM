@@ -1,13 +1,13 @@
 ---
 documento: "Términos y Condiciones"
-version: "3.2.0"
-vigencia_desde: "2026-04-20"
-hash_texto_canonico: "se_calcula_al_final"
+version: "3.2.2"
+vigencia_desde: "2026-04-22"
+hash_texto_canonico: "8b9152c65d96223b694ade3a3d120a8c9047694c3580d67ef9a724871d0f47aa"
 ---
 
 # Términos de Servicio, Uso y Condiciones
 
-Última actualización: 19 de abril de 2026 · Versión 3.2
+Última actualización: 22 de abril de 2026 · Versión 3.2.2
 
 ---
 
@@ -45,7 +45,7 @@ A los efectos de estos Términos, se entenderá por:
 - **"Contenido de la Plataforma":** Todo material generado por Conniku, incluyendo diseño, código, algoritmos, textos institucionales, material de cursos y respuestas generadas automaticamente.
 - **"Constancia":** Documento digital emitido por Conniku Learning que acredita la finalización de un programa formativo interno. No constituye título académico ni certificación oficial.
 - **"Cuenta":** El perfil personal e intransferible del Usuario en la Plataforma.
-- **"Plan":** El nivel de suscripción del Usuario (Básico, Pro o Max).
+- **"Plan":** El nivel de suscripción del Usuario (Básico o Conniku Pro).
 - **"Datos Personales":** Toda información que identifique o permita identificar directa o indirectamente a una persona natural.
 - **"Tutor":** Prestador de servicios independiente, debidamente registrado y aprobado por Conniku, que ofrece servicios de tutoría académica a través de la Plataforma.
 - **"Sesión de Tutoría":** Clase individual o grupal impartida por un Tutor a través de la Plataforma mediante videollamada.
@@ -96,13 +96,11 @@ A los efectos de estos Términos, se entenderá por:
 
 ### Artículo 7. Planes de Suscripción
 
-7.1. Conniku ofrece tres niveles de acceso:
+7.1. Conniku ofrece dos niveles de acceso:
 
 **a) Plan Básico (Gratuito):** Acceso limitado. Hasta 2 asignaturas activas, 20 consultas al asistente cada 6 horas, 300 MB de almacenamiento. Visualización de documentos sin opción de descarga.
 
-**b) Plan Pro (USD $5/mes o USD $39.99/año):** Hasta 8 asignaturas, 200 consultas diarias al asistente, 1 GB de almacenamiento, descarga de documentos, exportación a Word (hasta 1,500 palabras), modo socrático, predictor de examen, flashcards FSRS, creación de comunidades, +20% de bonificación en XP.
-
-**c) Plan Max (USD $13/mes o USD $99.99/año):** Todo sin límite. Grabación y transcripción de clases, exportación a Word ilimitada, publicación de empleos, portfolio público, modo noche de examen, historial de asistencia, 3 GB de almacenamiento, +50% de bonificación en XP.
+**b) Conniku Pro (USD $5/mes o USD $39.99/año):** Acceso completo. Hasta 8 asignaturas, 200 consultas diarias al asistente, 1 GB de almacenamiento, descarga de documentos, exportación a Word (hasta 1,500 palabras), modo socrático, predictor de examen, flashcards FSRS, creación de comunidades, +20% de bonificación en XP.
 
 7.2. Los precios, características y límites de cada plan podrán ser modificados con previo aviso de treinta (30) días calendario. Los cambios no afectarán el período de facturación ya pagado por el Usuario.
 
@@ -141,6 +139,8 @@ A los efectos de estos Términos, se entenderá por:
 9.4.1. Los Usuarios residentes en Chile que hayan contratado una suscripción a distancia (internet) tienen derecho a retractarse dentro de los 10 días corridos siguientes al pago, conforme al artículo 3 bis letra b) de la Ley N° 19.496 sobre Protección de los Derechos de los Consumidores. El reembolso se procesará en el método de pago original.
 
 9.4.2. Este derecho no es aplicable cuando el servicio haya sido prestado de forma íntegra antes del vencimiento del plazo de retracto, siempre que el Usuario haya sido informado de ello al momento de la contratación.
+
+9.4.3. Si Conniku no entrega confirmación escrita de las condiciones del contrato, el plazo de retracto se extiende a noventa (90) días corridos, conforme al artículo 3 bis letra b) inciso final de la Ley N° 19.496 y criterios del SERNAC (sernac.cl).
 
 #### 9.5. Derecho de desistimiento — Unión Europea (Directiva 2011/83/UE)
 
@@ -198,7 +198,7 @@ A los efectos de estos Términos, se entenderá por:
 
 #### 9.12. Cambio de plan
 
-9.12.1. En caso de cambio de plan de Pro a Max durante un ciclo de facturación activo, se calculará un pago prorrateado basado en los días calendario restantes del ciclo actual. El Usuario solo pagará la diferencia proporcional.
+9.12.1. Conniku no ofrece actualmente cambio de plan entre suscripciones activas. El Usuario puede cancelar su plan vigente y suscribirse al plan deseado en el siguiente ciclo de facturación.
 
 ### Artículo 10. Impuestos y Obligaciones Tributarias
 
@@ -216,7 +216,7 @@ A los efectos de estos Términos, se entenderá por:
 
 ### Artículo 11. Recompensas por Logros
 
-11.1. Conniku otorga beneficios automáticos por el cumplimiento de logros dentro de la Plataforma, incluyendo pero no limitándose a: cumpleaños del Usuario (1 mes de Plan Max), quiz con calificación perfecta (1 mes de Plan Pro), rachas de estudio sostenidas (beneficios proporcionales a la duración), graduación universitaria (2 meses de Plan Max), mentoría completada (1 mes de Plan Max por cada 10 mentorías), y referidos válidos (1 mes de Plan Max por cada 10 referidos verificados).
+11.1. Conniku otorga beneficios automáticos por el cumplimiento de logros dentro de la Plataforma, incluyendo pero no limitándose a: cumpleaños del Usuario (1 mes de Conniku Pro), quiz con calificación perfecta (1 mes de Conniku Pro), rachas de estudio sostenidas (beneficios proporcionales a la duración), graduación universitaria (2 meses de Conniku Pro), mentoría completada (1 mes de Conniku Pro por cada 10 mentorías), y referidos válidos (1 mes de Conniku Pro por cada 10 referidos verificados).
 
 11.2. Las recompensas son automáticas, intransferibles, no acumulables con otras promociones salvo indicación expresa, y no canjeables por dinero, crédito ni cualquier otra contraprestación fuera de la Plataforma.
 
@@ -224,7 +224,7 @@ A los efectos de estos Términos, se entenderá por:
 
 ### Artículo 12. Recompensas por Cursos Completados
 
-12.1. El Usuario que complete tres (3) cursos obtendrá un (1) mes gratuito del Plan Pro. El Usuario que complete seis (6) cursos obtendrá un (1) mes gratuito del Plan Max.
+12.1. El Usuario que complete tres (3) cursos obtendrá un (1) mes gratuito de Conniku Pro. El Usuario que complete seis (6) cursos obtendrá dos (2) meses gratuitos de Conniku Pro.
 
 12.2. Los cursos completados se acumulan de forma permanente en el perfil del Usuario. Cada curso solo puede contabilizarse una vez para efectos de recompensa.
 
@@ -425,13 +425,18 @@ A los efectos de estos Términos, se entenderá por:
 
 29.3. El tutor deberá emitir boleta de honorarios a nombre de Conniku SpA por el monto correspondiente al 90% recibido y presentarla a través de la Plataforma.
 
-29.4. El tutor es íntegramente responsable del pago de la retención de impuestos al SII sobre su boleta de honorarios (actualmente 13.75%).
+29.4. El tutor es íntegramente responsable del pago de la retención de impuestos al SII sobre su boleta de honorarios. La retención vigente según Ley N° 21.133 (escala transitoria) es:
+- **2026: 15,25%** (tasa vigente a la fecha de estos Términos)
+- 2027: 16,00%
+- 2028: 17,00% (tasa máxima)
+
+El SII aplica automáticamente la tasa del año en curso al emitir boletas electrónicas. Es responsabilidad del tutor verificar la tasa vigente en sii.cl antes de emitir cada boleta.
 
 29.5. Una vez recibida y validada la boleta de honorarios, Conniku procederá al pago dentro de un plazo máximo de 7 días hábiles.
 
 29.6. El tutor podrá elegir frecuencia de pago: por clase realizada, quincenal o mensual.
 
-29.7. Los estudiantes con suscripción MAX vigente tendrán derecho a un descuento del 50% sobre el valor de las clases de tutoría. Este descuento se asume proporcionalmente entre Conniku y el tutor. Al registrarse como tutor, el prestador acepta expresamente esta condición comercial.
+29.7. Conniku podrá establecer descuentos o beneficios especiales para suscriptores de Conniku Pro sobre el valor de las clases de tutoría, los cuales serán informados con previo aviso de quince (15) días y detallados en la sección de Tutoría de la Plataforma.
 
 29.8. Los tutores cuya evaluación promedio sea inferior a 4.0 sobre 10.0 (equivalente a 2.0 sobre 5.0) transcurridos seis (6) meses desde su verificación, perderán automáticamente e irrevocablemente el derecho a ejercer como tutor en la Plataforma.
 
@@ -486,6 +491,28 @@ A los efectos de estos Términos, se entenderá por:
 33.2. El contrato establecerá: naturaleza independiente de la relación, comisión del 10%, obligaciones tributarias del tutor, código de conducta, cláusula de confidencialidad sobre datos de estudiantes, y política de cancelación.
 
 33.3. La firma digital tendrá validez legal conforme a la Ley 19.799 sobre Documentos Electrónicos, Firma Electrónica y Servicios de Certificación de Chile.
+
+33.4. El Contrato de Prestación de Servicios incluirá una cláusula de conducta conforme a la Ley N° 21.643 ("Ley Karin", vigente desde el 01 de agosto de 2024), que modifica el Código del Trabajo en materia de prevención, investigación y sanción del acoso laboral, acoso sexual y violencia en el trabajo. El tutor declara conocer y aceptar expresamente dicha política al momento de firmar el contrato.
+
+33.5. Conniku SpA, en su calidad de empleador con trabajadores dependientes, dispone de un Protocolo de Prevención del Acoso Laboral y Sexual conforme al Artículo 211-A y siguientes del Código del Trabajo, modificados por la Ley N° 21.643. Dicho protocolo es aplicable a las relaciones laborales internas de Conniku SpA y no extiende obligaciones de empleador sobre los tutores, quienes son prestadores de servicios independientes.
+
+### Artículo 33bis. Política de Ambiente Seguro en la Plataforma
+
+33bis.1. Conniku promueve un entorno de aprendizaje seguro, respetuoso e inclusivo para todos los usuarios de la Plataforma, incluyendo estudiantes, tutores y demás participantes, en consonancia con los principios de la Ley N° 21.643 y los estándares internacionales de ambientes libres de violencia y acoso.
+
+33bis.2. Se consideran conductas prohibidas en la Plataforma, sin perjuicio de las demás establecidas en estos Términos:
+
+a) Acoso de cualquier tipo: conductas reiteradas de hostigamiento, intimidación o humillación hacia otro usuario, sea verbal, escrita o mediante el uso de las herramientas de la Plataforma.
+
+b) Acoso sexual: conductas de connotación sexual no deseadas o rechazadas, independientemente de si ocurren dentro o fuera de la Plataforma pero en el contexto de la relación establecida en ella.
+
+c) Violencia en el trabajo: agresión verbal o psicológica contra otro usuario en el contexto de las interacciones generadas a través de la Plataforma.
+
+33bis.3. Los usuarios que sean víctimas o testigos de las conductas descritas en el artículo anterior podrán denunciarlas a través del canal habilitado: [seguridad@conniku.com](mailto:seguridad@conniku.com) o del formulario de contacto disponible en `conniku.com/contacto` (motivo: "Seguridad"). Toda denuncia será tratada con reserva y confidencialidad.
+
+33bis.4. Conniku investigará las denuncias recibidas y podrá adoptar medidas que incluyen, según la gravedad del caso: advertencia formal, suspensión temporal o eliminación definitiva de la cuenta del infractor, sin derecho a reembolso.
+
+33bis.5. Esta política no reemplaza el derecho del usuario a presentar denuncias ante la Dirección del Trabajo (dt.gob.cl) u otras autoridades competentes.
 
 ---
 

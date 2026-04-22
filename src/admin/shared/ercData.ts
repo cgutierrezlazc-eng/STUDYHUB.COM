@@ -768,7 +768,7 @@ export const CONTRACT_TEMPLATES: ERCContractTemplate[] = [
       {
         title: 'QUINTO: Jornada de Trabajo',
         content:
-          'La jornada ordinaria sera de 45 horas semanales, distribuidas de lunes a viernes, de 09:00 a 18:00 horas, con 1 hora de colacion. El Trabajador tendra disponibilidad para incidentes criticos fuera de horario.',
+          'La jornada ordinaria sera de 42 horas semanales, distribuidas de lunes a viernes, de 09:00 a 18:00 horas, con 1 hora de colacion. El Trabajador tendra disponibilidad para incidentes criticos fuera de horario.',
       },
       {
         title: 'SEXTO: Remuneracion',
@@ -850,7 +850,7 @@ export const CONTRACT_TEMPLATES: ERCContractTemplate[] = [
       {
         title: 'QUINTO: Jornada de Trabajo',
         content:
-          'La jornada ordinaria sera de 45 horas semanales, distribuidas de lunes a viernes, de 09:00 a 18:00 horas, con 1 hora de colacion.',
+          'La jornada ordinaria sera de 42 horas semanales, distribuidas de lunes a viernes, de 09:00 a 18:00 horas, con 1 hora de colacion.',
       },
       {
         title: 'SEXTO: Remuneracion',
@@ -932,7 +932,7 @@ export const CONTRACT_TEMPLATES: ERCContractTemplate[] = [
       {
         title: 'QUINTO: Jornada de Trabajo',
         content:
-          'La jornada ordinaria sera de 45 horas semanales, distribuidas de lunes a viernes, de 09:00 a 18:00 horas, con 1 hora de colacion. Se permite flexibilidad horaria para publicacion en horarios peak de redes sociales.',
+          'La jornada ordinaria sera de 42 horas semanales, distribuidas de lunes a viernes, de 09:00 a 18:00 horas, con 1 hora de colacion. Se permite flexibilidad horaria para publicacion en horarios peak de redes sociales.',
       },
       {
         title: 'SEXTO: Remuneracion',
@@ -1019,7 +1019,7 @@ export const CONTRACT_TEMPLATES: ERCContractTemplate[] = [
       {
         title: 'QUINTO: Jornada de Trabajo',
         content:
-          'La jornada ordinaria sera de 45 horas semanales, distribuidas de lunes a viernes, de 09:00 a 18:00 horas, con 1 hora de colacion.',
+          'La jornada ordinaria sera de 42 horas semanales, distribuidas de lunes a viernes, de 09:00 a 18:00 horas, con 1 hora de colacion.',
       },
       {
         title: 'SEXTO: Remuneracion',
@@ -1101,7 +1101,7 @@ export const CONTRACT_TEMPLATES: ERCContractTemplate[] = [
       {
         title: 'QUINTO: Jornada de Trabajo',
         content:
-          'La jornada ordinaria sera de 45 horas semanales, distribuidas de lunes a viernes, de 09:00 a 18:00 horas, con 1 hora de colacion.',
+          'La jornada ordinaria sera de 42 horas semanales, distribuidas de lunes a viernes, de 09:00 a 18:00 horas, con 1 hora de colacion.',
       },
       {
         title: 'SEXTO: Remuneracion',

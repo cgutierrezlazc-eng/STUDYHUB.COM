@@ -3,7 +3,7 @@
 Pieza 7 del bloque bloque-legal-consolidation-v2, actualizado a v3.2 en bloque-legal-v3.2-post-audit.
 
 Valida:
-- Que el directorio docs/legal/v3.2/ exista con los 4 archivos canónicos.
+- Que el directorio docs/02-legal/vigentes/ exista con los 4 archivos canónicos.
 - Que METADATA.yaml tenga el schema correcto (campos obligatorios + hash hex).
 - Que el hash SHA-256 de cada archivo coincida con el declarado en METADATA.yaml.
 """
@@ -21,9 +21,9 @@ import yaml
 # Ruta absoluta a la raíz del repo (dos niveles arriba de backend/tests/)
 REPO_ROOT = Path(__file__).resolve().parent.parent.parent
 
-V3_2_DIR = REPO_ROOT / "docs" / "legal" / "v3.2"
+V3_2_DIR = REPO_ROOT / "docs" / "02-legal" / "vigentes"
 METADATA_PATH = V3_2_DIR / "METADATA.yaml"
-LEGAL_VERSIONS_PATH = REPO_ROOT / "docs" / "legal" / "LEGAL_VERSIONS.md"
+LEGAL_VERSIONS_PATH = REPO_ROOT / "docs" / "02-legal" / "archivo" / "LEGAL_VERSIONS.md"
 
 # Archivos canónicos requeridos en v3.2/
 REQUIRED_FILES = [
@@ -45,13 +45,13 @@ REQUIRED_METADATA_FIELDS = {
 
 @pytest.mark.legal
 def test_v3_2_directory_exists() -> None:
-    """El directorio docs/legal/v3.2/ debe existir."""
+    """El directorio docs/02-legal/vigentes/ debe existir."""
     assert V3_2_DIR.is_dir(), f"Directorio {V3_2_DIR} no existe"
 
 
 @pytest.mark.legal
 def test_required_files_exist() -> None:
-    """Los 5 archivos requeridos deben existir en docs/legal/v3.2/."""
+    """Los 5 archivos requeridos deben existir en docs/02-legal/vigentes/."""
     for fname in REQUIRED_FILES:
         fpath = V3_2_DIR / fname
         assert fpath.is_file(), f"Archivo requerido ausente: {fpath}"
@@ -59,7 +59,7 @@ def test_required_files_exist() -> None:
 
 @pytest.mark.legal
 def test_legal_versions_md_exists() -> None:
-    """docs/legal/LEGAL_VERSIONS.md debe existir."""
+    """docs/02-legal/archivo/LEGAL_VERSIONS.md debe existir."""
     assert LEGAL_VERSIONS_PATH.is_file(), f"Archivo {LEGAL_VERSIONS_PATH} no existe"
 
 

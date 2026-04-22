@@ -4,7 +4,7 @@ Pieza 2a del bloque bloque-legal-v3.2-post-audit.
 
 Valida que:
 - Los hashes en backend/constants/legal_versions.py coinciden con los archivos
-  reales en docs/legal/v3.2/*.md (invariantes 1 y 2 del plan §6).
+  reales en docs/02-legal/vigentes/*.md (invariantes 1 y 2 del plan §6).
 - Las versiones TOS y PRIVACY fueron bumpeadas a 3.2.0 y 2.4.0 respectivamente.
 - Cookies mantiene 1.0.0 (sin cambio de texto).
 - El hash del TEXTO canónico de age-declaration (entre separadores ---) es
@@ -30,14 +30,14 @@ import pytest
 
 REPO_ROOT = Path(__file__).resolve().parent.parent.parent
 
-V3_2_DIR = REPO_ROOT / "docs" / "legal" / "v3.2"
+V3_2_DIR = REPO_ROOT / "docs" / "02-legal" / "vigentes"
 
 # Hashes calculados por legal-docs-keeper en Pieza 1 y verificados con shasum.
 # Son los valores de referencia para esta suite. Si los archivos .md cambian,
 # estos valores deben ser actualizados en el mismo commit que los archivos.
 EXPECTED_HASHES = {
-    "terms.md": "9a16122f985a1d252a5928c5fae518b5bd23ac6ee00996ee9e8293c4aaf08dce",
-    "privacy.md": "b5b9fed8fd5e4e600c7fa33fbd8dddaec5c627be189b5382e8b7cf81dbcfa288",
+    "terms.md": "b2b834b61e19db6b2f7aa8176e8958f4e001d49a02606097c462811f6e008d73",
+    "privacy.md": "cc9332741bea7ad4539fd6a8a049946e44521b9ae8ed97833dd112412b8c746e",
     "cookies.md": "80d41f71f075ae954a4e5f1763266b9830d38849bbe79a7bb931c2a4ee30e38c",
     "age-declaration.md": "61dab2ecf1b27e3fb212efcf5a066784943c689de11611bb6d2b919e39441a9b",
 }
@@ -103,7 +103,7 @@ def _extract_canonical_text(age_decl_path: Path) -> str:
 
 @pytest.mark.legal
 def test_v3_2_directory_exists() -> None:
-    """El directorio docs/legal/v3.2/ debe existir con los 4 archivos canónicos."""
+    """El directorio docs/02-legal/vigentes/ debe existir con los 4 archivos canónicos."""
     assert V3_2_DIR.is_dir(), f"Directorio {V3_2_DIR} no existe"
     for fname in EXPECTED_HASHES:
         assert (V3_2_DIR / fname).is_file(), f"Archivo canónico ausente: {V3_2_DIR / fname}"
@@ -167,22 +167,22 @@ def test_age_declaration_canonical_text_hash_unchanged() -> None:
 
 @pytest.mark.legal
 def test_legal_versions_py_tos_version_bumped() -> None:
-    """TOS_VERSION debe ser '3.2.0' (bumpeado desde 3.1.0 en v3.2)."""
+    """TOS_VERSION debe ser '3.2.2' (actualizado a 22/04/2026 — Ley Karin)."""
     from backend.constants.legal_versions import TOS_VERSION
 
-    assert TOS_VERSION == "3.2.0", (
-        f"TOS_VERSION debe ser '3.2.0', encontrado '{TOS_VERSION}'. "
+    assert TOS_VERSION == "3.2.2", (
+        f"TOS_VERSION debe ser '3.2.2', encontrado '{TOS_VERSION}'. "
         "Aplicar bump en backend/constants/legal_versions.py."
     )
 
 
 @pytest.mark.legal
 def test_legal_versions_py_privacy_version_bumped() -> None:
-    """PRIVACY_VERSION debe ser '2.4.1' (bumpeado desde 2.4.0 por bloque contact-tickets-v1)."""
+    """PRIVACY_VERSION debe ser '2.4.2' (bumpeado por bloque sandbox-integrity-v1)."""
     from backend.constants.legal_versions import PRIVACY_VERSION
 
-    assert PRIVACY_VERSION == "2.4.1", (
-        f"PRIVACY_VERSION debe ser '2.4.1', encontrado '{PRIVACY_VERSION}'. "
+    assert PRIVACY_VERSION == "2.4.2", (
+        f"PRIVACY_VERSION debe ser '2.4.2', encontrado '{PRIVACY_VERSION}'. "
         "Aplicar bump en backend/constants/legal_versions.py."
     )
 
@@ -197,7 +197,7 @@ def test_legal_versions_py_cookies_version_unchanged() -> None:
 
 @pytest.mark.legal
 def test_legal_versions_py_tos_hash_matches_v3_2_file() -> None:
-    """TOS_HASH en legal_versions.py debe coincidir con el hash real de docs/legal/v3.2/terms.md.
+    """TOS_HASH en legal_versions.py debe coincidir con el hash real de docs/02-legal/vigentes/terms.md.
 
     Invariante 1 del plan §6: sha256(terms.md) == TOS_HASH en legal_versions.py.
     """
@@ -205,7 +205,7 @@ def test_legal_versions_py_tos_hash_matches_v3_2_file() -> None:
 
     terms_path = V3_2_DIR / "terms.md"
     if not terms_path.is_file():
-        pytest.skip("docs/legal/v3.2/terms.md no existe — skip")
+        pytest.skip("docs/02-legal/vigentes/terms.md no existe — skip")
 
     actual = _sha256_file(terms_path)
     assert actual == TOS_HASH, (
@@ -218,7 +218,7 @@ def test_legal_versions_py_tos_hash_matches_v3_2_file() -> None:
 
 @pytest.mark.legal
 def test_legal_versions_py_privacy_hash_matches_v3_2_file() -> None:
-    """PRIVACY_HASH en legal_versions.py debe coincidir con el hash real de docs/legal/v3.2/privacy.md.
+    """PRIVACY_HASH en legal_versions.py debe coincidir con el hash real de docs/02-legal/vigentes/privacy.md.
 
     Invariante 2 del plan §6: sha256(privacy.md) == PRIVACY_HASH en legal_versions.py.
     """
@@ -226,7 +226,7 @@ def test_legal_versions_py_privacy_hash_matches_v3_2_file() -> None:
 
     privacy_path = V3_2_DIR / "privacy.md"
     if not privacy_path.is_file():
-        pytest.skip("docs/legal/v3.2/privacy.md no existe — skip")
+        pytest.skip("docs/02-legal/vigentes/privacy.md no existe — skip")
 
     actual = _sha256_file(privacy_path)
     assert actual == PRIVACY_HASH, (
@@ -239,7 +239,7 @@ def test_legal_versions_py_privacy_hash_matches_v3_2_file() -> None:
 
 @pytest.mark.legal
 def test_legal_versions_py_cookies_hash_matches_v3_2_file() -> None:
-    """COOKIES_HASH en legal_versions.py debe coincidir con el hash real de docs/legal/v3.2/cookies.md.
+    """COOKIES_HASH en legal_versions.py debe coincidir con el hash real de docs/02-legal/vigentes/cookies.md.
 
     Invariante 3 del plan §6: sha256(cookies.md) == sha256(v3.1/cookies.md) (cookies estable).
     """
@@ -247,7 +247,7 @@ def test_legal_versions_py_cookies_hash_matches_v3_2_file() -> None:
 
     cookies_path = V3_2_DIR / "cookies.md"
     if not cookies_path.is_file():
-        pytest.skip("docs/legal/v3.2/cookies.md no existe — skip")
+        pytest.skip("docs/02-legal/vigentes/cookies.md no existe — skip")
 
     actual = _sha256_file(cookies_path)
     assert actual == COOKIES_HASH, (
@@ -276,7 +276,7 @@ def test_legal_versions_py_privacy_hash_is_valid_hex64() -> None:
 
 @pytest.mark.legal
 def test_reaccept_documents_list_reflects_v3_2_versions() -> None:
-    """REACCEPT_DOCUMENTS debe reflejar las versiones v3.2 (TOS 3.2.0, PRIVACY 2.4.1, COOKIES 1.0.0)."""
+    """REACCEPT_DOCUMENTS debe reflejar las versiones v3.2 (TOS 3.2.0, PRIVACY 2.4.2, COOKIES 1.0.0)."""
     from backend.constants.legal_versions import REACCEPT_DOCUMENTS
 
     versions = {doc_type: (version, hash_) for doc_type, version, hash_ in REACCEPT_DOCUMENTS}
@@ -285,9 +285,9 @@ def test_reaccept_documents_list_reflects_v3_2_versions() -> None:
     assert "privacy" in versions, "REACCEPT_DOCUMENTS debe incluir 'privacy'"
     assert "cookies" in versions, "REACCEPT_DOCUMENTS debe incluir 'cookies'"
 
-    assert versions["tos"][0] == "3.2.0", f"Versión TOS en REACCEPT_DOCUMENTS: '{versions['tos'][0]}', esperada '3.2.0'"
-    assert versions["privacy"][0] == "2.4.1", (
-        f"Versión PRIVACY en REACCEPT_DOCUMENTS: '{versions['privacy'][0]}', esperada '2.4.1'"
+    assert versions["tos"][0] == "3.2.2", f"Versión TOS en REACCEPT_DOCUMENTS: '{versions['tos'][0]}', esperada '3.2.2'"
+    assert versions["privacy"][0] == "2.4.2", (
+        f"Versión PRIVACY en REACCEPT_DOCUMENTS: '{versions['privacy'][0]}', esperada '2.4.2'"
     )
     assert versions["cookies"][0] == "1.0.0", (
         f"Versión COOKIES en REACCEPT_DOCUMENTS: '{versions['cookies'][0]}', esperada '1.0.0'"

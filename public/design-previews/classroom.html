@@ -1,0 +1,556 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Conniku — Clase en vivo con tutor</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Funnel+Display:wght@400;500;600;700;800;900&family=Geist+Mono:wght@400;500;600;700&display=swap" />
+  <style>
+    :root {
+      --ink: #0D0F10; --ink-2: #1A1D24; --ink-3: #696C6F; --ink-4: #A0A3A7;
+      --paper: #F5F4EF; --paper-2: #EBE9E1; --line: #D2CFC3; --card: #FFFFFF;
+      --lime: #D9FF3A; --lime-ink: #181F08;
+      --pink: #FF4D3A; --cream: #FFE9B8;
+      --violet: #6B4EFF; --cyan: #00C2FF; --orange: #FF4A1C;
+      --font-display: 'Funnel Display', -apple-system, sans-serif;
+      --font-mono: 'Geist Mono', ui-monospace, monospace;
+      --ease: cubic-bezier(.2,.8,.2,1);
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    html, body { background: var(--ink); color: #fff; font-family: var(--font-display); height: 100vh; overflow: hidden; }
+    body { display: flex; flex-direction: column; }
+    ::selection { background: var(--lime); color: var(--lime-ink); }
+
+    /* ═══ TOP BAR ═══ */
+    .top { background: var(--ink); padding: 12px 22px; display: flex; align-items: center; gap: 18px; border-bottom: 1px solid rgba(255,255,255,.06); flex-shrink: 0; }
+    .brand { display: flex; align-items: center; gap: 10px; }
+    .brand-tile { width: 28px; height: 28px; display: block; flex-shrink: 0; }
+    .brand-name { font-weight: 700; font-size: 16px; letter-spacing: -.02em; }
+
+    .top-live { display: inline-flex; align-items: center; gap: 7px; background: var(--pink); color: #fff; padding: 5px 11px; border-radius: 999px; font-family: var(--font-mono); font-size: 10px; font-weight: 800; letter-spacing: .1em; text-transform: uppercase; }
+    .top-live .lr { width: 6px; height: 6px; border-radius: 50%; background: #fff; animation: pulse 1.6s var(--ease) infinite; }
+    @keyframes pulse { 0% { box-shadow: 0 0 0 0 rgba(255,255,255,.7); } 70% { box-shadow: 0 0 0 8px rgba(255,255,255,0); } 100% { box-shadow: 0 0 0 0 rgba(255,255,255,0); } }
+
+    .class-title { flex: 1; }
+    .class-subject { font-family: var(--font-mono); font-size: 9.5px; letter-spacing: .1em; text-transform: uppercase; color: rgba(255,255,255,.5); font-weight: 700; }
+    .class-name { font-weight: 700; font-size: 15px; letter-spacing: -.015em; margin-top: 2px; }
+
+    .top-timer { font-family: var(--font-mono); font-size: 13px; color: var(--lime); font-weight: 800; letter-spacing: .04em; padding: 6px 13px; background: rgba(217,255,58,.1); border-radius: 999px; }
+
+    .top-quality { display: inline-flex; align-items: center; gap: 6px; font-family: var(--font-mono); font-size: 10px; color: rgba(255,255,255,.65); letter-spacing: .06em; text-transform: uppercase; font-weight: 700; padding: 5px 10px; background: rgba(255,255,255,.05); border-radius: 999px; }
+    .top-quality .dot { width: 6px; height: 6px; border-radius: 50%; background: var(--lime); }
+
+    .top-escrow { display: inline-flex; align-items: center; gap: 6px; background: rgba(217,255,58,.1); border: 1px solid rgba(217,255,58,.3); color: var(--lime); padding: 5px 11px; border-radius: 999px; font-family: var(--font-mono); font-size: 10px; font-weight: 800; letter-spacing: .08em; text-transform: uppercase; }
+
+    /* ═══ STAGE ═══ */
+    .stage { flex: 1; display: grid; grid-template-columns: 280px 1fr 360px; min-height: 0; }
+
+    /* ═══ LEFT SIDEBAR ═══ */
+    .left { background: #0A0C10; border-right: 1px solid rgba(255,255,255,.06); overflow-y: auto; padding: 20px 20px 24px; }
+    .left::-webkit-scrollbar { width: 3px; }
+    .left::-webkit-scrollbar-thumb { background: rgba(255,255,255,.08); }
+
+    .tutor-card { display: flex; align-items: center; gap: 12px; padding-bottom: 18px; margin-bottom: 18px; border-bottom: 1px solid rgba(255,255,255,.08); }
+    .tutor-av { width: 48px; height: 48px; border-radius: 50%; background: linear-gradient(135deg, var(--violet), var(--pink)); color: #fff; display: grid; place-items: center; font-weight: 900; font-size: 16px; letter-spacing: -.02em; position: relative; flex-shrink: 0; }
+    .tutor-av::after { content: ""; position: absolute; bottom: -2px; right: -2px; width: 12px; height: 12px; background: var(--lime); border-radius: 50%; border: 2px solid #0A0C10; }
+    .tutor-n { font-weight: 700; font-size: 14px; letter-spacing: -.01em; }
+    .tutor-r { font-family: var(--font-mono); font-size: 10px; color: var(--lime); letter-spacing: .06em; margin-top: 3px; font-weight: 700; }
+    .tutor-u { font-family: var(--font-mono); font-size: 9.5px; color: rgba(255,255,255,.4); letter-spacing: .06em; margin-top: 2px; text-transform: uppercase; font-weight: 600; }
+
+    .l-section { margin-bottom: 22px; }
+    .l-label { font-family: var(--font-mono); font-size: 9.5px; letter-spacing: .14em; text-transform: uppercase; color: rgba(255,255,255,.4); font-weight: 700; margin-bottom: 12px; display: flex; align-items: center; justify-content: space-between; }
+    .l-label .count { background: rgba(255,255,255,.08); color: rgba(255,255,255,.7); padding: 1px 7px; border-radius: 999px; font-size: 9px; letter-spacing: 0; }
+
+    .plan-step { padding: 10px 12px; margin-bottom: 6px; border-radius: 9px; display: flex; gap: 10px; align-items: flex-start; }
+    .plan-step.done { opacity: .55; }
+    .plan-step.current { background: rgba(217,255,58,.06); border: 1px solid rgba(217,255,58,.18); }
+    .plan-step.pending { opacity: .38; }
+    .step-dot { width: 16px; height: 16px; border-radius: 50%; flex-shrink: 0; display: grid; place-items: center; font-family: var(--font-display); font-weight: 900; font-size: 8px; margin-top: 2px; }
+    .plan-step.done .step-dot { background: var(--lime); color: var(--lime-ink); }
+    .plan-step.current .step-dot { background: var(--pink); color: #fff; }
+    .plan-step.pending .step-dot { background: rgba(255,255,255,.06); color: rgba(255,255,255,.5); border: 1px solid rgba(255,255,255,.12); }
+    .step-title { font-weight: 600; font-size: 12.5px; line-height: 1.3; }
+    .plan-step.current .step-title { font-weight: 700; }
+    .step-time { font-family: var(--font-mono); font-size: 9px; color: rgba(255,255,255,.4); letter-spacing: .04em; margin-top: 2px; font-weight: 600; text-transform: uppercase; }
+    .plan-step.current .step-time { color: var(--lime); }
+
+    /* Nivel de comprensión — compact */
+    .comp-row { display: flex; justify-content: space-between; align-items: center; margin-bottom: 7px; font-size: 11px; }
+    .comp-topic { color: rgba(255,255,255,.78); font-weight: 500; }
+    .comp-bar { width: 60px; height: 4px; background: rgba(255,255,255,.08); border-radius: 999px; overflow: hidden; }
+    .comp-fill { height: 100%; border-radius: 999px; }
+    .comp-fill.good { background: var(--lime); }
+    .comp-fill.mid { background: var(--orange); }
+    .comp-fill.low { background: var(--pink); }
+
+    /* Materiales */
+    .mat-item { display: flex; gap: 10px; align-items: center; padding: 8px 10px; background: rgba(255,255,255,.03); border-radius: 8px; margin-bottom: 5px; cursor: pointer; }
+    .mat-item:hover { background: rgba(255,255,255,.06); }
+    .mat-ico { width: 26px; height: 26px; border-radius: 6px; display: grid; place-items: center; font-weight: 900; font-size: 11px; flex-shrink: 0; }
+    .mat-ico.pdf { background: var(--pink); color: #fff; }
+    .mat-ico.wb { background: var(--cyan); color: var(--ink); }
+    .mat-info .mt-n { font-weight: 600; font-size: 11.5px; }
+    .mat-info .mt-s { font-family: var(--font-mono); font-size: 9px; color: rgba(255,255,255,.4); letter-spacing: .04em; margin-top: 2px; }
+
+    /* ═══ CENTER ═══ */
+    .center { display: grid; grid-template-rows: 1fr auto; gap: 12px; padding: 14px; min-height: 0; }
+
+    .stage-main { background: #fff; color: #1a1a1a; border-radius: 16px; position: relative; overflow: hidden; display: flex; }
+
+    /* Overlay speaker */
+    .ov-speaker { position: absolute; top: 14px; left: 14px; z-index: 5; display: flex; align-items: center; gap: 9px; background: rgba(13,15,16,.82); backdrop-filter: blur(10px); border-radius: 999px; padding: 6px 12px 6px 6px; color: #fff; }
+    .sp-av { width: 26px; height: 26px; border-radius: 50%; background: linear-gradient(135deg, var(--violet), var(--pink)); display: grid; place-items: center; font-weight: 800; font-size: 10.5px; font-family: var(--font-display); }
+    .sp-name { font-weight: 700; font-size: 11.5px; }
+    .sp-status { font-family: var(--font-mono); font-size: 9px; color: var(--lime); letter-spacing: .06em; text-transform: uppercase; font-weight: 700; margin-top: 1px; display: flex; align-items: center; gap: 5px; }
+    .wave { display: inline-flex; gap: 1px; align-items: center; }
+    .wave span { width: 2px; background: var(--lime); border-radius: 1px; animation: wave 1s ease infinite; }
+    .wave span:nth-child(1) { height: 5px; }
+    .wave span:nth-child(2) { height: 8px; animation-delay: .15s; }
+    .wave span:nth-child(3) { height: 11px; animation-delay: .3s; }
+    @keyframes wave { 0%, 100% { transform: scaleY(.4); } 50% { transform: scaleY(1); } }
+
+    /* Exercise timer (aparece solo cuando hay ejercicio activo) */
+    .ov-exercise {
+      position: absolute; top: 14px; right: 14px; z-index: 5;
+      background: var(--ink); color: #fff; border: 1px solid rgba(255,255,255,.1);
+      border-radius: 12px; padding: 10px 14px;
+      display: flex; gap: 10px; align-items: center;
+    }
+    .ov-exercise .ex-timer { font-family: var(--font-display); font-weight: 900; font-size: 22px; color: var(--lime); letter-spacing: -.03em; font-feature-settings: 'tnum'; line-height: 1; }
+    .ov-exercise .ex-label { font-family: var(--font-mono); font-size: 9px; color: rgba(255,255,255,.55); letter-spacing: .08em; text-transform: uppercase; font-weight: 700; }
+
+    /* Whiteboard content */
+    .wb { flex: 1; padding: 40px 48px; overflow-y: auto; font-family: 'Times New Roman', serif; }
+    .wb::-webkit-scrollbar { width: 4px; }
+    .wb-title { font-family: var(--font-display); font-size: 28px; font-weight: 700; letter-spacing: -.02em; color: #1a1a1a; margin-bottom: 6px; }
+    .wb-sub { font-size: 14px; color: #5f6368; font-style: italic; margin-bottom: 22px; }
+    .wb-text { font-size: 15px; line-height: 1.7; color: #1a1a1a; margin-bottom: 12px; }
+    .wb-text strong { background: #FFE9B8; padding: 0 3px; border-radius: 2px; font-weight: 700; }
+    .wb-eq { text-align: center; padding: 12px 18px; background: #f1f3f4; border-radius: 8px; font-family: 'Courier New', monospace; font-size: 17px; margin: 14px 0; }
+    .wb-eq.solved { background: #E8FFCC; border: 2px solid #D9FF3A; color: #181F08; font-weight: 700; }
+    .wb-ex { border-left: 4px solid #D9FF3A; padding: 14px 20px; margin: 18px 0; background: #fffef0; border-radius: 0 10px 10px 0; }
+    .wb-ex .exl { font-family: var(--font-mono); font-size: 10px; letter-spacing: .12em; text-transform: uppercase; color: #5f6368; margin-bottom: 8px; font-weight: 700; }
+    .wb-ex h4 { font-size: 15px; font-weight: 700; margin-bottom: 8px; font-family: 'Times New Roman', serif; }
+
+    /* Tools vertical al borde derecho del stage-main */
+    .wb-tools { display: flex; flex-direction: column; width: 48px; border-left: 1px solid #e5e5e5; background: #fafafa; padding: 10px 0; gap: 2px; }
+    .wb-tool { width: 34px; height: 34px; border-radius: 8px; border: 0; background: transparent; color: #5f6368; display: grid; place-items: center; cursor: pointer; font-size: 14px; font-weight: 800; margin: 0 auto; transition: all 120ms var(--ease); }
+    .wb-tool:hover { background: #f1f3f4; color: #1a1a1a; }
+    .wb-tool.active { background: var(--lime); color: var(--lime-ink); }
+    .wb-tool-sep { height: 1px; background: #e5e5e5; margin: 6px 10px; }
+
+    /* Self PIP */
+    .self-pip { position: absolute; bottom: 14px; right: 64px; z-index: 4; width: 150px; height: 113px; border-radius: 12px; background: linear-gradient(135deg, var(--cream), var(--lime)); color: var(--lime-ink); display: grid; place-items: center; font-family: var(--font-display); font-weight: 900; font-size: 38px; letter-spacing: -.03em; box-shadow: 0 6px 20px rgba(0,0,0,.25); overflow: hidden; }
+    .self-pip .sp-tag { position: absolute; bottom: 7px; left: 9px; background: rgba(13,15,16,.75); backdrop-filter: blur(6px); color: #fff; padding: 3px 7px; border-radius: 4px; font-family: var(--font-mono); font-size: 8.5px; letter-spacing: .06em; text-transform: uppercase; font-weight: 700; }
+    .self-pip .sp-mic { position: absolute; top: 7px; right: 7px; width: 20px; height: 20px; background: rgba(13,15,16,.75); border-radius: 50%; display: grid; place-items: center; color: var(--lime); font-size: 10px; font-weight: 900; }
+
+    /* Reacciones flotantes del estudiante */
+    .reactions-drop { position: absolute; top: 80px; left: 14px; z-index: 5; display: flex; flex-direction: column; gap: 6px; pointer-events: none; }
+    .reac-item { background: rgba(13,15,16,.8); backdrop-filter: blur(8px); padding: 4px 10px 4px 7px; border-radius: 999px; display: inline-flex; align-items: center; gap: 6px; font-family: var(--font-mono); font-size: 9.5px; color: rgba(255,255,255,.85); letter-spacing: .04em; font-weight: 700; border: 1px solid rgba(255,255,255,.1); }
+    .reac-item .re { font-size: 12px; }
+
+    /* ═══ CONTROLS ═══ */
+    .controls { display: flex; align-items: center; gap: 6px; padding: 8px; background: rgba(255,255,255,.04); border: 1px solid rgba(255,255,255,.06); border-radius: 14px; }
+    .cg { display: flex; gap: 3px; align-items: center; }
+    .cg-sep { width: 1px; height: 22px; background: rgba(255,255,255,.1); margin: 0 4px; }
+
+    .ctrl-btn { background: rgba(255,255,255,.06); border: 0; color: #fff; width: 40px; height: 40px; border-radius: 10px; display: grid; place-items: center; cursor: pointer; font-size: 14px; font-weight: 800; transition: all 150ms var(--ease); }
+    .ctrl-btn:hover { background: rgba(255,255,255,.14); }
+    .ctrl-btn.active { background: var(--lime); color: var(--lime-ink); }
+    .ctrl-btn.muted { background: var(--pink); color: #fff; }
+
+    .ctrl-labeled { background: rgba(255,255,255,.06); border: 0; color: #fff; padding: 9px 13px; border-radius: 10px; cursor: pointer; font-family: var(--font-display); font-weight: 600; font-size: 12px; display: flex; align-items: center; gap: 6px; }
+    .ctrl-labeled:hover { background: rgba(255,255,255,.14); }
+    .ctrl-labeled.active { background: var(--lime); color: var(--lime-ink); }
+    .ctrl-labeled.hand { background: var(--orange); color: #fff; }
+    .ctrl-labeled.rec { background: rgba(255,77,58,.15); color: var(--pink); }
+    .ctrl-labeled.rec .rec-dot { width: 7px; height: 7px; border-radius: 50%; background: var(--pink); animation: pulse 1.6s var(--ease) infinite; }
+
+    .ctrl-end { background: var(--pink); color: #fff; border: 0; padding: 10px 18px; border-radius: 10px; font-family: var(--font-display); font-weight: 800; font-size: 12.5px; cursor: pointer; margin-left: auto; }
+
+    /* ═══ RIGHT ═══ */
+    .right { background: #0A0C10; border-left: 1px solid rgba(255,255,255,.06); display: flex; flex-direction: column; overflow: hidden; }
+
+    .right-tabs { display: flex; padding: 14px 20px 0; gap: 2px; border-bottom: 1px solid rgba(255,255,255,.06); flex-shrink: 0; }
+    .rt-tab { padding: 9px 12px; font-family: var(--font-display); font-weight: 600; font-size: 12px; color: rgba(255,255,255,.45); cursor: pointer; border-bottom: 2px solid transparent; display: flex; align-items: center; gap: 6px; }
+    .rt-tab.active { color: #fff; border-bottom-color: var(--lime); font-weight: 700; }
+    .rt-tab .n { background: rgba(255,255,255,.08); font-family: var(--font-mono); font-size: 9px; padding: 1px 6px; border-radius: 999px; letter-spacing: 0; font-weight: 700; color: rgba(255,255,255,.65); }
+    .rt-tab.active .n { background: var(--lime); color: var(--lime-ink); }
+    .rt-tab .live-dot { width: 6px; height: 6px; border-radius: 50%; background: var(--pink); animation: pulse 1.6s var(--ease) infinite; }
+
+    .right-head { padding: 14px 20px 12px; border-bottom: 1px solid rgba(255,255,255,.04); flex-shrink: 0; display: flex; justify-content: space-between; align-items: center; }
+    .rh-left .rh-title { font-weight: 700; font-size: 13.5px; letter-spacing: -.01em; }
+    .rh-left .rh-sub { font-family: var(--font-mono); font-size: 9.5px; color: rgba(255,255,255,.4); letter-spacing: .06em; margin-top: 2px; font-weight: 600; }
+    .rh-search { width: 28px; height: 28px; background: rgba(255,255,255,.08); border: 0; color: rgba(255,255,255,.65); border-radius: 8px; cursor: pointer; font-size: 13px; }
+
+    /* Transcript */
+    .transcript { flex: 1; overflow-y: auto; padding: 14px 20px 16px; }
+    .transcript::-webkit-scrollbar { width: 3px; }
+    .transcript::-webkit-scrollbar-thumb { background: rgba(255,255,255,.08); }
+
+    .tr-entry { margin-bottom: 14px; }
+    .tr-meta { display: flex; align-items: baseline; gap: 8px; margin-bottom: 4px; }
+    .tr-who { font-weight: 700; font-size: 11.5px; letter-spacing: -.01em; }
+    .tr-who.tutor { color: var(--lime); }
+    .tr-who.student { color: var(--pink); }
+    .tr-time { font-family: var(--font-mono); font-size: 9px; color: rgba(255,255,255,.3); letter-spacing: .04em; font-weight: 600; }
+    .tr-mark { font-family: var(--font-mono); font-size: 8.5px; letter-spacing: .08em; text-transform: uppercase; font-weight: 800; padding: 2px 6px; border-radius: 999px; margin-left: auto; }
+    .tr-mark.key { background: rgba(217,255,58,.15); color: var(--lime); }
+    .tr-mark.q { background: rgba(255,77,58,.15); color: var(--pink); }
+    .tr-text { font-size: 12.5px; line-height: 1.5; color: rgba(255,255,255,.75); font-weight: 450; padding-left: 11px; border-left: 2px solid rgba(255,255,255,.05); }
+    .tr-entry.key .tr-text { border-left-color: var(--lime); color: rgba(255,255,255,.9); }
+    .tr-entry.question .tr-text { border-left-color: var(--pink); color: rgba(255,255,255,.9); }
+    .tr-formula { background: rgba(13,15,16,.5); padding: 1px 5px; border-radius: 3px; font-family: 'Courier New', monospace; font-size: 11.5px; color: var(--cyan); border: 1px solid rgba(0,194,255,.2); }
+
+    /* Post-class card */
+    .post-class-card {
+      margin-top: 18px;
+      background: linear-gradient(135deg, rgba(217,255,58,.08), rgba(107,78,255,.08));
+      border: 1px solid rgba(217,255,58,.2);
+      border-radius: 14px; padding: 16px;
+    }
+    .pcc-label { display: flex; align-items: center; gap: 7px; font-family: var(--font-mono); font-size: 9px; color: var(--lime); letter-spacing: .14em; text-transform: uppercase; font-weight: 800; margin-bottom: 8px; }
+    .pcc-label::before { content: "★"; }
+    .pcc-title { font-weight: 800; font-size: 14px; letter-spacing: -.01em; line-height: 1.25; margin-bottom: 6px; }
+    .pcc-desc { font-size: 11.5px; color: rgba(255,255,255,.65); margin-bottom: 12px; line-height: 1.4; font-weight: 500; }
+    .pcc-actions { display: flex; flex-direction: column; gap: 6px; }
+    .pcc-btn { background: rgba(255,255,255,.05); border: 1px solid rgba(255,255,255,.08); border-radius: 9px; padding: 9px 12px; cursor: pointer; display: flex; align-items: center; gap: 10px; text-align: left; font-family: var(--font-display); transition: all 150ms var(--ease); }
+    .pcc-btn:hover { background: rgba(217,255,58,.08); border-color: var(--lime); }
+    .pcc-btn.primary { background: var(--lime); border-color: var(--lime); color: var(--lime-ink); }
+    .pccb-ico { width: 28px; height: 28px; border-radius: 7px; background: rgba(255,255,255,.08); color: var(--lime); display: grid; place-items: center; font-weight: 900; font-size: 13px; flex-shrink: 0; }
+    .pcc-btn.primary .pccb-ico { background: var(--lime-ink); color: var(--lime); }
+    .pccb-title { font-weight: 700; font-size: 12.5px; letter-spacing: -.01em; color: inherit; }
+    .pccb-desc { font-family: var(--font-mono); font-size: 9px; letter-spacing: .04em; margin-top: 2px; color: rgba(255,255,255,.55); font-weight: 600; text-transform: uppercase; }
+    .pcc-btn.primary .pccb-desc { color: rgba(24,31,8,.65); }
+
+    /* Quick reactions */
+    .right-quick { padding: 10px 18px; display: flex; gap: 5px; flex-wrap: wrap; border-top: 1px solid rgba(255,255,255,.06); flex-shrink: 0; }
+    .qr-chip { background: rgba(255,255,255,.04); border: 1px solid rgba(255,255,255,.06); padding: 5px 10px; border-radius: 999px; cursor: pointer; font-family: var(--font-mono); font-size: 9.5px; color: rgba(255,255,255,.75); letter-spacing: .04em; text-transform: uppercase; font-weight: 700; }
+    .qr-chip:hover { background: var(--lime); color: var(--lime-ink); border-color: var(--lime); }
+
+    /* Composer para chat con tutor */
+    .right-composer { padding: 10px 18px 14px; border-top: 1px solid rgba(255,255,255,.06); display: flex; gap: 8px; flex-shrink: 0; }
+    .right-composer input { flex: 1; background: rgba(255,255,255,.06); border: 0; border-radius: 999px; padding: 8px 13px; font-family: var(--font-display); font-size: 12px; color: #fff; outline: none; font-weight: 500; }
+    .right-composer input::placeholder { color: rgba(255,255,255,.4); }
+    .rc-send { width: 32px; height: 32px; border-radius: 50%; background: var(--lime); color: var(--lime-ink); border: 0; display: grid; place-items: center; cursor: pointer; font-size: 13px; font-weight: 900; }
+
+    /* ═══ BOTTOM ═══ */
+    .bottom { background: #06080B; border-top: 1px solid rgba(255,255,255,.06); padding: 10px 22px; display: flex; align-items: center; gap: 18px; flex-shrink: 0; }
+    .bot-status { display: flex; align-items: center; gap: 7px; font-family: var(--font-mono); font-size: 10px; color: rgba(255,255,255,.55); letter-spacing: .06em; text-transform: uppercase; font-weight: 600; }
+    .bot-status .v { color: #fff; font-weight: 800; }
+    .bot-status .dot { width: 6px; height: 6px; border-radius: 50%; background: var(--lime); }
+    .bot-spacer { flex: 1; }
+    .bot-btn { padding: 7px 13px; border-radius: 999px; border: 0; cursor: pointer; font-family: var(--font-display); font-weight: 700; font-size: 12px; display: flex; align-items: center; gap: 7px; transition: transform 150ms var(--ease); }
+    .bot-btn:hover { transform: translateY(-1px); }
+    .bot-btn.ghost { background: transparent; border: 1px solid rgba(255,255,255,.2); color: #fff; }
+    .bot-btn.primary { background: var(--lime); color: var(--lime-ink); padding: 7px 10px 7px 15px; }
+    .bot-btn.primary .ring { width: 20px; height: 20px; background: var(--lime-ink); color: var(--lime); border-radius: 50%; display: grid; place-items: center; font-weight: 900; font-size: 10px; }
+
+    @media (max-width: 1300px) {
+      .stage { grid-template-columns: 240px 1fr 320px; }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- TOP -->
+  <div class="top">
+    <div class="brand">
+      <div class="brand-tile"><svg viewBox="0 0 100 100" aria-label="Conniku" style="width:100%;height:100%;display:block"><rect width="100" height="100" rx="22" fill="#0D0F10"/><mask id="ckA_14_classroom_envivo" maskUnits="userSpaceOnUse"><rect width="100" height="100" fill="#fff"/><circle cx="58" cy="50" r="24" fill="#000"/></mask><rect x="12" y="12" width="76" height="76" rx="14" fill="#D9FF3A" mask="url(#ckA_14_classroom_envivo)"/><circle cx="58" cy="50" r="5" fill="#FF4A1C"/></svg></div>
+      <div class="brand-name">conniku.</div>
+    </div>
+    <div class="top-live"><div class="lr"></div>EN VIVO</div>
+    <div class="class-title">
+      <div class="class-subject">Cálculo Dif. II · Regla de la cadena</div>
+      <div class="class-name">Clase con Margarita Soto</div>
+    </div>
+    <div class="top-timer">42:18 / 60:00</div>
+    <div class="top-quality"><div class="dot"></div>1080p · 42ms</div>
+    <div class="top-escrow">★ Pago en custodia</div>
+  </div>
+
+  <!-- STAGE -->
+  <div class="stage">
+
+    <!-- LEFT -->
+    <aside class="left">
+
+      <div class="tutor-card">
+        <div class="tutor-av">MS</div>
+        <div>
+          <div class="tutor-n">Margarita Soto</div>
+          <div class="tutor-r">★ 5.0 · 128 reseñas</div>
+          <div class="tutor-u">Lic. Matemáticas</div>
+        </div>
+      </div>
+
+      <div class="l-section">
+        <div class="l-label">Plan de clase <span class="count">3/5</span></div>
+        <div class="plan-step done"><div class="step-dot">✓</div><div><div class="step-title">Repaso derivadas básicas</div><div class="step-time">5 min · listo</div></div></div>
+        <div class="plan-step done"><div class="step-dot">✓</div><div><div class="step-title">Teorema regla de la cadena</div><div class="step-time">12 min · listo</div></div></div>
+        <div class="plan-step current"><div class="step-dot">●</div><div><div class="step-title">Ejemplos trigonométricos</div><div class="step-time">en curso · 3 de 5</div></div></div>
+        <div class="plan-step pending"><div class="step-dot">4</div><div><div class="step-title">Aplicaciones en física</div><div class="step-time">12 min</div></div></div>
+        <div class="plan-step pending"><div class="step-dot">5</div><div><div class="step-title">Cierre + tarea</div><div class="step-time">8 min</div></div></div>
+      </div>
+
+      <div class="l-section">
+        <div class="l-label">Tu comprensión</div>
+        <div class="comp-row"><span class="comp-topic">Derivadas básicas</span><div class="comp-bar"><div class="comp-fill good" style="width: 92%;"></div></div></div>
+        <div class="comp-row"><span class="comp-topic">Regla de la cadena</span><div class="comp-bar"><div class="comp-fill mid" style="width: 68%;"></div></div></div>
+        <div class="comp-row"><span class="comp-topic">Trigonométricas</span><div class="comp-bar"><div class="comp-fill low" style="width: 38%;"></div></div></div>
+        <div class="comp-row"><span class="comp-topic">Aplicaciones</span><div class="comp-bar"><div class="comp-fill low" style="width: 10%;"></div></div></div>
+      </div>
+
+      <div class="l-section">
+        <div class="l-label">Materiales <span class="count">2</span></div>
+        <div class="mat-item">
+          <div class="mat-ico pdf">▸</div>
+          <div class="mat-info">
+            <div class="mt-n">Stewart · Cálculo Cap 3.5</div>
+            <div class="mt-s">PDF · 24 pp</div>
+          </div>
+        </div>
+        <div class="mat-item">
+          <div class="mat-ico wb">●</div>
+          <div class="mat-info">
+            <div class="mt-n">Pizarra colaborativa</div>
+            <div class="mt-s">Sincronizada en vivo</div>
+          </div>
+        </div>
+      </div>
+
+    </aside>
+
+    <!-- CENTER -->
+    <main class="center">
+
+      <div class="stage-main">
+
+        <!-- Overlay speaker -->
+        <div class="ov-speaker">
+          <div class="sp-av">MS</div>
+          <div>
+            <div class="sp-name">Margarita Soto</div>
+            <div class="sp-status"><div class="wave"><span></span><span></span><span></span></div>explicando</div>
+          </div>
+        </div>
+
+        <!-- Overlay ejercicio activo -->
+        <div class="ov-exercise">
+          <div class="ex-timer">03:42</div>
+          <div class="ex-label">Ejercicio 3<br>tu turno</div>
+        </div>
+
+        <!-- Reacciones del estudiante -->
+        <div class="reactions-drop">
+          <div class="reac-item"><span class="re">👍</span>Entendí</div>
+        </div>
+
+        <!-- Pizarra -->
+        <div class="wb">
+          <h1 class="wb-title">Regla de la Cadena</h1>
+          <div class="wb-sub">Derivada de una función compuesta</div>
+
+          <p class="wb-text">Cuando una función está <strong>dentro</strong> de otra — como <em>sin</em> aplicado a <em>3x² + 2</em> — usamos la regla de la cadena. Paso a paso:</p>
+
+          <div class="wb-eq">dy/dx = f'(g(x)) · g'(x)</div>
+
+          <div class="wb-ex">
+            <div class="exl">Ejemplo resuelto</div>
+            <h4>Deriva y = sin(3x² + 2)</h4>
+            <p style="font-size: 14px; color: #1a1a1a; line-height: 1.55;"><strong>Externa</strong>: sin(u) &nbsp;·&nbsp; <strong>interna</strong>: 3x² + 2</p>
+            <div class="wb-eq solved">6x · cos(3x² + 2)</div>
+          </div>
+
+          <div class="wb-ex" style="background: #fff8ec;">
+            <div class="exl">Tu turno · 5 min</div>
+            <h4>Deriva y = cos(3x² − 4)</h4>
+            <p style="font-size: 13px; color: #5f6368;">Identifica externa e interna. Recuerda el signo negativo del coseno.</p>
+          </div>
+        </div>
+
+        <!-- Herramientas de pizarra verticales -->
+        <div class="wb-tools">
+          <button class="wb-tool active" title="Pluma">✎</button>
+          <button class="wb-tool" title="Resaltador">▬</button>
+          <button class="wb-tool" title="Borrador">◯</button>
+          <div class="wb-tool-sep"></div>
+          <button class="wb-tool" title="Texto">T</button>
+          <button class="wb-tool" title="Forma">◇</button>
+          <button class="wb-tool" title="Flecha">→</button>
+          <div class="wb-tool-sep"></div>
+          <button class="wb-tool" title="Fórmula">∫</button>
+          <button class="wb-tool" title="Imagen">▢</button>
+        </div>
+
+        <!-- Self PIP -->
+        <div class="self-pip">
+          PR
+          <div class="sp-mic">🎤</div>
+          <div class="sp-tag">Tú · Pía</div>
+        </div>
+
+      </div>
+
+      <!-- Controles -->
+      <div class="controls">
+        <div class="cg">
+          <button class="ctrl-btn" title="Mic">🎤</button>
+          <button class="ctrl-btn active" title="Cámara">◉</button>
+          <button class="ctrl-btn" title="Compartir pantalla">▣</button>
+          <button class="ctrl-btn" title="Subir archivo">⬆</button>
+        </div>
+        <div class="cg-sep"></div>
+        <button class="ctrl-labeled hand">✋ Mano arriba</button>
+        <div class="cg-sep"></div>
+        <div class="cg">
+          <button class="ctrl-labeled rec"><span class="rec-dot"></span>Grabando 42:18</button>
+          <button class="ctrl-labeled">☰ Notas</button>
+          <button class="ctrl-labeled">⚙ Ajustes</button>
+        </div>
+        <button class="ctrl-end">Terminar clase</button>
+      </div>
+
+    </main>
+
+    <!-- RIGHT -->
+    <aside class="right">
+
+      <div class="right-tabs">
+        <div class="rt-tab active">Transcript <span class="live-dot"></span></div>
+        <div class="rt-tab">Notas <span class="n">5</span></div>
+        <div class="rt-tab">Chat <span class="n">4</span></div>
+        <div class="rt-tab">Ejercicios <span class="n">3</span></div>
+      </div>
+
+      <div class="right-head">
+        <div class="rh-left">
+          <div class="rh-title">Transcripción en vivo</div>
+          <div class="rh-sub">Se guarda automáticamente</div>
+        </div>
+        <button class="rh-search">⌕</button>
+      </div>
+
+      <div class="transcript">
+
+        <div class="tr-entry">
+          <div class="tr-meta"><span class="tr-who tutor">Margarita</span><span class="tr-time">17:00</span></div>
+          <div class="tr-text">Hola Pía, ¿cómo estás? Vamos a cerrar regla de la cadena con los ejemplos trigonométricos.</div>
+        </div>
+
+        <div class="tr-entry">
+          <div class="tr-meta"><span class="tr-who student">Pía</span><span class="tr-time">17:00</span></div>
+          <div class="tr-text">Listo. Tengo el Cengel y mi cuaderno.</div>
+        </div>
+
+        <div class="tr-entry key">
+          <div class="tr-meta"><span class="tr-who tutor">Margarita</span><span class="tr-time">17:05</span><span class="tr-mark key">concepto</span></div>
+          <div class="tr-text">La derivada de <span class="tr-formula">sin(x)</span> es <span class="tr-formula">cos(x)</span>. La derivada de <span class="tr-formula">cos(x)</span> es <span class="tr-formula">−sin(x)</span>. Tiene que ser memoria.</div>
+        </div>
+
+        <div class="tr-entry key">
+          <div class="tr-meta"><span class="tr-who tutor">Margarita</span><span class="tr-time">17:12</span><span class="tr-mark key">regla clave</span></div>
+          <div class="tr-text">Si <span class="tr-formula">y = f(g(x))</span>, entonces <span class="tr-formula">dy/dx = f'(g(x)) · g'(x)</span>. Identifica la externa, identifica la interna, multiplica.</div>
+        </div>
+
+        <div class="tr-entry question">
+          <div class="tr-meta"><span class="tr-who student">Pía</span><span class="tr-time">17:18</span><span class="tr-mark q">pregunta</span></div>
+          <div class="tr-text">¿Cómo sé cuál es la externa y cuál la interna si las dos parecen iguales?</div>
+        </div>
+
+        <div class="tr-entry">
+          <div class="tr-meta"><span class="tr-who tutor">Margarita</span><span class="tr-time">17:19</span></div>
+          <div class="tr-text">La externa es la que se aplica al final. Léelo de adentro hacia afuera: en <span class="tr-formula">sin(2x)</span>, primero <span class="tr-formula">2x</span> y después el <span class="tr-formula">sin</span>.</div>
+        </div>
+
+        <div class="tr-entry key">
+          <div class="tr-meta"><span class="tr-who tutor">Margarita</span><span class="tr-time">17:26</span><span class="tr-mark key">ejemplo</span></div>
+          <div class="tr-text">Deriva <span class="tr-formula">sin(3x² + 2)</span>. Externa sin, interna 3x²+2. Resultado: <span class="tr-formula">6x · cos(3x² + 2)</span>.</div>
+        </div>
+
+        <div class="tr-entry question">
+          <div class="tr-meta"><span class="tr-who student">Pía</span><span class="tr-time">17:31</span><span class="tr-mark q">pregunta</span></div>
+          <div class="tr-text">¿Por qué cambia el signo cuando derivo coseno en vez de seno?</div>
+        </div>
+
+        <div class="tr-entry">
+          <div class="tr-meta"><span class="tr-who tutor">Margarita</span><span class="tr-time">17:32</span></div>
+          <div class="tr-text">Porque la derivada de <span class="tr-formula">cos</span> es <span class="tr-formula">−sin</span> con signo negativo explícito. Ese signo viaja al resultado final.</div>
+        </div>
+
+        <div class="tr-entry key">
+          <div class="tr-meta"><span class="tr-who tutor">Margarita</span><span class="tr-time">17:40</span><span class="tr-mark key">ejercicio</span></div>
+          <div class="tr-text">Tu turno: deriva <span class="tr-formula">y = cos(3x² − 4)</span>. Tienes 5 minutos.</div>
+        </div>
+
+        <!-- Post-class card con opciones al terminar -->
+        <div class="post-class-card">
+          <div class="pcc-label">al terminar la clase</div>
+          <div class="pcc-title">Tu transcript queda listo</div>
+          <div class="pcc-desc">Guárdalo donde lo necesites. Incluye preguntas, respuestas, ecuaciones y marcas de momentos clave.</div>
+          <div class="pcc-actions">
+            <button class="pcc-btn primary">
+              <div class="pccb-ico">▼</div>
+              <div>
+                <div class="pccb-title">Descargar en mi computador</div>
+                <div class="pccb-desc">PDF · DOCX · TXT</div>
+              </div>
+            </button>
+            <button class="pcc-btn">
+              <div class="pccb-ico">◎</div>
+              <div>
+                <div class="pccb-title">Enviar a Cálculo Dif. II</div>
+                <div class="pccb-desc">Documentos de la asignatura</div>
+              </div>
+            </button>
+            <button class="pcc-btn">
+              <div class="pccb-ico">★</div>
+              <div>
+                <div class="pccb-title">Guardar solo destacados</div>
+                <div class="pccb-desc">Conceptos clave + tus preguntas</div>
+              </div>
+            </button>
+            <button class="pcc-btn">
+              <div class="pccb-ico">↗</div>
+              <div>
+                <div class="pccb-title">Compartir con compañeros</div>
+                <div class="pccb-desc">Grupo de estudio Cálculo UChile</div>
+              </div>
+            </button>
+          </div>
+        </div>
+
+      </div>
+
+      <div class="right-quick">
+        <div class="qr-chip">👍 Entendí</div>
+        <div class="qr-chip">🤔 Dudoso</div>
+        <div class="qr-chip">✋ Pregunta</div>
+        <div class="qr-chip">🔁 Repite</div>
+      </div>
+
+      <div class="right-composer">
+        <input type="text" placeholder="Mensaje privado a Margarita..." />
+        <button class="rc-send">→</button>
+      </div>
+
+    </aside>
+
+  </div>
+
+  <!-- BOTTOM -->
+  <div class="bottom">
+    <div class="bot-status"><div class="dot"></div><span>Audio</span><span class="v">−22 dB</span></div>
+    <div class="bot-status"><span>Grabación</span><span class="v">42:18 / 1.8 GB</span></div>
+    <div class="bot-status"><span>Costo</span><span class="v">$18.900 CLP</span></div>
+    <div class="bot-status"><span>Transcript</span><span class="v">guardando auto</span></div>
+    <div class="bot-spacer"></div>
+    <button class="bot-btn ghost">+ 15 min extra</button>
+    <button class="bot-btn ghost">⏻ Salir sin cerrar</button>
+    <button class="bot-btn primary">Confirmar clase <div class="ring">→</div></button>
+  </div>
+
+</body>
+</html>

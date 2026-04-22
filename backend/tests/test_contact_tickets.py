@@ -100,7 +100,7 @@ VALID_PAYLOAD = {
     "reason": "comercial",
     "org": "Universidad de Chile",
     "message": "Hola, quiero saber cómo pueden ayudar a nuestra universidad con licencias.",
-    "consent_hash": "b5b9fed8fd5e4e600c7fa33fbd8dddaec5c627be189b5382e8b7cf81dbcfa288",
+    "consent_hash": "a09d799c7f34d7100b9393ad7c55c54931ab7e396d0f03b559a59545638e6962",
     "honeypot_field": "",
 }
 
@@ -179,7 +179,7 @@ def test_ticket_number_format_valido_CNT_YYYY_NNNN(db_session: Session) -> None:
         reason="otro",
         message="Mensaje de prueba con más de 20 caracteres para test.",
         consent_version="2.4.0",
-        consent_hash="b5b9fed8fd5e4e600c7fa33fbd8dddaec5c627be189b5382e8b7cf81dbcfa288",
+        consent_hash="a09d799c7f34d7100b9393ad7c55c54931ab7e396d0f03b559a59545638e6962",
         consent_accepted_at_utc=now,
         routed_to_email="contacto@conniku.com",
         routed_label="consulta general",

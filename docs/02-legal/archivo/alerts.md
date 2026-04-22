@@ -1,6 +1,6 @@
 # Alertas activas del legal-docs-keeper
 
-Última actualización: **2026-04-22** (legal-docs-keeper, Capa 0 bloque contact-tickets-v1 — TICKET-1/2/3 agregadas)
+Última actualización: **2026-04-22** (legal-docs-keeper, Capa 0 bloque sandbox-integrity-v1 — SANDBOX-1 + FEEDBACK-1 agregadas; previo: Capa 0 contact-tickets-v1 TICKET-1/2/3)
 
 ## Declaración obligatoria
 
@@ -13,6 +13,58 @@ de abogado antes de su aplicación al producto en producción.
   el próximo deploy que toque el área afectada).
 - **MODERADA**: actualización recomendada en próximas 2 semanas.
 - **INFORMATIVA**: mejora sugerida sin urgencia.
+
+---
+
+## Alertas del bloque `sandbox-integrity-v1` (Capa 0 — 2026-04-22)
+
+### SANDBOX-1 — Privacy v2.4.1 no enumera canal sandbox ni tratamiento `document_views`
+
+- **Severidad**: **CRÍTICA** (bloqueante para merge del PR `sandbox-integrity-v1`).
+- **Origen**: legal-docs-keeper 2026-04-22, Capa 0 del bloque `sandbox-integrity-v1`.
+- **Evidencia**:
+  - `grep -n "sandbox" docs/legal/v3.2/privacy.md` → 0 matches. El canal `/sandbox/` del plan genera filas reales en `cookie_consents` con `origin = "sandbox"` y en `document_views` pre-registro, pero la Política vigente no los enumera.
+  - `grep -n "document_views" docs/legal/v3.2/privacy.md` → 0 matches. El tratamiento `document_views` (Bloque `legal-viewer-v1`) existe desde 2026-04-21 y nunca fue enumerado en Privacy.
+  - El trigger del bloque afirmaba "Privacy v2.4.1 cubre document_views con Art. 6(1)(f)"; la verificación §22 demuestra que es **premisa falsa**: el único Art. 6(1)(f) citado en §2bis.2 y §4.2 es específico para rate-limit/honeypot/seguridad/fraude del canal de tickets, no para `document_views`.
+- **Impacto**:
+  - **GDPR Art. 13-14 (información al interesado)**: el Usuario debe conocer los tratamientos al momento de la recolección. No enumerar `document_views` genera falta informativa.
+  - **GDPR Art. 7(1) demostrabilidad**: el consent desde sandbox queda en BD con valor probatorio; si la Política no menciona el canal, el consent puede ser impugnado como no informado.
+  - **Ley 19.628 Art. 4°**: información previa al titular sobre finalidades.
+- **Acción requerida**: bumpear Privacy v2.4.1 → v2.4.2 agregando §2ter (canal sandbox) y §2.2 bullet (`document_views`). Borrador propuesto en `docs/legal/drafts/2026-04-22-privacy-v2-4-2-sandbox-feedback.md`.
+- **Bloqueo**: SÍ, bloquea merge del PR `sandbox-integrity-v1` hasta que el bump se publique en el mismo commit atómico (hash + METADATA + `backend/constants/legal_versions.py` + `CANONICAL_HASHES` coordinados).
+
+### FEEDBACK-1 — Nueva tabla `support_feedback` sin tratamiento declarado en Privacy
+
+- **Severidad**: **CRÍTICA** (bloqueante para merge del PR `sandbox-integrity-v1`).
+- **Origen**: legal-docs-keeper 2026-04-22, Capa 0 del bloque `sandbox-integrity-v1`.
+- **Evidencia**:
+  - El plan `docs/plans/bloque-sandbox-integrity-v1/plan.md` §3.3 crea la tabla `support_feedback` con campos `ip_address`, `user_agent`, `comment`, `session_token`, `faq_id`, `useful`.
+  - `grep -n "support_feedback\|feedback.*soporte" docs/legal/v3.2/privacy.md` → 0 matches.
+- **Impacto**:
+  - **GDPR Art. 13-14**: tratamiento nuevo sin declaración de finalidad, base legal ni retención.
+  - **GDPR Art. 30 (registro de actividades de tratamiento)**: obligación de mantener registro interno documentado.
+  - **Ley 19.628 Art. 4° + Art. 6°**: consentimiento y plazo de conservación.
+- **Acción requerida**: Privacy v2.4.2 §2quater con:
+  - Finalidad: mejora iterativa del centro de soporte.
+  - Base legal: GDPR Art. 6(1)(f) interés legítimo + Ley 19.628 Art. 4°.
+  - Retención: **2 años** con pseudonimización a 12 meses.
+  - Derechos Art. 15-22 GDPR.
+  - Medidas técnicas: rate-limit 60/h/IP, sanitización del comentario.
+- **Decisión sobre retención D-S6**: recomendación Tori D-S6=A (**2 años**) **se mantiene**, no se override a 5 años. Fundamento: Art. 2515 CC Chile regula prescripción de acciones personales, no impone retención de 5 años sobre datos sin valor probatorio de acto jurídico. GDPR Art. 5(1)(c) + (e) + Ley 19.628 Art. 6° sostienen 2 años como proporcional. Ver §2.6 y §3 del borrador v2.4.2.
+- **Bloqueo**: SÍ, bloquea merge del PR `sandbox-integrity-v1`.
+
+### SANDBOX-FEEDBACK-OPS — Riesgo de PII en campo `comment` libre
+
+- **Severidad**: **MODERADA** (no bloquea merge pero debe resolverse en Fase B builder).
+- **Origen**: legal-docs-keeper 2026-04-22, incertidumbre §6.4 del borrador v2.4.2.
+- **Evidencia**: el plan §3.3 / D-S6 permite `comment TEXT` hasta 2000 chars sin filtro. Un Usuario puede pegar su RUT, email o teléfono en el comentario libre.
+- **Impacto**: tras pseudonimización a 12m, IP/UA se hashean, pero el `comment` crudo queda hasta los 24m. Si contiene PII accidental, la retención efectiva de PII supera los 12 meses declarados en la minimización.
+- **Acción requerida**: builder debe implementar, al momento del INSERT o al momento de la pseudonimización (el que llegue antes):
+  - Regex de detección de RUT chileno (`\d{7,8}[-kK0-9]`).
+  - Regex de detección de email (`[^\s@]+@[^\s@]+\.[^\s@]+`).
+  - Regex de detección de teléfono chileno (`\+?56\s?\d?\s?\d{4}\s?\d{4}`).
+  - Comportamiento: reemplazar por `[REDACTED_RUT]` / `[REDACTED_EMAIL]` / `[REDACTED_PHONE]` antes de persistir. Mantener el comentario original únicamente en logs internos con retención 30 días.
+- **Bloqueo**: no bloquea merge, pero debe resolverse antes de exponer endpoint admin `/admin/support/feedback/stats` a consumo interno real.
 
 ---
 

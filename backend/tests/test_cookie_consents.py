@@ -544,3 +544,47 @@ def test_cookie_categories_hash_matches_v1_1() -> None:
         f"COOKIE_CATEGORIES_HASH desincronizado del texto. "
         f"Calculado: {recomputed!r}, almacenado: {COOKIE_CATEGORIES_HASH!r}"
     )
+
+
+# ─── Tests origin=sandbox (D-S3 bloque-sandbox-integrity-v1) ─────────────────
+
+
+def test_post_consent_acepta_origin_sandbox(client: TestClient) -> None:
+    """D-S3: POST con origin='sandbox' debe retornar 201.
+
+    El sandbox público genera consents reales en BD con este origin para
+    trazabilidad diferenciada (GDPR Art. 7(1) demostrabilidad).
+    """
+    from constants.legal_versions import COOKIE_CONSENT_POLICY_HASH, COOKIE_CONSENT_POLICY_VERSION
+
+    payload = {
+        "visitor_uuid": "aaaabbbb-cccc-dddd-eeee-ffffaaaabbbb",
+        "categories_accepted": ["necessary"],
+        "policy_version": COOKIE_CONSENT_POLICY_VERSION,
+        "policy_hash": COOKIE_CONSENT_POLICY_HASH,
+        "origin": "sandbox",
+        "user_timezone": "America/Santiago",
+    }
+    resp = client.post("/api/consent/cookies", json=payload)
+    assert resp.status_code == 201, f"Esperado 201 con origin='sandbox', recibido {resp.status_code}: {resp.text}"
+    data = resp.json()
+    assert data["origin"] == "sandbox"
+
+
+def test_post_consent_rechaza_origin_invalido(client: TestClient) -> None:
+    """origin fuera del set permitido debe retornar 422.
+
+    El set permitido es: banner_initial, settings_update, dnt_auto, iframe_auto, sandbox.
+    Cualquier otro valor es rechazado por el validador Pydantic.
+    """
+    from constants.legal_versions import COOKIE_CONSENT_POLICY_HASH, COOKIE_CONSENT_POLICY_VERSION
+
+    payload = {
+        "visitor_uuid": "11112222-3333-4444-5555-666677778888",
+        "categories_accepted": ["necessary"],
+        "policy_version": COOKIE_CONSENT_POLICY_VERSION,
+        "policy_hash": COOKIE_CONSENT_POLICY_HASH,
+        "origin": "valor_no_permitido",
+    }
+    resp = client.post("/api/consent/cookies", json=payload)
+    assert resp.status_code == 422, f"Esperado 422 con origin inválido, recibido {resp.status_code}: {resp.text}"

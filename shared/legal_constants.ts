@@ -85,8 +85,8 @@ export const TOS_DOCUMENT: LegalDocumentDescriptor = {
 
 export const PRIVACY_DOCUMENT: LegalDocumentDescriptor = {
   documentType: 'privacy',
-  version: '2.4.1',
-  hash: 'b5b9fed8fd5e4e600c7fa33fbd8dddaec5c627be189b5382e8b7cf81dbcfa288',
+  version: '2.4.2',
+  hash: 'a09d799c7f34d7100b9393ad7c55c54931ab7e396d0f03b559a59545638e6962',
   route: '/privacy',
   label: 'Política de Privacidad',
 };
@@ -94,7 +94,7 @@ export const PRIVACY_DOCUMENT: LegalDocumentDescriptor = {
 export const COOKIES_DOCUMENT: LegalDocumentDescriptor = {
   documentType: 'cookies',
   version: '1.0.0',
-  hash: 'a00150297efa288b53bbd9a0c655e046a292d3cdefb04254b0b33c079022efd9',
+  hash: '80d41f71f075ae954a4e5f1763266b9830d38849bbe79a7bb931c2a4ee30e38c',
   route: '/cookies',
   label: 'Política de Cookies',
 };

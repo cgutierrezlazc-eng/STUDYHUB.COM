@@ -59,23 +59,23 @@ DocKey = Literal["terms", "privacy", "cookies", "age-declaration"]
 # Si cambia un documento, actualizar aquí y recalcular con:
 #   shasum -a 256 docs/legal/v3.2/<archivo>.md
 #
-# Fuente: docs/legal/v3.2/METADATA.yaml — verificado 2026-04-21.
+# Fuente: docs/02-legal/vigentes/METADATA.yaml — actualizado 22/04/2026.
 CANONICAL_HASHES: dict[str, str] = {
-    "privacy": "b5b9fed8fd5e4e600c7fa33fbd8dddaec5c627be189b5382e8b7cf81dbcfa288",
-    "terms": "9a16122f985a1d252a5928c5fae518b5bd23ac6ee00996ee9e8293c4aaf08dce",
-    "cookies": "48b90468822fda6b0470acb30d4707f037f1dd636eac7ebd967ab293c2a3a513",
+    "privacy": "cc9332741bea7ad4539fd6a8a049946e44521b9ae8ed97833dd112412b8c746e",
+    "terms": "b2b834b61e19db6b2f7aa8176e8958f4e001d49a02606097c462811f6e008d73",
+    "cookies": "80d41f71f075ae954a4e5f1763266b9830d38849bbe79a7bb931c2a4ee30e38c",
     "age-declaration": "61dab2ecf1b27e3fb212efcf5a066784943c689de11611bb6d2b919e39441a9b",
 }
 
 CANONICAL_VERSIONS: dict[str, str] = {
-    "privacy": "2.4.0",
-    "terms": "3.2.0",
+    "privacy": "2.4.2",
+    "terms": "3.2.2",
     "cookies": "1.0.0",
     "age-declaration": "1.0.0",
 }
 
 VIGENCIAS: dict[str, str] = {
-    "privacy": "2026-04-20",
+    "privacy": "2026-04-23",
     "terms": "2026-04-20",
     "cookies": "2026-04-21",
     "age-declaration": "2026-04-18",
@@ -83,7 +83,7 @@ VIGENCIAS: dict[str, str] = {
 
 # Archivos markdown canónicos (relativos al repo root)
 _REPO_ROOT = Path(__file__).parent.parent
-_LEGAL_DIR = _REPO_ROOT / "docs" / "legal" / "v3.2"
+_LEGAL_DIR = _REPO_ROOT / "docs" / "02-legal" / "vigentes"
 
 DOC_FILE_MAP: dict[str, str] = {
     "privacy": "privacy.md",
