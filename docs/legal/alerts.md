@@ -1013,6 +1013,55 @@ Ninguna hasta la fecha (estructura nueva).
 - Revisión manual cuando Cristian invoque `/legal-audit` o cuando un
   bloque con componente legal active trigger de detección.
 
+---
+
+## Alertas MODERADAS — bloque-contact-tickets-v1 (2026-04-22)
+
+### ALERTA-CT-01 — Buzones prensa@, legal@, seguridad@ no provisionados en Zoho
+
+- **Origen**: backend-builder (Tori), 2026-04-22, bloque-contact-tickets-v1.
+- **Evidencia**: `backend/constants/contact_routing.py` y `reference_email_accounts.md` en
+  memoria confirman que solo existen 3 cuentas Zoho: noreply@, contacto@, ceo@conniku.com.
+  Los motivos `prensa`, `legal` y `seguridad` del formulario de contacto rutean actualmente
+  a `contacto@conniku.com` como único buzón real.
+- **Impacto**: todos los tickets llegan a un solo buzón, sin separación por tipo. Riesgo de
+  pérdida de tickets críticos (seguridad, asuntos legales) en inbox genérico. No hay
+  violación legal activa, pero afecta operación y SLA.
+- **Acción requerida**: provisionar los tres buzones en el panel de Zoho Mail y luego
+  actualizar `backend/constants/contact_routing.py` con los emails reales mediante
+  commit tipo `chore(backend)`. Ver plan bloque-contact-tickets-v1 §3.3 fuera de scope.
+- **Quién**: ops de Cristian (acción fuera de código).
+- **Plazo**: antes del primer deploy a producción del bloque.
+
+### ALERTA-CT-02 — PRIVACY_HASH hardcoded en landing HTML requerirá actualización manual
+
+- **Origen**: backend-builder (Tori), 2026-04-22, bloque-contact-tickets-v1.
+- **Evidencia**: `contacto.html` en el landing master deberá tener `PRIVACY_HASH_STATIC`
+  hardcodeado para validar el consent del formulario. Cuando `PRIVACY_HASH` cambie en
+  `backend/constants/legal_versions.py`, el HTML estático debe actualizarse manualmente
+  o todos los POST retornarán 409.
+- **Impacto**: cada cambio MINOR/MAJOR de Privacy Policy rompe el formulario de contacto
+  hasta que se actualice el landing.
+- **Acción requerida**: el legal-docs-keeper debe incluir en su checklist de bump de
+  Privacy Policy: "actualizar PRIVACY_HASH_STATIC en contacto.html del landing master".
+- **Quién**: legal-docs-keeper detecta el desfase; Cristian actualiza el landing.
+
+### ALERTA-CT-03 — Templates de email de tickets no han sido revisados por abogado
+
+- **Origen**: backend-builder (Tori), 2026-04-22, bloque-contact-tickets-v1.
+- **Evidencia**: templates implementados en `backend/contact_tickets_routes.py` funciones
+  `_build_user_email` y `_build_team_email`. Contienen referencias legales (GDPR Art. 6(1)(a),
+  Ley 19.628 Art. 4°) que son informativas al usuario.
+- **Impacto**: si el texto tiene error legal u omisión, podría no cumplir Art. 13 GDPR
+  (información al interesado al momento de recolectar).
+- **Acción requerida**: revisión del texto de los templates por abogado antes de producción.
+  Los templates están en `backend/contact_tickets_routes.py` líneas `_build_user_email`
+  y `_build_team_email`.
+- **Quién**: legal-docs-keeper + abogado externo.
+- **Plazo**: antes del merge a main del bloque.
+
+---
+
 ## Declaración obligatoria (repetida al cierre)
 
 Este análisis no constituye asesoría legal profesional y requiere
