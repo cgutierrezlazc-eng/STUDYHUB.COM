@@ -1,0 +1,621 @@
+<!DOCTYPE html>
+<html lang="es-CL">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>V2 FINAL · Dual device con carousel multi-módulo</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Funnel+Display:wght@400;600;700;800;900&family=Geist+Mono:wght@400;500;600;700&display=swap" />
+<style>
+:root{
+  --ink:#0D0F10; --ink-2:#2B2E30; --ink-3:#696C6F;
+  --paper:#F5F4EF; --paper-2:#EBE9E1;
+  --lime:#D9FF3A; --orange:#FF4A1C; --cream:#FFE9B8; --violet:#6B4EFF; --cyan:#00C2FF; --pink:#FF4D3A;
+  --fd:'Funnel Display',-apple-system,sans-serif;
+  --fm:'Geist Mono',ui-monospace,monospace;
+  --ease:cubic-bezier(.2,.8,.2,1);
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{min-height:100%}
+body{background:#E8E5DB;color:var(--ink);font-family:var(--fd);padding:60px 40px;position:relative;overflow-x:hidden}
+body::before{content:"";position:fixed;inset:0;pointer-events:none;opacity:.07;mix-blend-mode:multiply;z-index:1;background-image:radial-gradient(circle at 1px 1px,var(--ink) 1px,transparent 0);background-size:3px 3px}
+.halftone{position:fixed;inset:0;pointer-events:none;z-index:0;overflow:hidden}
+.d1{position:absolute;top:-140px;left:-140px;width:620px;height:620px;background:radial-gradient(circle,var(--lime) 8%,transparent 10%);background-size:16px 16px;-webkit-mask:radial-gradient(circle at 40% 40%,#000 0%,transparent 42%);mask:radial-gradient(circle at 40% 40%,#000 0%,transparent 42%);opacity:.9;mix-blend-mode:multiply}
+.d2{position:absolute;bottom:-160px;right:-160px;width:640px;height:640px;background:radial-gradient(circle,var(--orange) 12%,transparent 14%);background-size:14px 14px;-webkit-mask:radial-gradient(circle at 60% 60%,#000 0%,transparent 42%);mask:radial-gradient(circle at 60% 60%,#000 0%,transparent 42%);opacity:.65;mix-blend-mode:multiply}
+
+.wrap{max-width:1100px;margin:0 auto;position:relative;z-index:5}
+.variant-header{font-family:var(--fm);font-size:11px;letter-spacing:.2em;text-transform:uppercase;color:var(--ink-3);margin-bottom:32px;display:flex;gap:24px;align-items:center}
+.variant-header::before{content:"V2";background:var(--violet);color:#fff;padding:3px 9px;border:1.5px solid var(--ink);font-weight:900;letter-spacing:.05em}
+.variant-header .sub{background:var(--lime);color:var(--ink);padding:3px 9px;border:1.5px solid var(--ink);font-weight:900;letter-spacing:.05em;margin-right:8px}
+.variant-header span.nav{margin-left:auto;display:flex;gap:14px}
+.variant-header span.nav a{color:var(--ink-3)}
+.variant-header span.nav a:hover{color:var(--ink)}
+
+/* ===== PREVIEW CARD V2 FINAL — carousel multi-módulo + móvil fijo ===== */
+.preview-card{
+  display:block;
+  position:relative;
+  width:100%;
+  max-width:720px;
+  margin:0 auto;
+  padding:30px 30px 26px;
+  background:var(--paper);
+  border:2px solid var(--ink);
+  box-shadow:14px 14px 0 var(--ink);
+  transform:rotate(-.7deg);
+  transition:transform .25s var(--ease), box-shadow .25s var(--ease);
+  text-decoration:none;
+  color:inherit;
+  overflow:visible;
+}
+.preview-card:hover{
+  transform:rotate(-.7deg) translate(-3px,-5px);
+  box-shadow:18px 18px 0 var(--ink);
+}
+.preview-card:hover .module-layer{animation-play-state:paused}
+.preview-card:hover .mod-label{animation-play-state:paused}
+.preview-card:hover .dot-nav span{animation-play-state:paused}
+
+.devices{
+  position:relative;
+  display:flex;
+  align-items:flex-end;
+  gap:0;
+  margin-bottom:22px;
+  height:330px;
+}
+
+/* ===== LAPTOP ===== */
+.laptop{
+  flex:1;
+  background:var(--ink);
+  border:2px solid var(--ink);
+  border-radius:14px 14px 3px 3px;
+  padding:9px 9px 0;
+  overflow:hidden;
+  aspect-ratio:16/10.2;
+  position:relative;
+  z-index:1;
+}
+.laptop-chrome{
+  background:#1a1d1f;
+  padding:7px 12px;
+  display:flex;
+  align-items:center;
+  gap:6px;
+  border-radius:7px 7px 0 0;
+  position:relative;
+  z-index:3;
+}
+.laptop-chrome .dot{width:8px;height:8px;border-radius:50%}
+.laptop-chrome .dot.r{background:#FF5F57}
+.laptop-chrome .dot.y{background:#FEBC2E}
+.laptop-chrome .dot.g{background:#28C840}
+.laptop-chrome .url{
+  margin-left:14px;background:#0D0F10;color:#8a8d90;
+  font-family:var(--fm);font-size:9px;padding:3px 9px;border-radius:4px;
+  flex:1;max-width:260px;display:flex;align-items:center;gap:5px;
+}
+.laptop-chrome .url::before{content:"●";color:#28C840;font-size:6px}
+.laptop-chrome .url-path{animation:url-cycle 17.5s infinite;display:inline-block}
+@keyframes url-cycle{
+  0%,18%{content:"conniku.com/panel"}
+  20%,38%{content:"conniku.com/biblioteca"}
+  40%,58%{content:"conniku.com/apuntes"}
+  60%,78%{content:"conniku.com/cursos"}
+  80%,98%{content:"conniku.com/perfil"}
+}
+
+.laptop-body{
+  background:var(--paper);
+  height:calc(100% - 22px);
+  display:grid;
+  grid-template-columns:52px 1fr;
+  position:relative;
+}
+
+/* SIDEBAR (fijo, no cambia con carousel) */
+.sidebar{
+  background:var(--ink);
+  padding:10px 0;
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  gap:12px;
+  border-right:1.5px solid #2B2E30;
+}
+.sidebar .logo-mini{
+  width:28px;height:28px;background:var(--lime);
+  border-radius:6px;display:flex;align-items:center;justify-content:center;
+  font-family:var(--fd);font-weight:900;font-size:14px;color:var(--ink);
+  position:relative;
+}
+.sidebar .logo-mini::after{content:".";color:var(--orange);font-weight:900;position:absolute;right:4px;bottom:2px;line-height:1;font-size:14px}
+.sidebar .nav-ico{width:22px;height:22px;background:#2B2E30;border-radius:5px;opacity:.6;transition:all .3s var(--ease)}
+.sidebar .nav-ico.a1,.sidebar .nav-ico.a2,.sidebar .nav-ico.a3,.sidebar .nav-ico.a4,.sidebar .nav-ico.a5{
+  animation:side-active 17.5s infinite;
+}
+.sidebar .nav-ico.a2{animation-delay:-14s}
+.sidebar .nav-ico.a3{animation-delay:-10.5s}
+.sidebar .nav-ico.a4{animation-delay:-7s}
+.sidebar .nav-ico.a5{animation-delay:-3.5s}
+@keyframes side-active{
+  0%,18%{background:var(--lime);opacity:1}
+  20%,100%{background:#2B2E30;opacity:.6}
+}
+
+/* STAGE con capas de módulos (carousel) */
+.module-stage{
+  position:relative;
+  overflow:hidden;
+  background:var(--paper);
+}
+.module-layer{
+  position:absolute;inset:0;
+  padding:11px 13px;
+  display:flex;flex-direction:column;gap:8px;
+  opacity:0;
+  animation:cycle 17.5s infinite;
+}
+.module-layer:nth-child(1){animation-delay:0s}
+.module-layer:nth-child(2){animation-delay:-14s}
+.module-layer:nth-child(3){animation-delay:-10.5s}
+.module-layer:nth-child(4){animation-delay:-7s}
+.module-layer:nth-child(5){animation-delay:-3.5s}
+@keyframes cycle{
+  0%{opacity:0;transform:translateX(20px)}
+  3%,18%{opacity:1;transform:translateX(0)}
+  21%,100%{opacity:0;transform:translateX(-20px)}
+}
+
+/* TOPBAR común */
+.m-topbar{display:flex;align-items:center;justify-content:space-between;padding-bottom:7px;border-bottom:1px solid var(--paper-2);flex-shrink:0}
+.m-topbar .k{font-family:var(--fm);font-size:7.5px;letter-spacing:.2em;text-transform:uppercase;color:var(--ink-3);margin-bottom:2px}
+.m-topbar .t{font-family:var(--fd);font-weight:800;font-size:12px;letter-spacing:-.02em;line-height:1}
+.m-topbar .avatar{width:22px;height:22px;border-radius:50%;background:var(--violet);display:flex;align-items:center;justify-content:center;color:#fff;font-weight:900;font-size:9px;border:1.5px solid var(--ink)}
+
+/* ===== MÓDULO 1 — Dashboard ===== */
+.mod-dash{grid-template-rows:auto 1fr}
+.mod-dash .row{display:grid;grid-template-columns:1fr 1fr;gap:8px;flex:1;min-height:0}
+.mod-dash .w{border:1.5px solid var(--ink);padding:8px;display:flex;flex-direction:column;gap:3px;min-height:0}
+.mod-dash .w.lime{background:var(--lime)}
+.mod-dash .w.cream{background:var(--cream)}
+.mod-dash .w .wt{font-family:var(--fm);font-size:7px;letter-spacing:.15em;text-transform:uppercase;color:var(--ink-2)}
+.mod-dash .w .k{font-family:var(--fd);font-weight:900;font-size:24px;letter-spacing:-.03em;line-height:1}
+.mod-dash .w .lbl{font-family:var(--fd);font-size:8px;color:var(--ink-2)}
+.mod-dash .bar{height:3px;background:rgba(13,15,16,.15);border-radius:2px;overflow:hidden;margin-top:2px}
+.mod-dash .bar-fill{height:100%;background:var(--ink);width:0;animation:bar 17.5s infinite}
+@keyframes bar{0%{width:0}3%,18%{width:78%}21%,100%{width:78%}}
+.mod-dash .streak{display:flex;gap:3px;margin-top:4px}
+.mod-dash .streak span{width:10px;height:10px;background:var(--ink);border-radius:2px}
+.mod-dash .streak span.off{background:rgba(13,15,16,.15)}
+
+/* ===== MÓDULO 2 — Biblioteca ===== */
+.mod-lib .t-row{display:flex;gap:6px;align-items:center;flex-shrink:0;padding-bottom:7px;border-bottom:1px solid var(--paper-2)}
+.mod-lib .t-row .k{font-family:var(--fm);font-size:7.5px;letter-spacing:.2em;text-transform:uppercase;color:var(--ink-3);margin-bottom:2px}
+.mod-lib .t-row .t{font-family:var(--fd);font-weight:800;font-size:12px;letter-spacing:-.02em;line-height:1}
+.mod-lib .t-row .c{margin-left:auto;font-family:var(--fm);font-size:8px;color:var(--ink-3)}
+.mod-lib .books{display:grid;grid-template-columns:repeat(4,1fr);gap:6px;flex:1;min-height:0}
+.mod-lib .bk{background:var(--paper);border:1.5px solid var(--ink);padding:4px 4px 6px;display:flex;flex-direction:column;gap:3px;min-height:0}
+.mod-lib .bk .sp{height:32%;min-height:30px}
+.mod-lib .bk:nth-child(1) .sp{background:var(--violet)}
+.mod-lib .bk:nth-child(2) .sp{background:var(--orange)}
+.mod-lib .bk:nth-child(3) .sp{background:var(--cyan)}
+.mod-lib .bk:nth-child(4) .sp{background:var(--pink)}
+.mod-lib .bk:nth-child(5) .sp{background:var(--lime)}
+.mod-lib .bk:nth-child(6) .sp{background:var(--cream)}
+.mod-lib .bk:nth-child(7) .sp{background:#2540C8}
+.mod-lib .bk:nth-child(8) .sp{background:var(--ink)}
+.mod-lib .bk .tt{font-family:var(--fd);font-weight:800;font-size:7.5px;line-height:1.1;letter-spacing:-.02em}
+.mod-lib .bk .au{font-family:var(--fm);font-size:5.5px;color:var(--ink-3);letter-spacing:.08em;text-transform:uppercase;line-height:1}
+
+/* ===== MÓDULO 3 — Workspaces / apuntes ===== */
+.mod-ws .t-row{display:flex;gap:6px;align-items:center;flex-shrink:0;padding-bottom:7px;border-bottom:1px solid var(--paper-2)}
+.mod-ws .t-row .k{font-family:var(--fm);font-size:7.5px;letter-spacing:.2em;text-transform:uppercase;color:var(--ink-3);margin-bottom:2px}
+.mod-ws .t-row .t{font-family:var(--fd);font-weight:800;font-size:12px;letter-spacing:-.02em;line-height:1}
+.mod-ws .collab{display:flex;margin-left:auto}
+.mod-ws .collab .av{width:18px;height:18px;border-radius:50%;border:1.5px solid var(--paper);margin-left:-5px;display:flex;align-items:center;justify-content:center;color:#fff;font-weight:900;font-size:8px}
+.mod-ws .collab .av:nth-child(1){background:var(--violet)}
+.mod-ws .collab .av:nth-child(2){background:var(--orange)}
+.mod-ws .collab .av:nth-child(3){background:var(--cyan);color:var(--ink)}
+.mod-ws .doc{flex:1;display:flex;flex-direction:column;gap:5px;padding:4px 2px;overflow:hidden}
+.mod-ws .doc h3{font-family:var(--fd);font-weight:900;font-size:14px;letter-spacing:-.03em;line-height:1}
+.mod-ws .doc p{font-family:var(--fd);font-size:8.5px;line-height:1.4;color:var(--ink-2)}
+.mod-ws .doc .hlt{background:var(--lime);padding:0 3px}
+.mod-ws .doc .bullet{display:flex;gap:5px;font-family:var(--fd);font-size:8.5px;color:var(--ink-2);line-height:1.3}
+.mod-ws .doc .bullet::before{content:"•";color:var(--orange);font-weight:900}
+.mod-ws .doc .cursor{display:inline-block;width:1.5px;height:10px;background:var(--violet);animation:blink 1s steps(2) infinite;vertical-align:middle}
+@keyframes blink{50%{opacity:0}}
+.mod-ws .doc .comment{background:var(--cream);border-left:3px solid var(--orange);padding:3px 5px;font-family:var(--fd);font-size:7.5px;color:var(--ink-2);line-height:1.3;font-style:italic}
+
+/* ===== MÓDULO 4 — Cursos ===== */
+.mod-cur .t-row{display:flex;gap:6px;align-items:center;flex-shrink:0;padding-bottom:7px;border-bottom:1px solid var(--paper-2)}
+.mod-cur .t-row .k{font-family:var(--fm);font-size:7.5px;letter-spacing:.2em;text-transform:uppercase;color:var(--ink-3);margin-bottom:2px}
+.mod-cur .t-row .t{font-family:var(--fd);font-weight:800;font-size:12px;letter-spacing:-.02em;line-height:1}
+.mod-cur .tabs{margin-left:auto;display:flex;gap:3px}
+.mod-cur .tabs span{font-family:var(--fm);font-size:7px;padding:2px 6px;border:1px solid var(--ink);letter-spacing:.1em;text-transform:uppercase}
+.mod-cur .tabs span.on{background:var(--ink);color:var(--lime)}
+.mod-cur .list{flex:1;display:flex;flex-direction:column;gap:5px;min-height:0;overflow:hidden}
+.mod-cur .cr{border:1.5px solid var(--ink);padding:5px 7px;display:grid;grid-template-columns:28px 1fr auto;gap:7px;align-items:center}
+.mod-cur .cr .ic{width:26px;height:26px;border:1.5px solid var(--ink);display:flex;align-items:center;justify-content:center;font-family:var(--fd);font-weight:900;font-size:11px}
+.mod-cur .cr:nth-child(1) .ic{background:var(--lime)}
+.mod-cur .cr:nth-child(2) .ic{background:var(--violet);color:#fff}
+.mod-cur .cr:nth-child(3) .ic{background:var(--cream)}
+.mod-cur .cr:nth-child(4) .ic{background:var(--pink);color:#fff}
+.mod-cur .cr .nm{font-family:var(--fd);font-weight:800;font-size:9px;line-height:1.1;letter-spacing:-.01em}
+.mod-cur .cr .pg{font-family:var(--fm);font-size:6.5px;color:var(--ink-3);letter-spacing:.1em;margin-top:2px}
+.mod-cur .cr .pbar{width:100%;height:3px;background:var(--paper-2);margin-top:3px;border-radius:2px;overflow:hidden}
+.mod-cur .cr .pbar b{display:block;height:100%;background:var(--ink)}
+.mod-cur .cr .pct{font-family:var(--fd);font-weight:900;font-size:12px;letter-spacing:-.02em}
+
+/* ===== MÓDULO 5 — Perfil ===== */
+.mod-prf .t-row{display:flex;gap:6px;align-items:center;flex-shrink:0;padding-bottom:7px;border-bottom:1px solid var(--paper-2)}
+.mod-prf .t-row .k{font-family:var(--fm);font-size:7.5px;letter-spacing:.2em;text-transform:uppercase;color:var(--ink-3);margin-bottom:2px}
+.mod-prf .t-row .t{font-family:var(--fd);font-weight:800;font-size:12px;letter-spacing:-.02em;line-height:1}
+.mod-prf .hero{display:flex;gap:10px;align-items:center;padding:4px 0}
+.mod-prf .hero .av{width:50px;height:50px;border-radius:50%;background:var(--violet);border:2px solid var(--ink);display:flex;align-items:center;justify-content:center;color:#fff;font-weight:900;font-size:18px}
+.mod-prf .hero .nm{font-family:var(--fd);font-weight:800;font-size:14px;letter-spacing:-.02em;line-height:1}
+.mod-prf .hero .meta{font-family:var(--fm);font-size:7.5px;color:var(--ink-3);letter-spacing:.15em;text-transform:uppercase;margin-top:3px}
+.mod-prf .hero .role{display:inline-block;font-family:var(--fd);font-weight:800;font-size:8px;background:var(--lime);color:var(--ink);padding:1px 6px;border:1px solid var(--ink);margin-top:4px}
+.mod-prf .stats{display:grid;grid-template-columns:repeat(3,1fr);gap:5px;flex-shrink:0}
+.mod-prf .stats .st{border:1.5px solid var(--ink);padding:5px 6px;display:flex;flex-direction:column;gap:1px;min-height:0}
+.mod-prf .stats .st.lime{background:var(--lime)}
+.mod-prf .stats .st.cream{background:var(--cream)}
+.mod-prf .stats .st .v{font-family:var(--fd);font-weight:900;font-size:16px;line-height:1;letter-spacing:-.03em}
+.mod-prf .stats .st .l{font-family:var(--fm);font-size:6.5px;letter-spacing:.1em;text-transform:uppercase;color:var(--ink-3)}
+.mod-prf .ach{display:flex;gap:4px;flex:1;min-height:0;flex-wrap:wrap;align-content:flex-start}
+.mod-prf .ach .a{width:28px;height:28px;border-radius:50%;border:1.5px solid var(--ink);display:flex;align-items:center;justify-content:center;font-family:var(--fd);font-weight:900;font-size:10px}
+.mod-prf .ach .a:nth-child(1){background:var(--lime)}
+.mod-prf .ach .a:nth-child(2){background:var(--orange);color:#fff}
+.mod-prf .ach .a:nth-child(3){background:var(--cyan)}
+.mod-prf .ach .a:nth-child(4){background:var(--cream)}
+.mod-prf .ach .a:nth-child(5){background:var(--violet);color:#fff}
+.mod-prf .ach .a:nth-child(6){background:var(--ink);color:var(--lime)}
+.mod-prf .ach .a:nth-child(7){background:var(--pink);color:#fff}
+
+/* ===== MÓVIL (chat asistente — siempre visible) ===== */
+.mobile{
+  width:144px;
+  background:var(--ink);
+  border:2px solid var(--ink);
+  border-radius:22px;
+  padding:7px 6px;
+  box-shadow:7px 7px 0 var(--ink);
+  transform:rotate(4deg) translateY(-14px);
+  margin-left:-36px;
+  z-index:2;
+  flex-shrink:0;
+  height:312px;
+}
+.mobile-notch{height:16px;display:flex;justify-content:center;align-items:center;padding-top:3px}
+.mobile-notch::before{content:"";width:44px;height:12px;background:var(--ink);border-radius:8px}
+.mobile-screen{background:var(--paper);border-radius:12px;height:calc(100% - 16px);padding:9px 9px 11px;display:flex;flex-direction:column;gap:6px;overflow:hidden}
+.chat-head{display:flex;align-items:center;gap:6px;padding-bottom:6px;border-bottom:1px solid var(--paper-2)}
+.chat-av{width:24px;height:24px;border-radius:50%;background:var(--lime);border:1.5px solid var(--ink);display:flex;align-items:center;justify-content:center;font-weight:900;font-size:11px;color:var(--ink);position:relative}
+.chat-av::after{content:".";color:var(--orange);font-weight:900;position:absolute;right:3px;bottom:1px;font-size:12px;line-height:1}
+.chat-title{font-family:var(--fd);font-weight:800;font-size:10px;line-height:1}
+.chat-status{font-family:var(--fm);font-size:7px;color:var(--ink-3);letter-spacing:.1em;text-transform:uppercase;margin-top:1px;display:flex;align-items:center;gap:3px}
+.chat-status::before{content:"";width:5px;height:5px;background:#28C840;border-radius:50%;display:inline-block}
+.chat-body{flex:1;display:flex;flex-direction:column;gap:5px;overflow:hidden}
+.m-bubble{padding:5px 8px;border-radius:11px;font-size:9px;line-height:1.35;max-width:90%;color:var(--ink-2);font-family:var(--fd)}
+.m-bubble.them{background:var(--paper-2);align-self:flex-start;border-bottom-left-radius:3px}
+.m-bubble.me{background:var(--ink);color:var(--paper);align-self:flex-end;border-bottom-right-radius:3px}
+.m-bubble.typing{background:var(--paper-2);align-self:flex-start;display:flex;gap:3px;padding:7px 10px;border-bottom-left-radius:3px}
+.m-bubble.typing span{width:4px;height:4px;background:var(--ink-3);border-radius:50%;animation:typing 1.4s infinite}
+.m-bubble.typing span:nth-child(2){animation-delay:.2s}
+.m-bubble.typing span:nth-child(3){animation-delay:.4s}
+@keyframes typing{0%,60%,100%{opacity:.3}30%{opacity:1;transform:translateY(-2px)}}
+.chat-input{background:var(--paper-2);border:1px solid var(--ink);border-radius:12px;padding:5px 8px;font-family:var(--fm);font-size:8px;color:var(--ink-3);display:flex;align-items:center;justify-content:space-between}
+.chat-input .send{width:20px;height:20px;background:var(--lime);border:1.5px solid var(--ink);border-radius:50%;display:flex;align-items:center;justify-content:center;font-weight:900;font-size:10px;color:var(--ink)}
+
+/* ===== LABEL ROTANTE + DOTS ===== */
+.mod-label-row{display:flex;justify-content:space-between;align-items:center;margin-bottom:14px;gap:16px}
+.mod-label{
+  font-family:var(--fm);font-size:10px;letter-spacing:.2em;text-transform:uppercase;
+  color:var(--ink);position:relative;min-height:14px;flex:1;
+}
+.mod-label span{
+  position:absolute;left:0;opacity:0;
+  animation:lbl 17.5s infinite;
+  display:flex;align-items:center;gap:8px;
+}
+.mod-label span::before{content:"";width:6px;height:6px;background:var(--orange);border-radius:50%}
+.mod-label span:nth-child(1){animation-delay:0s}
+.mod-label span:nth-child(2){animation-delay:-14s}
+.mod-label span:nth-child(3){animation-delay:-10.5s}
+.mod-label span:nth-child(4){animation-delay:-7s}
+.mod-label span:nth-child(5){animation-delay:-3.5s}
+@keyframes lbl{
+  0%,2%{opacity:0;transform:translateX(6px)}
+  4%,18%{opacity:1;transform:translateX(0)}
+  20%,100%{opacity:0;transform:translateX(-6px)}
+}
+
+.dot-nav{display:flex;gap:5px}
+.dot-nav span{width:24px;height:3px;background:rgba(13,15,16,.15);border-radius:2px;position:relative;overflow:hidden}
+.dot-nav span::after{content:"";position:absolute;inset:0;background:var(--ink);transform:translateX(-100%);animation:dot 17.5s infinite}
+.dot-nav span:nth-child(1)::after{animation-delay:0s}
+.dot-nav span:nth-child(2)::after{animation-delay:-14s}
+.dot-nav span:nth-child(3)::after{animation-delay:-10.5s}
+.dot-nav span:nth-child(4)::after{animation-delay:-7s}
+.dot-nav span:nth-child(5)::after{animation-delay:-3.5s}
+@keyframes dot{
+  0%{transform:translateX(-100%)}
+  3%,18%{transform:translateX(0)}
+  21%,100%{transform:translateX(100%)}
+}
+
+.preview-label{display:flex;align-items:flex-end;justify-content:space-between;gap:16px}
+.preview-kicker{font-family:var(--fm);font-size:11px;letter-spacing:.2em;text-transform:uppercase;color:var(--ink-3);display:inline-block;margin-bottom:10px}
+.preview-title{font-family:var(--fd);font-weight:800;font-size:clamp(26px,3vw,42px);line-height:.95;letter-spacing:-.03em;margin-bottom:8px;max-width:440px}
+.preview-title .acc{background:var(--lime);padding:0 6px;display:inline-block;transform:rotate(-1deg)}
+.preview-cta{font-family:var(--fd);font-size:14px;font-weight:700;color:var(--ink);display:inline-flex;align-items:center;gap:8px;flex-shrink:0}
+.arrow-ico{display:inline-block;width:26px;height:26px;border:1.5px solid var(--ink);border-radius:50%;display:flex;align-items:center;justify-content:center;font-weight:700;transition:transform .2s var(--ease)}
+.preview-card:hover .arrow-ico{transform:translateX(3px)}
+
+.note{max-width:720px;margin:28px auto 0;font-family:var(--fm);font-size:11px;letter-spacing:.1em;text-transform:uppercase;color:var(--ink-3);text-align:center;line-height:1.7}
+.note strong{color:var(--ink);font-weight:700}
+</style>
+</head>
+<body>
+<div class="halftone"><div class="d1"></div><div class="d2"></div></div>
+<div class="wrap">
+  <div class="variant-header">
+    <span class="sub">FINAL</span>
+    <span>Carousel 5 módulos + chat constante · hover pausa</span>
+    <span class="nav">
+      <a href="./preview-card-index.html">← volver al índice</a>
+      <a href="./preview-v2-dual.html">← V2 original (2 módulos)</a>
+    </span>
+  </div>
+
+  <a class="preview-card" href="#" aria-label="Conoce la plataforma completa">
+
+    <!-- LABEL ROTANTE SUPERIOR -->
+    <div class="mod-label-row">
+      <div class="mod-label">
+        <span>Ahora viendo · Panel de estudio</span>
+        <span>Ahora viendo · Biblioteca</span>
+        <span>Ahora viendo · Apuntes colaborativos</span>
+        <span>Ahora viendo · Cursos y rutas</span>
+        <span>Ahora viendo · Tu perfil</span>
+      </div>
+      <div class="dot-nav" aria-hidden="true">
+        <span></span><span></span><span></span><span></span><span></span>
+      </div>
+    </div>
+
+    <div class="devices">
+      <!-- ========== LAPTOP ========== -->
+      <div class="laptop">
+        <div class="laptop-chrome">
+          <span class="dot r"></span><span class="dot y"></span><span class="dot g"></span>
+          <div class="url"><span>conniku.com</span></div>
+        </div>
+
+        <div class="laptop-body">
+          <aside class="sidebar">
+            <div class="logo-mini">u</div>
+            <div class="nav-ico a1"></div>
+            <div class="nav-ico a2"></div>
+            <div class="nav-ico a3"></div>
+            <div class="nav-ico a4"></div>
+            <div class="nav-ico a5"></div>
+          </aside>
+
+          <div class="module-stage">
+
+            <!-- MÓDULO 1 · DASHBOARD -->
+            <div class="module-layer mod-dash">
+              <div class="m-topbar">
+                <div>
+                  <div class="k">Panel de estudio</div>
+                  <div class="t">Buenas tardes, Cristian</div>
+                </div>
+                <div class="avatar">CG</div>
+              </div>
+              <div class="row">
+                <div class="w lime">
+                  <div class="wt">Progreso semanal</div>
+                  <div class="k">78%</div>
+                  <div class="lbl">6 de 8 metas</div>
+                  <div class="bar"><div class="bar-fill"></div></div>
+                </div>
+                <div class="w cream">
+                  <div class="wt">Racha de estudio</div>
+                  <div class="k">12 <span style="font-size:10px;letter-spacing:0">días</span></div>
+                  <div class="streak">
+                    <span></span><span></span><span></span><span></span><span></span>
+                    <span></span><span class="off"></span>
+                  </div>
+                </div>
+                <div class="w" style="grid-column:span 2;background:var(--paper)">
+                  <div class="wt">Próximas sesiones</div>
+                  <div style="display:flex;flex-direction:column;gap:2px;margin-top:2px">
+                    <div style="display:flex;gap:6px;align-items:center;font-size:8.5px;font-family:var(--fd)">
+                      <span style="width:6px;height:6px;background:var(--orange);border-radius:50%"></span>
+                      <b style="font-weight:800">Cálculo integral</b>
+                      <span style="color:var(--ink-3);margin-left:auto">hoy 18:30</span>
+                    </div>
+                    <div style="display:flex;gap:6px;align-items:center;font-size:8.5px;font-family:var(--fd)">
+                      <span style="width:6px;height:6px;background:var(--violet);border-radius:50%"></span>
+                      <b style="font-weight:800">Química orgánica</b>
+                      <span style="color:var(--ink-3);margin-left:auto">mañana 10:00</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- MÓDULO 2 · BIBLIOTECA -->
+            <div class="module-layer mod-lib">
+              <div class="t-row">
+                <div>
+                  <div class="k">Biblioteca</div>
+                  <div class="t">Tu colección</div>
+                </div>
+                <div class="c">124 libros</div>
+              </div>
+              <div class="books">
+                <div class="bk"><div class="sp"></div><div class="tt">Cálculo I</div><div class="au">Stewart</div></div>
+                <div class="bk"><div class="sp"></div><div class="tt">Química Org.</div><div class="au">Wade</div></div>
+                <div class="bk"><div class="sp"></div><div class="tt">Física Uni.</div><div class="au">Sears</div></div>
+                <div class="bk"><div class="sp"></div><div class="tt">Inglés B2</div><div class="au">Oxford</div></div>
+                <div class="bk"><div class="sp"></div><div class="tt">Álgebra L.</div><div class="au">Lay</div></div>
+                <div class="bk"><div class="sp"></div><div class="tt">Biología M.</div><div class="au">Campbell</div></div>
+                <div class="bk"><div class="sp"></div><div class="tt">Economía</div><div class="au">Mankiw</div></div>
+                <div class="bk"><div class="sp"></div><div class="tt">Historia CL</div><div class="au">Villalobos</div></div>
+              </div>
+            </div>
+
+            <!-- MÓDULO 3 · WORKSPACES -->
+            <div class="module-layer mod-ws">
+              <div class="t-row">
+                <div>
+                  <div class="k">Apuntes</div>
+                  <div class="t">Grupo · Cálculo Integral</div>
+                </div>
+                <div class="collab">
+                  <div class="av">M</div>
+                  <div class="av">J</div>
+                  <div class="av">CG</div>
+                </div>
+              </div>
+              <div class="doc">
+                <h3>Integración por partes<span class="cursor"></span></h3>
+                <p>La regla se deriva del <span class="hlt">producto de derivadas</span>. Se aplica cuando el integrando es un producto de funciones.</p>
+                <div class="bullet">Elegir u y dv con prioridad LIATE</div>
+                <div class="bullet">Calcular du y v con derivada e integral</div>
+                <div class="comment">Martín: falta el ejemplo con ln(x). Lo agrego.</div>
+              </div>
+            </div>
+
+            <!-- MÓDULO 4 · CURSOS -->
+            <div class="module-layer mod-cur">
+              <div class="t-row">
+                <div>
+                  <div class="k">Cursos</div>
+                  <div class="t">Tus rutas activas</div>
+                </div>
+                <div class="tabs">
+                  <span class="on">En curso</span>
+                  <span>Completos</span>
+                </div>
+              </div>
+              <div class="list">
+                <div class="cr">
+                  <div class="ic">∫</div>
+                  <div>
+                    <div class="nm">Cálculo Integral</div>
+                    <div class="pg">12 de 18 clases</div>
+                    <div class="pbar"><b style="width:67%"></b></div>
+                  </div>
+                  <div class="pct">67%</div>
+                </div>
+                <div class="cr">
+                  <div class="ic">⬢</div>
+                  <div>
+                    <div class="nm">Química Orgánica</div>
+                    <div class="pg">8 de 20 clases</div>
+                    <div class="pbar"><b style="width:40%"></b></div>
+                  </div>
+                  <div class="pct">40%</div>
+                </div>
+                <div class="cr">
+                  <div class="ic">En</div>
+                  <div>
+                    <div class="nm">Inglés · Nivel B2</div>
+                    <div class="pg">15 de 16 clases</div>
+                    <div class="pbar"><b style="width:94%"></b></div>
+                  </div>
+                  <div class="pct">94%</div>
+                </div>
+                <div class="cr">
+                  <div class="ic">F</div>
+                  <div>
+                    <div class="nm">Física Universitaria</div>
+                    <div class="pg">3 de 24 clases</div>
+                    <div class="pbar"><b style="width:12%"></b></div>
+                  </div>
+                  <div class="pct">12%</div>
+                </div>
+              </div>
+            </div>
+
+            <!-- MÓDULO 5 · PERFIL -->
+            <div class="module-layer mod-prf">
+              <div class="t-row">
+                <div>
+                  <div class="k">Mi perfil</div>
+                  <div class="t">Logros y comunidad</div>
+                </div>
+              </div>
+              <div class="hero">
+                <div class="av">CG</div>
+                <div>
+                  <div class="nm">Cristian Gutiérrez</div>
+                  <div class="meta">U. de Chile · 3er año</div>
+                  <div class="role">Ingeniería Civil</div>
+                </div>
+              </div>
+              <div class="stats">
+                <div class="st lime"><span class="v">47</span><span class="l">Logros</span></div>
+                <div class="st cream"><span class="v">12</span><span class="l">Cursos</span></div>
+                <div class="st"><span class="v">89%</span><span class="l">Avance</span></div>
+              </div>
+              <div class="ach">
+                <div class="a">🏆</div>
+                <div class="a">⚡</div>
+                <div class="a">📚</div>
+                <div class="a">🔥</div>
+                <div class="a">★</div>
+                <div class="a">100</div>
+                <div class="a">✓</div>
+              </div>
+            </div>
+
+          </div><!-- /module-stage -->
+        </div>
+      </div>
+
+      <!-- ========== MÓVIL (chat constante) ========== -->
+      <div class="mobile">
+        <div class="mobile-notch"></div>
+        <div class="mobile-screen">
+          <div class="chat-head">
+            <div class="chat-av">u</div>
+            <div>
+              <div class="chat-title">Asistente</div>
+              <div class="chat-status">Respondiendo</div>
+            </div>
+          </div>
+          <div class="chat-body">
+            <div class="m-bubble them">Hola Cristian, ¿empezamos con el cap. 7?</div>
+            <div class="m-bubble me">Sí, dale</div>
+            <div class="m-bubble them">Perfecto. Te armé un resumen + 6 preguntas de práctica.</div>
+            <div class="m-bubble me">Las difíciles primero</div>
+            <div class="m-bubble typing"><span></span><span></span><span></span></div>
+          </div>
+          <div class="chat-input">
+            <span>Escribe algo…</span>
+            <span class="send">→</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- LABEL PRINCIPAL -->
+    <div class="preview-label">
+      <div>
+        <span class="preview-kicker">Tu universidad · en un solo lugar</span>
+        <h2 class="preview-title">Estudia, organiza y <span class="acc">avanza</span>.</h2>
+      </div>
+      <p class="preview-cta">Ver todo <span class="arrow-ico">→</span></p>
+    </div>
+  </a>
+
+  <p class="note"><strong>V2 FINAL</strong> · Laptop con 5 módulos en carousel (panel · biblioteca · apuntes · cursos · perfil) + móvil fijo con chat asistente · hover pausa la rotación</p>
+</div>
+</body>
+</html>

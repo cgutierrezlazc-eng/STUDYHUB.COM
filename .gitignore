@@ -90,3 +90,4 @@ seed_*.js
 Thumbs.db
 .DS_Store
 .vercel
+public/sandbox/
