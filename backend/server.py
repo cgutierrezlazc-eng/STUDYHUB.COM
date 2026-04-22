@@ -79,6 +79,7 @@ from tier_gate import tier_gate
 from tutor_routes import router as tutor_router
 from video_routes import router as video_router
 from wellness_routes import router as wellness_router
+from contact_tickets_routes import router as contact_tickets_router
 from workspaces_athena import router as workspaces_athena_router
 from workspaces_export import router as workspaces_export_router
 from workspaces_routes import router as workspaces_router
@@ -338,6 +339,8 @@ app.include_router(cookie_consent_router)
 from legal_document_views_routes import router as legal_document_views_router  # noqa: E402
 
 app.include_router(legal_document_views_router)
+# bloque-contact-tickets-v1: tickets de contacto público + admin bidireccional
+app.include_router(contact_tickets_router)
 
 
 # ─── Contact Form (público, sin auth) ──────────────────────────────────────

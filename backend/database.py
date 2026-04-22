@@ -2177,6 +2177,156 @@ class AthenaUsage(Base):
     __table_args__ = (Index("ix_athena_usage_user_month", "user_id", "created_at"),)
 
 
+# ─── Contact Tickets — bloque-contact-tickets-v1 ──────────────────────────────
+#
+# Registra cada consulta de contacto recibida a través de POST /contact/tickets.
+# Incluye evidencia probatoria de consentimiento y datos de routing por motivo.
+#
+# Referencia legal:
+# - GDPR Art. 6(1)(a) (Reglamento UE 2016/679): consentimiento del interesado
+#   para finalidad específica "responder esta consulta".
+#   URL: https://eur-lex.europa.eu/legal-content/ES/TXT/?uri=CELEX:32016R0679
+#   Fecha de verificación: 2026-04-22. Verificador: backend-builder (Tori).
+# - GDPR Art. 7(1): demostrabilidad del consentimiento (consent_hash, IP, UA).
+# - GDPR Art. 17(3)(e): conservación para ejercicio/defensa de reclamaciones.
+#   Retención: 5 años post-created_at (Art. 2515 CC Chile prescripción ordinaria).
+# - GDPR Art. 5(1)(c): minimización — user_agent truncado a 512 chars.
+# - GDPR Art. 5(1)(e): limitación del plazo de conservación (retained_until_utc).
+# - Ley 19.628 (Chile) Art. 4°: información al titular al momento de recolectar.
+#   URL: https://www.bcn.cl/leychile/navegar?idNorma=141599
+#   Fecha de verificación: 2026-04-22. Verificador: backend-builder (Tori).
+# - Art. 2515 Código Civil Chile: prescripción ordinaria 5 años.
+#   URL: https://www.bcn.cl/leychile/navegar?idNorma=172986
+#   Fecha de verificación: 2026-04-22. Verificador: backend-builder (Tori).
+# - Ley 21.719 (Chile) Art. 14 vigente 2026-12-01: pseudonimización proactiva
+#   (campo pseudonymized_at_utc anticipa el requerimiento).
+#   URL: https://www.bcn.cl/leychile/navegar?idNorma=1212270
+#   Fecha de verificación: 2026-04-22. Verificador: backend-builder (Tori).
+
+
+class ContactTicket(Base):
+    """Ticket de contacto recibido por el formulario público de Conniku.
+
+    Política de retención:
+    - retained_until_utc = created_at + 1825 días (≈5 años, Art. 2515 CC Chile).
+    - ON DELETE SET NULL en assigned_to preserva la fila al eliminar el usuario.
+    - client_ip y user_agent se NULLifican a 12 meses (pseudonymized_at_utc).
+    """
+
+    __tablename__ = "contact_tickets"
+
+    id = Column(String(16), primary_key=True, default=gen_id)
+    # Número legible para el usuario (ej. "CNT-2026-000001").
+    # Generado en el endpoint como CNT-{año}-{seq:06d} usando secuencia atomica.
+    ticket_number = Column(String(20), nullable=False, unique=True, index=True)
+
+    # Datos del remitente
+    name = Column(String(120), nullable=False)
+    email = Column(String(255), nullable=False, index=True)
+    reason = Column(String(20), nullable=False, index=True)
+    # comercial | universidad | prensa | legal | seguridad | otro
+    org = Column(String(120), nullable=True)
+    message = Column(Text, nullable=False)
+
+    # Estado del ticket
+    # open | in_review | replied | closed
+    status = Column(String(20), nullable=False, default="open", index=True)
+
+    # Asignación (admin que lleva el ticket)
+    assigned_to = Column(
+        String(16),
+        ForeignKey("users.id", ondelete="SET NULL"),
+        nullable=True,
+    )
+
+    # Datos de routing (snapshot al momento de creación)
+    routed_to_email = Column(String(255), nullable=False)
+    routed_label = Column(String(80), nullable=False)
+    sla_hours = Column(Integer, nullable=False)
+
+    # Evidencia probatoria de consentimiento (GDPR Art. 7(1))
+    consent_version = Column(String(20), nullable=False)
+    consent_hash = Column(String(64), nullable=False)
+    consent_accepted_at_utc = Column(DateTime, nullable=False)
+
+    # IP y UA capturados del request (no del payload)
+    # GDPR Art. 6(1)(f): interés legítimo del responsable como base legal.
+    # Se pseudonimizan a 12 meses (NULLifican al setearse pseudonymized_at_utc).
+    client_ip = Column(String(64), nullable=True)
+    # UA truncado a 512 chars (minimización GDPR Art. 5(1)(c))
+    user_agent = Column(String(512), nullable=True)
+    user_timezone = Column(String(64), nullable=True)
+
+    # Métricas de SLA y seguimiento
+    first_response_at_utc = Column(DateTime, nullable=True)
+    resolved_at_utc = Column(DateTime, nullable=True)
+    resolution_note = Column(Text, nullable=True)
+
+    # Retención legal y pseudonimización
+    # retained_until_utc = created_at + 1825 días (Art. 17(3)(e) GDPR + Art. 2515 CC Chile)
+    retained_until_utc = Column(DateTime, nullable=False)
+    # Seteado por el job de pseudonimización a 12 meses.
+    # NULL = aún no pseudonimizada.
+    pseudonymized_at_utc = Column(DateTime, nullable=True)
+
+    created_at = Column(DateTime, nullable=False, default=datetime.utcnow, index=True)
+    updated_at = Column(DateTime, nullable=False, default=datetime.utcnow)
+
+    # Relaciones
+    assignee = relationship("User", foreign_keys=[assigned_to])
+    ticket_messages = relationship(
+        "ContactTicketMessage",
+        back_populates="ticket",
+        cascade="all, delete-orphan",
+        order_by="ContactTicketMessage.created_at",
+    )
+
+    __table_args__ = (
+        Index("ix_contact_tickets_email_created", "email", "created_at"),
+        Index("ix_contact_tickets_status_created", "status", "created_at"),
+        Index("ix_contact_tickets_reason_created", "reason", "created_at"),
+        Index("ix_contact_tickets_client_ip_created", "client_ip", "created_at"),
+    )
+
+
+class ContactTicketMessage(Base):
+    """Mensaje de un hilo de ticket de contacto (inbound del usuario o outbound del equipo).
+
+    direction: 'inbound' (usuario → Conniku) | 'outbound' (Conniku → usuario).
+    El mensaje inicial se persiste como fila inbound al crear el ticket.
+    Las respuestas del admin crean filas outbound y disparan _send_email_async.
+    """
+
+    __tablename__ = "contact_ticket_messages"
+
+    id = Column(String(16), primary_key=True, default=gen_id)
+    ticket_id = Column(
+        String(16),
+        ForeignKey("contact_tickets.id", ondelete="CASCADE"),
+        nullable=False,
+        index=True,
+    )
+    # 'inbound' | 'outbound'
+    direction = Column(String(10), nullable=False)
+    # FK al admin que respondió (null si es el usuario anónimo)
+    author_user_id = Column(
+        String(16),
+        ForeignKey("users.id", ondelete="SET NULL"),
+        nullable=True,
+    )
+    # Email del autor (espejo, para legibilidad sin JOIN)
+    author_email = Column(String(255), nullable=False)
+    body = Column(Text, nullable=False)
+    created_at = Column(DateTime, nullable=False, default=datetime.utcnow, index=True)
+    # Message-ID SMTP para trazabilidad (trazabilidad de entrega)
+    email_message_id = Column(String(255), nullable=True)
+
+    ticket = relationship("ContactTicket", back_populates="ticket_messages")
+    author = relationship("User", foreign_keys=[author_user_id])
+
+    __table_args__ = (Index("ix_ctm_ticket_direction", "ticket_id", "direction"),)
+
+
 def init_db():
     Base.metadata.create_all(engine)
     _ensure_columns()

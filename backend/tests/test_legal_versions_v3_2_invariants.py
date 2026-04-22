@@ -37,7 +37,7 @@ V3_2_DIR = REPO_ROOT / "docs" / "legal" / "v3.2"
 # estos valores deben ser actualizados en el mismo commit que los archivos.
 EXPECTED_HASHES = {
     "terms.md": "9a16122f985a1d252a5928c5fae518b5bd23ac6ee00996ee9e8293c4aaf08dce",
-    "privacy.md": "7a8ba81d0be22cc1deee7d92764baaac1a598a662b84d9ba90043b2a25f63f6c",
+    "privacy.md": "b5b9fed8fd5e4e600c7fa33fbd8dddaec5c627be189b5382e8b7cf81dbcfa288",
     "cookies.md": "80d41f71f075ae954a4e5f1763266b9830d38849bbe79a7bb931c2a4ee30e38c",
     "age-declaration.md": "61dab2ecf1b27e3fb212efcf5a066784943c689de11611bb6d2b919e39441a9b",
 }
@@ -178,11 +178,11 @@ def test_legal_versions_py_tos_version_bumped() -> None:
 
 @pytest.mark.legal
 def test_legal_versions_py_privacy_version_bumped() -> None:
-    """PRIVACY_VERSION debe ser '2.4.0' (bumpeado desde 2.3.0 en v3.2)."""
+    """PRIVACY_VERSION debe ser '2.4.1' (bumpeado desde 2.4.0 por bloque contact-tickets-v1)."""
     from backend.constants.legal_versions import PRIVACY_VERSION
 
-    assert PRIVACY_VERSION == "2.4.0", (
-        f"PRIVACY_VERSION debe ser '2.4.0', encontrado '{PRIVACY_VERSION}'. "
+    assert PRIVACY_VERSION == "2.4.1", (
+        f"PRIVACY_VERSION debe ser '2.4.1', encontrado '{PRIVACY_VERSION}'. "
         "Aplicar bump en backend/constants/legal_versions.py."
     )
 
@@ -276,7 +276,7 @@ def test_legal_versions_py_privacy_hash_is_valid_hex64() -> None:
 
 @pytest.mark.legal
 def test_reaccept_documents_list_reflects_v3_2_versions() -> None:
-    """REACCEPT_DOCUMENTS debe reflejar las versiones v3.2 (TOS 3.2.0, PRIVACY 2.4.0, COOKIES 1.0.0)."""
+    """REACCEPT_DOCUMENTS debe reflejar las versiones v3.2 (TOS 3.2.0, PRIVACY 2.4.1, COOKIES 1.0.0)."""
     from backend.constants.legal_versions import REACCEPT_DOCUMENTS
 
     versions = {doc_type: (version, hash_) for doc_type, version, hash_ in REACCEPT_DOCUMENTS}
@@ -286,8 +286,8 @@ def test_reaccept_documents_list_reflects_v3_2_versions() -> None:
     assert "cookies" in versions, "REACCEPT_DOCUMENTS debe incluir 'cookies'"
 
     assert versions["tos"][0] == "3.2.0", f"Versión TOS en REACCEPT_DOCUMENTS: '{versions['tos'][0]}', esperada '3.2.0'"
-    assert versions["privacy"][0] == "2.4.0", (
-        f"Versión PRIVACY en REACCEPT_DOCUMENTS: '{versions['privacy'][0]}', esperada '2.4.0'"
+    assert versions["privacy"][0] == "2.4.1", (
+        f"Versión PRIVACY en REACCEPT_DOCUMENTS: '{versions['privacy'][0]}', esperada '2.4.1'"
     )
     assert versions["cookies"][0] == "1.0.0", (
         f"Versión COOKIES en REACCEPT_DOCUMENTS: '{versions['cookies'][0]}', esperada '1.0.0'"

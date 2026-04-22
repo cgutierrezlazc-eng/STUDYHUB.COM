@@ -662,6 +662,76 @@ def migrate():
             )
             logger.info("Created document_views table with indexes.")
 
+    # ─── Contact Tickets — bloque-contact-tickets-v1 ─────────────────────────
+    # Crea las tablas contact_tickets y contact_ticket_messages si no existen.
+    # Idempotente: IF NOT EXISTS en todas las sentencias.
+    # Referencia legal: GDPR Art. 17(3)(e) + Art. 2515 CC Chile (retención 5 años).
+    if not inspector.has_table("contact_tickets"):
+        with engine.begin() as conn:
+            conn.execute(
+                text("""
+                CREATE TABLE IF NOT EXISTS contact_tickets (
+                    id              VARCHAR(16)  NOT NULL PRIMARY KEY,
+                    ticket_number   VARCHAR(20)  NOT NULL UNIQUE,
+                    name            VARCHAR(120) NOT NULL,
+                    email           VARCHAR(255) NOT NULL,
+                    reason          VARCHAR(20)  NOT NULL,
+                    org             VARCHAR(120) NULL,
+                    message         TEXT         NOT NULL,
+                    status          VARCHAR(20)  NOT NULL DEFAULT 'open',
+                    assigned_to     VARCHAR(16)  NULL,
+                    routed_to_email VARCHAR(255) NOT NULL,
+                    routed_label    VARCHAR(80)  NOT NULL,
+                    sla_hours       INTEGER      NOT NULL,
+                    consent_version VARCHAR(20)  NOT NULL,
+                    consent_hash    VARCHAR(64)  NOT NULL,
+                    consent_accepted_at_utc TIMESTAMP NOT NULL,
+                    client_ip       VARCHAR(64)  NULL,
+                    user_agent      VARCHAR(512) NULL,
+                    user_timezone   VARCHAR(64)  NULL,
+                    first_response_at_utc TIMESTAMP NULL,
+                    resolved_at_utc       TIMESTAMP NULL,
+                    resolution_note       TEXT     NULL,
+                    retained_until_utc    TIMESTAMP NOT NULL,
+                    pseudonymized_at_utc  TIMESTAMP NULL,
+                    created_at  TIMESTAMP NOT NULL,
+                    updated_at  TIMESTAMP NOT NULL
+                )
+            """)
+            )
+            conn.execute(text("CREATE INDEX IF NOT EXISTS ix_contact_tickets_email ON contact_tickets(email)"))
+            conn.execute(text("CREATE INDEX IF NOT EXISTS ix_contact_tickets_reason ON contact_tickets(reason)"))
+            conn.execute(text("CREATE INDEX IF NOT EXISTS ix_contact_tickets_status ON contact_tickets(status)"))
+            conn.execute(
+                text("CREATE INDEX IF NOT EXISTS ix_contact_tickets_created_at ON contact_tickets(created_at)")
+            )
+            logger.info("Created contact_tickets table with indexes.")
+
+    if not inspector.has_table("contact_ticket_messages"):
+        with engine.begin() as conn:
+            conn.execute(
+                text("""
+                CREATE TABLE IF NOT EXISTS contact_ticket_messages (
+                    id              VARCHAR(16)  NOT NULL PRIMARY KEY,
+                    ticket_id       VARCHAR(16)  NOT NULL,
+                    direction       VARCHAR(10)  NOT NULL,
+                    author_user_id  VARCHAR(16)  NULL,
+                    author_email    VARCHAR(255) NOT NULL,
+                    body            TEXT         NOT NULL,
+                    created_at      TIMESTAMP    NOT NULL,
+                    email_message_id VARCHAR(255) NULL,
+                    FOREIGN KEY (ticket_id) REFERENCES contact_tickets(id) ON DELETE CASCADE
+                )
+            """)
+            )
+            conn.execute(
+                text(
+                    "CREATE INDEX IF NOT EXISTS ix_ctm_ticket_direction "
+                    "ON contact_ticket_messages(ticket_id, direction)"
+                )
+            )
+            logger.info("Created contact_ticket_messages table with indexes.")
+
     logger.info("Migrations complete.")
 
 

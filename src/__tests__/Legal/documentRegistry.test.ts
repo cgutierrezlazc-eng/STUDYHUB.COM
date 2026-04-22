@@ -36,7 +36,7 @@ describe('documentRegistry', () => {
       '9a16122f985a1d252a5928c5fae518b5bd23ac6ee00996ee9e8293c4aaf08dce'
     );
     expect(LEGAL_DOCUMENT_REGISTRY['privacy'].sha256).toBe(
-      '7a8ba81d0be22cc1deee7d92764baaac1a598a662b84d9ba90043b2a25f63f6c'
+      'b5b9fed8fd5e4e600c7fa33fbd8dddaec5c627be189b5382e8b7cf81dbcfa288'
     );
     expect(LEGAL_DOCUMENT_REGISTRY['cookies'].sha256).toBe(
       '48b90468822fda6b0470acb30d4707f037f1dd636eac7ebd967ab293c2a3a513'

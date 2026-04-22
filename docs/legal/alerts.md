@@ -1,6 +1,6 @@
 # Alertas activas del legal-docs-keeper
 
-Última actualización: **2026-04-21** (legal-docs-keeper, Capa 0 bloque multi-document-consent-v1 — CONSENT-1 y CONSENT-2 agregadas; VIEWER-1/2/3 revisadas sin cerrar)
+Última actualización: **2026-04-22** (legal-docs-keeper, Capa 0 bloque contact-tickets-v1 — TICKET-1/2/3 agregadas)
 
 ## Declaración obligatoria
 
@@ -885,6 +885,124 @@ posteriores las hayan introducido:
 
 ---
 
+## Alertas abiertas (Capa 0 contact-tickets-v1, 2026-04-22)
+
+### ALERTA-TICKET-1 — SLAs declarados en email al usuario deben matchear operación real (MODERADA)
+
+- **Origen**: legal-docs-keeper 2026-04-22, Capa 0 bloque
+  `contact-tickets-v1`, borrador
+  `docs/legal/drafts/2026-04-22-contact-ticket-emails.md` §3.2.3 y §11.1.
+- **Evidencia**:
+  - `contacto.html:288-294` (landing) declara SLAs públicos: comercial
+    <2 días hábiles, universidad <3 días hábiles, prensa <5 días
+    hábiles, legal/privacidad <30 días calendario, seguridad <48 horas.
+  - `CONTACT_ROUTES` propuesto en plan §D-T2 espeja esos SLAs
+    (`sla_hours = 48, 72, 120, 720, 48, 72`).
+  - Template A del email al usuario (§3.2.1 del borrador) promete
+    "Tiempo de respuesta declarado: {sla_human}" reproduciendo el
+    valor del landing.
+  - Premisa NO verificada: el equipo operativo (Jennifer Ruiz + CEO)
+    no tiene protocolo formal que garantice esos SLAs. El protocolo
+    de respuesta a incidentes de seguridad tampoco existe formalizado.
+- **Impacto**: Ley 19.496 Art. 12 letra b (información veraz y
+  oportuna). Cada ticket `seguridad` cuyo SLA real supere 48h genera
+  expectativa frustrada al usuario. En contexto de reporte de
+  vulnerabilidad, un incumplimiento público del SLA declarado es
+  vector reputacional y potencial reclamo SERNAC.
+- **Acción requerida**:
+  1. Cristian confirma operativamente que los SLAs publicados son
+     alcanzables con la capacidad actual del equipo.
+  2. Si un SLA no es alcanzable: modificar `CONTACT_ROUTES` + landing
+     simultáneamente ANTES del merge del bloque.
+  3. Agregar en weekly-audit checklist: "verificar que % tickets
+     cumpliendo SLA > 90% en últimos 30 días". Si baja de 90%,
+     elevar SLA declarado o sumar capacidad operativa.
+- **Bloqueo**: bloquea merge SOLO si el equipo operativo declara
+  que algún SLA no se puede cumplir. Si Cristian confirma viabilidad,
+  degrada a monitoreo semanal.
+
+### ALERTA-TICKET-2 — Honeypot `website` no debe capturar datos personales del usuario legítimo (INFORMATIVA)
+
+- **Origen**: legal-docs-keeper 2026-04-22, Capa 0 bloque
+  `contact-tickets-v1`, plan §D-T7 (rate-limit) + borrador §4.
+- **Evidencia**:
+  - Plan §D-T7 propone honeypot field `website` hidden en el form con
+    `<input type="text" name="website" tabindex="-1"
+    autocomplete="off" style="display:none;">`.
+  - Si un usuario con lector de pantalla o con JS desactivado ve el
+    campo y lo rellena (ej: escribe su sitio web legítimo), el
+    backend lo trata como bot (§D-T7: "si viene con valor → 201
+    silencioso sin persistir ni enviar email"). Resultado: el
+    mensaje legítimo se pierde sin aviso al usuario.
+- **Impacto**: GDPR Art. 5(1)(a) lealtad y transparencia; Ley 19.496
+  Art. 12 letra b información veraz. Potencial discriminación
+  accidental contra usuarios de tecnologías asistivas (WCAG
+  compliance: un campo oculto visualmente no es oculto para screen
+  readers salvo que use `aria-hidden="true"` + `tabindex="-1"`).
+- **Acción requerida al backend-builder + frontend-builder**:
+  1. El input honeypot debe tener `aria-hidden="true"` además de
+     `tabindex="-1"` + `style="display:none;"` + `autocomplete="off"`.
+     Triple defensa para que screen readers lo ignoren.
+  2. El campo debe nombrarse neutral (`website`, `url`, `phone_alt`)
+     y NO debe asemejarse a un campo legítimo del form (evitar
+     `nombre_completo`, `mensaje_adicional`).
+  3. El valor capturado por el honeypot **NO se persiste en BD** —
+     solo se usa como señal de descarte antes del INSERT. El valor
+     JAMÁS se guarda en logs ni en auditoría. Patrón: log solo el
+     hecho "honeypot triggered from IP X" sin el valor, para
+     proteger al usuario legítimo accidentalmente filtrado.
+  4. Considerar fallback: si la request llega con honeypot filled
+     pero con un email válido + consent_hash válido, en lugar de 201
+     silencioso devolver 400 con mensaje "No pudimos procesar el
+     formulario. Si el problema persiste, escribe directo a
+     contacto@conniku.com". Usuarios legítimos recuperan el canal;
+     bots siguen viendo rechazo.
+- **Bloqueo**: no bloquea merge. Es criterio de calidad.
+
+### ALERTA-TICKET-3 — Alias Zoho verificados: corrige afirmación del plan §1.4 (INFORMATIVA)
+
+- **Origen**: legal-docs-keeper 2026-04-22, Capa 0 bloque
+  `contact-tickets-v1`, borrador §9.
+- **Evidencia**:
+  - Plan web-architect §1.4 afirma: "las direcciones prensa@, legal@
+    y seguridad@ que aparecen en el JS del form no están
+    provisionadas en Zoho (solo hay 3 cuentas, ver
+    reference_email_accounts.md en memoria)".
+  - Lectura directa de `reference_email_accounts.md` (memoria
+    persistente, 2026-04-22): los alias `dpo@`, `hr@`, `j.ruiz@`,
+    `legal@`, `prensa@`, `seguridad@`, `soporte@` **están todos
+    provisionados** como alias gratuitos del buzón real
+    `contacto@conniku.com`.
+  - El plan interpretó "3 cuentas SMTP reales" como "solo 3 mails
+    existen". Confusión entre "buzones con credenciales SMTP
+    propias" (3: noreply/contacto/ceo) y "direcciones válidas que
+    reciben correo" (10: las 3 anteriores + 7 alias).
+- **Impacto**: bajo — afecta la interpretación del plan, no el
+  código funcional. Pero si el backend-builder implementa
+  `CONTACT_ROUTES` con "todos apuntan a contacto@conniku.com" (que
+  era la recomendación del plan D-T2), pierde la oportunidad
+  operativa de que Jennifer filtre por dirección destino.
+- **Acción recomendada al backend-builder**:
+  1. Implementar `CONTACT_ROUTES` usando los alias específicos como
+     `email` destino del Template B interno:
+     - `comercial` → `contacto@conniku.com` (o alias `soporte@`)
+     - `universidad` → `contacto@conniku.com`
+     - `prensa` → `prensa@conniku.com`
+     - `legal` → `legal@conniku.com` (o `dpo@` si es solicitud
+       GDPR específica)
+     - `seguridad` → `seguridad@conniku.com`
+     - `otro` → `contacto@conniku.com`
+  2. El `From` sigue siendo `contacto@conniku.com` (único con
+     `SMTP_PASS_CONTACTO` válido); solo cambia el `To`.
+  3. Jennifer aplica filtros Zoho por `To` y triagea sin mezclar
+     hilos.
+  4. Actualizar el comentario TODO del plan §D-T2: los alias SÍ
+     existen; el comentario "pendientes de provisión" NO se
+     replica en `backend/constants/contact_routing.py`.
+- **Bloqueo**: no bloquea. Mejora operativa sin impacto legal.
+
+---
+
 ## Alertas cerradas
 
 Ninguna hasta la fecha (estructura nueva).
@@ -894,6 +1012,55 @@ Ninguna hasta la fecha (estructura nueva).
 - Auditoría semanal programada: lunes 2026-04-27 a las 09:00 UTC.
 - Revisión manual cuando Cristian invoque `/legal-audit` o cuando un
   bloque con componente legal active trigger de detección.
+
+---
+
+## Alertas MODERADAS — bloque-contact-tickets-v1 (2026-04-22)
+
+### ALERTA-CT-01 — Buzones prensa@, legal@, seguridad@ no provisionados en Zoho
+
+- **Origen**: backend-builder (Tori), 2026-04-22, bloque-contact-tickets-v1.
+- **Evidencia**: `backend/constants/contact_routing.py` y `reference_email_accounts.md` en
+  memoria confirman que solo existen 3 cuentas Zoho: noreply@, contacto@, ceo@conniku.com.
+  Los motivos `prensa`, `legal` y `seguridad` del formulario de contacto rutean actualmente
+  a `contacto@conniku.com` como único buzón real.
+- **Impacto**: todos los tickets llegan a un solo buzón, sin separación por tipo. Riesgo de
+  pérdida de tickets críticos (seguridad, asuntos legales) en inbox genérico. No hay
+  violación legal activa, pero afecta operación y SLA.
+- **Acción requerida**: provisionar los tres buzones en el panel de Zoho Mail y luego
+  actualizar `backend/constants/contact_routing.py` con los emails reales mediante
+  commit tipo `chore(backend)`. Ver plan bloque-contact-tickets-v1 §3.3 fuera de scope.
+- **Quién**: ops de Cristian (acción fuera de código).
+- **Plazo**: antes del primer deploy a producción del bloque.
+
+### ALERTA-CT-02 — PRIVACY_HASH hardcoded en landing HTML requerirá actualización manual
+
+- **Origen**: backend-builder (Tori), 2026-04-22, bloque-contact-tickets-v1.
+- **Evidencia**: `contacto.html` en el landing master deberá tener `PRIVACY_HASH_STATIC`
+  hardcodeado para validar el consent del formulario. Cuando `PRIVACY_HASH` cambie en
+  `backend/constants/legal_versions.py`, el HTML estático debe actualizarse manualmente
+  o todos los POST retornarán 409.
+- **Impacto**: cada cambio MINOR/MAJOR de Privacy Policy rompe el formulario de contacto
+  hasta que se actualice el landing.
+- **Acción requerida**: el legal-docs-keeper debe incluir en su checklist de bump de
+  Privacy Policy: "actualizar PRIVACY_HASH_STATIC en contacto.html del landing master".
+- **Quién**: legal-docs-keeper detecta el desfase; Cristian actualiza el landing.
+
+### ALERTA-CT-03 — Templates de email de tickets no han sido revisados por abogado
+
+- **Origen**: backend-builder (Tori), 2026-04-22, bloque-contact-tickets-v1.
+- **Evidencia**: templates implementados en `backend/contact_tickets_routes.py` funciones
+  `_build_user_email` y `_build_team_email`. Contienen referencias legales (GDPR Art. 6(1)(a),
+  Ley 19.628 Art. 4°) que son informativas al usuario.
+- **Impacto**: si el texto tiene error legal u omisión, podría no cumplir Art. 13 GDPR
+  (información al interesado al momento de recolectar).
+- **Acción requerida**: revisión del texto de los templates por abogado antes de producción.
+  Los templates están en `backend/contact_tickets_routes.py` líneas `_build_user_email`
+  y `_build_team_email`.
+- **Quién**: legal-docs-keeper + abogado externo.
+- **Plazo**: antes del merge a main del bloque.
+
+---
 
 ## Declaración obligatoria (repetida al cierre)
 

@@ -1,13 +1,17 @@
 ---
 documento: "Política de Privacidad"
-version: "2.4.0"
-vigencia_desde: "2026-04-20"
+version: "2.4.1"
+vigencia_desde: "2026-04-22"
+vigencia_hasta: "actual"
 hash_texto_canonico: "se_calcula_al_final"
+changelog:
+  - "v2.4.1 (2026-04-22): agregado sistema de tickets de contacto (/contacto) con routing por motivo, retención 5 años (Art. 17(3)(e) GDPR + Art. 2515 CC Chile + Ley 19.496 Art. 50), bidireccionalidad desde panel admin con remitente noreply@ y Reply-To contacto@. Confirmación y ampliación de Zoho Mail como encargado de tratamiento para el canal email."
+  - "v2.4.0 (2026-04-20): documento canónico autocontenido post auditoría externa, edits H-01/H-12/§5.3."
 ---
 
 # Política de Privacidad
 
-Última actualización: 19 de abril de 2026 · Versión 2.4
+Última actualización: 22 de abril de 2026 · Versión 2.4.1
 
 En Conniku SpA (en adelante, "Conniku", "nosotros" o "la empresa"), nos comprometemos a proteger la privacidad y los datos personales de nuestros usuarios conforme a la normativa vigente en cada jurisdicción donde operamos:
 
@@ -49,6 +53,7 @@ Recopilamos las siguientes categorías de datos personales:
 - **Contenido del usuario:** documentos, apuntes y materiales subidos a la plataforma.
 - **Interacciones con asistentes inteligentes:** mensajes que usted envía al chat privado de Athena dentro de sus documentos, selecciones de texto que solicita reescribir o analizar, y el historial de dichas interacciones asociado a cada documento. Estas interacciones son privadas por usuario: no son visibles para colaboradores del mismo documento.
 - **Documentos exportados:** cuando usted solicita exportar un documento de Workspaces a PDF o DOCX, el contenido del documento es procesado por nuestros servidores para generar un archivo descargable. Ese archivo se entrega a su dispositivo y, una vez descargado, queda fuera del control de Conniku: usted es el único responsable de su almacenamiento, distribución, copias, respaldo y eliminación posterior.
+- **Tickets de contacto:** cuando usted envía un mensaje a través del formulario público de contacto (`/contacto`), recopilamos su nombre, correo electrónico, motivo seleccionado, organización (opcional), el contenido de su mensaje y el hash de la versión de esta Política de Privacidad que usted marcó como aceptada en ese momento. El tratamiento específico de este canal se describe en la Sección 2bis.
 
 ### 2.2. Datos recopilados automáticamente
 
@@ -56,6 +61,85 @@ Recopilamos las siguientes categorías de datos personales:
 - **Datos de gamificación:** puntos, rachas de estudio, logros, nivel del usuario.
 - **Datos técnicos:** dirección IP, tipo de navegador, sistema operativo, dispositivo utilizado.
 - **Datos de comunicación:** mensajes enviados a través de la plataforma (entre usuarios y al soporte).
+
+---
+
+## 2bis. Sistema de tickets de contacto (canal `/contacto`)
+
+El formulario público de contacto disponible en `conniku.com/contacto` permite a cualquier persona, sea o no titular de una cuenta, enviar un mensaje al equipo de Conniku SpA. Cada envío genera un ticket de contacto que es la unidad de registro y seguimiento de la conversación.
+
+### 2bis.1. Datos recolectados por ticket
+
+En el momento en que usted envía el formulario, recopilamos y almacenamos:
+
+- **Datos declarados por usted:** nombre, correo electrónico, motivo seleccionado (comercial, universidad, prensa, legal, seguridad u otro), organización (campo opcional) y el contenido del mensaje.
+- **Metadatos técnicos de envío:** dirección IP pública, User-Agent del navegador (truncado a 512 caracteres por minimización conforme al Art. 5(1)(c) GDPR) y zona horaria declarada por su navegador cuando la envía.
+- **Evidencia de consentimiento:** versión vigente de esta Política de Privacidad, hash SHA-256 del texto aceptado, y timestamp UTC del momento en que usted marcó el checkbox de aceptación.
+- **Identificador de ticket:** número correlativo con formato `CNT-{año}-{seq}` asignado por el sistema.
+
+### 2bis.2. Base legal del tratamiento
+
+- **Chile — Ley N° 19.628, Art. 4°:** consentimiento expreso del titular al marcar la casilla de aceptación de esta Política previo al envío del formulario.
+- **Unión Europea / EEE — GDPR Art. 6(1)(a):** consentimiento específico e informado para la finalidad de responder su consulta. La demostrabilidad del consentimiento (GDPR Art. 7(1)) se garantiza mediante el registro del hash de la versión aceptada, la dirección IP, el User-Agent y el timestamp UTC en la propia ficha del ticket.
+- **GDPR Art. 6(1)(f) — interés legítimo:** complementariamente, aplicamos interés legítimo para el registro de auditoría técnica (IP, User-Agent, detección de abuso vía rate-limit y honeypot), en los términos de la Sección 2bis.5. Este tratamiento es proporcional y no prevalece sobre los derechos del titular.
+
+### 2bis.3. Finalidad del tratamiento
+
+- Recibir, clasificar, responder y dejar trazabilidad de su mensaje.
+- Hacer llegar el contenido al buzón interno apropiado según el motivo declarado.
+- Mantener un registro probatorio de la comunicación en caso de reclamos posteriores, fiscalización por parte de autoridad competente o defensa ante reclamaciones judiciales o administrativas.
+
+### 2bis.4. Enrutamiento interno por motivo
+
+Los tickets se dirigen internamente a un buzón interno asociado al motivo que usted selecciona:
+
+| Motivo | Etiqueta | Buzón interno asociado |
+|---|---|---|
+| Comercial | Consulta comercial | contacto@conniku.com |
+| Universidad | Alianza con universidad | contacto@conniku.com |
+| Prensa | Prensa y medios | contacto@conniku.com (con destino futuro prensa@conniku.com) |
+| Legal | Asuntos legales o privacidad | contacto@conniku.com (con destino futuro legal@conniku.com) |
+| Seguridad | Reporte de seguridad | contacto@conniku.com (con destino futuro seguridad@conniku.com) |
+| Otro | Consulta general | contacto@conniku.com |
+
+A la fecha de esta versión, todos los motivos se entregan al buzón `contacto@conniku.com`, administrado por el equipo de Conniku SpA en la infraestructura del encargado de tratamiento Zoho Mail (ver Sección 6). Los alias `prensa@conniku.com`, `legal@conniku.com` y `seguridad@conniku.com` se encuentran declarados como destino futuro y serán activados conforme se provisionen en el proveedor. El cambio de enrutamiento no altera los fines del tratamiento ni la base legal, y será notificado mediante una actualización posterior de esta Política.
+
+### 2bis.5. Medidas técnicas específicas del canal
+
+- **Rate-limit:** se aceptan hasta 5 tickets por hora desde una misma dirección IP. Los intentos adicionales son rechazados con una respuesta 429 sin persistir el contenido del mensaje.
+- **Honeypot anti-bot:** el formulario incluye un campo oculto que los bots suelen llenar automáticamente. Si viene con valor, el sistema responde con un código de éxito silencioso sin persistir datos.
+- **Re-validación del hash de consentimiento:** si la versión de esta Política de Privacidad cambia entre el momento en que usted cargó el formulario y el momento en que lo envía, el sistema rechaza el envío y le solicita recargar la página para revisar la versión actualizada antes de reintentar. Esto preserva la trazabilidad exigida por GDPR Art. 7(1).
+
+### 2bis.6. Bidireccionalidad y respuestas
+
+Conniku puede responder al ticket desde su panel administrativo interno. En tal caso:
+
+- El correo de respuesta se envía desde la cuenta `noreply@conniku.com` (remitente técnico) con el encabezado `Reply-To: contacto@conniku.com`.
+- La respuesta queda registrada como mensaje saliente asociado al mismo ticket, identificando al miembro del equipo autor de la respuesta.
+- Usted puede continuar la conversación respondiendo ese correo o escribiendo a `contacto@conniku.com`; los mensajes sucesivos quedan vinculados al mismo ticket cuando son procesados manualmente por el equipo. A la fecha no existe aún procesamiento automatizado de respuestas entrantes por IMAP o webhook, por lo que la asociación al hilo requiere intervención del equipo.
+
+### 2bis.7. Retención
+
+Conservamos cada ticket y los metadatos asociados durante **5 años (1.825 días) contados desde la fecha de creación del ticket**. Este plazo se calcula y se almacena explícitamente en el campo `retained_until_utc` de cada ticket.
+
+**Fundamento legal del plazo:**
+
+- **GDPR Art. 17(3)(e):** el derecho de supresión no aplica cuando la conservación es necesaria para la formulación, el ejercicio o la defensa de reclamaciones. Reglamento (UE) 2016/679, texto consolidado: <https://eur-lex.europa.eu/legal-content/ES/TXT/?uri=CELEX:32016R0679>. Fecha de verificación: 2026-04-22. Verificador: legal-docs-keeper (Tori).
+- **Art. 2515 del Código Civil de Chile:** plazo ordinario de prescripción de las acciones personales (5 años). <https://www.bcn.cl/leychile/navegar?idNorma=172986>. Fecha de verificación: 2026-04-22. Verificador: legal-docs-keeper (Tori).
+- **Ley N° 19.496, Art. 50:** ejercicio de acciones del consumidor y prescripción aplicable a servicios. <https://www.bcn.cl/leychile/navegar?idNorma=61438>. Fecha de verificación: 2026-04-22. Verificador: legal-docs-keeper (Tori).
+
+Cumplido el plazo, los tickets se someten al procedimiento interno de eliminación o anonimización, salvo que subsista una obligación legal específica de conservarlos por más tiempo.
+
+### 2bis.8. Derechos del titular sobre los tickets
+
+Usted puede, en cualquier momento:
+
+- Solicitar copia del o los tickets asociados a su correo electrónico (derecho de acceso).
+- Solicitar la rectificación de datos inexactos o incompletos.
+- Solicitar la supresión anticipada de sus tickets antes del plazo de 5 años, salvo que la conservación resulte necesaria conforme a lo señalado en la Sección 2bis.7 (defensa de reclamaciones, obligación legal).
+- Retirar el consentimiento de tratamientos basados en Art. 6(1)(a) GDPR, sin que ello afecte la licitud de los tratamientos realizados antes del retiro.
+
+Estas solicitudes se envían a [privacidad@conniku.com](mailto:privacidad@conniku.com) o, para asuntos específicamente legales, a `contacto@conniku.com` con el asunto "Asunto legal o privacidad".
 
 ---
 
@@ -69,7 +153,7 @@ Utilizamos sus datos personales para las siguientes finalidades:
 - **Gamificación:** gestionar el sistema de puntos, logros, rachas de estudio y clasificaciones.
 - **Notificaciones:** enviar alertas sobre actividad relevante, recordatorios de estudio, mensajes y actualizaciones del servicio.
 - **Mejora del servicio:** analizar patrones de uso para mejorar las funcionalidades, corregir errores y desarrollar nuevas herramientas.
-- **Comunicaciones:** responder consultas de soporte y enviar información sobre cambios en el servicio.
+- **Comunicaciones:** responder consultas de soporte y enviar información sobre cambios en el servicio, incluyendo la gestión de tickets de contacto descrita en la Sección 2bis.
 - **Seguridad:** prevenir fraude, uso indebido y garantizar la seguridad de la plataforma.
 
 ---
@@ -78,16 +162,16 @@ Utilizamos sus datos personales para las siguientes finalidades:
 
 ### 4.1. Chile — Ley N° 19.628
 
-- **Consentimiento del titular (Art. 4°):** al crear una cuenta y aceptar esta política, usted consiente expresamente el tratamiento de sus datos.
+- **Consentimiento del titular (Art. 4°):** al crear una cuenta y aceptar esta política, usted consiente expresamente el tratamiento de sus datos. Aplica también al envío de un ticket de contacto (Sección 2bis).
 - **Ejecución de contrato:** el tratamiento es necesario para la prestación del servicio contratado.
 - **Interés legítimo:** para mejora del servicio y prevención de fraude, siempre que no prevalezcan los derechos fundamentales del titular.
 
 ### 4.2. Unión Europea / EEE — GDPR Art. 6(1)
 
-- **Consentimiento [Art. 6(1)(a)]:** para comunicaciones de marketing y cookies no esenciales.
+- **Consentimiento [Art. 6(1)(a)]:** para comunicaciones de marketing, cookies no esenciales y envío de tickets de contacto (Sección 2bis.2).
 - **Ejecución de contrato [Art. 6(1)(b)]:** para la prestación del servicio solicitado por el usuario, incluido el procesamiento de los contenidos que usted envía explícitamente al asistente Athena (documento, chat privado, selecciones de texto para sugerencia) cuando dicha función forma parte del plan contratado.
 - **Obligación legal [Art. 6(1)(c)]:** cuando el tratamiento es requerido por ley aplicable.
-- **Interés legítimo [Art. 6(1)(f)]:** para seguridad de la plataforma, prevención de fraude y mejora del servicio, siempre que no prevalezcan los derechos del interesado.
+- **Interés legítimo [Art. 6(1)(f)]:** para seguridad de la plataforma, prevención de fraude y mejora del servicio, incluido el registro de metadatos técnicos y controles anti-abuso del canal de contacto (rate-limit, honeypot), siempre que no prevalezcan los derechos del interesado.
 
 ### 4.3. Brasil — LGPD Art. 7°
 
@@ -143,12 +227,12 @@ Conniku puede compartir datos personales con los siguientes terceros, exclusivam
 | Tercero | Finalidad | Datos compartidos |
 |---|---|---|
 | **Anthropic** | Procesamiento automatizado de lenguaje natural para las funciones de asistencia inteligente sobre documentos del usuario: generación de resúmenes, análisis de documentos, chat privado por documento, sugerencias de reescritura sobre fragmentos seleccionados, y otras funciones equivalentes que se incorporen al asistente Athena. Anthropic, PBC, con domicilio en San Francisco, California, Estados Unidos. Las transferencias internacionales se realizan, cuando corresponda, bajo mecanismos contractuales apropiados conforme al artículo 5 de la Ley N° 19.628 de Chile, incluyendo Cláusulas Contractuales Tipo aprobadas por la Comisión Europea cuando resulten aplicables según la jurisdicción del usuario. | Título y materia del documento, contenido completo del documento cuando usted lo envía a analizar, últimos mensajes del chat privado de Athena asociado al documento (enviados como contexto en cada consulta, con un máximo de los 10 mensajes más recientes), y el texto específico que usted seleccione para pedir una sugerencia de reescritura. No se envían contraseñas, tokens de sesión, datos de pago ni metadatos de cuenta. |
-| **Supabase** | Autenticación de usuarios y almacenamiento primario de la base de datos relacional (PostgreSQL gestionado). Actúa como encargado de tratamiento conforme al artículo 28 del RGPD y equivalentes de la Ley 19.628. | Credenciales de acceso (contraseña almacenada como hash, nunca en texto plano), identificadores únicos de usuario, dirección de correo electrónico, metadatos de sesión, y todos los contenidos que la plataforma almacene en la base de datos (perfil, documentos, mensajes, registros de actividad). |
+| **Supabase** | Autenticación de usuarios y almacenamiento primario de la base de datos relacional (PostgreSQL gestionado). Actúa como encargado de tratamiento conforme al artículo 28 del RGPD y equivalentes de la Ley 19.628. | Credenciales de acceso (contraseña almacenada como hash, nunca en texto plano), identificadores únicos de usuario, dirección de correo electrónico, metadatos de sesión, y todos los contenidos que la plataforma almacene en la base de datos (perfil, documentos, mensajes, registros de actividad, tickets de contacto y sus mensajes asociados). |
 | **Firebase Cloud Messaging (Google)** | Entrega de notificaciones push al navegador y a las aplicaciones móviles, por ejemplo recordatorios de suscripción, avisos de mensajes nuevos y alertas operativas que usted haya habilitado. | Token único del dispositivo generado por el propio Firebase (identificador técnico de entrega), tipo de dispositivo y plataforma. No se envían contenidos sensibles dentro del payload de la notificación; los datos completos se consultan solo después de que usted abre la aplicación. |
 | **Google OAuth** | Inicio de sesión federado "Entrar con Google" cuando usted decide utilizarlo. Permite autenticar sin crear una contraseña separada. | Dirección de correo electrónico asociada a la cuenta Google, nombre público y (si usted lo autoriza) foto de perfil. Los permisos solicitados se limitan a los scopes "openid", "email" y "profile". Usted puede revocar el acceso en cualquier momento desde https://myaccount.google.com/permissions. |
 | **Capacitor (app móvil)** | Empaquetado de la aplicación para iOS y Android. Permite acceder a almacenamiento local del dispositivo (equivalente a localStorage del navegador) para funciones offline y recordatorios de sesión. | Datos locales del dispositivo: preferencias de interfaz, borradores no sincronizados, identificadores de sesión. Estos datos no se envían a terceros; residen en el dispositivo y se eliminan al desinstalar la aplicación o desde los ajustes del sistema operativo. |
 | **MercadoPago / PayPal** | Procesamiento de pagos de suscripciones. | Datos necesarios para la transacción (no almacenamos datos de tarjetas). |
-| **Zoho Mail** | Envío de correos electrónicos transaccionales y de soporte. | Nombre y correo electrónico. |
+| **Zoho Mail (Zoho Corporation)** | Encargado de tratamiento para el canal de correo electrónico de Conniku. Transporta, almacena y entrega los correos transaccionales y de soporte enviados desde las cuentas `noreply@conniku.com`, `contacto@conniku.com`, `ceo@conniku.com` y `privacidad@conniku.com`, así como los correos generados por el sistema de tickets de contacto descrito en la Sección 2bis (confirmación al usuario, notificación interna al equipo y respuestas del equipo al usuario). Actúa como encargado de tratamiento en los términos del Art. 28 GDPR. Zoho Corporation opera infraestructura en varias regiones (India, Estados Unidos, Unión Europea) según la configuración del espacio y las políticas del proveedor. Política de tratamiento de datos y DPA disponibles en <https://www.zoho.com/privacy.html> y <https://www.zoho.com/gdpr.html>. | Dirección de correo electrónico del remitente y del destinatario, asunto y cuerpo de los mensajes, nombre declarado, identificador de ticket cuando corresponde, y encabezados técnicos estándar de SMTP. |
 | **Render / Vercel** | Infraestructura de alojamiento (cloud hosting). | Todos los datos almacenados en la plataforma (bajo acuerdos de confidencialidad). |
 
 **Conniku no vende, alquila ni comparte sus datos personales con terceros para fines de marketing.** Nunca transferimos datos a brokers de datos ni a redes publicitarias.
@@ -177,6 +261,8 @@ Puedes solicitar la eliminación completa de tu cuenta de Conniku en cualquier m
 
 Los datos identificables se eliminan dentro de los **30 días** siguientes a la solicitud. Ciertos datos anonimizados pueden conservarse hasta 2 años con fines estadísticos. Para ver las instrucciones completas y la tabla de retención de datos por tipo, visita conniku.com/delete-account.
 
+La eliminación de la cuenta no elimina automáticamente los tickets de contacto enviados como parte de la Sección 2bis: esos tickets mantienen el plazo de retención de 5 años allí descrito, salvo que usted solicite expresamente su supresión anticipada y no subsista una obligación legal de conservarlos.
+
 ---
 
 ## 8. Cookies y Tecnologías Similares
@@ -195,6 +281,7 @@ Conservamos sus datos personales de acuerdo con los siguientes criterios:
 - **Post-eliminación:** tras la eliminación de su cuenta, conservaremos datos anonimizados o agregados por un período de 2 años para fines estadísticos. Los datos identificables serán eliminados dentro de los 30 días siguientes a la solicitud.
 - **Historial de chat con Athena:** los mensajes del chat privado de Athena asociados a un documento se conservan mientras el documento exista en su cuenta. Al eliminar un documento, el historial de chat asociado se elimina en cascada de manera automática. Usted también puede borrar manualmente todo el historial de chat de un documento desde el propio panel de Athena, sin eliminar el documento. Las sugerencias de reescritura resueltas (aplicadas, modificadas o rechazadas) se conservan como registro histórico del documento bajo el mismo criterio.
 - **Métricas de uso de Athena:** la tabla interna de cuotas (cantidad de consultas diarias al asistente) se conserva por tiempo indefinido en forma de contador agregado por usuario, sin el contenido procesado. Esta información se utiliza exclusivamente para aplicar los límites por plan descritos en los Términos y Condiciones.
+- **Tickets de contacto:** 5 años (1.825 días) desde la fecha de creación del ticket, fundado en GDPR Art. 17(3)(e), Art. 2515 del Código Civil de Chile y Ley N° 19.496 Art. 50 (ver Sección 2bis.7).
 - **Obligaciones legales:** ciertos datos podrán conservarse por períodos adicionales cuando sea requerido por ley (registros de facturación, normativa tributaria).
 
 ---
@@ -212,6 +299,15 @@ Para usuarios de la Unión Europea: el GDPR Art. 8 permite que algunos Estados m
 Conniku se reserva el derecho de actualizar esta Política de Privacidad en cualquier momento. Las modificaciones sustanciales serán notificadas con al menos 15 días de anticipación a través de la plataforma y/o por correo electrónico.
 
 Para usuarios en la UE/EEE: si los cambios implican una nueva finalidad de tratamiento o un nuevo fundamento legal distinto al consentimiento, solicitaremos su consentimiento expreso antes de aplicar dichos cambios.
+
+### 11.1. Historial de versiones
+
+| Versión | Fecha de vigencia | Cambios principales |
+|---|---|---|
+| 2.1 | 2026-04-11 | Versión previa a consolidación v3.2. |
+| 2.3 | 2026-04-20 | Borrador v3.1 superseded (archivado). |
+| 2.4.0 | 2026-04-20 | Documento canónico autocontenido derivado de `PrivacyPolicy.tsx` con edits H-01 (domicilio Antofagasta), §5.3 (procesamiento al exportar documentos) y H-12 opción B (Anthropic, redacción condicional). |
+| 2.4.1 | 2026-04-22 | Agregado sistema de tickets de contacto (`/contacto`) con routing por motivo a buzones internos, retención 5 años fundada en Art. 17(3)(e) GDPR + Art. 2515 Código Civil de Chile + Ley 19.496 Art. 50, bidireccionalidad desde panel admin con remitente `noreply@conniku.com` y `Reply-To: contacto@conniku.com`. Confirmación y ampliación de Zoho Mail como encargado de tratamiento para el canal email. |
 
 ---
 
@@ -285,7 +381,7 @@ Si reside en México, la Ley Federal de Protección de Datos Personales en Poses
 
 ## 14. Transferencias Internacionales de Datos
 
-Conniku transfiere datos personales a servidores ubicados en Estados Unidos (Render, Vercel, y Anthropic cuando usted invoca funciones de asistencia inteligente). Para garantizar la protección de sus datos en estas transferencias:
+Conniku transfiere datos personales a servidores ubicados en Estados Unidos (Render, Vercel, y Anthropic cuando usted invoca funciones de asistencia inteligente) y, en el caso del canal de correo electrónico, a la infraestructura global de Zoho Corporation (ver Sección 6). Para garantizar la protección de sus datos en estas transferencias:
 
 - **Usuarios de la UE/EEE (GDPR Art. 46):** utilizamos las Cláusulas Contractuales Tipo (Standard Contractual Clauses — SCCs) aprobadas por la Comisión Europea (Decisión 2021/914) como salvaguardia adecuada. Puede solicitar una copia de estas cláusulas escribiendo a privacidad@conniku.com.
 - **Usuarios de Brasil (LGPD Art. 33):** la transferencia internacional se realiza con garantías equivalentes de protección, conforme a los mecanismos aprobados por la ANPD.
@@ -295,4 +391,4 @@ Todos nuestros proveedores de infraestructura cuentan con certificaciones de seg
 
 ---
 
-Esta Política de Privacidad ha sido redactada en conformidad con la Ley N° 19.628 sobre Protección de la Vida Privada (Chile), el Reglamento General de Protección de Datos (GDPR, UE 2016/679), la Lei Geral de Proteção de Dados Pessoais (LGPD, Brasil) y la California Consumer Privacy Act (CCPA / CPRA, EE.UU.). Versión 2.4 — Abril 2026.
+Esta Política de Privacidad ha sido redactada en conformidad con la Ley N° 19.628 sobre Protección de la Vida Privada (Chile), el Reglamento General de Protección de Datos (GDPR, UE 2016/679), la Lei Geral de Proteção de Dados Pessoais (LGPD, Brasil) y la California Consumer Privacy Act (CCPA / CPRA, EE.UU.). Versión 2.4.1 — Abril 2026.
