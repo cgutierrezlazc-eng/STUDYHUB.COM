@@ -2327,6 +2327,92 @@ class ContactTicketMessage(Base):
     __table_args__ = (Index("ix_ctm_ticket_direction", "ticket_id", "direction"),)
 
 
+# ─── Support Feedback ──────────────────────────────────────────────────────────
+#
+# Tabla de feedback por FAQ del módulo de soporte (soporte.html sandbox + Support.tsx).
+# Registra votos útil/no-útil y comentarios opcionales por pregunta frecuente.
+#
+# Referencia legal:
+# - GDPR Art. 6(1)(f): interés legítimo como base legal para procesar IP/UA con
+#   fines de seguridad y mejora iterativa del servicio de soporte.
+#   URL: https://eur-lex.europa.eu/legal-content/ES/TXT/?uri=CELEX:32016R0679
+#   Fecha de verificación: 2026-04-22. Verificador: backend-builder (Tori).
+# - GDPR Art. 5(1)(c): minimización — comment truncado a 2000 chars, UA a 512 chars.
+#   Fecha de verificación: 2026-04-22. Verificador: backend-builder (Tori).
+# - GDPR Art. 5(1)(e): limitación temporal — retención 2 años (D-S6=A del plan).
+#   Fecha de verificación: 2026-04-22. Verificador: backend-builder (Tori).
+# - GDPR Art. 17(3)(e): excepción a derecho de supresión para defensa de reclamaciones.
+#   Fecha de verificación: 2026-04-22. Verificador: backend-builder (Tori).
+# - Ley 19.628 Art. 4° Chile: información al titular al momento de recolectar.
+#   URL: https://www.bcn.cl/leychile/navegar?idNorma=141599
+#   Fecha de verificación: 2026-04-22. Verificador: backend-builder (Tori).
+
+
+class SupportFeedback(Base):
+    """Feedback de utilidad por pregunta frecuente (FAQ) del soporte.
+
+    Política de retención (D-S6=A bloque-sandbox-integrity-v1):
+    - retained_until_utc = created_at + 730 días (≈2 años).
+    - IP y UA se NULLifican a los 12 meses (pseudonymized_at_utc).
+    - ON DELETE SET NULL en user_id preserva la fila al eliminar el usuario.
+
+    El dato de feedback NO es evidencia legal probatoria (no aplica retención
+    de 5 años). 2 años cubren el horizonte de análisis de producto y/o
+    comparación anual de métricas de soporte.
+    """
+
+    __tablename__ = "support_feedback"
+
+    # id como String para compatibilidad SQLite (UUID almacenado como hex string)
+    id = Column(String(16), primary_key=True, default=gen_id)
+
+    # Identificador estable de la pregunta frecuente (slug, ej. "pwd-recovery")
+    # Documentado en docs/support/faq-catalog.md para versionado de slugs.
+    faq_id = Column(String(128), nullable=False, index=True)
+
+    # Voto de utilidad (True = útil, False = no útil)
+    useful = Column(Boolean, nullable=False)
+
+    # Comentario libre opcional (max 2000 chars en validación Pydantic)
+    # GDPR Art. 5(1)(c): puede contener datos personales indirectos.
+    comment = Column(Text, nullable=True)
+
+    # UUID del visitante (desde localStorage['conniku_visitor_uuid'], D-S4=A)
+    # Permite vincular feedback con consent y document_views del mismo visitante.
+    session_token = Column(String(36), nullable=True)
+
+    # FK al usuario autenticado si el feedback proviene del producto React
+    # ON DELETE SET NULL: la fila persiste aunque el usuario se elimine.
+    user_id = Column(
+        String(16),
+        ForeignKey("users.id", ondelete="SET NULL"),
+        nullable=True,
+    )
+
+    # IP real del request (desde X-Forwarded-For o client.host)
+    # GDPR Art. 6(1)(f): interés legítimo para prevención de abuso y seguridad.
+    # NULLificado a 12 meses por job de pseudonimización.
+    ip_address = Column(String(64), nullable=True)
+
+    # User-Agent del request, truncado a 512 chars (GDPR Art. 5(1)(c) minimización)
+    # NULLificado a 12 meses por job de pseudonimización.
+    user_agent = Column(String(512), nullable=True)
+
+    created_at = Column(DateTime, nullable=False, default=datetime.utcnow, index=True)
+
+    # Seteado por el job de pseudonimización a 12 meses.
+    # NULL = aún no pseudonimizada.
+    pseudonymized_at_utc = Column(DateTime, nullable=True)
+
+    # Fecha de expiración de retención: created_at + 730 días (D-S6=A)
+    # GDPR Art. 5(1)(e): limitación del plazo de conservación.
+    retained_until_utc = Column(DateTime, nullable=False)
+
+    __table_args__ = (
+        Index("ix_support_feedback_faq_created", "faq_id", "created_at"),
+    )
+
+
 def init_db():
     Base.metadata.create_all(engine)
     _ensure_columns()

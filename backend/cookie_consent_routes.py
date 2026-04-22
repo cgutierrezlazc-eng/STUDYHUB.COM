@@ -65,7 +65,7 @@ class CookieConsentCreate(BaseModel):
     policy_hash: str = Field(..., min_length=64, max_length=64)
     origin: str = Field(
         default="banner_initial",
-        description="Origen del consentimiento: banner_initial, settings_update, dnt_auto, iframe_auto.",
+        description="Origen del consentimiento: banner_initial, settings_update, dnt_auto, iframe_auto, sandbox.",
     )
     user_timezone: str | None = Field(default=None, max_length=64)
     user_agent_hint: str | None = Field(default=None, description="User-Agent desde el cliente (informativo).")
@@ -86,7 +86,11 @@ class CookieConsentCreate(BaseModel):
     @field_validator("origin")
     @classmethod
     def validate_origin(cls, v: str) -> str:
-        valid_origins = {"banner_initial", "settings_update", "dnt_auto", "iframe_auto"}
+        # sandbox: origen para consents generados desde el sandbox público de Conniku
+        # (public/sandbox/). Permite trazabilidad diferenciada de visitantes que
+        # interactúan con el preview del producto vs. usuarios del producto React.
+        # D-S3 bloque-sandbox-integrity-v1 (2026-04-22).
+        valid_origins = {"banner_initial", "settings_update", "dnt_auto", "iframe_auto", "sandbox"}
         if v not in valid_origins:
             raise ValueError(f"Origen inválido: {v!r}. Válidos: {sorted(valid_origins)}")
         return v
