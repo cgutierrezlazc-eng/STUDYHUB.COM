@@ -7,7 +7,7 @@ hash_texto_canonico: "se_calcula_al_final"
 
 # Términos de Servicio, Uso y Condiciones
 
-Última actualización: 22 de abril de 2026 · Versión 3.2.1
+Última actualización: 22 de abril de 2026 · Versión 3.2.2
 
 ---
 
@@ -491,6 +491,28 @@ El SII aplica automáticamente la tasa del año en curso al emitir boletas elect
 33.2. El contrato establecerá: naturaleza independiente de la relación, comisión del 10%, obligaciones tributarias del tutor, código de conducta, cláusula de confidencialidad sobre datos de estudiantes, y política de cancelación.
 
 33.3. La firma digital tendrá validez legal conforme a la Ley 19.799 sobre Documentos Electrónicos, Firma Electrónica y Servicios de Certificación de Chile.
+
+33.4. El Contrato de Prestación de Servicios incluirá una cláusula de conducta conforme a la Ley N° 21.643 ("Ley Karin", vigente desde el 01 de agosto de 2024), que modifica el Código del Trabajo en materia de prevención, investigación y sanción del acoso laboral, acoso sexual y violencia en el trabajo. El tutor declara conocer y aceptar expresamente dicha política al momento de firmar el contrato.
+
+33.5. Conniku SpA, en su calidad de empleador con trabajadores dependientes, dispone de un Protocolo de Prevención del Acoso Laboral y Sexual conforme al Artículo 211-A y siguientes del Código del Trabajo, modificados por la Ley N° 21.643. Dicho protocolo es aplicable a las relaciones laborales internas de Conniku SpA y no extiende obligaciones de empleador sobre los tutores, quienes son prestadores de servicios independientes.
+
+### Artículo 33bis. Política de Ambiente Seguro en la Plataforma
+
+33bis.1. Conniku promueve un entorno de aprendizaje seguro, respetuoso e inclusivo para todos los usuarios de la Plataforma, incluyendo estudiantes, tutores y demás participantes, en consonancia con los principios de la Ley N° 21.643 y los estándares internacionales de ambientes libres de violencia y acoso.
+
+33bis.2. Se consideran conductas prohibidas en la Plataforma, sin perjuicio de las demás establecidas en estos Términos:
+
+a) Acoso de cualquier tipo: conductas reiteradas de hostigamiento, intimidación o humillación hacia otro usuario, sea verbal, escrita o mediante el uso de las herramientas de la Plataforma.
+
+b) Acoso sexual: conductas de connotación sexual no deseadas o rechazadas, independientemente de si ocurren dentro o fuera de la Plataforma pero en el contexto de la relación establecida en ella.
+
+c) Violencia en el trabajo: agresión verbal o psicológica contra otro usuario en el contexto de las interacciones generadas a través de la Plataforma.
+
+33bis.3. Los usuarios que sean víctimas o testigos de las conductas descritas en el artículo anterior podrán denunciarlas a través del canal habilitado: [seguridad@conniku.com](mailto:seguridad@conniku.com) o del formulario de contacto disponible en `conniku.com/contacto` (motivo: "Seguridad"). Toda denuncia será tratada con reserva y confidencialidad.
+
+33bis.4. Conniku investigará las denuncias recibidas y podrá adoptar medidas que incluyen, según la gravedad del caso: advertencia formal, suspensión temporal o eliminación definitiva de la cuenta del infractor, sin derecho a reembolso.
+
+33bis.5. Esta política no reemplaza el derecho del usuario a presentar denuncias ante la Dirección del Trabajo (dt.gob.cl) u otras autoridades competentes.
 
 ---
 
