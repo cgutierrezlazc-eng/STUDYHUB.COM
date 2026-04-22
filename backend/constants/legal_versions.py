@@ -27,10 +27,11 @@ from __future__ import annotations
 
 # --- Términos y Condiciones -------------------------------------------------
 TOS_DOCUMENT_TYPE: str = "tos"
-TOS_VERSION: str = "3.2.0"
-# SHA-256 de docs/legal/v3.2/terms.md (Art. 3 bis letra b Ley 19.496 + 18+).
-# Aprobado por abogado externo en auditoría 2026-04-20.
-TOS_HASH: str = "9a16122f985a1d252a5928c5fae518b5bd23ac6ee00996ee9e8293c4aaf08dce"
+TOS_VERSION: str = "3.2.2"
+# SHA-256 de docs/legal/v3.2/terms.md (v3.2.2).
+# Cambios: Ley Karin (21.643) Art. 33bis · IMM ref Ley 21.751 · Art. 33.4-33.5
+# Verificado: 2026-04-22 — Tori (auditoría legal bloque-sandbox-integrity-v1)
+TOS_HASH: str = "b2b834b61e19db6b2f7aa8176e8958f4e001d49a02606097c462811f6e008d73"
 
 
 # --- Política de Privacidad -------------------------------------------------

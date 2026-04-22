@@ -1,8 +1,8 @@
 ---
 documento: "Términos y Condiciones"
-version: "3.2.0"
-vigencia_desde: "2026-04-20"
-hash_texto_canonico: "se_calcula_al_final"
+version: "3.2.2"
+vigencia_desde: "2026-04-22"
+hash_texto_canonico: "8b9152c65d96223b694ade3a3d120a8c9047694c3580d67ef9a724871d0f47aa"
 ---
 
 # Términos de Servicio, Uso y Condiciones
