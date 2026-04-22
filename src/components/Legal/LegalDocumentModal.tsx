@@ -19,6 +19,12 @@ interface Props {
   onClose: () => void;
   /** Callback opcional que se dispara al abrir el modal. */
   onOpen?: () => void;
+  /**
+   * Callback opcional cuando el usuario llega al 90% del scroll del documento.
+   * Bloque multi-document-consent-v1 D-M3=B: scroll 90% marca como "leído".
+   * Se dispara una sola vez por instancia abierta del modal.
+   */
+  onScrolledToEnd?: () => void;
 }
 
 export function LegalDocumentModal({
@@ -26,6 +32,7 @@ export function LegalDocumentModal({
   isOpen,
   onClose,
   onOpen,
+  onScrolledToEnd,
 }: Props): React.ReactElement | null {
   const titleId = useId();
   const closeBtnRef = useRef<HTMLButtonElement>(null);
@@ -96,7 +103,12 @@ export function LegalDocumentModal({
           </button>
         </div>
         <div className={styles.body}>
-          <LegalDocumentRenderer docKey={documentKey} variant="modal" registerView={true} />
+          <LegalDocumentRenderer
+            docKey={documentKey}
+            variant="modal"
+            registerView={true}
+            onScrolledToEnd={onScrolledToEnd}
+          />
         </div>
       </div>
     </div>

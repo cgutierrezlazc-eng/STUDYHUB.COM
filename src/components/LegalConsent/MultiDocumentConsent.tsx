@@ -284,6 +284,7 @@ function ModalWithScrollDetection({
       documentKey={docKey}
       isOpen={isOpen}
       onClose={() => onClose(scrolledToEnd)}
+      onScrolledToEnd={() => setScrolledToEnd(true)}
     />
   );
 }
