@@ -14,11 +14,43 @@
 
 documents:
   privacy:
+    version: "2.4.1"
+    sha256: "b5b9fed8fd5e4e600c7fa33fbd8dddaec5c627be189b5382e8b7cf81dbcfa288"
+    vigencia_desde: "2026-04-22"
+    vigencia_hasta: "actual"
+    archivo: "v3.2/privacy.md"
+    autor_aprobacion: "pendiente revisión abogado"
+    aprobacion_fecha: "pendiente"
+    nota: >
+      Bump v2.4.0 → v2.4.1 por bloque bloque-contact-tickets-v1
+      (decisión Cristian 2026-04-22 Opción A: bump en el mismo PR
+      del bloque). Cambios: nueva Sección 2bis "Sistema de tickets
+      de contacto" con datos recolectados por ticket (incluyendo
+      consent_hash, IP, UA truncado a 512 chars, timezone),
+      base legal Art. 6(1)(a) GDPR + Ley 19.628 Art. 4° con
+      interés legítimo 6(1)(f) para metadatos técnicos y
+      anti-abuso; enrutamiento por motivo declarando estado real
+      (todos a contacto@ hoy con destinos futuros prensa@/legal@/
+      seguridad@); medidas técnicas (rate-limit 5/h/IP, honeypot,
+      re-validación de hash de consentimiento); bidireccionalidad
+      (noreply@ con Reply-To contacto@) sin auto-ingesta IMAP
+      todavía; retención 5 años fundada en Art. 17(3)(e) GDPR +
+      Art. 2515 CC Chile + Ley 19.496 Art. 50; derechos del titular
+      sobre los tickets. Tabla §6 de encargados: Zoho Mail
+      ampliado como encargado Art. 28 GDPR para el canal email,
+      con DPA oficial https://www.zoho.com/gdpr.html y política
+      https://www.zoho.com/privacy.html. §9 incluye nueva línea
+      de retención tickets. §11 agrega subsección 11.1 Historial
+      de versiones. §14 menciona Zoho en transferencias
+      internacionales. Hash anterior 2.4.0 era
+      7a8ba81d0be22cc1deee7d92764baaac1a598a662b84d9ba90043b2a25f63f6c.
+
+  privacy-v2_4_0:
     version: "2.4.0"
     sha256: "7a8ba81d0be22cc1deee7d92764baaac1a598a662b84d9ba90043b2a25f63f6c"
     vigencia_desde: "2026-04-20"
-    vigencia_hasta: "actual"
-    archivo: "v3.2/privacy.md"
+    vigencia_hasta: "2026-04-22"
+    archivo: "v3.2/privacy.md (superseded in-place por v2.4.1; hash histórico conservado para trazabilidad de user_agreements)"
     autor_aprobacion: "abogado externo + Cristian"
     aprobacion_fecha: "2026-04-21"
     nota: >
@@ -26,7 +58,8 @@ documents:
       con edits H-01 (domicilio Antofagasta), §5.3 (procesamiento al exportar
       documentos), §2.1 bullet "Documentos exportados" y H-12 opción B
       (Anthropic, redacción condicional). Supersede v3.1/privacy.md que era
-      un borrador marcado "NO publicar".
+      un borrador marcado "NO publicar". Superseded por v2.4.1 el 2026-04-22
+      (bloque bloque-contact-tickets-v1).
 
   terms:
     version: "3.2.0"
