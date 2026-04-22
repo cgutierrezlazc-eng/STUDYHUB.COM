@@ -904,7 +904,10 @@ _daily_update_log = {
 MINDICADOR_URL = "https://mindicador.cl/api"
 
 # Historial de IMM (Ingreso Mínimo Mensual) — se actualiza por ley
+# Fuente: https://www.mintrab.gob.cl (Ley 21.751 vigente 2026-01-01)
+# Verificado: 2026-04-22 — Tori (auditoría legal bloque-sandbox-integrity-v1)
 IMM_HISTORY = [
+    {"from": "2026-01-01", "amount": 539000, "law": "Ley 21.751"},  # vigente 2026
     {"from": "2024-07-01", "amount": 500000, "law": "Ley 21.578"},
     {"from": "2024-01-01", "amount": 460000, "law": "Ley 21.578"},
     {"from": "2023-09-01", "amount": 440000, "law": "Ley 21.526"},
@@ -970,12 +973,14 @@ async def _fetch_indicators():
                 "source": "Ley vigente",
             },
             # Calculated values for payroll
+            # AFC tope: 135.2 UF desde feb-2026 (Superintendencia Pensiones)
+            # Verificado: 2026-04-22 — Tori (auditoría legal)
             "topes": {
                 "afp_uf": 81.6,
-                "afc_uf": 122.6,
+                "afc_uf": 135.2,
                 "salud_uf": 81.6,
                 "afp_clp": round(raw.get("uf", {}).get("valor", 0) * 81.6),
-                "afc_clp": round(raw.get("uf", {}).get("valor", 0) * 122.6),
+                "afc_clp": round(raw.get("uf", {}).get("valor", 0) * 135.2),
                 "salud_clp": round(raw.get("uf", {}).get("valor", 0) * 81.6),
             },
             "gratificacion": {
@@ -992,7 +997,7 @@ async def _fetch_indicators():
                 "employer_indefinido": 2.4,
                 "employer_plazo_fijo": 3.0,
             },
-            "sis_rate": 1.41,
+            "sis_rate": 1.54,  # 1.54% vigente desde ene-2026 (Superintendencia Pensiones)
             "mutual_base_rate": 0.93,
             "source": "mindicador.cl",
             "fetched_at": datetime.utcnow().isoformat(),
@@ -1014,7 +1019,7 @@ async def _fetch_indicators():
             "utm": {"value": 67294, "name": "UTM (valor por defecto)", "date": ""},
             "dolar": {"value": 950, "name": "Dolar (valor por defecto)", "date": ""},
             "imm": {"value": _get_current_imm(), "name": "Ingreso Minimo Mensual"},
-            "topes": {"afp_uf": 81.6, "afc_uf": 122.6, "salud_uf": 81.6, "afp_clp": 3158520, "afc_clp": 4749420, "salud_clp": 3158520},
+            "topes": {"afp_uf": 81.6, "afc_uf": 135.2, "salud_uf": 81.6, "afp_clp": 3158520, "afc_clp": 5386326, "salud_clp": 3158520},  # afc_clp: 135.2 * 39841 ≈ 5.386.326
             "gratificacion": {"tope_mensual": round(_get_current_imm() * 4.75 / 12), "tope_anual": round(_get_current_imm() * 4.75), "rate": 0.25},
             "error": str(e),
             "source": "fallback",
