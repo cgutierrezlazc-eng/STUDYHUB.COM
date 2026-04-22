@@ -94,7 +94,7 @@ export async function refreshAccessToken(): Promise<string | null> {
 
   const apiBase =
     (import.meta as unknown as { env?: { VITE_API_URL?: string } }).env?.VITE_API_URL ||
-    'https://studyhub-api-bpco.onrender.com';
+    'https://conniku-api.onrender.com'; // fallback: definir VITE_API_URL en .env
 
   try {
     const res = await fetch(`${apiBase}/auth/refresh`, {
@@ -129,7 +129,7 @@ function getWsBase(): string {
   // https:// → wss://, http:// → ws://. Fallback al dominio conocido si no está.
   const apiUrl =
     (import.meta as unknown as { env?: { VITE_API_URL?: string } }).env?.VITE_API_URL ||
-    'https://studyhub-api-bpco.onrender.com';
+    'https://conniku-api.onrender.com'; // fallback: definir VITE_API_URL en .env
   return apiUrl.replace(/^https:/, 'wss:').replace(/^http:/, 'ws:');
 }
 

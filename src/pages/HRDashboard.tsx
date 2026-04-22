@@ -2990,7 +2990,7 @@ function ContractModal({ employee, onClose }: { employee: Employee; onClose: () 
                     style={inputStyle}
                     value={form.companyRut}
                     onChange={(e) => u('companyRut', e.target.value)}
-                    placeholder="77.XXX.XXX-X"
+                    placeholder="78.395.702-7"
                   />
                 </div>
                 <div style={fieldStyle}>
@@ -5994,13 +5994,13 @@ function generateFiniquitoHTML(
 <title>Finiquito - ${emp.firstName} ${emp.lastName}</title>
 <style>${DOC_STYLES}</style>
 </head><body>
-<div class="header-info">CONNIKU SpA<br/>RUT: 77.XXX.XXX-X<br/>Santiago, Chile</div>
+<div class="header-info">CONNIKU SpA<br/>RUT: 78.395.702-7<br/>Santiago, Chile</div>
 <h1>Finiquito de Contrato de Trabajo</h1>
 <p class="legal-ref" style="text-align: center; margin-bottom: 24pt;">Conforme al Articulo 177 del Codigo del Trabajo</p>
 
 <div class="clause">
 <h2>PRIMERO: Partes</h2>
-<p>En Santiago, a ${dateStr}, entre <strong>CONNIKU SpA</strong>, RUT 77.XXX.XXX-X, representada legalmente para estos efectos, en adelante "el Empleador"; y don(a) <strong>${emp.firstName} ${emp.lastName}</strong>, RUT ${emp.rut}, de nacionalidad ${emp.nationality}, domiciliado(a) en ${emp.address}, en adelante "el Trabajador", se celebra el presente finiquito de contrato de trabajo.</p>
+<p>En Santiago, a ${dateStr}, entre <strong>CONNIKU SpA</strong>, RUT 78.395.702-7, representada legalmente para estos efectos, en adelante "el Empleador"; y don(a) <strong>${emp.firstName} ${emp.lastName}</strong>, RUT ${emp.rut}, de nacionalidad ${emp.nationality}, domiciliado(a) en ${emp.address}, en adelante "el Trabajador", se celebra el presente finiquito de contrato de trabajo.</p>
 </div>
 
 <div class="clause">
@@ -6056,7 +6056,7 @@ ${result.recargo > 0 ? `<tr><td>Recargo legal (${result.recargoPercent}% — Art
     <div class="sig-line">
       <strong>EL EMPLEADOR</strong><br/>
       CONNIKU SpA<br/>
-      RUT: 77.XXX.XXX-X
+      RUT: 78.395.702-7
     </div>
   </div>
   <div class="sig-block">
@@ -6120,7 +6120,7 @@ function generateCartaDespidoHTML(
 <title>Carta de Despido - ${emp.firstName} ${emp.lastName}</title>
 <style>${DOC_STYLES}</style>
 </head><body>
-<div class="header-info">CONNIKU SpA<br/>RUT: 77.XXX.XXX-X<br/>Santiago, Chile</div>
+<div class="header-info">CONNIKU SpA<br/>RUT: 78.395.702-7<br/>Santiago, Chile</div>
 
 <p style="text-align: right;">Santiago, ${dateStr}</p>
 
@@ -6189,7 +6189,7 @@ ${
   <div class="sig-line">
     <strong>CONNIKU SpA</strong><br/>
     Representante Legal<br/>
-    RUT: 77.XXX.XXX-X
+    RUT: 78.395.702-7
   </div>
 </div>
 
@@ -6232,7 +6232,7 @@ function generateCartaAmonestacionHTML(
 <title>Carta de Amonestacion - ${emp.firstName} ${emp.lastName}</title>
 <style>${DOC_STYLES}</style>
 </head><body>
-<div class="header-info">CONNIKU SpA<br/>RUT: 77.XXX.XXX-X<br/>Santiago, Chile</div>
+<div class="header-info">CONNIKU SpA<br/>RUT: 78.395.702-7<br/>Santiago, Chile</div>
 <h1>Carta de Amonestacion</h1>
 
 <p style="text-align: right;">Santiago, ${dateStr}</p>
@@ -6341,7 +6341,7 @@ function generateCertificadoHTML(
     titulo = 'Certificado de Antiguedad Laboral';
     contenido = `
 <div class="clause">
-<p>Por medio del presente, <strong>CONNIKU SpA</strong>, RUT 77.XXX.XXX-X, certifica que don(a) <strong>${emp.firstName} ${emp.lastName}</strong>, RUT ${emp.rut}, presta servicios para esta empresa desde el <strong>${hireDateStr}</strong>, desempenandose actualmente como <strong>${emp.position}</strong> en el departamento de <strong>${emp.department}</strong>.</p>
+<p>Por medio del presente, <strong>CONNIKU SpA</strong>, RUT 78.395.702-7, certifica que don(a) <strong>${emp.firstName} ${emp.lastName}</strong>, RUT ${emp.rut}, presta servicios para esta empresa desde el <strong>${hireDateStr}</strong>, desempenandose actualmente como <strong>${emp.position}</strong> en el departamento de <strong>${emp.department}</strong>.</p>
 <p>A la fecha del presente certificado, el trabajador cuenta con una antiguedad de <strong>${yearsWorked} anos y ${monthsExtra} meses</strong> de servicio continuo.</p>
 <p>Su contrato de trabajo es de tipo <strong>${emp.contractType}</strong>, con una jornada de <strong>${emp.weeklyHours} horas semanales</strong>.</p>
 <p>Se extiende el presente certificado a solicitud del interesado, para los fines que estime convenientes.</p>
@@ -6362,7 +6362,7 @@ function generateCertificadoHTML(
     );
     contenido = `
 <div class="clause">
-<p>Por medio del presente, <strong>CONNIKU SpA</strong>, RUT 77.XXX.XXX-X, certifica que don(a) <strong>${emp.firstName} ${emp.lastName}</strong>, RUT ${emp.rut}, presta servicios para esta empresa como <strong>${emp.position}</strong> y ha percibido las siguientes remuneraciones en los ultimos tres meses:</p>
+<p>Por medio del presente, <strong>CONNIKU SpA</strong>, RUT 78.395.702-7, certifica que don(a) <strong>${emp.firstName} ${emp.lastName}</strong>, RUT ${emp.rut}, presta servicios para esta empresa como <strong>${emp.position}</strong> y ha percibido las siguientes remuneraciones en los ultimos tres meses:</p>
 <table>
 <thead>
 <tr><th>Periodo</th><th style="text-align: right;">Remuneracion Bruta</th><th style="text-align: right;">Colacion</th><th style="text-align: right;">Movilizacion</th></tr>
@@ -6382,7 +6382,7 @@ function generateCertificadoHTML(
     const diasAcumulados = yearsWorked * diasBase;
     contenido = `
 <div class="clause">
-<p>Por medio del presente, <strong>CONNIKU SpA</strong>, RUT 77.XXX.XXX-X, deja constancia del registro de feriado anual (vacaciones) de don(a) <strong>${emp.firstName} ${emp.lastName}</strong>, RUT ${emp.rut}, quien presta servicios desde el <strong>${hireDateStr}</strong>.</p>
+<p>Por medio del presente, <strong>CONNIKU SpA</strong>, RUT 78.395.702-7, deja constancia del registro de feriado anual (vacaciones) de don(a) <strong>${emp.firstName} ${emp.lastName}</strong>, RUT ${emp.rut}, quien presta servicios desde el <strong>${hireDateStr}</strong>.</p>
 
 <h2>Detalle de Feriado Anual</h2>
 <table>
@@ -6403,7 +6403,7 @@ function generateCertificadoHTML(
 <title>${titulo} - ${emp.firstName} ${emp.lastName}</title>
 <style>${DOC_STYLES}</style>
 </head><body>
-<div class="header-info">CONNIKU SpA<br/>RUT: 77.XXX.XXX-X<br/>Santiago, Chile</div>
+<div class="header-info">CONNIKU SpA<br/>RUT: 78.395.702-7<br/>Santiago, Chile</div>
 <h1>${titulo}</h1>
 
 <p style="text-align: right;">Santiago, ${dateStr}</p>
@@ -6414,7 +6414,7 @@ ${contenido}
   <div class="sig-line">
     <strong>CONNIKU SpA</strong><br/>
     Representante Legal<br/>
-    RUT: 77.XXX.XXX-X
+    RUT: 78.395.702-7
   </div>
 </div>
 </body></html>`;

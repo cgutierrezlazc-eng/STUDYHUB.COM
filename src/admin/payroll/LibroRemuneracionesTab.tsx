@@ -372,7 +372,7 @@ export default function LibroRemuneracionesTab() {
   @media print { body { margin: 10px; } }
 </style></head><body>
 <h1>LIBRO DE REMUNERACIONES ELECTRÓNICO</h1>
-<h2>Conniku SpA — RUT: 77.XXX.XXX-X — ${MONTHS[selectedMonth - 1]} ${selectedYear}</h2>
+<h2>Conniku SpA — RUT: 78.395.702-7 — ${MONTHS[selectedMonth - 1]} ${selectedYear}</h2>
 <table>
 <thead><tr>${LRE_COLUMNS.map((c) => `<th>${c}</th>`).join('')}</tr></thead>
 <tbody>
@@ -940,7 +940,7 @@ ${lreRows
             <div style={{ display: 'grid', gap: 12 }}>
               {[
                 { label: 'Razón Social', value: 'Conniku SpA' },
-                { label: 'RUT Empresa', value: '77.XXX.XXX-X' },
+                { label: 'RUT Empresa', value: '78.395.702-7' },
                 { label: 'Representante Legal', value: 'Cristian G.' },
                 { label: 'Dirección', value: 'Santiago, Chile' },
                 { label: 'Giro', value: 'Desarrollo de Software y Plataformas Educativas' },
