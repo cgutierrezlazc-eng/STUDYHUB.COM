@@ -24,6 +24,7 @@ from middleware import get_current_user
 from pydantic import BaseModel, Field
 from sqlalchemy import Boolean, Column, DateTime, Float, ForeignKey, Index, Integer, String, Text, desc, func
 from sqlalchemy.orm import Session, relationship
+from constants.labor_chile import get_weekly_hours_at_date  # Ley 21.561 escalones dinámicos
 
 router = APIRouter(prefix="/hr", tags=["hr"])
 
@@ -575,7 +576,8 @@ class EmployeeCreate(BaseModel):
     end_date: Optional[str] = None
     contract_type: str = "indefinido"
     work_schedule: str = "full_time"
-    weekly_hours: int = 45
+    # Desde 2026-04-26 la jornada máxima legal es 42h (Ley 21.561 escalón 2)
+    weekly_hours: int = 42
     gross_salary: float
     colacion: float = 0
     movilizacion: float = 0
@@ -999,6 +1001,19 @@ async def _fetch_indicators():
             },
             "sis_rate": 1.54,  # 1.54% vigente desde ene-2026 (Superintendencia Pensiones)
             "mutual_base_rate": 0.93,
+            # Jornada laboral — automática según Ley 21.561 escalones
+            # get_weekly_hours_at_date() ya tiene los 3 escalones codificados con sus fechas
+            "jornada_laboral": {
+                "horas_semanales": get_weekly_hours_at_date(date.today()),
+                "horas_mensuales": get_weekly_hours_at_date(date.today()) * 4,
+                "proximo_escalon": {
+                    "horas": 40,
+                    "fecha": "2028-04-26",
+                    "ley": "Ley 21.561 Art. 1° escalón 3",
+                },
+                "ley": "Ley 21.561",
+                "fuente": "bcn.cl/leychile/navegar?idNorma=1194020",
+            },
             "source": "mindicador.cl",
             "fetched_at": datetime.utcnow().isoformat(),
             "cache_ttl_seconds": _CACHE_TTL,
