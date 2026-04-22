@@ -1,0 +1,1013 @@
+<!DOCTYPE html>
+<html lang="es-CL">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Contacto · Conniku</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Funnel+Display:wght@400;600;700;800;900&family=Geist+Mono:wght@400;500;600;700&display=swap" />
+<style>
+  :root{
+    --ink:#0D0F10; --ink-2:#2B2E30; --ink-3:#696C6F;
+    --paper:#F5F4EF; --paper-2:#EBE9E1;
+    --lime:#D9FF3A; --orange:#FF4A1C; --pink:#FF4D3A; --cream:#FFE9B8; --violet:#6B4EFF; --cyan:#00C2FF;
+    --fd:'Funnel Display',-apple-system,sans-serif;
+    --fm:'Geist Mono',ui-monospace,monospace;
+    --ease:cubic-bezier(.2,.8,.2,1);
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  html,body{height:100%}
+  body{background:#E8E5DB;color:var(--ink);font-family:var(--fd);min-height:100vh;overflow-x:hidden;position:relative;display:flex;flex-direction:column}
+  .shell{flex:1}
+  .site-footer{flex-shrink:0;margin-top:auto}
+
+  .halftone{position:fixed;inset:0;pointer-events:none;z-index:0;overflow:hidden}
+  .dots{position:absolute;mix-blend-mode:multiply}
+  .d1{top:-140px;left:-140px;width:620px;height:620px;background:radial-gradient(circle,var(--lime) 8%,transparent 10%);background-size:16px 16px;-webkit-mask:radial-gradient(circle at 40% 40%,#000 0%,transparent 42%);mask:radial-gradient(circle at 40% 40%,#000 0%,transparent 42%);opacity:.85}
+  .d2{bottom:-160px;right:-160px;width:640px;height:640px;background:radial-gradient(circle,var(--orange) 12%,transparent 14%);background-size:14px 14px;-webkit-mask:radial-gradient(circle at 60% 60%,#000 0%,transparent 42%);mask:radial-gradient(circle at 60% 60%,#000 0%,transparent 42%);opacity:.45}
+
+  nav{display:flex;align-items:center;justify-content:space-between;padding:18px 40px;background:var(--paper);border-bottom:1.5px solid var(--orange);position:sticky;top:0;z-index:10;backdrop-filter:blur(6px)}
+
+  .wm{font-family:var(--fd);font-weight:900;font-size:32px;letter-spacing:-.055em;display:inline-flex;align-items:baseline;color:var(--ink);line-height:1}
+  .wm .u-pack{display:inline-flex;align-items:baseline;background:#D9FF3A;color:#0D0F10;padding:.07em .14em .07em .09em;border-radius:.2em;margin-left:.02em}
+  .wm .u-pack .dot{color:#FF4A1C}
+  .wm.on-dark{color:#F5F4EF}
+  .wm-gate{font-size:28px;margin-bottom:16px}
+
+  .nav-links{display:flex;align-items:center;gap:18px;font-family:var(--fm);font-size:13px}
+  .nav-divider,.nav-link-divider{display:inline-block;width:1px;height:18px;background:var(--orange);vertical-align:middle}
+  .nav-links a{color:var(--ink);text-decoration:none;font-weight:500}
+  .nav-links a:hover{color:var(--orange)}
+  .nav-business{font-weight:700;letter-spacing:0.04em}
+  .nav-cta-link{font-family:var(--fd);font-weight:700;font-size:15px;padding:4px 10px;border:1.5px solid transparent;transition:all .15s var(--ease)}
+  .nav-cta-link:hover{box-shadow:4px 4px 0 var(--lime);transform:translate(-1px,-1px);color:var(--ink)}
+  .nav-cta{font-family:var(--fd);font-weight:700;padding:6px 14px;background:var(--orange);color:var(--paper);text-decoration:none;border:1.5px solid var(--ink);transition:all .15s var(--ease)}
+  .nav-cta:hover{box-shadow:4px 4px 0 var(--ink);transform:translate(-1px,-1px);color:var(--paper)}
+
+  main{padding:40px 40px 60px 40px;max-width:1180px;margin:0 auto;position:relative;z-index:2}
+
+  .hero{padding:32px 0 40px 0;border-bottom:2px solid var(--ink)}
+  .kicker{font-family:var(--fm);font-size:12px;text-transform:uppercase;letter-spacing:0.08em;color:var(--ink-3);margin-bottom:14px}
+  h1.hero-h1{font-family:var(--fd);font-weight:900;font-size:clamp(56px,8vw,112px);line-height:0.95;letter-spacing:-0.035em;margin-bottom:18px}
+  h1.hero-h1 .stamp{background:var(--orange);color:var(--paper);padding:0 12px;display:inline-block;transform:rotate(-1deg)}
+  .hero-sub{font-size:18px;color:var(--ink-2);max-width:620px;line-height:1.55}
+
+  /* Layout 2 columnas: formulario + info */
+  .contact-layout{display:grid;grid-template-columns:minmax(0,1.4fr) minmax(0,1fr);gap:48px;margin-top:40px;align-items:start}
+
+  .form-panel{background:var(--paper);border:2px solid var(--ink);box-shadow:10px 10px 0 var(--ink);padding:36px;min-width:0}
+  .form-title{font-family:var(--fd);font-weight:800;font-size:22px;margin-bottom:6px;letter-spacing:-0.01em}
+  .form-subtitle{font-family:var(--fm);font-size:12px;text-transform:uppercase;letter-spacing:0.06em;color:var(--ink-3);margin-bottom:24px}
+
+  .field{margin-bottom:18px}
+  .field.row2{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+  .field label{display:block;font-family:var(--fd);font-weight:700;font-size:13px;margin-bottom:6px;color:var(--ink);letter-spacing:0.01em}
+  .field .req{color:var(--orange);margin-left:2px}
+  .field .hint{font-family:var(--fm);font-size:11px;color:var(--ink-3);margin-top:4px;font-weight:500}
+  .field input,.field select,.field textarea{
+    width:100%;padding:12px 14px;
+    font-family:var(--fd);font-weight:500;font-size:15px;
+    background:var(--paper);border:1.5px solid var(--ink);color:var(--ink);
+    transition:box-shadow .1s var(--ease),transform .1s var(--ease);
+  }
+  .field input:focus,.field select:focus,.field textarea:focus{
+    outline:none;box-shadow:5px 5px 0 var(--orange);transform:translate(-1px,-1px);
+  }
+  .field input::placeholder,.field textarea::placeholder{color:var(--ink-3);font-weight:400}
+  .field textarea{min-height:140px;resize:vertical;line-height:1.5}
+  .field.has-error input,.field.has-error select,.field.has-error textarea{border-color:var(--orange)}
+  .field .error-msg{display:none;font-family:var(--fm);font-size:11px;color:var(--orange);margin-top:4px;font-weight:600}
+  .field.has-error .error-msg{display:block}
+
+  .checkbox-field{display:flex;align-items:flex-start;gap:10px;margin:20px 0 24px 0}
+  .checkbox-field input[type="checkbox"]{width:18px;height:18px;border:1.5px solid var(--ink);accent-color:var(--orange);cursor:pointer;flex-shrink:0;margin-top:2px}
+  .checkbox-field label{font-family:var(--fd);font-size:13px;color:var(--ink-2);line-height:1.5;cursor:pointer}
+  .checkbox-field a{color:var(--ink);text-decoration:underline;font-weight:600}
+  .checkbox-field a:hover{color:var(--orange)}
+  .checkbox-field.has-error label{color:var(--orange)}
+
+  .submit-row{display:flex;align-items:center;gap:16px;flex-wrap:wrap}
+  .btn-submit{
+    font-family:var(--fd);font-weight:900;font-size:15px;
+    padding:14px 32px;background:var(--orange);color:var(--paper);
+    border:2px solid var(--ink);box-shadow:5px 5px 0 var(--ink);
+    cursor:pointer;text-transform:uppercase;letter-spacing:0.05em;
+    transition:all .15s var(--ease);
+  }
+  .btn-submit:hover{box-shadow:8px 8px 0 var(--ink);transform:translate(-2px,-2px)}
+  .btn-submit:active{box-shadow:2px 2px 0 var(--ink);transform:translate(0,0)}
+  .btn-submit:disabled{background:var(--ink-3);cursor:not-allowed;box-shadow:none;transform:none}
+  .submit-note{font-family:var(--fm);font-size:11px;color:var(--ink-3);font-weight:500}
+
+  .success-box{display:none;background:var(--lime);border:2px solid var(--ink);box-shadow:6px 6px 0 var(--ink);padding:24px;margin-top:20px;font-family:var(--fd);font-weight:600}
+  .success-box.is-visible{display:block}
+  .success-box h3{font-weight:900;font-size:18px;margin-bottom:6px;letter-spacing:-0.01em}
+  .success-box p{font-size:14px;color:var(--ink-2);line-height:1.5;margin:0}
+  .success-box .fallback{margin-top:12px;font-family:var(--fm);font-size:12px;color:var(--ink-2)}
+  .success-box .fallback a{color:var(--ink);text-decoration:underline;font-weight:700}
+
+  /* Info derecha */
+  .info-col{display:flex;flex-direction:column;gap:20px;min-width:0}
+  .info-card{background:var(--paper);border:2px solid var(--ink);padding:22px}
+  .info-card.shadow{box-shadow:6px 6px 0 var(--ink)}
+  .info-card h3{font-family:var(--fd);font-weight:800;font-size:15px;text-transform:uppercase;letter-spacing:0.04em;margin-bottom:14px}
+  .info-card h3 .hl{background:var(--cream);padding:0 6px}
+  .info-card p{font-size:14px;color:var(--ink-2);line-height:1.55}
+
+  .sla-list{list-style:none;padding:0;margin:0}
+  .sla-list li{display:flex;justify-content:space-between;gap:10px;padding:8px 0;border-bottom:1px dashed var(--ink-3);font-size:13px;color:var(--ink-2)}
+  .sla-list li:last-child{border-bottom:none}
+  .sla-list li .ch{font-family:var(--fd);font-weight:700;color:var(--ink)}
+  .sla-list li .dur{font-family:var(--fm);font-size:11px;text-transform:uppercase;letter-spacing:0.04em;color:var(--ink-3)}
+
+  .office dl{font-family:var(--fm);font-size:12px;line-height:1.9;color:var(--ink-2);margin:0}
+  .office dl .row{display:flex;gap:8px;align-items:baseline}
+  .office dl dt{color:var(--ink-3);text-transform:uppercase;letter-spacing:0.04em;font-size:10.5px;font-weight:600;min-width:80px}
+  .office dl dd{color:var(--ink);font-weight:700}
+
+  .alt-email{background:var(--paper-2);border:1.5px dashed var(--ink);padding:16px;font-family:var(--fm);font-size:12px;color:var(--ink-2);text-align:center}
+  .alt-email a{color:var(--ink);font-weight:700;text-decoration:underline}
+  .alt-email a:hover{color:var(--orange)}
+
+  .footer-note{margin-top:48px;padding:24px;background:var(--paper-2);border:1.5px solid var(--ink);font-family:var(--fd);font-size:15px;color:var(--ink-2);line-height:1.6;text-align:center;max-width:640px;margin-left:auto;margin-right:auto}
+  .footer-note strong{color:var(--ink)}
+
+  /* Footer común */
+  .site-footer{padding:2px 32px 2px 40px;background:var(--paper);position:relative;z-index:5;font-family:var(--fm)}
+  .footer-row{display:flex;justify-content:space-between;align-items:center;padding:10px 0}
+  .footer-nav{display:flex;align-items:center;gap:14px;padding:0;border-bottom:none;background:transparent;backdrop-filter:none;z-index:auto;position:static}
+  .footer-nav-item{position:relative}
+  .footer-nav-btn{font-family:var(--fm);font-size:11px;font-weight:600;background:transparent;border:none;color:var(--ink-3);cursor:pointer;text-transform:uppercase;letter-spacing:0.06em;padding:4px 8px;transition:color .15s var(--ease)}
+  .footer-nav-btn:hover{color:var(--ink)}
+  .footer-popover{display:none;position:absolute;bottom:calc(100% + 8px);left:0;min-width:220px;background:var(--paper);border:1.5px solid var(--ink);box-shadow:4px 4px 0 var(--ink);padding:10px 0;z-index:20}
+  .footer-popover.is-open{display:block}
+  .footer-popover ul{list-style:none;margin:0;padding:0}
+  .footer-popover li a{display:block;padding:8px 16px;font-family:var(--fd);font-size:13px;color:var(--ink);text-decoration:none;font-weight:500}
+  .footer-popover li a:hover{background:var(--paper-2);color:var(--orange)}
+  .footer-direct-link{padding:4px 8px;font-family:var(--fm);font-size:11px;font-weight:600;color:var(--ink-3);text-decoration:none;text-transform:uppercase;letter-spacing:0.06em}
+  .footer-direct-link:hover{color:var(--ink)}
+  .footer-divider{display:inline-block;width:1px;height:12px;background:var(--orange);vertical-align:middle}
+  .footer-copy{font-family:var(--fm);font-size:10.5px;color:var(--ink-3);letter-spacing:0.04em}
+
+  @media (max-width:900px){
+    nav{padding:14px 20px;flex-wrap:wrap;gap:10px}
+    .nav-links{font-size:12px;gap:10px}
+    main{padding:24px 20px 40px 20px}
+    .contact-layout{grid-template-columns:1fr;gap:20px}
+    .form-panel{padding:24px}
+    .field.row2{grid-template-columns:1fr}
+    .site-footer{padding:10px 16px}
+  }
+
+  /* Gate */
+  .gate{position:fixed;inset:0;background:var(--paper);z-index:9999;display:flex;align-items:center;justify-content:center;padding:20px}
+  .gate-card{max-width:380px;width:100%;border:2px solid var(--ink);background:var(--paper-2);padding:28px;box-shadow:10px 10px 0 var(--ink)}
+  .gate-title{font-family:var(--fd);font-weight:800;font-size:16px;margin-bottom:12px}
+  .gate-input{width:100%;padding:10px 14px;font-family:var(--fm);font-size:14px;border:1.5px solid var(--ink);background:var(--paper);margin-bottom:12px}
+  .gate-btn{width:100%;padding:10px;font-family:var(--fd);font-weight:800;background:var(--orange);color:var(--paper);border:1.5px solid var(--ink);cursor:pointer;text-transform:uppercase;letter-spacing:0.04em}
+  .gate-btn:hover{box-shadow:4px 4px 0 var(--ink);transform:translate(-1px,-1px)}
+  .gate-err{color:var(--orange);font-family:var(--fm);font-size:12px;margin-top:8px;min-height:18px}
+</style>
+<script src="./_gate.js" defer></script>
+</head>
+<body>
+
+<div class="gate" id="gate">
+  <div class="gate-card">
+    <span class="wm wm-gate">conn<span>i</span>k<span class="u-pack">u<span class="dot">.</span></span></span>
+    <div class="gate-title">Vista previa</div>
+    <input type="password" class="gate-input" id="gate-pw" placeholder="Contraseña" autofocus />
+    <button class="gate-btn" onclick="checkGate()">Entrar</button>
+    <div class="gate-err" id="gate-err"></div>
+  </div>
+</div>
+
+<div class="halftone">
+  <div class="dots d1"></div>
+  <div class="dots d2"></div>
+</div>
+
+<div class="shell">
+
+<nav>
+  <span class="wm">conn<span>i</span>k<span class="u-pack">u<span class="dot">.</span></span></span>
+  <div class="nav-links">
+    <span class="nav-divider" aria-hidden="true"></span>
+    <a href="./producto.html">Producto</a>
+    <span class="nav-link-divider" aria-hidden="true"></span>
+    <a href="./como-funciona.html">Cómo funciona</a>
+    <span class="nav-link-divider" aria-hidden="true"></span>
+    <a href="./planes.html">Planes</a>
+    <span class="nav-link-divider" aria-hidden="true"></span>
+    <a href="./kiosko.html">Kiosko</a>
+    <span class="nav-link-divider" aria-hidden="true"></span>
+    <a href="./business.html" class="nav-business">BUSINESS</a>
+    <a href="#" class="nav-cta-link">Entrar</a>
+    <a href="#" class="nav-cta">Crear cuenta</a>
+  </div>
+</nav>
+
+<main>
+
+  <section class="hero">
+    <div class="kicker">Conniku · Contacto</div>
+    <h1 class="hero-h1">Hablemos<span class="stamp">.</span></h1>
+    <p class="hero-sub">Cuéntanos qué necesitas. Enrutamos tu mensaje al equipo correcto según el motivo y respondemos dentro de los tiempos declarados abajo.</p>
+  </section>
+
+  <div class="contact-layout">
+
+    <!-- FORMULARIO -->
+    <form class="form-panel" id="contactForm" novalidate>
+      <div class="form-title">Escríbenos</div>
+      <div class="form-subtitle">Campos marcados con <span style="color:var(--orange)">*</span> son obligatorios</div>
+
+      <div class="field row2">
+        <div>
+          <label for="f-name">Nombre completo <span class="req">*</span></label>
+          <input id="f-name" name="name" type="text" required minlength="2" maxlength="80" placeholder="Ej. Cristian Gutiérrez" autocomplete="name" />
+          <div class="error-msg">Por favor ingresa tu nombre.</div>
+        </div>
+        <div>
+          <label for="f-email">Correo electrónico <span class="req">*</span></label>
+          <input id="f-email" name="email" type="email" required placeholder="tu@correo.com" autocomplete="email" />
+          <div class="error-msg">Por favor ingresa un correo válido.</div>
+        </div>
+      </div>
+
+      <div class="field">
+        <label for="f-reason">Motivo de contacto <span class="req">*</span></label>
+        <select id="f-reason" name="reason" required>
+          <option value="">Selecciona un motivo…</option>
+          <option value="comercial">Consulta comercial</option>
+          <option value="universidad">Alianza con universidad o institución</option>
+          <option value="prensa">Prensa y medios</option>
+          <option value="legal">Asuntos legales o privacidad</option>
+          <option value="seguridad">Reporte de seguridad</option>
+          <option value="otro">Otro</option>
+        </select>
+        <div class="hint">Según el motivo, tu mensaje se envía al equipo correspondiente.</div>
+        <div class="error-msg">Selecciona un motivo para continuar.</div>
+      </div>
+
+      <div class="field">
+        <label for="f-org">Organización <span style="color:var(--ink-3);font-weight:500;font-size:11px">(opcional)</span></label>
+        <input id="f-org" name="org" type="text" maxlength="120" placeholder="Universidad, empresa, medio de comunicación…" autocomplete="organization" />
+      </div>
+
+      <div class="field">
+        <label for="f-message">Mensaje <span class="req">*</span></label>
+        <textarea id="f-message" name="message" required minlength="20" maxlength="2000" placeholder="Cuéntanos brevemente sobre qué quieres hablar. Entre más claro, más rápido podemos responder."></textarea>
+        <div class="hint">Entre 20 y 2000 caracteres.</div>
+        <div class="error-msg">El mensaje debe tener al menos 20 caracteres.</div>
+      </div>
+
+      <div class="field checkbox-field" id="f-consent-wrap">
+        <input type="checkbox" id="f-consent" name="consent" required />
+        <label for="f-consent">Acepto que Conniku procese mi nombre, correo y mensaje para responder a esta consulta, conforme a la <a href="#" onclick="openLegalModal('privacy'); return false">Política de Privacidad</a> y la Ley N° 19.628.</label>
+      </div>
+
+      <!-- Honeypot anti-spam (invisible para humanos, bots lo llenan) -->
+      <div style="position:absolute;left:-9999px;opacity:0;height:0;overflow:hidden" aria-hidden="true">
+        <label for="f-honeypot">No llenar este campo (anti-spam):</label>
+        <input id="f-honeypot" name="honeypot_field" type="text" tabindex="-1" autocomplete="off" />
+      </div>
+
+      <div class="submit-row">
+        <button type="submit" class="btn-submit">Enviar mensaje</button>
+        <div class="submit-note">Respondemos por correo al mail que indicaste.</div>
+      </div>
+
+      <div class="success-box" id="successBox" role="status" aria-live="polite">
+        <h3>¡Listo! Tu ticket fue creado.</h3>
+        <p>Te llega un correo de confirmación en unos minutos.</p>
+      </div>
+    </form>
+
+    <!-- INFO -->
+    <aside class="info-col">
+
+      <div class="info-card shadow">
+        <h3>Tiempos de <span class="hl">respuesta</span></h3>
+        <ul class="sla-list">
+          <li><span class="ch">Consulta comercial</span><span class="dur">&lt; 2 días hábiles</span></li>
+          <li><span class="ch">Universidad / alianza</span><span class="dur">&lt; 3 días hábiles</span></li>
+          <li><span class="ch">Prensa y medios</span><span class="dur">&lt; 5 días hábiles</span></li>
+          <li><span class="ch">Legal / privacidad</span><span class="dur">&lt; 30 días calendario</span></li>
+          <li><span class="ch">Reporte seguridad</span><span class="dur">&lt; 48 horas</span></li>
+          <li><span class="ch">Soporte técnico</span><span class="dur"><a href="./soporte.html" style="color:var(--ink);text-decoration:underline;font-weight:700">Ir a Soporte →</a></span></li>
+        </ul>
+      </div>
+
+      <div class="info-card office">
+        <h3>Oficina</h3>
+        <dl>
+          <div class="row"><dt>Razón social</dt><dd>Conniku SpA</dd></div>
+          <div class="row"><dt>RUT</dt><dd>78.395.702-7</dd></div>
+          <div class="row"><dt>Sede</dt><dd>Antofagasta, Chile</dd></div>
+          <div class="row"><dt>Sitio</dt><dd>conniku.com</dd></div>
+        </dl>
+      </div>
+
+      <div class="alt-email">
+        ¿Prefieres escribir directo?<br>
+        <a href="mailto:contacto@conniku.com">contacto@conniku.com</a>
+      </div>
+
+    </aside>
+
+  </div>
+
+  <div class="footer-note">
+    También puedes escribirnos si solo quieres contarnos tu experiencia o sugerirnos algo. <strong>Leemos todo.</strong>
+  </div>
+
+</main>
+
+</div>
+
+<footer class="site-footer">
+  <div class="footer-row">
+    <nav class="footer-nav">
+      <div class="footer-nav-item">
+        <button type="button" class="footer-nav-btn" data-popover="legal">Legal</button>
+        <div class="footer-popover" id="pop-legal">
+          <ul>
+            <li><a href="#" onclick="openLegalModal('terms'); return false">Términos y Condiciones</a></li>
+            <li><a href="#" onclick="openLegalModal('privacy'); return false">Política de Privacidad</a></li>
+            <li><a href="#" onclick="openLegalModal('cookies'); return false">Política de Cookies</a></li>
+            <li><a href="#" onclick="openLegalModal('age-declaration'); return false">Declaración de Edad</a></li>
+          </ul>
+        </div>
+      </div>
+      <span class="footer-divider" aria-hidden="true"></span>
+      <div class="footer-nav-item">
+        <button type="button" class="footer-nav-btn" data-popover="empresa">Empresa</button>
+        <div class="footer-popover" id="pop-empresa">
+          <ul>
+            <li><a href="./acerca.html">Acerca de</a></li>
+            <li><a href="./trabaja-con-nosotros.html">Trabaja con nosotros</a></li>
+            <li><a href="./prensa.html">Prensa</a></li>
+          </ul>
+        </div>
+      </div>
+      <span class="footer-divider" aria-hidden="true"></span>
+      <div class="footer-nav-item">
+        <button type="button" class="footer-nav-btn" data-popover="soporte">Soporte</button>
+        <div class="footer-popover" id="pop-soporte">
+          <ul>
+            <li><a href="#" onclick="openLegalModal('support', 'faq'); return false">Ayuda</a></li>
+            <li><a href="mailto:soporte@conniku.com?subject=Reporte%20de%20problema">Reportar un problema</a></li>
+          </ul>
+        </div>
+      </div>
+      <span class="footer-divider" aria-hidden="true"></span>
+      <a class="footer-direct-link" href="./contacto.html">Contacto</a>
+    </nav>
+    <div class="footer-copy">© 2026 Conniku SpA · Antofagasta, Chile · RUT 78.395.702-7</div>
+  </div>
+</footer>
+
+<script>
+  // Embed iframe detection (por si se abre desde modal)
+  var EMBED_IN_IFRAME = (function(){
+    try { return window.self !== window.top; } catch (e) { return true; }
+  })();
+  if (EMBED_IN_IFRAME) {
+    document.documentElement.classList.add('is-embed');
+    var styleEmbed = document.createElement('style');
+    styleEmbed.textContent = '.is-embed nav, .is-embed .gate, .is-embed .site-footer, .is-embed .halftone { display: none !important; }'
+      + ' .is-embed main { padding-top: 0 !important; }'
+      + ' .is-embed body { background: var(--paper) !important; }';
+    document.head.appendChild(styleEmbed);
+  }
+
+  // Gate
+  function checkGate(){
+    var pw = document.getElementById('gate-pw').value;
+    if (pw === 'conniku-preview-2026') {
+      sessionStorage.setItem('conniku-gate-ok','1');
+      document.getElementById('gate').style.display='none';
+    } else {
+      document.getElementById('gate-err').textContent='Contraseña incorrecta';
+    }
+  }
+  document.getElementById('gate-pw').addEventListener('keydown', function(e){
+    if (e.key==='Enter') checkGate();
+  });
+  if (sessionStorage.getItem('conniku-gate-ok')==='1') {
+    document.getElementById('gate').style.display='none';
+  }
+
+  // Footer popover toggle
+  document.querySelectorAll('.footer-nav-btn[data-popover]').forEach(function(btn){
+    btn.addEventListener('click', function(e){
+      e.stopPropagation();
+      var pop = document.getElementById('pop-'+this.getAttribute('data-popover'));
+      if (pop) {
+        document.querySelectorAll('.footer-popover.is-open').forEach(function(p){if(p!==pop) p.classList.remove('is-open')});
+        pop.classList.toggle('is-open');
+      }
+    });
+  });
+  document.addEventListener('click', function(){
+    document.querySelectorAll('.footer-popover.is-open').forEach(function(p){p.classList.remove('is-open')});
+  });
+
+  // Endpoint del backend
+  var API_BASE = 'https://studyhub-api-bpco.onrender.com';
+
+  // Hash canónico de Privacy vigente al momento de publicar esta página.
+  // ALERTA: si PRIVACY_HASH cambia en backend/constants/legal_versions.py,
+  // actualizar este valor o todos los POST responderán 409.
+  // Hash actual: PRIVACY_VERSION 2.4.0 — verificado 2026-04-22.
+  var PRIVACY_HASH_STATIC = '7a8ba81d0be22cc1deee7d92764baaac1a598a662b84d9ba90043b2a25f63f6c';
+
+  // Routing fallback motivo → email destino (usado solo si fetch falla)
+  var REASON_TO_EMAIL = {
+    'comercial':   'contacto@conniku.com',
+    'universidad': 'contacto@conniku.com',
+    'prensa':      'prensa@conniku.com',
+    'legal':       'legal@conniku.com',
+    'seguridad':   'seguridad@conniku.com',
+    'otro':        'contacto@conniku.com'
+  };
+
+  // Validación y submit
+  var form = document.getElementById('contactForm');
+  var successBox = document.getElementById('successBox');
+
+  function clearError(wrap){ if (wrap) wrap.classList.remove('has-error'); }
+  function showError(wrap){ if (wrap) wrap.classList.add('has-error'); }
+
+  ['f-name','f-email','f-reason','f-message'].forEach(function(id){
+    var el = document.getElementById(id);
+    if (el) {
+      el.addEventListener('input', function(){ clearError(this.closest('.field')); });
+      el.addEventListener('change', function(){ clearError(this.closest('.field')); });
+    }
+  });
+  var consent = document.getElementById('f-consent');
+  if (consent) consent.addEventListener('change', function(){ clearError(document.getElementById('f-consent-wrap')); });
+
+  form.addEventListener('submit', async function(e){
+    e.preventDefault();
+
+    // Validación manual
+    var name = document.getElementById('f-name');
+    var email = document.getElementById('f-email');
+    var reason = document.getElementById('f-reason');
+    var org = document.getElementById('f-org');
+    var message = document.getElementById('f-message');
+    var ok = true;
+
+    if (!name.value.trim() || name.value.trim().length < 2) { showError(name.closest('.field')); ok = false; }
+    if (!email.value.trim() || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email.value)) { showError(email.closest('.field')); ok = false; }
+    if (!reason.value) { showError(reason.closest('.field')); ok = false; }
+    if (!message.value.trim() || message.value.trim().length < 20) { showError(message.closest('.field')); ok = false; }
+    if (!consent.checked) { showError(document.getElementById('f-consent-wrap')); ok = false; }
+
+    if (!ok) {
+      form.querySelector('.has-error input, .has-error select, .has-error textarea').focus();
+      return;
+    }
+
+    // Deshabilitar botón y mostrar estado "Enviando..."
+    var btn = form.querySelector('.btn-submit');
+    var originalText = btn.textContent;
+    btn.disabled = true;
+    btn.textContent = 'Enviando...';
+
+    var payload = {
+      name: name.value.trim(),
+      email: email.value.trim(),
+      reason: reason.value,
+      org: org.value.trim() || null,
+      message: message.value.trim(),
+      consent: true,
+      consent_hash: PRIVACY_HASH_STATIC,
+      honeypot_field: document.getElementById('f-honeypot').value || ''
+    };
+
+    try {
+      var resp = await fetch(API_BASE + '/contact/tickets', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload)
+      });
+
+      if (resp.status === 409) {
+        // Política de privacidad cambió: hash obsoleto
+        btn.disabled = false;
+        btn.textContent = originalText;
+        successBox.querySelector('h3').textContent = 'Actualización requerida.';
+        successBox.querySelector('p').textContent = 'La política de privacidad fue actualizada. Recarga la página e intenta de nuevo.';
+        successBox.style.background = 'var(--cream)';
+        successBox.classList.add('is-visible');
+        successBox.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        return;
+      }
+
+      if (resp.status === 429) {
+        // Rate limit
+        btn.disabled = false;
+        btn.textContent = originalText;
+        successBox.querySelector('h3').textContent = 'Demasiadas solicitudes.';
+        successBox.querySelector('p').textContent = 'Recibimos varias consultas desde tu conexión en la última hora. Intenta de nuevo más tarde.';
+        successBox.style.background = 'var(--cream)';
+        successBox.classList.add('is-visible');
+        successBox.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        return;
+      }
+
+      if (!resp.ok) {
+        throw new Error('HTTP ' + resp.status);
+      }
+
+      var data = await resp.json();
+      // data = { ticket_number: "CNT-2026-000001", created_at, estimated_response }
+
+      successBox.querySelector('h3').textContent = '¡Listo! Tu ticket fue creado.';
+      successBox.querySelector('p').innerHTML = 'Tu número de ticket es <strong>' + data.ticket_number + '</strong>. '
+        + 'Te llega un correo de confirmación en unos minutos. '
+        + 'Respondemos en <strong>' + (data.estimated_response || 'los tiempos indicados arriba') + '</strong>.';
+      successBox.style.background = '';
+      successBox.classList.add('is-visible');
+      successBox.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      form.reset();
+
+    } catch (err) {
+      console.error('Error creando ticket:', err);
+      // Fallback: mostrar enlace mailto con datos pre-llenados
+      showFallbackMailto(payload);
+    } finally {
+      btn.disabled = false;
+      btn.textContent = originalText;
+    }
+  });
+
+  function showFallbackMailto(payload) {
+    var toEmail = REASON_TO_EMAIL[payload.reason] || 'contacto@conniku.com';
+    var subject = '[Conniku · ' + payload.reason + '] ' + payload.name;
+    var body = 'Nombre: ' + payload.name + '\nCorreo: ' + payload.email + '\nMotivo: ' + payload.reason + '\n'
+      + (payload.org ? 'Organización: ' + payload.org + '\n' : '')
+      + '\n--- Mensaje ---\n' + payload.message;
+    var mailto = 'mailto:' + toEmail + '?subject=' + encodeURIComponent(subject) + '&body=' + encodeURIComponent(body);
+
+    successBox.querySelector('h3').textContent = 'Hubo un problema técnico.';
+    successBox.querySelector('p').innerHTML = 'No pudimos crear el ticket ahora. Para no perder tu mensaje, te preparamos un correo con todos los datos. '
+      + '<a href="' + mailto + '" style="color:var(--ink);text-decoration:underline;font-weight:700">Enviar por correo →</a>';
+    successBox.style.background = 'var(--cream)';
+    successBox.classList.add('is-visible');
+    successBox.scrollIntoView({ behavior: 'smooth', block: 'center' });
+  }
+
+  /* CHECKLIST MANUAL post-deploy backend:
+     1. Abrir contacto.html (servido en http://localhost:8899), completar form, submit
+        → debe crear ticket y mostrar CNT-YYYY-NNNNNN en success-box.
+     2. Llenar honeypot con F12 (document.getElementById('f-honeypot').value='bot') antes
+        de submit → debe retornar éxito SIN crear ticket real (silent accept backend).
+     3. Submit 6 veces en <1 hora desde la misma IP → 6to request debe retornar 429
+        y mostrarse mensaje "Demasiadas solicitudes".
+     4. Submit con email inválido → validación client-side bloquea antes de fetch.
+     5. Backend offline (cortar red o endpoint incorrecto) → fallback mailto debe
+        aparecer con datos pre-llenados y enlace "Enviar por correo →".
+     6. Hash obsoleto: cambiar PRIVACY_HASH_STATIC a valor incorrecto y submit
+        → debe mostrar mensaje "Actualización requerida. Recarga la página".
+  */
+</script>
+
+
+<!-- CONNIKU-LEGAL-MODAL-INJECTED-START -->
+<style>
+  .legal-modal-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(13, 15, 16, 0.7);
+    z-index: 10001;
+    display: none;
+    align-items: center;
+    justify-content: center;
+    padding: 24px;
+  }
+  .legal-modal-overlay.is-visible { display: flex; }
+  .legal-modal-panel {
+    background: var(--paper, #F5F4EF);
+    border: 2px solid var(--ink, #0D0F10);
+    box-shadow: 12px 12px 0 var(--ink, #0D0F10);
+    width: 100%;
+    max-width: 860px;
+    height: 90vh;
+    max-height: 90vh;
+    display: flex;
+    flex-direction: column;
+    font-family: var(--fd, 'Funnel Display', sans-serif);
+    color: var(--ink, #0D0F10);
+  }
+  .legal-modal-head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 16px 24px;
+    border-bottom: 2px solid var(--ink, #0D0F10);
+    background: var(--paper, #F5F4EF);
+    flex-shrink: 0;
+  }
+  .legal-modal-title {
+    font-weight: 800;
+    font-size: 18px;
+    letter-spacing: -0.01em;
+    margin: 0;
+  }
+  .legal-modal-close {
+    background: transparent;
+    border: 2px solid var(--ink, #0D0F10);
+    font-family: var(--fd, 'Funnel Display', sans-serif);
+    font-weight: 700;
+    font-size: 14px;
+    padding: 6px 14px;
+    cursor: pointer;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    color: var(--ink, #0D0F10);
+    transition: all 0.1s ease;
+  }
+  .legal-modal-close:hover {
+    box-shadow: 3px 3px 0 var(--ink, #0D0F10);
+    transform: translate(-1px, -1px);
+    background: var(--orange, #FF4A1C);
+    color: var(--paper, #F5F4EF);
+  }
+  .legal-modal-body {
+    flex: 1;
+    overflow: hidden;
+    background: var(--paper, #F5F4EF);
+  }
+  .legal-modal-iframe {
+    width: 100%;
+    height: 100%;
+    border: none;
+    background: var(--paper, #F5F4EF);
+  }
+  @media (max-width: 640px) {
+    .legal-modal-overlay { padding: 8px; }
+    .legal-modal-panel { height: 95vh; max-height: 95vh; }
+    .legal-modal-head { padding: 12px 16px; }
+    .legal-modal-title { font-size: 15px; }
+  }
+</style>
+
+<div id="legalModalOverlay" class="legal-modal-overlay" onclick="legalModalBgClick(event)" role="dialog" aria-modal="true" aria-labelledby="legalModalTitle">
+  <div class="legal-modal-panel">
+    <div class="legal-modal-head">
+      <h2 id="legalModalTitle" class="legal-modal-title">Documento legal</h2>
+      <button class="legal-modal-close" onclick="closeLegalModal()" aria-label="Cerrar documento legal">Cerrar</button>
+    </div>
+    <div class="legal-modal-body">
+      <iframe id="legalModalIframe" class="legal-modal-iframe" src="about:blank" title="Documento legal"></iframe>
+    </div>
+  </div>
+</div>
+
+<script>
+  (function () {
+    const LEGAL_DOCS = {
+      'terms': { file: 'legal-terms.html', title: 'Términos y Condiciones' },
+      'privacy': { file: 'legal-privacy.html', title: 'Política de Privacidad' },
+      'cookies': { file: 'legal-cookies.html', title: 'Política de Cookies' },
+      'age-declaration': { file: 'legal-age-declaration.html', title: 'Declaración de Edad' },
+      'support': { file: 'soporte.html', title: 'Soporte · Conniku' }
+    };
+    let previousFocus = null;
+
+    window.openLegalModal = function (docKey, tabKey) {
+      const doc = LEGAL_DOCS[docKey];
+      if (!doc) return;
+      previousFocus = document.activeElement;
+      document.getElementById('legalModalTitle').textContent = doc.title;
+      document.getElementById('legalModalIframe').src = tabKey ? (doc.file + '#tab-' + tabKey) : doc.file;
+      document.getElementById('legalModalOverlay').classList.add('is-visible');
+      document.body.style.overflow = 'hidden';
+      // También cerrar el popover del footer si está abierto
+      document.querySelectorAll('.footer-popover.is-open').forEach(function (el) {
+        el.classList.remove('is-open');
+      });
+    };
+
+    window.closeLegalModal = function () {
+      document.getElementById('legalModalOverlay').classList.remove('is-visible');
+      document.getElementById('legalModalIframe').src = 'about:blank';
+      document.body.style.overflow = '';
+      if (previousFocus && typeof previousFocus.focus === 'function') {
+        previousFocus.focus();
+      }
+    };
+
+    window.legalModalBgClick = function (e) {
+      if (e.target && e.target.id === 'legalModalOverlay') {
+        window.closeLegalModal();
+      }
+    };
+
+    document.addEventListener('keydown', function (e) {
+      if (e.key === 'Escape') {
+        const ov = document.getElementById('legalModalOverlay');
+        if (ov && ov.classList.contains('is-visible')) {
+          e.preventDefault();
+          window.closeLegalModal();
+        }
+      }
+    });
+  })();
+</script>
+<!-- CONNIKU-LEGAL-MODAL-INJECTED-END -->
+
+<!-- CONNIKU-COOKIE-BANNER-INJECTED-START -->
+<style>
+  .ck-banner {
+    position: fixed;
+    left: 16px;
+    right: 16px;
+    bottom: 16px;
+    background: var(--paper, #F5F4EF);
+    border: 2px solid var(--ink, #0D0F10);
+    box-shadow: 8px 8px 0 var(--ink, #0D0F10);
+    padding: 20px 24px;
+    z-index: 9999;
+    font-family: var(--fd, 'Funnel Display', sans-serif);
+    color: var(--ink, #0D0F10);
+    max-width: 720px;
+    margin: 0 auto;
+    display: none;
+  }
+  .ck-banner.is-visible { display: block; }
+  .ck-banner h3 {
+    font-size: 18px;
+    font-weight: 800;
+    margin-bottom: 8px;
+    letter-spacing: -0.01em;
+  }
+  .ck-banner p { font-size: 14px; line-height: 1.4; margin-bottom: 6px; }
+  .ck-banner .ck-retract-notice {
+    font-size: 12px;
+    color: var(--ink-3, #696C6F);
+    margin-top: 10px;
+    margin-bottom: 14px;
+    font-style: italic;
+  }
+  .ck-banner .ck-btns { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 12px; }
+  .ck-banner button, .ck-modal button {
+    font-family: var(--fd, 'Funnel Display', sans-serif);
+    font-size: 13px;
+    font-weight: 700;
+    padding: 10px 16px;
+    border: 2px solid var(--ink, #0D0F10);
+    background: var(--paper, #F5F4EF);
+    color: var(--ink, #0D0F10);
+    cursor: pointer;
+    transition: all 0.1s ease;
+    letter-spacing: 0.02em;
+    text-transform: uppercase;
+  }
+  .ck-banner button:hover, .ck-modal button:hover {
+    box-shadow: 3px 3px 0 var(--ink, #0D0F10);
+    transform: translate(-1px, -1px);
+  }
+  .ck-banner .ck-btn-accept { background: var(--lime, #D9FF3A); }
+  .ck-banner .ck-btn-reject { background: var(--paper, #F5F4EF); }
+  .ck-banner .ck-btn-customize { background: var(--cream, #FFE9B8); }
+  .ck-banner a { color: var(--ink, #0D0F10); text-decoration: underline; font-weight: 700; }
+
+  .ck-modal-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(13, 15, 16, 0.6);
+    z-index: 10000;
+    display: none;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+  }
+  .ck-modal-overlay.is-visible { display: flex; }
+  .ck-modal {
+    background: var(--paper, #F5F4EF);
+    border: 2px solid var(--ink, #0D0F10);
+    box-shadow: 12px 12px 0 var(--ink, #0D0F10);
+    max-width: 640px;
+    width: 100%;
+    max-height: 85vh;
+    overflow-y: auto;
+    padding: 28px;
+    font-family: var(--fd, 'Funnel Display', sans-serif);
+    color: var(--ink, #0D0F10);
+  }
+  .ck-modal h2 {
+    font-size: 24px;
+    font-weight: 800;
+    margin-bottom: 6px;
+    letter-spacing: -0.02em;
+  }
+  .ck-modal .ck-subtitle { font-size: 13px; color: var(--ink-3, #696C6F); margin-bottom: 20px; }
+  .ck-cat {
+    border-top: 1px solid var(--ink, #0D0F10);
+    padding: 16px 0;
+  }
+  .ck-cat:last-of-type { border-bottom: 1px solid var(--ink, #0D0F10); margin-bottom: 16px; }
+  .ck-cat-head { display: flex; justify-content: space-between; align-items: center; gap: 12px; margin-bottom: 6px; }
+  .ck-cat-name { font-weight: 800; font-size: 15px; }
+  .ck-cat-desc { font-size: 13px; line-height: 1.4; color: var(--ink-2, #2B2E30); margin-bottom: 4px; }
+  .ck-cat-legal { font-size: 11px; color: var(--ink-3, #696C6F); font-family: var(--fm, 'Geist Mono', monospace); }
+  .ck-toggle {
+    position: relative;
+    width: 44px;
+    height: 24px;
+    background: var(--ink-3, #696C6F);
+    border: 2px solid var(--ink, #0D0F10);
+    cursor: pointer;
+    transition: background 0.15s ease;
+    flex-shrink: 0;
+  }
+  .ck-toggle.on { background: var(--lime, #D9FF3A); }
+  .ck-toggle.locked { cursor: not-allowed; opacity: 0.6; }
+  .ck-toggle::after {
+    content: '';
+    position: absolute;
+    top: 2px;
+    left: 2px;
+    width: 16px;
+    height: 16px;
+    background: var(--ink, #0D0F10);
+    transition: left 0.15s ease;
+  }
+  .ck-toggle.on::after { left: 22px; }
+  .ck-modal-btns { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 12px; }
+  .ck-modal-btns button { flex: 1 1 auto; min-width: 140px; }
+  .ck-modal-btns .ck-btn-save { background: var(--lime, #D9FF3A); }
+  .ck-modal-btns .ck-btn-accept-all { background: var(--cream, #FFE9B8); }
+  .ck-modal-btns .ck-btn-reject-all { background: var(--paper, #F5F4EF); }
+  .ck-modal-btns .ck-btn-revoke { background: var(--pink, #FF4D3A); color: var(--paper, #F5F4EF); }
+  .ck-modal .ck-footer { font-size: 11px; color: var(--ink-3, #696C6F); margin-top: 12px; font-family: var(--fm, 'Geist Mono', monospace); }
+  .ck-modal .ck-close { position: absolute; top: 16px; right: 16px; background: transparent; border: none; font-size: 24px; cursor: pointer; font-weight: 800; padding: 4px 12px; box-shadow: none !important; }
+
+  @media (max-width: 640px) {
+    .ck-banner { left: 8px; right: 8px; bottom: 8px; padding: 16px; }
+    .ck-modal { padding: 20px; }
+    .ck-modal h2 { font-size: 20px; }
+  }
+</style>
+
+<div id="ckBanner" class="ck-banner" role="dialog" aria-labelledby="ckBannerTitle" aria-describedby="ckBannerBody">
+  <h3 id="ckBannerTitle">Usamos cookies para que Conniku funcione bien</h3>
+  <p id="ckBannerBody">Necesitamos tu permiso para algunas de ellas. Las cookies estrictamente necesarias mantienen tu sesión activa; las demás nos ayudan a recordar tus preferencias y a mejorar la plataforma.</p>
+  <p class="ck-retract-notice">Puedes cambiar o retirar tu decisión en cualquier momento desde el enlace "Cookies" en el pie de la página.</p>
+  <div class="ck-btns">
+    <button class="ck-btn-accept" onclick="ckAcceptAll()">Aceptar todas</button>
+    <button class="ck-btn-reject" onclick="ckRejectAll()">Rechazar todas</button>
+    <button class="ck-btn-customize" onclick="ckOpenModal()">Personalizar</button>
+  </div>
+</div>
+
+<div id="ckModalOverlay" class="ck-modal-overlay" onclick="ckModalBgClick(event)">
+  <div class="ck-modal" role="dialog" aria-labelledby="ckModalTitle">
+    <button class="ck-close" aria-label="Cerrar" onclick="ckCloseModal()">×</button>
+    <h2 id="ckModalTitle">Configurar cookies</h2>
+    <p class="ck-subtitle">Elige qué cookies permites. Puedes cambiar estas preferencias cuando quieras desde el pie de la página.</p>
+
+    <div class="ck-cat">
+      <div class="ck-cat-head">
+        <span class="ck-cat-name">Estrictamente necesarias</span>
+        <div class="ck-toggle on locked" aria-label="Siempre activas" title="Obligatorias"></div>
+      </div>
+      <p class="ck-cat-desc">Siempre activas. Permiten iniciar sesión, mantener tu sesión abierta y que Conniku funcione offline. Sin ellas, el servicio no puede prestarse.</p>
+      <p class="ck-cat-legal">Base legal: ejecución del contrato (Art. 6(1)(b) RGPD)</p>
+    </div>
+
+    <div class="ck-cat">
+      <div class="ck-cat-head">
+        <span class="ck-cat-name">Funcionales</span>
+        <div id="ckTogFunctional" class="ck-toggle" onclick="ckToggle('functional')"></div>
+      </div>
+      <p class="ck-cat-desc">Recuerdan tu idioma, tema visual, tour de bienvenida y progreso académico local entre visitas. No se comparten con terceros con fines publicitarios.</p>
+      <p class="ck-cat-legal">Base legal: consentimiento (Art. 6(1)(a) RGPD)</p>
+    </div>
+
+    <div class="ck-cat">
+      <div class="ck-cat-head">
+        <span class="ck-cat-name">Analíticas</span>
+        <div id="ckTogAnalytics" class="ck-toggle" onclick="ckToggle('analytics')"></div>
+      </div>
+      <p class="ck-cat-desc">Nos permiten entender cómo se usa Conniku de forma anónima y agregada, para mejorar la plataforma. Hoy no tenemos integraciones externas activas; este toggle queda preparado para cuando las activemos.</p>
+      <p class="ck-cat-legal">Base legal: consentimiento (Art. 6(1)(a) RGPD)</p>
+    </div>
+
+    <div class="ck-cat">
+      <div class="ck-cat-head">
+        <span class="ck-cat-name">Marketing</span>
+        <div id="ckTogMarketing" class="ck-toggle" onclick="ckToggle('marketing')"></div>
+      </div>
+      <p class="ck-cat-desc">Medir el resultado de campañas y enviarte comunicaciones comerciales según tus intereses. Hoy Conniku no usa cookies de marketing y tus datos personales no se comparten con redes publicitarias. Este toggle queda preparado para futuras funcionalidades opcionales.</p>
+      <p class="ck-cat-legal">Base legal: consentimiento (Art. 6(1)(a) RGPD)</p>
+    </div>
+
+    <div class="ck-modal-btns">
+      <button class="ck-btn-accept-all" onclick="ckAcceptAll()">Aceptar todas</button>
+      <button class="ck-btn-reject-all" onclick="ckRejectAll()">Rechazar todas</button>
+      <button class="ck-btn-save" onclick="ckSavePrefs()">Guardar preferencias</button>
+      <button class="ck-btn-revoke" onclick="ckRevokeAll()">Retirar todo el consentimiento</button>
+    </div>
+    <p class="ck-footer">Derecho de retiro: GDPR Art. 7(3) · Ley 21.719 vigente desde 2026-12-01 (Diario Oficial CVE 2583630, Art. 1° transitorio)</p>
+  </div>
+</div>
+
+<script>
+  (function () {
+    const LS_KEY = 'conniku_cookie_consent_v1';
+    const state = { functional: false, analytics: false, marketing: false };
+
+    function load() {
+      try {
+        const raw = localStorage.getItem(LS_KEY);
+        if (!raw) return null;
+        return JSON.parse(raw);
+      } catch (_) { return null; }
+    }
+    function save(consent) {
+      localStorage.setItem(LS_KEY, JSON.stringify({
+        ...consent,
+        acceptedAt: new Date().toISOString(),
+        policyHash: 'bba33024bae091584f975585fffd78198321ab2878680ec920103d828a27d316',
+        policyVersion: '1.1.0'
+      }));
+    }
+    function showBanner() { document.getElementById('ckBanner').classList.add('is-visible'); }
+    function hideBanner() { document.getElementById('ckBanner').classList.remove('is-visible'); }
+    function openModal() { document.getElementById('ckModalOverlay').classList.add('is-visible'); }
+    function closeModal() { document.getElementById('ckModalOverlay').classList.remove('is-visible'); }
+
+    function renderToggles() {
+      ['functional', 'analytics', 'marketing'].forEach((k) => {
+        const el = document.getElementById('ckTog' + k.charAt(0).toUpperCase() + k.slice(1));
+        if (el) el.classList.toggle('on', !!state[k]);
+      });
+    }
+
+    window.ckToggle = function (k) {
+      state[k] = !state[k];
+      renderToggles();
+    };
+    window.ckAcceptAll = function () {
+      state.functional = state.analytics = state.marketing = true;
+      save(state);
+      renderToggles();
+      hideBanner();
+      closeModal();
+    };
+    window.ckRejectAll = function () {
+      state.functional = state.analytics = state.marketing = false;
+      save(state);
+      renderToggles();
+      hideBanner();
+      closeModal();
+    };
+    window.ckSavePrefs = function () {
+      save(state);
+      hideBanner();
+      closeModal();
+    };
+    window.ckRevokeAll = function () {
+      localStorage.removeItem(LS_KEY);
+      state.functional = state.analytics = state.marketing = false;
+      renderToggles();
+      closeModal();
+      showBanner();
+    };
+    window.ckOpenModal = function () {
+      const existing = load();
+      if (existing) {
+        state.functional = !!existing.functional;
+        state.analytics = !!existing.analytics;
+        state.marketing = !!existing.marketing;
+      }
+      renderToggles();
+      openModal();
+    };
+    window.ckCloseModal = closeModal;
+    window.ckModalBgClick = function (e) {
+      if (e.target && e.target.id === 'ckModalOverlay') closeModal();
+    };
+
+    document.addEventListener('keydown', function (e) {
+      if (e.key === 'Escape') closeModal();
+    });
+
+    // Al cargar la página: si no hay consent previo, mostrar banner
+    document.addEventListener('DOMContentLoaded', function () {
+      const existing = load();
+      if (!existing) showBanner();
+    });
+  })();
+</script>
+<!-- CONNIKU-COOKIE-BANNER-INJECTED-END -->
+</body>
+</html>

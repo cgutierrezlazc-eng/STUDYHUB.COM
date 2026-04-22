@@ -1,0 +1,815 @@
+<!DOCTYPE html>
+<html lang="es-CL">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Acerca de · Conniku</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Funnel+Display:wght@400;600;700;800;900&family=Geist+Mono:wght@400;500;600;700&display=swap" />
+<style>
+  :root{
+    --ink:#0D0F10; --ink-2:#2B2E30; --ink-3:#696C6F;
+    --paper:#F5F4EF; --paper-2:#EBE9E1;
+    --lime:#D9FF3A; --orange:#FF4A1C; --pink:#FF4D3A; --cream:#FFE9B8; --violet:#6B4EFF; --cyan:#00C2FF;
+    --fd:'Funnel Display',-apple-system,sans-serif;
+    --fm:'Geist Mono',ui-monospace,monospace;
+    --ease:cubic-bezier(.2,.8,.2,1);
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  html,body{height:100%}
+  body{background:#E8E5DB;color:var(--ink);font-family:var(--fd);min-height:100vh;overflow-x:hidden;position:relative;display:flex;flex-direction:column}
+  .shell{flex:1}
+  .site-footer{flex-shrink:0;margin-top:auto}
+
+  .halftone{position:fixed;inset:0;pointer-events:none;z-index:0;overflow:hidden}
+  .dots{position:absolute;mix-blend-mode:multiply}
+  .d1{top:-140px;left:-140px;width:620px;height:620px;background:radial-gradient(circle,var(--lime) 8%,transparent 10%);background-size:16px 16px;-webkit-mask:radial-gradient(circle at 40% 40%,#000 0%,transparent 42%);mask:radial-gradient(circle at 40% 40%,#000 0%,transparent 42%);opacity:.85}
+  .d2{bottom:-160px;right:-160px;width:640px;height:640px;background:radial-gradient(circle,var(--orange) 12%,transparent 14%);background-size:14px 14px;-webkit-mask:radial-gradient(circle at 60% 60%,#000 0%,transparent 42%);mask:radial-gradient(circle at 60% 60%,#000 0%,transparent 42%);opacity:.55}
+  .d3{top:30%;right:-100px;width:440px;height:440px;background:radial-gradient(circle,var(--violet) 14%,transparent 16%);background-size:13px 13px;-webkit-mask:radial-gradient(circle at 60% 40%,#000 0%,transparent 40%);mask:radial-gradient(circle at 60% 40%,#000 0%,transparent 40%);opacity:.35}
+
+  nav{display:flex;align-items:center;justify-content:space-between;padding:18px 40px;background:var(--paper);border-bottom:1.5px solid var(--orange);position:sticky;top:0;z-index:10;backdrop-filter:blur(6px)}
+
+  .wm{font-family:var(--fd);font-weight:900;font-size:32px;letter-spacing:-.055em;display:inline-flex;align-items:baseline;color:var(--ink);line-height:1}
+  .wm .u-pack{display:inline-flex;align-items:baseline;background:#D9FF3A;color:#0D0F10;padding:.07em .14em .07em .09em;border-radius:.2em;margin-left:.02em}
+  .wm .u-pack .dot{color:#FF4A1C}
+  .wm.on-dark{color:#F5F4EF}
+  .wm-gate{font-size:28px;margin-bottom:16px}
+
+  .nav-links{display:flex;align-items:center;gap:18px;font-family:var(--fm);font-size:13px}
+  .nav-divider,.nav-link-divider{display:inline-block;width:1px;height:18px;background:var(--orange);vertical-align:middle}
+  .nav-links a{color:var(--ink);text-decoration:none;font-weight:500}
+  .nav-links a:hover{color:var(--orange)}
+  .nav-business{font-weight:700;letter-spacing:0.04em}
+  .nav-cta-link{font-family:var(--fd);font-weight:700;font-size:15px;padding:4px 10px;border:1.5px solid transparent;transition:all .15s var(--ease)}
+  .nav-cta-link:hover{box-shadow:4px 4px 0 var(--lime);transform:translate(-1px,-1px);color:var(--ink)}
+  .nav-cta{font-family:var(--fd);font-weight:700;padding:6px 14px;background:var(--orange);color:var(--paper);text-decoration:none;border:1.5px solid var(--ink);transition:all .15s var(--ease)}
+  .nav-cta:hover{box-shadow:4px 4px 0 var(--ink);transform:translate(-1px,-1px);color:var(--paper)}
+
+  main{padding:40px 40px 60px 40px;max-width:1080px;margin:0 auto;position:relative;z-index:2}
+
+  /* Hero */
+  .hero{padding:40px 0 56px 0;border-bottom:2px solid var(--ink)}
+  .kicker{font-family:var(--fm);font-size:12px;text-transform:uppercase;letter-spacing:0.08em;color:var(--ink-3);margin-bottom:14px}
+  h1.hero-h1{font-family:var(--fd);font-weight:900;font-size:clamp(38px,6vw,72px);line-height:1.02;letter-spacing:-0.025em;margin-bottom:24px}
+  h1.hero-h1 .stamp{background:var(--orange);color:var(--paper);padding:0 14px;display:inline-block;transform:rotate(-1deg)}
+  h1.hero-h1 .mark{background:var(--lime);padding:0 8px;display:inline-block;transform:rotate(-0.5deg)}
+  .hero-sub{font-size:20px;color:var(--ink-2);max-width:640px;line-height:1.5}
+
+  /* Bloques narrativos */
+  .block{padding:48px 0;border-bottom:1px solid var(--ink-3)}
+  .block:last-of-type{border-bottom:none}
+  .block-label{font-family:var(--fm);font-size:11px;text-transform:uppercase;letter-spacing:0.08em;color:var(--ink-3);font-weight:600;margin-bottom:10px}
+  .block h2{font-family:var(--fd);font-weight:800;font-size:clamp(28px,4vw,40px);letter-spacing:-0.02em;line-height:1.05;margin-bottom:20px}
+  .block h2 .hl{background:var(--cream);padding:0 8px;display:inline-block;transform:rotate(-0.5deg)}
+  .block p{font-size:17px;color:var(--ink-2);line-height:1.65;max-width:720px;margin-bottom:14px}
+  .block p strong{color:var(--ink);font-weight:700}
+
+  /* Mission card destacado */
+  .mission-card{background:var(--paper);border:2px solid var(--ink);box-shadow:10px 10px 0 var(--ink);padding:40px;margin:24px 0;max-width:760px}
+  .mission-card h2{font-size:clamp(26px,4vw,36px);margin-bottom:16px}
+  .mission-card p{font-size:18px;line-height:1.5}
+  .mission-card .sig{font-family:var(--fm);font-size:12px;color:var(--ink-3);margin-top:20px;text-transform:uppercase;letter-spacing:0.06em}
+
+  /* Valores grid */
+  .values-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:18px;margin-top:24px}
+  .value-card{background:var(--paper);border:2px solid var(--ink);padding:24px;transition:all .15s var(--ease)}
+  .value-card:hover{box-shadow:6px 6px 0 var(--ink);transform:translate(-1px,-1px)}
+  .value-icon{width:40px;height:40px;background:var(--lime);border:1.5px solid var(--ink);display:flex;align-items:center;justify-content:center;margin-bottom:14px;font-family:var(--fd);font-weight:900;font-size:20px}
+  .value-card:nth-child(2) .value-icon{background:var(--orange);color:var(--paper)}
+  .value-card:nth-child(3) .value-icon{background:var(--cyan);color:var(--ink)}
+  .value-card:nth-child(4) .value-icon{background:var(--violet);color:var(--paper)}
+  .value-card h3{font-family:var(--fd);font-weight:800;font-size:17px;margin-bottom:8px}
+  .value-card p{font-size:14px;line-height:1.55;color:var(--ink-2);margin:0}
+
+  /* Founder card */
+  .founder{display:grid;grid-template-columns:180px 1fr;gap:32px;margin-top:16px;align-items:start}
+  .founder-photo{width:180px;height:180px;background:var(--paper-2);border:2px solid var(--ink);box-shadow:6px 6px 0 var(--ink);display:flex;align-items:center;justify-content:center;font-family:var(--fm);font-size:10px;text-transform:uppercase;letter-spacing:0.08em;color:var(--ink-3);text-align:center;padding:10px}
+  .founder-info h3{font-family:var(--fd);font-weight:900;font-size:28px;letter-spacing:-0.02em;margin-bottom:6px}
+  .founder-info .role{font-family:var(--fm);font-size:12px;text-transform:uppercase;letter-spacing:0.06em;color:var(--ink-3);margin-bottom:14px}
+  .founder-info p{font-size:15px;color:var(--ink-2);line-height:1.6;margin-bottom:10px;max-width:560px}
+  .founder-skills{display:flex;flex-wrap:wrap;gap:6px;margin-top:14px}
+  .founder-skills .chip{font-family:var(--fm);font-size:10.5px;letter-spacing:0.04em;background:var(--paper-2);border:1.5px solid var(--ink);padding:4px 10px;text-transform:uppercase;color:var(--ink)}
+
+  /* Datos legales card */
+  .legal-datos{background:var(--paper-2);border:1.5px solid var(--ink);padding:24px;font-family:var(--fm);font-size:13px;line-height:1.8;color:var(--ink-2);max-width:480px;margin-top:16px}
+  .legal-datos dt{display:inline-block;min-width:110px;color:var(--ink-3);text-transform:uppercase;letter-spacing:0.04em;font-size:11px;font-weight:600}
+  .legal-datos dd{display:inline-block;color:var(--ink);font-weight:600}
+  .legal-datos .row{display:flex;align-items:baseline;gap:8px;margin-bottom:4px}
+
+  /* CTA final */
+  .cta-block{background:var(--ink);color:var(--paper);padding:48px 40px;margin-top:48px;text-align:center;border:2px solid var(--ink);box-shadow:10px 10px 0 var(--orange)}
+  .cta-block h2{font-family:var(--fd);font-weight:900;font-size:clamp(28px,4vw,42px);color:var(--paper);margin-bottom:14px;letter-spacing:-0.02em;line-height:1.1}
+  .cta-block p{color:var(--paper);opacity:0.85;max-width:520px;margin:0 auto 22px;font-size:16px}
+  .cta-block .btn-row{display:flex;justify-content:center;gap:12px;flex-wrap:wrap}
+  .cta-block a{font-family:var(--fd);font-weight:800;padding:12px 24px;text-decoration:none;border:2px solid var(--paper);text-transform:uppercase;letter-spacing:0.04em;font-size:14px;transition:all .15s var(--ease);display:inline-flex;align-items:center;gap:8px}
+  .cta-block a.primary{background:var(--orange);border-color:var(--ink);color:var(--paper)}
+  .cta-block a.primary:hover{box-shadow:5px 5px 0 var(--paper);transform:translate(-1px,-1px)}
+  .cta-block a.secondary{background:transparent;color:var(--paper);border-color:var(--paper)}
+  .cta-block a.secondary:hover{background:var(--paper);color:var(--ink);box-shadow:5px 5px 0 var(--orange);transform:translate(-1px,-1px)}
+
+  /* Footer */
+  .site-footer{padding:2px 32px 2px 40px;background:var(--paper);position:relative;z-index:5;font-family:var(--fm)}
+  .footer-row{display:flex;justify-content:space-between;align-items:center;padding:10px 0}
+  .footer-nav{display:flex;align-items:center;gap:14px;padding:0;border-bottom:none;background:transparent;backdrop-filter:none;z-index:auto;position:static}
+  .footer-nav-item{position:relative}
+  .footer-nav-btn{font-family:var(--fm);font-size:11px;font-weight:600;background:transparent;border:none;color:var(--ink-3);cursor:pointer;text-transform:uppercase;letter-spacing:0.06em;padding:4px 8px;transition:color .15s var(--ease)}
+  .footer-nav-btn:hover{color:var(--ink)}
+  .footer-popover{display:none;position:absolute;bottom:calc(100% + 8px);left:0;min-width:220px;background:var(--paper);border:1.5px solid var(--ink);box-shadow:4px 4px 0 var(--ink);padding:10px 0;z-index:20}
+  .footer-popover.is-open{display:block}
+  .footer-popover ul{list-style:none;margin:0;padding:0}
+  .footer-popover li a{display:block;padding:8px 16px;font-family:var(--fd);font-size:13px;color:var(--ink);text-decoration:none;font-weight:500}
+  .footer-popover li a:hover{background:var(--paper-2);color:var(--orange)}
+  .footer-direct-link{padding:4px 8px;font-family:var(--fm);font-size:11px;font-weight:600;color:var(--ink-3);text-decoration:none;text-transform:uppercase;letter-spacing:0.06em;transition:color .15s var(--ease)}
+  .footer-direct-link:hover{color:var(--ink)}
+  .footer-divider{display:inline-block;width:1px;height:12px;background:var(--orange);vertical-align:middle}
+  .footer-copy{font-family:var(--fm);font-size:10.5px;color:var(--ink-3);letter-spacing:0.04em}
+
+  @media (max-width:900px){
+    nav{padding:14px 20px;flex-wrap:wrap;gap:10px}
+    .nav-links{font-size:12px;gap:10px}
+    main{padding:24px 20px 40px 20px}
+    .hero{padding:32px 0 40px 0}
+    .mission-card{padding:28px}
+    .founder{grid-template-columns:1fr;gap:20px}
+    .founder-photo{width:140px;height:140px}
+    .site-footer{padding:10px 16px}
+    .cta-block{padding:32px 24px}
+  }
+
+  /* Gate */
+  .gate{position:fixed;inset:0;background:var(--paper);z-index:9999;display:flex;align-items:center;justify-content:center;padding:20px}
+  .gate-card{max-width:380px;width:100%;border:2px solid var(--ink);background:var(--paper-2);padding:28px;box-shadow:10px 10px 0 var(--ink)}
+  .gate-title{font-family:var(--fd);font-weight:800;font-size:16px;margin-bottom:12px}
+  .gate-input{width:100%;padding:10px 14px;font-family:var(--fm);font-size:14px;border:1.5px solid var(--ink);background:var(--paper);margin-bottom:12px}
+  .gate-btn{width:100%;padding:10px;font-family:var(--fd);font-weight:800;background:var(--orange);color:var(--paper);border:1.5px solid var(--ink);cursor:pointer;text-transform:uppercase;letter-spacing:0.04em}
+  .gate-btn:hover{box-shadow:4px 4px 0 var(--ink);transform:translate(-1px,-1px)}
+  .gate-err{color:var(--orange);font-family:var(--fm);font-size:12px;margin-top:8px;min-height:18px}
+</style>
+<script src="./_gate.js" defer></script>
+</head>
+<body>
+
+<!-- GATE -->
+<div class="gate" id="gate">
+  <div class="gate-card">
+    <span class="wm wm-gate">conn<span>i</span>k<span class="u-pack">u<span class="dot">.</span></span></span>
+    <div class="gate-title">Vista previa</div>
+    <input type="password" class="gate-input" id="gate-pw" placeholder="Contraseña" autofocus />
+    <button class="gate-btn" onclick="checkGate()">Entrar</button>
+    <div class="gate-err" id="gate-err"></div>
+  </div>
+</div>
+
+<div class="halftone">
+  <div class="dots d1"></div>
+  <div class="dots d2"></div>
+  <div class="dots d3"></div>
+</div>
+
+<div class="shell">
+
+<nav>
+  <span class="wm">conn<span>i</span>k<span class="u-pack">u<span class="dot">.</span></span></span>
+  <div class="nav-links">
+    <span class="nav-divider" aria-hidden="true"></span>
+    <a href="./producto.html">Producto</a>
+    <span class="nav-link-divider" aria-hidden="true"></span>
+    <a href="./como-funciona.html">Cómo funciona</a>
+    <span class="nav-link-divider" aria-hidden="true"></span>
+    <a href="./planes.html">Planes</a>
+    <span class="nav-link-divider" aria-hidden="true"></span>
+    <a href="./kiosko.html">Kiosko</a>
+    <span class="nav-link-divider" aria-hidden="true"></span>
+    <a href="./business.html" class="nav-business">BUSINESS</a>
+    <a href="#" class="nav-cta-link">Entrar</a>
+    <a href="#" class="nav-cta">Crear cuenta</a>
+  </div>
+</nav>
+
+<main>
+
+  <section class="hero">
+    <div class="kicker">Conniku · Acerca de</div>
+    <h1 class="hero-h1">
+      Dejamos de <span class="mark">perder apuntes</span>.<br>
+      Dejamos de saltar entre apps.<br>
+      Empezamos a <span class="stamp">estudiar</span>.
+    </h1>
+    <p class="hero-sub">Conniku reúne apuntes, asistente, biblioteca, comunidad y productividad en un solo lugar. Pensada por estudiantes universitarios, para los estudiantes que vienen.</p>
+  </section>
+
+  <section class="block">
+    <div class="block-label">Nuestra misión</div>
+    <div class="mission-card">
+      <h2>La educación universitaria <span class="hl">puede ser mejor</span>, más humana y más conectada.</h2>
+      <p>Eso es lo que creemos. Y cada decisión que tomamos — desde cómo funciona un curso hasta cómo respondemos un mensaje — responde a esa convicción.</p>
+      <div class="sig">— Cristian Gutiérrez Lazcano · Fundador</div>
+    </div>
+  </section>
+
+  <section class="block">
+    <div class="block-label">Cómo empezó</div>
+    <h2>Nacimos en <span class="hl">una sala de clases</span>.</h2>
+    <p>Conniku fue fundada en <strong>2024</strong> en Chile por un estudiante universitario que se cansó de lo mismo que se cansan millones: apuntes perdidos, herramientas dispersas, plataformas que no conversan entre sí, y una educación universitaria que se sentía más burocrática que formativa.</p>
+    <p>La primera versión fue para uso propio. La segunda, para los compañeros de carrera. La tercera, abierta a Chile. Hoy trabajamos para abrirla a <strong>Latinoamérica y Europa</strong>, manteniendo la raíz: pensada por estudiantes, para estudiantes.</p>
+  </section>
+
+  <section class="block">
+    <div class="block-label">Qué nos mueve</div>
+    <h2>Valores que no son <span class="hl">decorativos</span>.</h2>
+    <div class="values-grid">
+      <div class="value-card">
+        <div class="value-icon">↻</div>
+        <h3>Estudiante primero</h3>
+        <p>Cada feature se prueba con estudiantes reales antes de lanzarse. Si no mejora su día, no entra.</p>
+      </div>
+      <div class="value-card">
+        <div class="value-icon">◊</div>
+        <h3>Rigor honesto</h3>
+        <p>Cumplimos la ley chilena, GDPR europeo y buenas prácticas de industria. No ocultamos nuestros datos ni nuestras limitaciones.</p>
+      </div>
+      <div class="value-card">
+        <div class="value-icon">✦</div>
+        <h3>Construir en público</h3>
+        <p>Contamos qué estamos haciendo, qué funcionó y qué no. La confianza se gana mostrando el trabajo, no solo el resultado.</p>
+      </div>
+      <div class="value-card">
+        <div class="value-icon">◎</div>
+        <h3>Menos es más</h3>
+        <p>Preferimos hacer pocas cosas muy bien que muchas a medias. Conniku crece solo cuando cada pieza está pulida.</p>
+      </div>
+    </div>
+  </section>
+
+  <section class="block">
+    <div class="block-label">Quién está detrás</div>
+    <h2>Fundador</h2>
+    <div class="founder">
+      <div class="founder-photo">Foto pronto</div>
+      <div class="founder-info">
+        <h3>Cristian Gutiérrez Lazcano</h3>
+        <div class="role">Fundador & CEO · Conniku</div>
+        <p>Estudiante de Ingeniería Comercial ADVANCE en la Universidad del Alba, Chile. Apasionado por la tecnología, la educación y el emprendimiento.</p>
+        <p>Lidera la visión, estrategia y crecimiento de la plataforma. Responsable de producto, tecnología y relaciones con stakeholders.</p>
+        <div class="founder-skills">
+          <span class="chip">Dirección estratégica</span>
+          <span class="chip">Product management</span>
+          <span class="chip">Growth</span>
+          <span class="chip">Liderazgo de equipos</span>
+          <span class="chip">Fundraising</span>
+          <span class="chip">Planificación financiera</span>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="block">
+    <div class="block-label">Datos legales</div>
+    <h2>Quiénes somos <span class="hl">oficialmente</span>.</h2>
+    <p>Conniku es un producto desarrollado por Conniku SpA, sociedad por acciones constituida y domiciliada en Chile, responsable del tratamiento de los datos personales de sus usuarios conforme a la Ley N° 19.628 y, cuando corresponda, al Reglamento (UE) 2016/679 (GDPR).</p>
+    <dl class="legal-datos">
+      <div class="row"><dt>Razón social</dt><dd>Conniku SpA</dd></div>
+      <div class="row"><dt>RUT</dt><dd>78.395.702-7</dd></div>
+      <div class="row"><dt>Sede</dt><dd>Antofagasta, Chile</dd></div>
+      <div class="row"><dt>Giro</dt><dd>Programación informática (631200)</dd></div>
+      <div class="row"><dt>Régimen</dt><dd>ProPyme Transparente 14 D Nº 3</dd></div>
+      <div class="row"><dt>Sitio</dt><dd>conniku.com</dd></div>
+    </dl>
+  </section>
+
+  <section class="cta-block">
+    <h2>¿Te gustaría construir esto con nosotros?</h2>
+    <p>Estamos buscando gente que comparta la convicción. Si te mueve la educación y quieres trabajar en producto, tecnología o crecimiento, queremos conocerte.</p>
+    <div class="btn-row">
+      <a href="./trabaja-con-nosotros.html" class="primary">Trabaja con nosotros →</a>
+      <a href="./prensa.html" class="secondary">Sala de prensa</a>
+    </div>
+  </section>
+
+</main>
+
+</div>
+
+<footer class="site-footer">
+  <div class="footer-row">
+    <nav class="footer-nav">
+      <div class="footer-nav-item">
+        <button type="button" class="footer-nav-btn" data-popover="legal">Legal</button>
+        <div class="footer-popover" id="pop-legal">
+          <ul>
+            <li><a href="#" onclick="openLegalModal('terms'); return false">Términos y Condiciones</a></li>
+            <li><a href="#" onclick="openLegalModal('privacy'); return false">Política de Privacidad</a></li>
+            <li><a href="#" onclick="openLegalModal('cookies'); return false">Política de Cookies</a></li>
+            <li><a href="#" onclick="openLegalModal('age-declaration'); return false">Declaración de Edad</a></li>
+          </ul>
+        </div>
+      </div>
+      <span class="footer-divider" aria-hidden="true"></span>
+      <div class="footer-nav-item">
+        <button type="button" class="footer-nav-btn" data-popover="empresa">Empresa</button>
+        <div class="footer-popover" id="pop-empresa">
+          <ul>
+            <li><a href="./acerca.html">Acerca de</a></li>
+            <li><a href="./trabaja-con-nosotros.html">Trabaja con nosotros</a></li>
+            <li><a href="./prensa.html">Prensa</a></li>
+          </ul>
+        </div>
+      </div>
+      <span class="footer-divider" aria-hidden="true"></span>
+      <div class="footer-nav-item">
+        <button type="button" class="footer-nav-btn" data-popover="soporte">Soporte</button>
+        <div class="footer-popover" id="pop-soporte">
+          <ul>
+            <li><a href="#" onclick="openLegalModal('support', 'faq'); return false">Ayuda</a></li>
+            <li><a href="mailto:soporte@conniku.com?subject=Reporte%20de%20problema">Reportar un problema</a></li>
+          </ul>
+        </div>
+      </div>
+      <span class="footer-divider" aria-hidden="true"></span>
+      <a class="footer-direct-link" href="#">Contacto</a>
+    </nav>
+    <div class="footer-copy">© 2026 Conniku SpA · Antofagasta, Chile · RUT 78.395.702-7</div>
+  </div>
+</footer>
+
+<script>
+  // Embed iframe detection
+  var EMBED_IN_IFRAME = (function(){
+    try { return window.self !== window.top; } catch (e) { return true; }
+  })();
+  if (EMBED_IN_IFRAME) {
+    document.documentElement.classList.add('is-embed');
+    var styleEmbed = document.createElement('style');
+    styleEmbed.textContent = '.is-embed nav, .is-embed .gate, .is-embed .site-footer, .is-embed .halftone { display: none !important; }'
+      + ' .is-embed main { padding-top: 0 !important; }'
+      + ' .is-embed body { background: var(--paper) !important; }';
+    document.head.appendChild(styleEmbed);
+  }
+
+  // Gate
+  function checkGate(){
+    var pw = document.getElementById('gate-pw').value;
+    if (pw === 'conniku-preview-2026') {
+      sessionStorage.setItem('conniku-gate-ok','1');
+      document.getElementById('gate').style.display='none';
+    } else {
+      document.getElementById('gate-err').textContent='Contraseña incorrecta';
+    }
+  }
+  document.getElementById('gate-pw').addEventListener('keydown', function(e){
+    if (e.key==='Enter') checkGate();
+  });
+  if (sessionStorage.getItem('conniku-gate-ok')==='1') {
+    document.getElementById('gate').style.display='none';
+  }
+
+  // Footer popover toggle
+  document.querySelectorAll('.footer-nav-btn[data-popover]').forEach(function(btn){
+    btn.addEventListener('click', function(e){
+      e.stopPropagation();
+      var pop = document.getElementById('pop-'+this.getAttribute('data-popover'));
+      if (pop) {
+        document.querySelectorAll('.footer-popover.is-open').forEach(function(p){if(p!==pop) p.classList.remove('is-open')});
+        pop.classList.toggle('is-open');
+      }
+    });
+  });
+  document.addEventListener('click', function(){
+    document.querySelectorAll('.footer-popover.is-open').forEach(function(p){p.classList.remove('is-open')});
+  });
+</script>
+
+
+<!-- CONNIKU-LEGAL-MODAL-INJECTED-START -->
+<style>
+  .legal-modal-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(13, 15, 16, 0.7);
+    z-index: 10001;
+    display: none;
+    align-items: center;
+    justify-content: center;
+    padding: 24px;
+  }
+  .legal-modal-overlay.is-visible { display: flex; }
+  .legal-modal-panel {
+    background: var(--paper, #F5F4EF);
+    border: 2px solid var(--ink, #0D0F10);
+    box-shadow: 12px 12px 0 var(--ink, #0D0F10);
+    width: 100%;
+    max-width: 860px;
+    height: 90vh;
+    max-height: 90vh;
+    display: flex;
+    flex-direction: column;
+    font-family: var(--fd, 'Funnel Display', sans-serif);
+    color: var(--ink, #0D0F10);
+  }
+  .legal-modal-head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 16px 24px;
+    border-bottom: 2px solid var(--ink, #0D0F10);
+    background: var(--paper, #F5F4EF);
+    flex-shrink: 0;
+  }
+  .legal-modal-title {
+    font-weight: 800;
+    font-size: 18px;
+    letter-spacing: -0.01em;
+    margin: 0;
+  }
+  .legal-modal-close {
+    background: transparent;
+    border: 2px solid var(--ink, #0D0F10);
+    font-family: var(--fd, 'Funnel Display', sans-serif);
+    font-weight: 700;
+    font-size: 14px;
+    padding: 6px 14px;
+    cursor: pointer;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    color: var(--ink, #0D0F10);
+    transition: all 0.1s ease;
+  }
+  .legal-modal-close:hover {
+    box-shadow: 3px 3px 0 var(--ink, #0D0F10);
+    transform: translate(-1px, -1px);
+    background: var(--orange, #FF4A1C);
+    color: var(--paper, #F5F4EF);
+  }
+  .legal-modal-body {
+    flex: 1;
+    overflow: hidden;
+    background: var(--paper, #F5F4EF);
+  }
+  .legal-modal-iframe {
+    width: 100%;
+    height: 100%;
+    border: none;
+    background: var(--paper, #F5F4EF);
+  }
+  @media (max-width: 640px) {
+    .legal-modal-overlay { padding: 8px; }
+    .legal-modal-panel { height: 95vh; max-height: 95vh; }
+    .legal-modal-head { padding: 12px 16px; }
+    .legal-modal-title { font-size: 15px; }
+  }
+</style>
+
+<div id="legalModalOverlay" class="legal-modal-overlay" onclick="legalModalBgClick(event)" role="dialog" aria-modal="true" aria-labelledby="legalModalTitle">
+  <div class="legal-modal-panel">
+    <div class="legal-modal-head">
+      <h2 id="legalModalTitle" class="legal-modal-title">Documento legal</h2>
+      <button class="legal-modal-close" onclick="closeLegalModal()" aria-label="Cerrar documento legal">Cerrar</button>
+    </div>
+    <div class="legal-modal-body">
+      <iframe id="legalModalIframe" class="legal-modal-iframe" src="about:blank" title="Documento legal"></iframe>
+    </div>
+  </div>
+</div>
+
+<script>
+  (function () {
+    const LEGAL_DOCS = {
+      'terms': { file: 'legal-terms.html', title: 'Términos y Condiciones' },
+      'privacy': { file: 'legal-privacy.html', title: 'Política de Privacidad' },
+      'cookies': { file: 'legal-cookies.html', title: 'Política de Cookies' },
+      'age-declaration': { file: 'legal-age-declaration.html', title: 'Declaración de Edad' },
+      'support': { file: 'soporte.html', title: 'Soporte · Conniku' }
+    };
+    let previousFocus = null;
+
+    window.openLegalModal = function (docKey, tabKey) {
+      const doc = LEGAL_DOCS[docKey];
+      if (!doc) return;
+      previousFocus = document.activeElement;
+      document.getElementById('legalModalTitle').textContent = doc.title;
+      document.getElementById('legalModalIframe').src = tabKey ? (doc.file + '#tab-' + tabKey) : doc.file;
+      document.getElementById('legalModalOverlay').classList.add('is-visible');
+      document.body.style.overflow = 'hidden';
+      // También cerrar el popover del footer si está abierto
+      document.querySelectorAll('.footer-popover.is-open').forEach(function (el) {
+        el.classList.remove('is-open');
+      });
+    };
+
+    window.closeLegalModal = function () {
+      document.getElementById('legalModalOverlay').classList.remove('is-visible');
+      document.getElementById('legalModalIframe').src = 'about:blank';
+      document.body.style.overflow = '';
+      if (previousFocus && typeof previousFocus.focus === 'function') {
+        previousFocus.focus();
+      }
+    };
+
+    window.legalModalBgClick = function (e) {
+      if (e.target && e.target.id === 'legalModalOverlay') {
+        window.closeLegalModal();
+      }
+    };
+
+    document.addEventListener('keydown', function (e) {
+      if (e.key === 'Escape') {
+        const ov = document.getElementById('legalModalOverlay');
+        if (ov && ov.classList.contains('is-visible')) {
+          e.preventDefault();
+          window.closeLegalModal();
+        }
+      }
+    });
+  })();
+</script>
+<!-- CONNIKU-LEGAL-MODAL-INJECTED-END -->
+
+<!-- CONNIKU-COOKIE-BANNER-INJECTED-START -->
+<style>
+  .ck-banner {
+    position: fixed;
+    left: 16px;
+    right: 16px;
+    bottom: 16px;
+    background: var(--paper, #F5F4EF);
+    border: 2px solid var(--ink, #0D0F10);
+    box-shadow: 8px 8px 0 var(--ink, #0D0F10);
+    padding: 20px 24px;
+    z-index: 9999;
+    font-family: var(--fd, 'Funnel Display', sans-serif);
+    color: var(--ink, #0D0F10);
+    max-width: 720px;
+    margin: 0 auto;
+    display: none;
+  }
+  .ck-banner.is-visible { display: block; }
+  .ck-banner h3 {
+    font-size: 18px;
+    font-weight: 800;
+    margin-bottom: 8px;
+    letter-spacing: -0.01em;
+  }
+  .ck-banner p { font-size: 14px; line-height: 1.4; margin-bottom: 6px; }
+  .ck-banner .ck-retract-notice {
+    font-size: 12px;
+    color: var(--ink-3, #696C6F);
+    margin-top: 10px;
+    margin-bottom: 14px;
+    font-style: italic;
+  }
+  .ck-banner .ck-btns { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 12px; }
+  .ck-banner button, .ck-modal button {
+    font-family: var(--fd, 'Funnel Display', sans-serif);
+    font-size: 13px;
+    font-weight: 700;
+    padding: 10px 16px;
+    border: 2px solid var(--ink, #0D0F10);
+    background: var(--paper, #F5F4EF);
+    color: var(--ink, #0D0F10);
+    cursor: pointer;
+    transition: all 0.1s ease;
+    letter-spacing: 0.02em;
+    text-transform: uppercase;
+  }
+  .ck-banner button:hover, .ck-modal button:hover {
+    box-shadow: 3px 3px 0 var(--ink, #0D0F10);
+    transform: translate(-1px, -1px);
+  }
+  .ck-banner .ck-btn-accept { background: var(--lime, #D9FF3A); }
+  .ck-banner .ck-btn-reject { background: var(--paper, #F5F4EF); }
+  .ck-banner .ck-btn-customize { background: var(--cream, #FFE9B8); }
+  .ck-banner a { color: var(--ink, #0D0F10); text-decoration: underline; font-weight: 700; }
+
+  .ck-modal-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(13, 15, 16, 0.6);
+    z-index: 10000;
+    display: none;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+  }
+  .ck-modal-overlay.is-visible { display: flex; }
+  .ck-modal {
+    background: var(--paper, #F5F4EF);
+    border: 2px solid var(--ink, #0D0F10);
+    box-shadow: 12px 12px 0 var(--ink, #0D0F10);
+    max-width: 640px;
+    width: 100%;
+    max-height: 85vh;
+    overflow-y: auto;
+    padding: 28px;
+    font-family: var(--fd, 'Funnel Display', sans-serif);
+    color: var(--ink, #0D0F10);
+  }
+  .ck-modal h2 {
+    font-size: 24px;
+    font-weight: 800;
+    margin-bottom: 6px;
+    letter-spacing: -0.02em;
+  }
+  .ck-modal .ck-subtitle { font-size: 13px; color: var(--ink-3, #696C6F); margin-bottom: 20px; }
+  .ck-cat {
+    border-top: 1px solid var(--ink, #0D0F10);
+    padding: 16px 0;
+  }
+  .ck-cat:last-of-type { border-bottom: 1px solid var(--ink, #0D0F10); margin-bottom: 16px; }
+  .ck-cat-head { display: flex; justify-content: space-between; align-items: center; gap: 12px; margin-bottom: 6px; }
+  .ck-cat-name { font-weight: 800; font-size: 15px; }
+  .ck-cat-desc { font-size: 13px; line-height: 1.4; color: var(--ink-2, #2B2E30); margin-bottom: 4px; }
+  .ck-cat-legal { font-size: 11px; color: var(--ink-3, #696C6F); font-family: var(--fm, 'Geist Mono', monospace); }
+  .ck-toggle {
+    position: relative;
+    width: 44px;
+    height: 24px;
+    background: var(--ink-3, #696C6F);
+    border: 2px solid var(--ink, #0D0F10);
+    cursor: pointer;
+    transition: background 0.15s ease;
+    flex-shrink: 0;
+  }
+  .ck-toggle.on { background: var(--lime, #D9FF3A); }
+  .ck-toggle.locked { cursor: not-allowed; opacity: 0.6; }
+  .ck-toggle::after {
+    content: '';
+    position: absolute;
+    top: 2px;
+    left: 2px;
+    width: 16px;
+    height: 16px;
+    background: var(--ink, #0D0F10);
+    transition: left 0.15s ease;
+  }
+  .ck-toggle.on::after { left: 22px; }
+  .ck-modal-btns { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 12px; }
+  .ck-modal-btns button { flex: 1 1 auto; min-width: 140px; }
+  .ck-modal-btns .ck-btn-save { background: var(--lime, #D9FF3A); }
+  .ck-modal-btns .ck-btn-accept-all { background: var(--cream, #FFE9B8); }
+  .ck-modal-btns .ck-btn-reject-all { background: var(--paper, #F5F4EF); }
+  .ck-modal-btns .ck-btn-revoke { background: var(--pink, #FF4D3A); color: var(--paper, #F5F4EF); }
+  .ck-modal .ck-footer { font-size: 11px; color: var(--ink-3, #696C6F); margin-top: 12px; font-family: var(--fm, 'Geist Mono', monospace); }
+  .ck-modal .ck-close { position: absolute; top: 16px; right: 16px; background: transparent; border: none; font-size: 24px; cursor: pointer; font-weight: 800; padding: 4px 12px; box-shadow: none !important; }
+
+  @media (max-width: 640px) {
+    .ck-banner { left: 8px; right: 8px; bottom: 8px; padding: 16px; }
+    .ck-modal { padding: 20px; }
+    .ck-modal h2 { font-size: 20px; }
+  }
+</style>
+
+<div id="ckBanner" class="ck-banner" role="dialog" aria-labelledby="ckBannerTitle" aria-describedby="ckBannerBody">
+  <h3 id="ckBannerTitle">Usamos cookies para que Conniku funcione bien</h3>
+  <p id="ckBannerBody">Necesitamos tu permiso para algunas de ellas. Las cookies estrictamente necesarias mantienen tu sesión activa; las demás nos ayudan a recordar tus preferencias y a mejorar la plataforma.</p>
+  <p class="ck-retract-notice">Puedes cambiar o retirar tu decisión en cualquier momento desde el enlace "Cookies" en el pie de la página.</p>
+  <div class="ck-btns">
+    <button class="ck-btn-accept" onclick="ckAcceptAll()">Aceptar todas</button>
+    <button class="ck-btn-reject" onclick="ckRejectAll()">Rechazar todas</button>
+    <button class="ck-btn-customize" onclick="ckOpenModal()">Personalizar</button>
+  </div>
+</div>
+
+<div id="ckModalOverlay" class="ck-modal-overlay" onclick="ckModalBgClick(event)">
+  <div class="ck-modal" role="dialog" aria-labelledby="ckModalTitle">
+    <button class="ck-close" aria-label="Cerrar" onclick="ckCloseModal()">×</button>
+    <h2 id="ckModalTitle">Configurar cookies</h2>
+    <p class="ck-subtitle">Elige qué cookies permites. Puedes cambiar estas preferencias cuando quieras desde el pie de la página.</p>
+
+    <div class="ck-cat">
+      <div class="ck-cat-head">
+        <span class="ck-cat-name">Estrictamente necesarias</span>
+        <div class="ck-toggle on locked" aria-label="Siempre activas" title="Obligatorias"></div>
+      </div>
+      <p class="ck-cat-desc">Siempre activas. Permiten iniciar sesión, mantener tu sesión abierta y que Conniku funcione offline. Sin ellas, el servicio no puede prestarse.</p>
+      <p class="ck-cat-legal">Base legal: ejecución del contrato (Art. 6(1)(b) RGPD)</p>
+    </div>
+
+    <div class="ck-cat">
+      <div class="ck-cat-head">
+        <span class="ck-cat-name">Funcionales</span>
+        <div id="ckTogFunctional" class="ck-toggle" onclick="ckToggle('functional')"></div>
+      </div>
+      <p class="ck-cat-desc">Recuerdan tu idioma, tema visual, tour de bienvenida y progreso académico local entre visitas. No se comparten con terceros con fines publicitarios.</p>
+      <p class="ck-cat-legal">Base legal: consentimiento (Art. 6(1)(a) RGPD)</p>
+    </div>
+
+    <div class="ck-cat">
+      <div class="ck-cat-head">
+        <span class="ck-cat-name">Analíticas</span>
+        <div id="ckTogAnalytics" class="ck-toggle" onclick="ckToggle('analytics')"></div>
+      </div>
+      <p class="ck-cat-desc">Nos permiten entender cómo se usa Conniku de forma anónima y agregada, para mejorar la plataforma. Hoy no tenemos integraciones externas activas; este toggle queda preparado para cuando las activemos.</p>
+      <p class="ck-cat-legal">Base legal: consentimiento (Art. 6(1)(a) RGPD)</p>
+    </div>
+
+    <div class="ck-cat">
+      <div class="ck-cat-head">
+        <span class="ck-cat-name">Marketing</span>
+        <div id="ckTogMarketing" class="ck-toggle" onclick="ckToggle('marketing')"></div>
+      </div>
+      <p class="ck-cat-desc">Medir el resultado de campañas y enviarte comunicaciones comerciales según tus intereses. Hoy Conniku no usa cookies de marketing y tus datos personales no se comparten con redes publicitarias. Este toggle queda preparado para futuras funcionalidades opcionales.</p>
+      <p class="ck-cat-legal">Base legal: consentimiento (Art. 6(1)(a) RGPD)</p>
+    </div>
+
+    <div class="ck-modal-btns">
+      <button class="ck-btn-accept-all" onclick="ckAcceptAll()">Aceptar todas</button>
+      <button class="ck-btn-reject-all" onclick="ckRejectAll()">Rechazar todas</button>
+      <button class="ck-btn-save" onclick="ckSavePrefs()">Guardar preferencias</button>
+      <button class="ck-btn-revoke" onclick="ckRevokeAll()">Retirar todo el consentimiento</button>
+    </div>
+    <p class="ck-footer">Derecho de retiro: GDPR Art. 7(3) · Ley 21.719 vigente desde 2026-12-01 (Diario Oficial CVE 2583630, Art. 1° transitorio)</p>
+  </div>
+</div>
+
+<script>
+  (function () {
+    const LS_KEY = 'conniku_cookie_consent_v1';
+    const state = { functional: false, analytics: false, marketing: false };
+
+    function load() {
+      try {
+        const raw = localStorage.getItem(LS_KEY);
+        if (!raw) return null;
+        return JSON.parse(raw);
+      } catch (_) { return null; }
+    }
+    function save(consent) {
+      localStorage.setItem(LS_KEY, JSON.stringify({
+        ...consent,
+        acceptedAt: new Date().toISOString(),
+        policyHash: 'bba33024bae091584f975585fffd78198321ab2878680ec920103d828a27d316',
+        policyVersion: '1.1.0'
+      }));
+    }
+    function showBanner() { document.getElementById('ckBanner').classList.add('is-visible'); }
+    function hideBanner() { document.getElementById('ckBanner').classList.remove('is-visible'); }
+    function openModal() { document.getElementById('ckModalOverlay').classList.add('is-visible'); }
+    function closeModal() { document.getElementById('ckModalOverlay').classList.remove('is-visible'); }
+
+    function renderToggles() {
+      ['functional', 'analytics', 'marketing'].forEach((k) => {
+        const el = document.getElementById('ckTog' + k.charAt(0).toUpperCase() + k.slice(1));
+        if (el) el.classList.toggle('on', !!state[k]);
+      });
+    }
+
+    window.ckToggle = function (k) {
+      state[k] = !state[k];
+      renderToggles();
+    };
+    window.ckAcceptAll = function () {
+      state.functional = state.analytics = state.marketing = true;
+      save(state);
+      renderToggles();
+      hideBanner();
+      closeModal();
+    };
+    window.ckRejectAll = function () {
+      state.functional = state.analytics = state.marketing = false;
+      save(state);
+      renderToggles();
+      hideBanner();
+      closeModal();
+    };
+    window.ckSavePrefs = function () {
+      save(state);
+      hideBanner();
+      closeModal();
+    };
+    window.ckRevokeAll = function () {
+      localStorage.removeItem(LS_KEY);
+      state.functional = state.analytics = state.marketing = false;
+      renderToggles();
+      closeModal();
+      showBanner();
+    };
+    window.ckOpenModal = function () {
+      const existing = load();
+      if (existing) {
+        state.functional = !!existing.functional;
+        state.analytics = !!existing.analytics;
+        state.marketing = !!existing.marketing;
+      }
+      renderToggles();
+      openModal();
+    };
+    window.ckCloseModal = closeModal;
+    window.ckModalBgClick = function (e) {
+      if (e.target && e.target.id === 'ckModalOverlay') closeModal();
+    };
+
+    document.addEventListener('keydown', function (e) {
+      if (e.key === 'Escape') closeModal();
+    });
+
+    // Al cargar la página: si no hay consent previo, mostrar banner
+    document.addEventListener('DOMContentLoaded', function () {
+      const existing = load();
+      if (!existing) showBanner();
+    });
+  })();
+</script>
+<!-- CONNIKU-COOKIE-BANNER-INJECTED-END -->
+</body>
+</html>
