@@ -54,7 +54,7 @@ VALID_DOC_KEYS = ["terms", "privacy", "cookies", "age-declaration"]
 
 # Hashes canónicos tomados de docs/legal/v3.2/METADATA.yaml
 CANONICAL_HASHES: dict[str, str] = {
-    "privacy": "7a8ba81d0be22cc1deee7d92764baaac1a598a662b84d9ba90043b2a25f63f6c",
+    "privacy": "b5b9fed8fd5e4e600c7fa33fbd8dddaec5c627be189b5382e8b7cf81dbcfa288",
     "terms": "9a16122f985a1d252a5928c5fae518b5bd23ac6ee00996ee9e8293c4aaf08dce",
     "cookies": "48b90468822fda6b0470acb30d4707f037f1dd636eac7ebd967ab293c2a3a513",
     "age-declaration": "61dab2ecf1b27e3fb212efcf5a066784943c689de11611bb6d2b919e39441a9b",

@@ -34,7 +34,7 @@ export const LEGAL_DOCUMENT_REGISTRY: Record<DocumentKey, LegalDocumentMeta> = {
   privacy: {
     title: 'Política de Privacidad',
     version: '2.4.0',
-    sha256: '7a8ba81d0be22cc1deee7d92764baaac1a598a662b84d9ba90043b2a25f63f6c',
+    sha256: 'b5b9fed8fd5e4e600c7fa33fbd8dddaec5c627be189b5382e8b7cf81dbcfa288',
     slug: 'privacy',
     filename: 'privacy.md',
   },

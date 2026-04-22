@@ -85,8 +85,8 @@ export const TOS_DOCUMENT: LegalDocumentDescriptor = {
 
 export const PRIVACY_DOCUMENT: LegalDocumentDescriptor = {
   documentType: 'privacy',
-  version: '2.4.0',
-  hash: '7a8ba81d0be22cc1deee7d92764baaac1a598a662b84d9ba90043b2a25f63f6c',
+  version: '2.4.1',
+  hash: 'b5b9fed8fd5e4e600c7fa33fbd8dddaec5c627be189b5382e8b7cf81dbcfa288',
   route: '/privacy',
   label: 'Política de Privacidad',
 };
