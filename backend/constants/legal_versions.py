@@ -72,6 +72,15 @@ AGE_DECLARATION_TEXT_HASH: str = "ca527535a0f3f938b51d9a2e896e140233ecdd2286e13f
 # sin modificar el texto canónico del checkbox.
 AGE_DECLARATION_FILE_HASH: str = "61dab2ecf1b27e3fb212efcf5a066784943c689de11611bb6d2b919e39441a9b"
 
+# SHA-256 del archivo docs/legal/age-declaration-public.md (vista pública del viewer).
+# NO es el hash del texto firmado (ese es AGE_DECLARATION_TEXT_HASH, inmutable).
+# Este es el hash del archivo público completo servido por el endpoint
+# GET /legal/documents/age-declaration/raw en bloque-legal-viewer-v1.
+# Fuente: legal_document_views_routes.py::CANONICAL_HASHES["age-declaration"].
+# Fecha de verificación: 2026-04-21.
+# Verificador: backend-builder (Tori).
+AGE_DECLARATION_PUBLIC_HASH: str = "d08689443d6a804fb86cdb65922d7a2fee82322ec40920cac4a0a8df64392f93"
+
 
 # --- Consentimiento de cookies (bloque-cookie-consent-banner-v1) -----------
 # Constantes para la tabla cookie_consents. Son DISTINTAS de COOKIES_HASH
@@ -121,3 +130,53 @@ Un usuario se considera "al día" cuando en la tabla ``user_agreements``
 existe al menos una fila por cada entrada de esta lista con ``text_version``
 igual al valor publicado y ``text_version_hash`` igual al hash publicado.
 """
+
+
+# --- Mapa de hashes por doc_key del viewer (bloque multi-document-consent-v1) -
+#
+# Usado por POST /auth/register para validar que los document_views del
+# session_token referencian hashes de los documentos VIGENTES al momento del
+# registro (R-A2 del plan).
+#
+# El doc_key 'age-declaration' usa AGE_DECLARATION_FILE_HASH (hash del archivo
+# público completo del viewer, distinto de AGE_DECLARATION_TEXT_HASH que es el
+# hash del texto canónico almacenado en user_agreements).
+#
+# Fuente: legal_document_views_routes.py::CANONICAL_HASHES (sincronizado manualmente).
+# Referencia legal: GDPR Art. 7(1) — el usuario debe leer la versión actual.
+# Fecha de verificación: 2026-04-21.
+# Verificador: backend-builder (Tori).
+CANONICAL_DOC_HASHES: dict[str, str] = {
+    "terms": TOS_HASH,
+    "privacy": PRIVACY_HASH,
+    "cookies": COOKIES_HASH,
+    "age-declaration": AGE_DECLARATION_FILE_HASH,
+}
+
+# Versiones canónicas por doc_key (sincronizadas con legal_document_views_routes.py).
+CANONICAL_DOC_VERSIONS: dict[str, str] = {
+    "terms": TOS_VERSION,
+    "privacy": PRIVACY_VERSION,
+    "cookies": COOKIES_VERSION,
+    "age-declaration": AGE_DECLARATION_VERSION,
+}
+
+# Mapa de doc_key (tabla document_views) → document_type (tabla user_agreements).
+# La tabla document_views usa guion ('age-declaration') pero user_agreements usa
+# guion bajo ('age_declaration') por convención histórica.
+DOC_KEY_TO_DOCUMENT_TYPE: dict[str, str] = {
+    "terms": TOS_DOCUMENT_TYPE,
+    "privacy": PRIVACY_DOCUMENT_TYPE,
+    "cookies": COOKIES_DOCUMENT_TYPE,
+    "age-declaration": AGE_DECLARATION_DOCUMENT_TYPE,
+}
+
+# Mapa de doc_key → (version, hash) que se escribe en user_agreements al registrar.
+# Para 'age-declaration' se usa AGE_DECLARATION_TEXT_HASH (hash del texto canónico
+# firmado), NO el hash del archivo público — son valores distintos.
+DOC_KEY_TO_AGREEMENT_HASH: dict[str, tuple[str, str]] = {
+    "terms": (TOS_VERSION, TOS_HASH),
+    "privacy": (PRIVACY_VERSION, PRIVACY_HASH),
+    "cookies": (COOKIES_VERSION, COOKIES_HASH),
+    "age-declaration": (AGE_DECLARATION_VERSION, AGE_DECLARATION_TEXT_HASH),
+}
