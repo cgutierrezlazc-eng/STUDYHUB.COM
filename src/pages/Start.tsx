@@ -244,6 +244,25 @@ export default function Start() {
     armEl.style.transform = 'rotate(' + final + 'deg)';
   }
 
+  /**
+   * Sincroniza la estela del trail con el arm que se está deteniendo.
+   * Usa la misma curva y duración que stopArmAt, así la estela viaja
+   * pegada al planeta hasta su posición final.
+   */
+  function stopTrailAt(trailEl: HTMLElement, targetDeg: number, dur: number) {
+    const cur = getArmAngle(trailEl);
+    const delta = ((((targetDeg - cur) % 360) + 360) % 360) + 720;
+    const final = cur + delta;
+    trailEl.style.animation = 'none';
+    trailEl.style.transition = 'none';
+    trailEl.style.transform = 'rotate(' + cur + 'deg)';
+    void trailEl.offsetHeight;
+    // Mantenemos transition de transform + opacity (heredada del CSS) en una sola regla.
+    trailEl.style.transition =
+      'transform ' + dur + 'ms cubic-bezier(0.08,1,0.18,1), opacity 1.2s ease 0.2s';
+    trailEl.style.transform = 'rotate(' + final + 'deg)';
+  }
+
   function pushTimeout(fn: () => void, ms: number) {
     const id = window.setTimeout(fn, ms);
     timeoutsRef.current.push(id);
@@ -268,10 +287,16 @@ export default function Start() {
       pushTimeout(() => {
         const arm = document.getElementById(p.armId);
         if (arm) stopArmAt(arm, p.target, 2600);
+        // Trail viaja pegado al planeta (id="trail-conniku|trail-entrar|trail-crear")
+        const trailId = p.armId.replace('arm-', 'trail-');
+        const trail = document.getElementById(trailId);
+        if (trail) stopTrailAt(trail, p.target, 2600);
         setLandingVis((prev) => ({ ...prev, [p.visId]: true }));
         pushTimeout(() => {
           setHiddenVis((prev) => ({ ...prev, [p.visId]: true }));
           setVisibleBtns((prev) => ({ ...prev, [p.btnKey]: true }));
+          // Estela "penetra" el planeta y desaparece
+          if (trail) trail.style.opacity = '0';
         }, 2700);
       }, p.triggerAt);
     });
@@ -477,8 +502,9 @@ export default function Start() {
 
       <div className={styles.pulseWave} />
 
-      {/* Orbit ring 1 — conniku */}
+      {/* Orbit ring 1 — conniku (activo · estela se detiene + fade) */}
       <div className={`${styles.orbRing} ${styles.orbR1}`}>
+        <div className={styles.orbTrail} id="trail-conniku" />
         <div className={`${styles.orbArm} ${styles.armConniku}`} id="arm-conniku">
           <div
             className={visClass('vis-conniku', styles.visConniku)}
@@ -487,8 +513,9 @@ export default function Start() {
           />
         </div>
       </div>
-      {/* Orbit ring 2 — tutores (decorativo) */}
+      {/* Orbit ring 2 — tutores (decorativo · estela infinita) */}
       <div className={`${styles.orbRing} ${styles.orbR2}`}>
+        <div className={styles.orbTrail} />
         <div className={`${styles.orbArm} ${styles.armTutores}`} id="arm-tutores">
           <div
             className={visClass('vis-tutores', styles.visTutores)}
@@ -498,8 +525,9 @@ export default function Start() {
           />
         </div>
       </div>
-      {/* Orbit ring 3 — empleos (decorativo) */}
+      {/* Orbit ring 3 — empleos (decorativo · estela infinita) */}
       <div className={`${styles.orbRing} ${styles.orbR3}`}>
+        <div className={styles.orbTrail} />
         <div className={`${styles.orbArm} ${styles.armEmpleos}`} id="arm-empleos">
           <div
             className={visClass('vis-empleos', styles.visEmpleos)}
@@ -509,8 +537,9 @@ export default function Start() {
           />
         </div>
       </div>
-      {/* Orbit ring 4 — entrar */}
+      {/* Orbit ring 4 — entrar (activo) */}
       <div className={`${styles.orbRing} ${styles.orbR4}`}>
+        <div className={styles.orbTrail} id="trail-entrar" />
         <div className={`${styles.orbArm} ${styles.armEntrar}`} id="arm-entrar">
           <div
             className={visClass('vis-entrar', styles.visEntrar)}
@@ -519,14 +548,29 @@ export default function Start() {
           />
         </div>
       </div>
-      {/* Orbit ring 5 — crear */}
+      {/* Orbit ring 5 — crear (activo) */}
       <div className={`${styles.orbRing} ${styles.orbR5}`}>
+        <div className={styles.orbTrail} id="trail-crear" />
         <div className={`${styles.orbArm} ${styles.armCrear}`} id="arm-crear">
           <div
             className={visClass('vis-crear', styles.visCrear)}
             id="vis-crear"
             style={visStyle('vis-crear')}
           />
+        </div>
+      </div>
+      {/* Orbit ring 6 — decorativo extra (pink · siempre orbita) */}
+      <div className={`${styles.orbRing} ${styles.orbR6}`}>
+        <div className={styles.orbTrail} />
+        <div className={`${styles.orbArm} ${styles.armDecoA}`}>
+          <div className={`${styles.orbVis} ${styles.visDecoA}`} />
+        </div>
+      </div>
+      {/* Orbit ring 7 — decorativo extra (teal · siempre orbita) */}
+      <div className={`${styles.orbRing} ${styles.orbR7}`}>
+        <div className={styles.orbTrail} />
+        <div className={`${styles.orbArm} ${styles.armDecoB}`}>
+          <div className={`${styles.orbVis} ${styles.visDecoB}`} />
         </div>
       </div>
 
