@@ -482,25 +482,11 @@
   pointer-events: none;
   overflow: visible;
 }
-/* Pulso de luz viajando dentro del cable.
-   stroke-dasharray="28 320" en JSX define un segmento brillante de 28px
-   seguido de 320px en blanco; al desplazar dashoffset el segmento recorre
-   el path entero, dando sensación de luz fluyendo por dentro de la línea. */
-.cableLight {
-  animation: cableLightFlow 1.8s linear infinite;
-}
-@keyframes cableLightFlow {
-  from {
-    stroke-dashoffset: 348;
-  }
-  to {
-    stroke-dashoffset: 0;
-  }
-}
+/* Conector orbital · la animación va con SMIL <animateMotion> en el SVG
+   (mismo patrón que los dots orbitando en /start). Sin CSS extra. */
 @media (prefers-reduced-motion: reduce) {
-  .cableLight {
+  .cableSvg circle {
     animation: none;
-    opacity: 0;
   }
 }
 
