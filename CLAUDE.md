@@ -981,6 +981,31 @@ nuevo debe prevenir. No se replican bajo ninguna circunstancia.
   usar solo lo que Cristian proporciona, no buscar alternativas por
   iniciativa propia cuando él ya indicó el correcto.
 
+- **2026-04-25**: Backend caído en Render durante todo M01.4.
+  Síntoma: `POST /contact` devolvía 404 después del merge de PR #34.
+  Causa raíz: imports `from shared.X` y `from backend.X` en
+  `auth_routes.py`, `constants/__init__.py`, `payroll_calculator.py`
+  asumían cwd=raíz del repo (que funciona local), pero Render usa
+  cwd=`backend/` y crashean con `ModuleNotFoundError`. El backend
+  llevaba caído desde 2026-04-05 sin que nadie lo notara porque no se
+  probaban endpoints en producción. Fixes: PR #36 y #37. Prevención
+  aplicada: (1) todo import en `backend/**/*.py` debe ser relativo al
+  cwd `backend/` — nunca `from backend.X` ni `from shared.X`;
+  (2) antes de mergear cambios al backend, simular el cwd de Render
+  con `cd backend && python3 -c "import sys; sys.path = [p for p in
+  sys.path if not p.endswith('/CONNIKU')]; sys.path.insert(0, '.');
+  import server"` y confirmar que no hay `ModuleNotFoundError`;
+  (3) idealmente añadir ese check al pre-commit o al gate "Verify Full
+  Stack" para que un import roto bloquee push automáticamente.
+
+- **2026-04-25**: Tori afirmó que no existía registro de errores en
+  el repo y creó `docs/ERRORES.md` redundante, sin revisar `CLAUDE.md`
+  donde el registro vive desde el inicio (sección 17). Prevención
+  aplicada: antes de crear cualquier archivo de "registro", "log" o
+  "lección", buscar primero en `CLAUDE.md` y secciones existentes.
+  Las instrucciones de `CLAUDE.md` son fuente de verdad y deben
+  consultarse antes de inventar estructura nueva.
+
 Este registro queda vivo. Si en el futuro Tori comete un error con
 implicaciones similares, se agrega a este registro como lección
 adicional, no se oculta ni se relativiza.
