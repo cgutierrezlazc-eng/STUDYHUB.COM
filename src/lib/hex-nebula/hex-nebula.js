@@ -1,3 +1,4 @@
+/* eslint-env browser */
 /**
  * Conniku · Hex Armor v6 · NÉBULA (variante 3)
  * =============================================

@@ -110,6 +110,7 @@ export default function Contact() {
   const sidebarItemRefs = useRef<Record<string, HTMLAnchorElement | null>>({});
   const triggerRef = useRef<HTMLButtonElement | null>(null);
   const wrapRef = useRef<HTMLDivElement | null>(null);
+  const composerRef = useRef<HTMLElement | null>(null);
 
   // Click fuera → cierra el dropdown.
   useEffect(() => {
@@ -148,13 +149,15 @@ export default function Contact() {
       }
       const a = sourceEl.getBoundingClientRect();
       const b = sidebarEl.getBoundingClientRect();
-      // Ancla el cable al borde izquierdo del source y al borde derecho del sidebar.
-      setCable({
-        x1: a.left,
-        y1: a.top + a.height / 2,
-        x2: b.right,
-        y2: b.top + b.height / 2,
-      });
+      const comp = composerRef.current?.getBoundingClientRect();
+      // El cable sale por el borde IZQUIERDO del composer (vértice del cuadro)
+      // a la altura del item seleccionado, y entra por el borde DERECHO del
+      // sidebar card. Así el trazo nunca atraviesa los inputs del formulario.
+      const x1 = comp ? comp.left : a.left;
+      const y1 = a.top + a.height / 2;
+      const x2 = b.right;
+      const y2 = b.top + b.height / 2;
+      setCable({ x1, y1, x2, y2 });
     }
     computeCable();
     window.addEventListener('resize', computeCable);
@@ -204,13 +207,33 @@ export default function Contact() {
   const activeSidebarKey = motivoOption?.sidebarKey ?? null;
   const isCentroSoporte = motivo === 'Centro de soporte';
 
-  // Path Bezier del cable. Curva horizontal con control points a 1/3 y 2/3.
+  // Path ortogonal del cable: sale del vértice IZQUIERDO del composer, viaja
+  // por el corredor entre composer y sidebar (nunca encima de inputs), y
+  // entra al borde derecho del sidebar card. Esquinas con arcos redondeados.
+  // Importante: x1 (composer.left) > x2 (sidebar.right), así que avanzamos
+  // hacia la izquierda restando.
   const cablePath = cable
     ? (() => {
-        const dx = cable.x2 - cable.x1;
-        const c1x = cable.x1 - Math.abs(dx) * 0.3;
-        const c2x = cable.x2 + Math.abs(dx) * 0.3;
-        return `M ${cable.x1} ${cable.y1} C ${c1x} ${cable.y1}, ${c2x} ${cable.y2}, ${cable.x2} ${cable.y2}`;
+        const xm = (cable.x1 + cable.x2) / 2; // corredor central
+        const r = 12; // radio de las esquinas
+        const goingDown = cable.y2 > cable.y1;
+        // Tramo 1 horizontal (derecha → izquierda): x1 → xm + r
+        // Esquina 1: arco a (xm, y1 ± r)
+        // Tramo 2 vertical: → y2 ∓ r
+        // Esquina 2: arco a (xm - r, y2)
+        // Tramo 3 horizontal: → x2
+        const sweep1 = goingDown ? 1 : 0;
+        const sweep2 = goingDown ? 1 : 0;
+        const corner1Y = goingDown ? cable.y1 + r : cable.y1 - r;
+        const v2 = goingDown ? cable.y2 - r : cable.y2 + r;
+        return [
+          `M ${cable.x1} ${cable.y1}`,
+          `L ${xm + r} ${cable.y1}`,
+          `A ${r} ${r} 0 0 ${sweep1} ${xm} ${corner1Y}`,
+          `L ${xm} ${v2}`,
+          `A ${r} ${r} 0 0 ${sweep2 ? 0 : 1} ${xm - r} ${cable.y2}`,
+          `L ${cable.x2} ${cable.y2}`,
+        ].join(' ');
       })()
     : '';
 
@@ -388,10 +411,10 @@ export default function Contact() {
           </section>
 
           {/* Composer card · estilo facegram */}
-          <section className={`${styles.dCard} ${styles.composerCard}`}>
+          <section className={`${styles.dCard} ${styles.composerCard}`} ref={composerRef}>
             <div className={styles.composer}>
               <div className={styles.composerAvatar} aria-hidden="true" />
-              <div className={styles.composerPill}>Cuéntanos qué necesitas…</div>
+              <h2 className={styles.composerPill}>Cuéntanos qué necesitas</h2>
             </div>
 
             <div className={styles.composerActs}>
@@ -538,20 +561,26 @@ export default function Contact() {
       {cable && (
         <svg className={styles.cableSvg} aria-hidden="true">
           <defs>
+            {/* Gradiente con la paleta de los planetas/órbitas de /start */}
             <linearGradient id="cableGradient" x1="0%" y1="0%" x2="100%" y2="0%">
-              <stop offset="0%" stopColor="#00c27a" stopOpacity="0.95" />
-              <stop offset="100%" stopColor="#8aeac0" stopOpacity="0.95" />
+              <stop offset="0%" stopColor="#e91e8c" stopOpacity="0.95" />
+              <stop offset="18%" stopColor="#14b8a6" stopOpacity="0.95" />
+              <stop offset="36%" stopColor="#00c27a" stopOpacity="0.95" />
+              <stop offset="54%" stopColor="#ffe9b8" stopOpacity="0.95" />
+              <stop offset="72%" stopColor="#0096cc" stopOpacity="0.95" />
+              <stop offset="88%" stopColor="#6b4eff" stopOpacity="0.95" />
+              <stop offset="100%" stopColor="#ff4a1c" stopOpacity="0.95" />
             </linearGradient>
             <filter id="cableGlow" x="-30%" y="-30%" width="160%" height="160%">
               <feGaussianBlur stdDeviation="2.5" />
             </filter>
           </defs>
-          {/* Halo difuso. */}
+          {/* Halo difuso · usa el mismo gradiente para tintar el glow. */}
           <path
             d={cablePath}
-            stroke="#00c27a"
-            strokeOpacity="0.35"
-            strokeWidth="6"
+            stroke="url(#cableGradient)"
+            strokeOpacity="0.4"
+            strokeWidth="7"
             fill="none"
             filter="url(#cableGlow)"
           />
