@@ -48,7 +48,7 @@ for _path in (_BACKEND_DIR, _REPO_ROOT):
 # Estos son los hashes que los document_views almacenan al registrar apertura.
 CANONICAL_HASHES: dict[str, str] = {
     "terms": "9a16122f985a1d252a5928c5fae518b5bd23ac6ee00996ee9e8293c4aaf08dce",
-    "privacy": "a09d799c7f34d7100b9393ad7c55c54931ab7e396d0f03b559a59545638e6962",
+    "privacy": "cc9332741bea7ad4539fd6a8a049946e44521b9ae8ed97833dd112412b8c746e",
     "cookies": "80d41f71f075ae954a4e5f1763266b9830d38849bbe79a7bb931c2a4ee30e38c",
     "age-declaration": "61dab2ecf1b27e3fb212efcf5a066784943c689de11611bb6d2b919e39441a9b",
 }
