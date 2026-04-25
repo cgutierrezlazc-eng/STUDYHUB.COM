@@ -14,6 +14,7 @@ import ErrorBoundary from './components/ErrorBoundary';
 
 const UnderConstruction = lazy(() => import('./pages/UnderConstruction'));
 const NotFound = lazy(() => import('./pages/NotFound'));
+const Start = lazy(() => import('./pages/Start'));
 
 function NotFoundWithNav() {
   const navigate = useNavigate();
@@ -26,6 +27,7 @@ export default function App() {
       <Suspense fallback={null}>
         <Routes>
           <Route path="/" element={<UnderConstruction />} />
+          <Route path="/start" element={<Start />} />
           <Route path="*" element={<NotFoundWithNav />} />
         </Routes>
       </Suspense>
