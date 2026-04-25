@@ -16,6 +16,7 @@ const UnderConstruction = lazy(() => import('./pages/UnderConstruction'));
 const NotFound = lazy(() => import('./pages/NotFound'));
 const Start = lazy(() => import('./pages/Start'));
 const Terms = lazy(() => import('./pages/Terms'));
+const Contact = lazy(() => import('./pages/Contact'));
 
 function NotFoundWithNav() {
   const navigate = useNavigate();
@@ -30,6 +31,7 @@ export default function App() {
           <Route path="/" element={<UnderConstruction />} />
           <Route path="/start" element={<Start />} />
           <Route path="/terms" element={<Terms />} />
+          <Route path="/contact" element={<Contact />} />
           <Route path="*" element={<NotFoundWithNav />} />
         </Routes>
       </Suspense>
