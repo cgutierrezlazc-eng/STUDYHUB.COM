@@ -1,17 +1,17 @@
 /**
  * Contact.tsx
  *
- * Traducción de ORBIT-U/pages/contacto.html (255 líneas) a un componente
- * React funcional. Bridging del módulo M01.4 · Contacto.
+ * Rediseño visual M01.4 · Contacto. Adopta el layout tipo perfil-social-v2
+ * (facegram): grid de 2 columnas (sidebar 360px + columna principal con
+ * composer/form), cards con estilo `.d-card`.
  *
  * Reglas observadas:
- * - El contenido (textos, motivos de consulta, canales directos) es el del
- *   fuente original · NO modificar.
+ * - El copy del formulario, motivos de consulta y canales directos
+ *   proviene del Contact.tsx anterior · NO se modifica.
  * - Idioma: español neutro latinoamericano (sin voseo).
  * - Logo oficial: estructura inviolable de `<span class="brand on-dark">`
  *   con className global (CSS cargado globalmente desde main.tsx).
- * - El selector de motivo se maneja con `useState` (sin querySelector ni
- *   listeners DOM imperativos).
+ * - El selector de motivo se maneja con `useState`.
  * - El submit del formulario hace `e.preventDefault()` + `alert(...)` ·
  *   NO se cablea API real en este bridge.
  *
@@ -97,120 +97,183 @@ export default function Contact() {
         <span className={styles.topbarTitle}>CONTACTO</span>
       </div>
 
-      <div className={styles.pageWrap}>
-        <div className={styles.pageBadge}>FORMULARIO DE CONTACTO</div>
-        <h1 className={styles.pageTitle}>Escríbenos</h1>
-        <p className={styles.pageSub}>
-          Elige el motivo de tu consulta y te dirigimos al equipo correcto. Respondemos dentro de
-          24–48 horas hábiles.
-        </p>
+      <div className={styles.layout}>
+        {/* SIDEBAR · 360px */}
+        <aside className={styles.sidebar}>
+          <section className={styles.dCard}>
+            <h2 className={styles.dCardTitle}>Sobre Conniku</h2>
+            <p className={styles.dCardText}>
+              Conniku SpA es una plataforma digital colaborativa para educación, con domicilio en
+              Antofagasta, Chile. Conectamos estudiantes, docentes e instituciones en un mismo
+              espacio de trabajo.
+            </p>
+            <p className={styles.dCardText}>
+              Si tienes una consulta, escríbenos desde el formulario o usa los canales directos.
+            </p>
+          </section>
 
-        <div className={styles.sectionLabel} style={{ marginBottom: 14 }}>
-          ¿Cuál es el motivo de tu consulta?
-        </div>
-        <div className={styles.motivoGrid}>
-          {MOTIVOS.map((m) => (
-            <button
-              key={m.value}
-              type="button"
-              className={`${styles.motivoBtn} ${motivo === m.value ? styles.active : ''}`}
-              onClick={() => setMotivo(m.value)}
-            >
-              <span className={styles.motivoLabel}>{m.label}</span>
-              <span className={styles.motivoDesc}>{m.desc}</span>
-            </button>
-          ))}
-        </div>
+          <section className={styles.dCard}>
+            <h2 className={styles.dCardTitle}>Tiempos de respuesta</h2>
+            <ul className={styles.infoList}>
+              <li>
+                <span className={styles.infoKey}>Soporte técnico</span>
+                <span className={styles.infoVal}>24 h hábiles</span>
+              </li>
+              <li>
+                <span className={styles.infoKey}>Comercial</span>
+                <span className={styles.infoVal}>48 h hábiles</span>
+              </li>
+              <li>
+                <span className={styles.infoKey}>Instituciones</span>
+                <span className={styles.infoVal}>48 h hábiles</span>
+              </li>
+              <li>
+                <span className={styles.infoKey}>Privacidad y datos</span>
+                <span className={styles.infoVal}>24 h hábiles</span>
+              </li>
+            </ul>
+          </section>
 
-        <form className={styles.contactForm} onSubmit={handleSubmit}>
-          <input type="hidden" name="motivo" value={motivo ?? ''} />
-
-          <div className={styles.formRow}>
-            <div className={styles.formGroup}>
-              <label className={styles.formLabel}>Nombre</label>
-              <input className={styles.formInput} type="text" placeholder="Tu nombre" required />
+          <section className={styles.dCard}>
+            <h2 className={styles.dCardTitle}>Otros canales</h2>
+            <div className={styles.channelsList}>
+              <a href="mailto:soporte@conniku.com" className={styles.channelRow}>
+                <span className={styles.channelRowLabel}>Soporte técnico</span>
+                <span className={styles.channelRowAddr}>soporte@conniku.com</span>
+                <span className={styles.channelRowDesc}>Errores, acceso a cuenta, bugs</span>
+              </a>
+              <a href="mailto:contacto@conniku.com" className={styles.channelRow}>
+                <span className={styles.channelRowLabel}>Contacto general</span>
+                <span className={styles.channelRowAddr}>contacto@conniku.com</span>
+                <span className={styles.channelRowDesc}>Consultas generales e institucionales</span>
+              </a>
+              <a href="mailto:privacidad@conniku.com" className={styles.channelRow}>
+                <span className={styles.channelRowLabel}>Privacidad y ARCO+</span>
+                <span className={styles.channelRowAddr}>privacidad@conniku.com</span>
+                <span className={styles.channelRowDesc}>Ejercicio de derechos sobre tus datos</span>
+              </a>
+              <a href="mailto:legal@conniku.com" className={styles.channelRow}>
+                <span className={styles.channelRowLabel}>Legal</span>
+                <span className={styles.channelRowAddr}>legal@conniku.com</span>
+                <span className={styles.channelRowDesc}>Consultas jurídicas y términos</span>
+              </a>
+              <a href="mailto:seguridad@conniku.com" className={styles.channelRow}>
+                <span className={styles.channelRowLabel}>Seguridad y Ley Karin</span>
+                <span className={styles.channelRowAddr}>seguridad@conniku.com</span>
+                <span className={styles.channelRowDesc}>Denuncias y reportes de seguridad</span>
+              </a>
+              <Link to="/support" className={styles.channelRow}>
+                <span className={styles.channelRowLabel}>Centro de soporte</span>
+                <span className={styles.channelRowAddr}>/support →</span>
+                <span className={styles.channelRowDesc}>Artículos de ayuda y guías</span>
+              </Link>
+              {/* TODO: cuando se bridgee prensa.html → ruta /prensa */}
+              <a href="#" className={styles.channelRow} onClick={handlePendiente}>
+                <span className={styles.channelRowLabel}>Prensa y medios</span>
+                <span className={styles.channelRowAddr}>Kit de prensa →</span>
+                <span className={styles.channelRowDesc}>Recursos para cobertura periodística</span>
+              </a>
             </div>
-            <div className={styles.formGroup}>
-              <label className={styles.formLabel}>Correo electrónico</label>
-              <input
-                className={styles.formInput}
-                type="email"
-                placeholder="tu@correo.com"
-                required
-              />
+          </section>
+
+          <section className={styles.dCard}>
+            <h2 className={styles.dCardTitle}>Información legal</h2>
+            <p className={styles.legalText}>
+              Conniku SpA · RUT: 78.395.702-7
+              <br />
+              Domicilio: Antofagasta, Chile
+            </p>
+            <p className={styles.legalTextSmall}>
+              Objeto social: Desarrollo, operación y comercialización de plataformas digitales
+              colaborativas para educación.
+            </p>
+          </section>
+        </aside>
+
+        {/* COLUMNA DERECHA · feed */}
+        <main className={styles.feed}>
+          <section className={styles.pageHead}>
+            <div className={styles.pageBadge}>FORMULARIO DE CONTACTO</div>
+            <h1 className={styles.pageTitle}>Escríbenos</h1>
+            <p className={styles.pageSub}>
+              Elige el motivo de tu consulta y te dirigimos al equipo correcto. Respondemos dentro
+              de 24–48 horas hábiles.
+            </p>
+          </section>
+
+          {/* Composer card · estilo facegram */}
+          <section className={`${styles.dCard} ${styles.composerCard}`}>
+            <div className={styles.composer}>
+              <div className={styles.composerAvatar} aria-hidden="true" />
+              <div className={styles.composerPill}>Cuéntanos qué necesitas…</div>
             </div>
-          </div>
 
-          <div className={styles.formGroup}>
-            <label className={styles.formLabel}>Asunto</label>
-            <input
-              className={styles.formInput}
-              type="text"
-              placeholder={asuntoPlaceholder}
-              required
-            />
-          </div>
+            <div className={styles.composerActs}>
+              <span className={styles.pgLabel}>Motivo</span>
+              <div className={styles.chipsWrap}>
+                {MOTIVOS.map((m) => (
+                  <button
+                    key={m.value}
+                    type="button"
+                    className={`${styles.chip} ${motivo === m.value ? styles.chipOn : ''}`}
+                    onClick={() => setMotivo(m.value)}
+                    title={m.desc}
+                  >
+                    {m.label}
+                  </button>
+                ))}
+              </div>
+            </div>
 
-          <div className={styles.formGroup}>
-            <label className={styles.formLabel}>Mensaje</label>
-            <textarea
-              className={styles.formTextarea}
-              placeholder="Cuéntanos con detalle. Entre más información nos des, mejor podremos ayudarte."
-              required
-            />
-          </div>
+            <form className={styles.contactForm} onSubmit={handleSubmit}>
+              <input type="hidden" name="motivo" value={motivo ?? ''} />
 
-          <button type="submit" className={styles.btnSend}>
-            Enviar mensaje →
-          </button>
-        </form>
+              <div className={styles.formRow}>
+                <div className={styles.formGroup}>
+                  <label className={styles.formLabel}>Nombre</label>
+                  <input
+                    className={styles.formInput}
+                    type="text"
+                    placeholder="Tu nombre"
+                    required
+                  />
+                </div>
+                <div className={styles.formGroup}>
+                  <label className={styles.formLabel}>Correo electrónico</label>
+                  <input
+                    className={styles.formInput}
+                    type="email"
+                    placeholder="tu@correo.com"
+                    required
+                  />
+                </div>
+              </div>
 
-        {/* Canales directos */}
-        <div style={{ marginTop: 56 }}>
-          <div className={styles.sectionLabel}>Canales directos</div>
-          <div className={styles.channels}>
-            <a href="mailto:soporte@conniku.com" className={styles.channelCard}>
-              <span className={styles.channelLabel}>Soporte técnico</span>
-              <span className={styles.channelAddr}>soporte@conniku.com</span>
-              <span className={styles.channelDesc}>Errores, acceso a cuenta, bugs</span>
-            </a>
-            <a href="mailto:contacto@conniku.com" className={styles.channelCard}>
-              <span className={styles.channelLabel}>Contacto general</span>
-              <span className={styles.channelAddr}>contacto@conniku.com</span>
-              <span className={styles.channelDesc}>Consultas generales e institucionales</span>
-            </a>
-            <a href="mailto:privacidad@conniku.com" className={styles.channelCard}>
-              <span className={styles.channelLabel}>Privacidad y ARCO+</span>
-              <span className={styles.channelAddr}>privacidad@conniku.com</span>
-              <span className={styles.channelDesc}>Ejercicio de derechos sobre tus datos</span>
-            </a>
-            <a href="mailto:legal@conniku.com" className={styles.channelCard}>
-              <span className={styles.channelLabel}>Legal</span>
-              <span className={styles.channelAddr}>legal@conniku.com</span>
-              <span className={styles.channelDesc}>Consultas jurídicas y términos</span>
-            </a>
-            <a href="mailto:seguridad@conniku.com" className={styles.channelCard}>
-              <span className={styles.channelLabel}>Seguridad y Ley Karin</span>
-              <span className={styles.channelAddr}>seguridad@conniku.com</span>
-              <span className={styles.channelDesc}>Denuncias y reportes de seguridad</span>
-            </a>
-            {/* TODO: cuando se bridgee prensa.html → ruta /prensa */}
-            <a href="#" className={styles.channelCard} onClick={handlePendiente}>
-              <span className={styles.channelLabel}>Prensa y medios</span>
-              <span className={styles.channelAddr}>Kit de prensa →</span>
-              <span className={styles.channelDesc}>Recursos para cobertura periodística</span>
-            </a>
-          </div>
-        </div>
+              <div className={styles.formGroup}>
+                <label className={styles.formLabel}>Asunto</label>
+                <input
+                  className={styles.formInput}
+                  type="text"
+                  placeholder={asuntoPlaceholder}
+                  required
+                />
+              </div>
 
-        {/* Info legal */}
-        <div className={styles.legalInfo}>
-          <strong className={styles.legalInfoTitle}>Información de contacto legal</strong>
-          Conniku SpA · RUT: 78.395.702-7 · Domicilio: Antofagasta, Chile
-          <br />
-          Objeto social: Desarrollo, operación y comercialización de plataformas digitales
-          colaborativas para educación
-        </div>
+              <div className={styles.formGroup}>
+                <label className={styles.formLabel}>Mensaje</label>
+                <textarea
+                  className={styles.formTextarea}
+                  placeholder="Cuéntanos con detalle. Entre más información nos des, mejor podremos ayudarte."
+                  required
+                />
+              </div>
+
+              <button type="submit" className={styles.btnSend}>
+                Enviar mensaje →
+              </button>
+            </form>
+          </section>
+        </main>
       </div>
 
       {/* Footer · TODO: cuando se bridgeen cookies/prensa/empleo */}
