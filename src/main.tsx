@@ -5,12 +5,8 @@ import { AuthProvider } from './services/auth';
 import { I18nProvider } from './services/i18n';
 import { isNative, initNative } from './services/capacitor';
 import ErrorBoundary from './components/ErrorBoundary';
-import LegalGate from './components/LegalGate';
 import App from './App';
 import './styles/global.css';
-import './styles/auth.css';
-import './styles/mobile-native.css';
-import 'katex/dist/katex.min.css';
 
 // Add native platform class for CSS targeting
 if (isNative) {
@@ -26,9 +22,7 @@ ReactDOM.createRoot(document.getElementById('root')!).render(
       <I18nProvider>
         <AuthProvider>
           <BrowserRouter>
-            <LegalGate>
-              <App />
-            </LegalGate>
+            <App />
           </BrowserRouter>
         </AuthProvider>
       </I18nProvider>
