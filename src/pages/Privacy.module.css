@@ -1,0 +1,380 @@
+/**
+ * Privacy.module.css
+ *
+ * Traducción literal de los estilos del <style> de
+ * ORBIT-U/pages/privacidad.html. Reglas globales (*, html, body) se omiten
+ * porque ya viven en src/styles/global.css del proyecto CONNIKU.
+ *
+ * Tokens (`--bg`, `--text`, `--surface`, etc.) se redefinen aquí dentro
+ * del scope local del módulo (clase `.page`) para preservar la paleta
+ * original "Orbit Dark" de ORBIT-U sin chocar con los tokens de CONNIKU.
+ *
+ * Mismo patrón que Terms.module.css (M01.1).
+ */
+
+.page {
+  /* ORBIT-U · Orbit Dark tokens */
+  --bg: #050608;
+  --surface: #0d0e11;
+  --surface-2: #15181d;
+  --surface-3: #1a1d23;
+  --border: #262a32;
+  --border-2: #1f2229;
+  --text: #e8e8e6;
+  --text-2: #b8b8b4;
+  --text-3: #8a8a86;
+  --text-4: #5c5f65;
+  --green: #00c27a;
+  --green-2: #006e4a;
+  --green-3: #8aeac0;
+  --lime: #d9ff3a;
+  --orange: #ff4a1c;
+  --violet: #6b4eff;
+  --cyan: #00c2ff;
+  --cream: #ffe9b8;
+  --pink: #ff4d3a;
+  --paper: #f5f4ef;
+
+  /* TODO: cuando se bridgee el motor Nebula → src/lib/hex-nebula */
+  background: var(--bg);
+  color: var(--text);
+  font-family: 'Inter', sans-serif;
+  font-size: 15px;
+  line-height: 1.7;
+  min-height: 100vh;
+  width: 100%;
+  position: relative;
+  isolation: isolate;
+}
+
+:global(body):has(.page) {
+  background: #050608;
+}
+
+/* top bar */
+.topbar {
+  position: sticky;
+  top: 0;
+  z-index: 100;
+  background: rgba(5, 6, 8, 0.92);
+  backdrop-filter: blur(12px);
+  border-bottom: 1px solid var(--border);
+  padding: 14px 32px;
+  display: flex;
+  align-items: center;
+  gap: 20px;
+}
+.backLink {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 12px;
+  color: var(--text-4);
+  text-decoration: none;
+  transition: color 0.15s;
+}
+.backLink:hover {
+  color: var(--text-2);
+}
+.backLink svg {
+  width: 14px;
+  height: 14px;
+  flex-shrink: 0;
+}
+.topbarSep {
+  width: 1px;
+  height: 16px;
+  background: var(--border);
+}
+.topbarTitle {
+  font-family: 'Geist Mono', monospace;
+  font-size: 11px;
+  color: var(--text-4);
+  letter-spacing: 0.06em;
+}
+.topbarBrand {
+  font-size: 16px;
+  text-decoration: none;
+}
+
+/* layout */
+.layout {
+  display: grid;
+  grid-template-columns: 240px 1fr;
+  gap: 0;
+  max-width: 1100px;
+  margin: 0 auto;
+  padding: 48px 32px;
+}
+@media (max-width: 860px) {
+  .layout {
+    grid-template-columns: 1fr;
+  }
+  .tocWrap {
+    display: none;
+  }
+}
+
+/* TOC sidebar */
+.tocWrap {
+  position: sticky;
+  top: 65px;
+  height: fit-content;
+  padding-right: 32px;
+}
+.tocLabel {
+  font-family: 'Geist Mono', monospace;
+  font-size: 10px;
+  color: var(--text-4);
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  margin-bottom: 12px;
+}
+.tocList {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+.tocList li + li {
+  margin-top: 2px;
+}
+.tocList a {
+  display: block;
+  font-size: 12px;
+  color: var(--text-4);
+  text-decoration: none;
+  padding: 4px 8px;
+  border-radius: 6px;
+  transition: all 0.15s;
+  border-left: 2px solid transparent;
+}
+.tocList a:hover {
+  color: var(--text-2);
+  background: var(--surface);
+  border-left-color: var(--border-2);
+}
+
+/* doc */
+.docHeader {
+  margin-bottom: 40px;
+}
+.docBadge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 3px 10px;
+  border-radius: 999px;
+  background: rgba(0, 194, 122, 0.08);
+  border: 1px solid rgba(0, 194, 122, 0.2);
+  font-family: 'Geist Mono', monospace;
+  font-size: 10px;
+  color: var(--green-3);
+  letter-spacing: 0.08em;
+  margin-bottom: 16px;
+}
+.docBadge::before {
+  content: '';
+  width: 5px;
+  height: 5px;
+  border-radius: 50%;
+  background: var(--green);
+}
+.docTitle {
+  font-family: 'Funnel Display', sans-serif;
+  font-weight: 900;
+  font-size: clamp(28px, 4vw, 42px);
+  letter-spacing: -0.04em;
+  color: var(--text);
+  margin-bottom: 12px;
+}
+.docMeta {
+  font-family: 'Geist Mono', monospace;
+  font-size: 11px;
+  color: var(--text-4);
+  display: flex;
+  flex-wrap: wrap;
+  gap: 16px;
+}
+.docMeta strong {
+  color: var(--text-3);
+}
+
+.docBody h2 {
+  font-family: 'Funnel Display', sans-serif;
+  font-weight: 800;
+  font-size: 18px;
+  letter-spacing: -0.02em;
+  color: var(--text);
+  margin: 48px 0 16px;
+  padding-top: 24px;
+  border-top: 1px solid var(--border);
+}
+.docBody h2:first-child {
+  margin-top: 0;
+  border-top: none;
+  padding-top: 0;
+}
+.docBody h3 {
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--text-2);
+  margin: 24px 0 10px;
+}
+.docBody p {
+  color: var(--text-2);
+  margin-bottom: 14px;
+}
+.docBody p:last-child {
+  margin-bottom: 0;
+}
+.docBody ul,
+.docBody ol {
+  color: var(--text-2);
+  padding-left: 20px;
+  margin-bottom: 14px;
+}
+.docBody li {
+  margin-bottom: 6px;
+}
+.docBody strong {
+  color: var(--text);
+  font-weight: 600;
+}
+.docBody a {
+  color: var(--green);
+  text-decoration: none;
+}
+.docBody a:hover {
+  color: var(--green-3);
+  text-decoration: underline;
+}
+.docBody code {
+  font-family: 'Geist Mono', monospace;
+  font-size: 12px;
+  background: var(--surface-2);
+  border: 1px solid var(--border);
+  padding: 2px 6px;
+  border-radius: 4px;
+  color: var(--text-3);
+}
+
+/* info box */
+.infoBox {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 16px 20px;
+  margin: 20px 0;
+  font-size: 13px;
+  color: var(--text-3);
+}
+.infoBox.green {
+  border-left: 3px solid var(--green);
+}
+.infoBox.orange {
+  border-left: 3px solid var(--orange);
+}
+
+/* tables */
+.tableWrap {
+  overflow-x: auto;
+  margin: 16px 0;
+}
+.tableWrap table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 13px;
+}
+.tableWrap th {
+  font-family: 'Geist Mono', monospace;
+  font-size: 10px;
+  color: var(--text-4);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  padding: 10px 14px;
+  border-bottom: 1px solid var(--border);
+  text-align: left;
+}
+.tableWrap td {
+  padding: 10px 14px;
+  border-bottom: 1px solid rgba(38, 42, 50, 0.5);
+  color: var(--text-3);
+  vertical-align: top;
+}
+.tableWrap td strong {
+  color: var(--text-2);
+}
+.tableWrap tr:last-child td {
+  border-bottom: none;
+}
+
+/* jurisdiction chips */
+.jurChip {
+  display: inline-block;
+  padding: 2px 8px;
+  border-radius: 4px;
+  font-family: 'Geist Mono', monospace;
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: 0.05em;
+}
+.jurCl {
+  background: rgba(0, 194, 122, 0.1);
+  color: var(--green-3);
+}
+.jurEu {
+  background: rgba(0, 150, 204, 0.1);
+  color: #5bb8e0;
+}
+.jurBr {
+  background: rgba(216, 184, 0, 0.1);
+  color: #d4c04a;
+}
+.jurUs {
+  background: rgba(255, 74, 28, 0.1);
+  color: #ff8a6b;
+}
+.jurMx {
+  background: rgba(107, 78, 255, 0.1);
+  color: #a898ff;
+}
+
+/* footer */
+.pageFooter {
+  border-top: 1px solid var(--border);
+  margin-top: 80px;
+  padding: 24px 32px;
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+  max-width: 1100px;
+  margin-left: auto;
+  margin-right: auto;
+}
+.footerCopy {
+  font-size: 11px;
+  color: var(--text-4);
+  font-family: 'Geist Mono', monospace;
+}
+.footerLinks {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 16px;
+}
+.footerLinks a,
+.footerLinks span {
+  font-size: 11px;
+  color: var(--text-4);
+  text-decoration: none;
+  transition: color 0.15s;
+  cursor: pointer;
+}
+.footerLinks a:hover {
+  color: var(--text-2);
+}
+.footerLinks .active {
+  color: var(--green);
+  cursor: default;
+}
