@@ -1,0 +1,361 @@
+/**
+ * Support.module.css
+ *
+ * Traducción literal de los estilos del <style> de
+ * ORBIT-U/pages/soporte.html. Reglas globales (*, html, body) se omiten
+ * porque ya viven en src/styles/global.css del proyecto CONNIKU.
+ *
+ * Tokens (`--bg`, `--text`, `--surface`, etc.) se redefinen aquí dentro
+ * del scope local del módulo (clase `.page`) para preservar la paleta
+ * "Orbit Dark" de ORBIT-U sin chocar con los tokens de CONNIKU.
+ */
+
+.page {
+  /* ORBIT-U · Orbit Dark tokens */
+  --bg: #050608;
+  --surface: #0d0e11;
+  --surface-2: #15181d;
+  --surface-3: #1a1d23;
+  --border: #262a32;
+  --border-2: #1f2229;
+  --text: #e8e8e6;
+  --text-2: #b8b8b4;
+  --text-3: #8a8a86;
+  --text-4: #5c5f65;
+  --green: #00c27a;
+  --green-2: #006e4a;
+  --green-3: #8aeac0;
+
+  /* TODO: cuando se bridgee el motor Nebula → src/lib/hex-nebula */
+  background: var(--bg);
+  color: var(--text);
+  font-family: 'Inter', sans-serif;
+  font-size: 15px;
+  line-height: 1.7;
+  min-height: 100vh;
+  width: 100%;
+  position: relative;
+  isolation: isolate;
+}
+
+:global(body):has(.page) {
+  background: #050608;
+}
+
+/* topbar */
+.topbar {
+  position: sticky;
+  top: 0;
+  z-index: 100;
+  background: rgba(5, 6, 8, 0.92);
+  backdrop-filter: blur(12px);
+  border-bottom: 1px solid var(--border);
+  padding: 14px 32px;
+  display: flex;
+  align-items: center;
+  gap: 20px;
+}
+.backLink {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 12px;
+  color: var(--text-4);
+  text-decoration: none;
+  transition: color 0.15s;
+}
+.backLink:hover {
+  color: var(--text-2);
+}
+.backLink svg {
+  width: 14px;
+  height: 14px;
+  flex-shrink: 0;
+}
+.topbarSep {
+  width: 1px;
+  height: 16px;
+  background: var(--border);
+}
+.topbarTitle {
+  font-family: 'Geist Mono', monospace;
+  font-size: 11px;
+  color: var(--text-4);
+  letter-spacing: 0.06em;
+}
+.topbarBrand {
+  font-size: 16px;
+  text-decoration: none;
+}
+
+/* page wrap */
+.pageWrap {
+  max-width: 800px;
+  margin: 0 auto;
+  padding: 56px 32px;
+}
+
+.pageBadge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 3px 10px;
+  border-radius: 999px;
+  background: rgba(0, 194, 122, 0.08);
+  border: 1px solid rgba(0, 194, 122, 0.2);
+  font-family: 'Geist Mono', monospace;
+  font-size: 10px;
+  color: var(--green-3);
+  letter-spacing: 0.08em;
+  margin-bottom: 16px;
+}
+.pageBadge::before {
+  content: '';
+  width: 5px;
+  height: 5px;
+  border-radius: 50%;
+  background: var(--green);
+}
+.pageTitle {
+  font-family: 'Funnel Display', sans-serif;
+  font-weight: 900;
+  font-size: clamp(32px, 5vw, 48px);
+  letter-spacing: -0.04em;
+  color: var(--text);
+  margin-bottom: 10px;
+}
+.pageSub {
+  font-size: 15px;
+  color: var(--text-3);
+  margin-bottom: 48px;
+  max-width: 520px;
+  line-height: 1.7;
+}
+
+/* search */
+.searchWrap {
+  position: relative;
+  margin-bottom: 48px;
+}
+.searchInput {
+  width: 100%;
+  padding: 14px 48px 14px 48px;
+  border-radius: 12px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  color: var(--text);
+  font-size: 14px;
+  font-family: 'Inter', sans-serif;
+  outline: none;
+  transition: all 0.15s;
+}
+.searchInput::placeholder {
+  color: var(--text-4);
+}
+.searchInput:focus {
+  border-color: var(--green);
+  box-shadow: 0 0 0 3px rgba(0, 194, 122, 0.08);
+}
+.searchIcon {
+  position: absolute;
+  left: 16px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: var(--text-4);
+  pointer-events: none;
+}
+.searchIcon svg {
+  width: 16px;
+  height: 16px;
+}
+
+/* categories */
+.catTabs {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-bottom: 32px;
+}
+.catTab {
+  padding: 6px 14px;
+  border-radius: 8px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--text-3);
+  cursor: pointer;
+  transition: all 0.15s;
+  font-family: 'Inter', sans-serif;
+}
+.catTab:hover {
+  color: var(--text-2);
+  border-color: var(--border-2);
+}
+.catTab.active {
+  background: rgba(0, 194, 122, 0.1);
+  border-color: rgba(0, 194, 122, 0.3);
+  color: var(--green-3);
+}
+
+/* faq */
+.faqSection {
+  margin-bottom: 40px;
+}
+.faqSectionTitle {
+  font-family: 'Funnel Display', sans-serif;
+  font-weight: 800;
+  font-size: 16px;
+  color: var(--text);
+  margin-bottom: 14px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.faqItem {
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  overflow: hidden;
+  margin-bottom: 8px;
+}
+.faqQ {
+  width: 100%;
+  padding: 14px 18px;
+  background: var(--surface);
+  border: none;
+  color: var(--text-2);
+  font-size: 13px;
+  font-weight: 600;
+  text-align: left;
+  cursor: pointer;
+  transition: all 0.15s;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+  font-family: 'Inter', sans-serif;
+}
+.faqQ:hover {
+  color: var(--text);
+  background: var(--surface-2);
+}
+.faqQ.open {
+  color: var(--text);
+  background: var(--surface-2);
+}
+.faqQ svg {
+  width: 14px;
+  height: 14px;
+  flex-shrink: 0;
+  transition: transform 0.2s;
+}
+.faqQ.open svg {
+  transform: rotate(180deg);
+}
+.faqA {
+  display: none;
+  padding: 14px 18px;
+  background: var(--surface-3);
+  font-size: 13px;
+  color: var(--text-3);
+  line-height: 1.7;
+  border-top: 1px solid var(--border);
+}
+.faqA.open {
+  display: block;
+}
+.faqA a {
+  color: var(--green);
+  text-decoration: none;
+}
+.faqA a:hover {
+  color: var(--green-3);
+}
+
+/* cta box */
+.ctaBox {
+  padding: 28px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  text-align: center;
+  margin-top: 56px;
+}
+.ctaBox h2 {
+  font-family: 'Funnel Display', sans-serif;
+  font-weight: 800;
+  font-size: 20px;
+  color: var(--text);
+  margin-bottom: 8px;
+}
+.ctaBox p {
+  font-size: 13px;
+  color: var(--text-3);
+  margin-bottom: 20px;
+}
+.ctaBtn {
+  display: inline-block;
+  padding: 12px 28px;
+  border-radius: 10px;
+  background: var(--green);
+  color: #0b0c0e;
+  font-size: 13px;
+  font-weight: 800;
+  text-decoration: none;
+  transition: all 0.2s;
+  cursor: pointer;
+}
+.ctaBtn:hover {
+  background: var(--green-3);
+  box-shadow: 0 0 20px rgba(0, 194, 122, 0.3);
+}
+
+.sectionSep {
+  height: 1px;
+  background: var(--border);
+  margin: 40px 0;
+}
+
+/* footer */
+.pageFooter {
+  border-top: 1px solid var(--border);
+  padding: 24px 32px;
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+  max-width: 800px;
+  margin: 0 auto;
+}
+.footerCopy {
+  font-size: 11px;
+  color: var(--text-4);
+  font-family: 'Geist Mono', monospace;
+}
+.footerLinks {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 16px;
+}
+.footerLinks a {
+  font-size: 11px;
+  color: var(--text-4);
+  text-decoration: none;
+  transition: color 0.15s;
+  background: none;
+  border: none;
+  cursor: pointer;
+  font-family: 'Inter', sans-serif;
+  padding: 0;
+}
+.footerLinks a:hover {
+  color: var(--text-2);
+}
+.footerLinks a.active {
+  color: var(--green);
+  cursor: default;
+}
+.footerLinks a.active:hover {
+  color: var(--green);
+}
