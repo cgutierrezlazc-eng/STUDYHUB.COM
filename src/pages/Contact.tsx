@@ -1,78 +1,218 @@
 /**
  * Contact.tsx
  *
- * Rediseño visual M01.4 · Contacto. Adopta el layout tipo perfil-social-v2
- * (facegram): grid de 2 columnas (sidebar 360px + columna principal con
- * composer/form), cards con estilo `.d-card`.
+ * Rediseño visual M01.4 · Contacto. Layout perfil-social-v2 (facegram):
+ * sidebar 360px + columna principal con composer/form, cards `.dCard`.
+ *
+ * Cambios M01.5:
+ * - Reemplazado el bloque de "Motivo" + chips por un dropdown colgante.
+ * - Animación SVG de "cable" que conecta el item del dropdown seleccionado
+ *   con la card correspondiente del sidebar; la card se "enchufa" (clase
+ *   `.enchufado`) con borde verde y glow.
+ * - Submit cableado a POST /contact (rate-limited en backend).
+ * - "Centro de soporte" no envía email: redirige a /support.
  *
  * Reglas observadas:
- * - El copy del formulario, motivos de consulta y canales directos
- *   proviene del Contact.tsx anterior · NO se modifica.
+ * - El copy del formulario, motivos y canales proviene del Contact.tsx
+ *   anterior · NO se modifica (solo se reordena la lista canónica de 7).
  * - Idioma: español neutro latinoamericano (sin voseo).
- * - Logo oficial: estructura inviolable de `<span class="brand on-dark">`
- *   con className global (CSS cargado globalmente desde main.tsx).
- * - El selector de motivo se maneja con `useState`.
- * - El submit del formulario hace `e.preventDefault()` + `alert(...)` ·
- *   NO se cablea API real en este bridge.
- *
- * Pendientes (futuras sesiones):
- * - Bridging del motor Hex Nebula (`src/lib/hex-nebula`) · por ahora se usa
- *   fondo plano `var(--bg)` definido localmente en el módulo CSS.
- * - Cablear backend del formulario (POST a `/api/contact` cuando exista).
- * - Páginas Cookies, Prensa y Trabaja con nosotros · `alert('Página pendiente')`.
+ * - Logo oficial: estructura inviolable de `<span class="brand on-dark">`.
  */
-import React, { useState } from 'react';
-import { Link } from 'react-router-dom';
+import React, { useEffect, useLayoutEffect, useRef, useState } from 'react';
+import { Link, useNavigate } from 'react-router-dom';
 import HexNebulaCanvas from '../lib/hex-nebula/HexNebulaCanvas';
 import styles from './Contact.module.css';
 
-type Motivo =
+type MotivoValue =
   | 'Soporte técnico'
-  | 'Comercial'
-  | 'Universidades e instituciones'
-  | 'Privacidad y datos'
-  | 'Prensa y medios'
-  | 'Otro';
+  | 'Contacto general'
+  | 'Privacidad'
+  | 'Legal'
+  | 'Seguridad y Ley Karin'
+  | 'Centro de soporte'
+  | 'Prensa y medios';
 
 type MotivoOption = {
-  value: Motivo;
+  value: MotivoValue;
   label: string;
   desc: string;
+  /** Clave del item del sidebar al que conecta el cable. */
+  sidebarKey: string;
 };
 
 const MOTIVOS: MotivoOption[] = [
-  { value: 'Soporte técnico', label: 'Soporte técnico', desc: 'Bug, error, acceso a cuenta' },
-  { value: 'Comercial', label: 'Comercial', desc: 'Planes, facturación, descuentos' },
   {
-    value: 'Universidades e instituciones',
-    label: 'Instituciones',
-    desc: 'Alianzas con universidades',
+    value: 'Soporte técnico',
+    label: 'Soporte técnico',
+    desc: 'Errores, acceso a cuenta, bugs',
+    sidebarKey: 'soporte',
   },
   {
-    value: 'Privacidad y datos',
-    label: 'Privacidad y datos',
-    desc: 'Derechos ARCO+, GDPR, portabilidad',
+    value: 'Contacto general',
+    label: 'Contacto general',
+    desc: 'Consultas generales e institucionales',
+    sidebarKey: 'contacto',
   },
-  { value: 'Prensa y medios', label: 'Prensa y medios', desc: 'Entrevistas, notas, cobertura' },
-  { value: 'Otro', label: 'Otro', desc: 'Consulta general' },
+  {
+    value: 'Privacidad',
+    label: 'Privacidad',
+    desc: 'Ejercicio de derechos sobre tus datos',
+    sidebarKey: 'privacidad',
+  },
+  {
+    value: 'Legal',
+    label: 'Legal',
+    desc: 'Consultas jurídicas y términos',
+    sidebarKey: 'legal',
+  },
+  {
+    value: 'Seguridad y Ley Karin',
+    label: 'Seguridad y Ley Karin',
+    desc: 'Denuncias y reportes de seguridad',
+    sidebarKey: 'seguridad',
+  },
+  {
+    value: 'Centro de soporte',
+    label: 'Centro de soporte',
+    desc: 'Artículos de ayuda y guías',
+    sidebarKey: 'support',
+  },
+  {
+    value: 'Prensa y medios',
+    label: 'Prensa y medios',
+    desc: 'Entrevistas, notas y cobertura',
+    sidebarKey: 'prensa',
+  },
 ];
 
-export default function Contact() {
-  const [motivo, setMotivo] = useState<Motivo | null>(null);
+type CablePoints = {
+  x1: number;
+  y1: number;
+  x2: number;
+  y2: number;
+};
 
-  const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
+export default function Contact() {
+  const navigate = useNavigate();
+
+  const [motivo, setMotivo] = useState<MotivoValue | null>(null);
+  const [open, setOpen] = useState(false);
+  const [nombre, setNombre] = useState('');
+  const [email, setEmail] = useState('');
+  const [asunto, setAsunto] = useState('');
+  const [mensaje, setMensaje] = useState('');
+  const [sending, setSending] = useState(false);
+  const [sent, setSent] = useState(false);
+  const [cable, setCable] = useState<CablePoints | null>(null);
+
+  // Refs por motivo para items del dropdown y del sidebar.
+  const dropdownItemRefs = useRef<Record<string, HTMLElement | null>>({});
+  const sidebarItemRefs = useRef<Record<string, HTMLAnchorElement | null>>({});
+  const triggerRef = useRef<HTMLButtonElement | null>(null);
+  const wrapRef = useRef<HTMLDivElement | null>(null);
+
+  // Click fuera → cierra el dropdown.
+  useEffect(() => {
+    if (!open) return;
+    const handler = (e: MouseEvent) => {
+      if (wrapRef.current && !wrapRef.current.contains(e.target as Node)) {
+        setOpen(false);
+      }
+    };
+    document.addEventListener('mousedown', handler);
+    return () => document.removeEventListener('mousedown', handler);
+  }, [open]);
+
+  // Cálculo del cable: posición del item seleccionado (dropdown o trigger
+  // si está cerrado) + posición del item del sidebar correspondiente.
+  useLayoutEffect(() => {
+    function computeCable() {
+      if (!motivo) {
+        setCable(null);
+        return;
+      }
+      const opt = MOTIVOS.find((m) => m.value === motivo);
+      if (!opt) {
+        setCable(null);
+        return;
+      }
+      const sidebarEl = sidebarItemRefs.current[opt.sidebarKey];
+      // Si el dropdown está abierto, anclar al item del menú.
+      // Si está cerrado, anclar al trigger.
+      const sourceEl = open
+        ? (dropdownItemRefs.current[opt.value] ?? triggerRef.current)
+        : triggerRef.current;
+      if (!sourceEl || !sidebarEl) {
+        setCable(null);
+        return;
+      }
+      const a = sourceEl.getBoundingClientRect();
+      const b = sidebarEl.getBoundingClientRect();
+      // Ancla el cable al borde izquierdo del source y al borde derecho del sidebar.
+      setCable({
+        x1: a.left,
+        y1: a.top + a.height / 2,
+        x2: b.right,
+        y2: b.top + b.height / 2,
+      });
+    }
+    computeCable();
+    window.addEventListener('resize', computeCable);
+    window.addEventListener('scroll', computeCable, true);
+    return () => {
+      window.removeEventListener('resize', computeCable);
+      window.removeEventListener('scroll', computeCable, true);
+    };
+  }, [motivo, open]);
+
+  async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
-    alert('Envío pendiente · backend por cablear');
-  };
+    if (!motivo) {
+      alert('Selecciona un motivo de consulta');
+      return;
+    }
+    if (motivo === 'Centro de soporte') {
+      navigate('/support');
+      return;
+    }
+    setSending(true);
+    try {
+      const baseUrl = import.meta.env.VITE_API_URL || '';
+      const res = await fetch(`${baseUrl}/contact`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ motivo, nombre, email, asunto, mensaje }),
+      });
+      if (!res.ok) {
+        const err = (await res.json().catch(() => ({}))) as { detail?: string };
+        throw new Error(err.detail || 'Error al enviar');
+      }
+      setSent(true);
+    } catch (err) {
+      alert(`No se pudo enviar: ${err instanceof Error ? err.message : 'error desconocido'}`);
+    } finally {
+      setSending(false);
+    }
+  }
 
   const handlePendiente = (e: React.MouseEvent<HTMLAnchorElement>) => {
     e.preventDefault();
     alert('Página pendiente');
   };
 
-  const asuntoPlaceholder = motivo
-    ? `${motivo} — describe tu consulta`
-    : 'Describe brevemente tu consulta';
+  const motivoOption = motivo ? MOTIVOS.find((m) => m.value === motivo) : null;
+  const activeSidebarKey = motivoOption?.sidebarKey ?? null;
+  const isCentroSoporte = motivo === 'Centro de soporte';
+
+  // Path Bezier del cable. Curva horizontal con control points a 1/3 y 2/3.
+  const cablePath = cable
+    ? (() => {
+        const dx = cable.x2 - cable.x1;
+        const c1x = cable.x1 - Math.abs(dx) * 0.3;
+        const c2x = cable.x2 + Math.abs(dx) * 0.3;
+        return `M ${cable.x1} ${cable.y1} C ${c1x} ${cable.y1}, ${c2x} ${cable.y2}, ${cable.x2} ${cable.y2}`;
+      })()
+    : '';
 
   return (
     <div className={styles.page}>
@@ -124,16 +264,16 @@ export default function Contact() {
                 <span className={styles.infoVal}>24 h hábiles</span>
               </li>
               <li>
-                <span className={styles.infoKey}>Comercial</span>
+                <span className={styles.infoKey}>Contacto general</span>
                 <span className={styles.infoVal}>48 h hábiles</span>
               </li>
               <li>
-                <span className={styles.infoKey}>Instituciones</span>
-                <span className={styles.infoVal}>48 h hábiles</span>
-              </li>
-              <li>
-                <span className={styles.infoKey}>Privacidad y datos</span>
+                <span className={styles.infoKey}>Privacidad</span>
                 <span className={styles.infoVal}>24 h hábiles</span>
+              </li>
+              <li>
+                <span className={styles.infoKey}>Legal</span>
+                <span className={styles.infoVal}>48 h hábiles</span>
               </li>
             </ul>
           </section>
@@ -141,37 +281,80 @@ export default function Contact() {
           <section className={styles.dCard}>
             <h2 className={styles.dCardTitle}>Otros canales</h2>
             <div className={styles.channelsList}>
-              <a href="mailto:soporte@conniku.com" className={styles.channelRow}>
+              <a
+                href="mailto:soporte@conniku.com"
+                ref={(el) => {
+                  sidebarItemRefs.current['soporte'] = el;
+                }}
+                className={`${styles.channelRow} ${activeSidebarKey === 'soporte' ? styles.enchufado : ''}`}
+              >
                 <span className={styles.channelRowLabel}>Soporte técnico</span>
                 <span className={styles.channelRowAddr}>soporte@conniku.com</span>
                 <span className={styles.channelRowDesc}>Errores, acceso a cuenta, bugs</span>
               </a>
-              <a href="mailto:contacto@conniku.com" className={styles.channelRow}>
+              <a
+                href="mailto:contacto@conniku.com"
+                ref={(el) => {
+                  sidebarItemRefs.current['contacto'] = el;
+                }}
+                className={`${styles.channelRow} ${activeSidebarKey === 'contacto' ? styles.enchufado : ''}`}
+              >
                 <span className={styles.channelRowLabel}>Contacto general</span>
                 <span className={styles.channelRowAddr}>contacto@conniku.com</span>
                 <span className={styles.channelRowDesc}>Consultas generales e institucionales</span>
               </a>
-              <a href="mailto:privacidad@conniku.com" className={styles.channelRow}>
-                <span className={styles.channelRowLabel}>Privacidad y ARCO+</span>
+              <a
+                href="mailto:privacidad@conniku.com"
+                ref={(el) => {
+                  sidebarItemRefs.current['privacidad'] = el;
+                }}
+                className={`${styles.channelRow} ${activeSidebarKey === 'privacidad' ? styles.enchufado : ''}`}
+              >
+                <span className={styles.channelRowLabel}>Privacidad y datos</span>
                 <span className={styles.channelRowAddr}>privacidad@conniku.com</span>
                 <span className={styles.channelRowDesc}>Ejercicio de derechos sobre tus datos</span>
               </a>
-              <a href="mailto:legal@conniku.com" className={styles.channelRow}>
+              <a
+                href="mailto:legal@conniku.com"
+                ref={(el) => {
+                  sidebarItemRefs.current['legal'] = el;
+                }}
+                className={`${styles.channelRow} ${activeSidebarKey === 'legal' ? styles.enchufado : ''}`}
+              >
                 <span className={styles.channelRowLabel}>Legal</span>
                 <span className={styles.channelRowAddr}>legal@conniku.com</span>
                 <span className={styles.channelRowDesc}>Consultas jurídicas y términos</span>
               </a>
-              <a href="mailto:seguridad@conniku.com" className={styles.channelRow}>
+              <a
+                href="mailto:seguridad@conniku.com"
+                ref={(el) => {
+                  sidebarItemRefs.current['seguridad'] = el;
+                }}
+                className={`${styles.channelRow} ${activeSidebarKey === 'seguridad' ? styles.enchufado : ''}`}
+              >
                 <span className={styles.channelRowLabel}>Seguridad y Ley Karin</span>
                 <span className={styles.channelRowAddr}>seguridad@conniku.com</span>
                 <span className={styles.channelRowDesc}>Denuncias y reportes de seguridad</span>
               </a>
-              <Link to="/support" className={styles.channelRow}>
+              <Link
+                to="/support"
+                ref={(el) => {
+                  // Link forwarda ref a su <a> renderizado.
+                  sidebarItemRefs.current['support'] = el as unknown as HTMLAnchorElement | null;
+                }}
+                className={`${styles.channelRow} ${activeSidebarKey === 'support' ? styles.enchufado : ''}`}
+              >
                 <span className={styles.channelRowLabel}>Centro de soporte</span>
                 <span className={styles.channelRowAddr}>/support →</span>
                 <span className={styles.channelRowDesc}>Artículos de ayuda y guías</span>
               </Link>
-              <a href="mailto:prensa@conniku.com" className={styles.channelRow}>
+              <a
+                href="mailto:prensa@conniku.com"
+                ref={(el) => {
+                  sidebarItemRefs.current['prensa'] = el;
+                }}
+                className={`${styles.channelRow} ${activeSidebarKey === 'prensa' ? styles.enchufado : ''}`}
+              >
                 <span className={styles.channelRowLabel}>Prensa y medios</span>
                 <span className={styles.channelRowAddr}>prensa@conniku.com</span>
                 <span className={styles.channelRowDesc}>Entrevistas, notas y cobertura</span>
@@ -213,71 +396,176 @@ export default function Contact() {
 
             <div className={styles.composerActs}>
               <span className={styles.pgLabel}>Motivo</span>
-              <div className={styles.chipsWrap}>
-                {MOTIVOS.map((m) => (
-                  <button
-                    key={m.value}
-                    type="button"
-                    className={`${styles.chip} ${motivo === m.value ? styles.chipOn : ''}`}
-                    onClick={() => setMotivo(m.value)}
-                    title={m.desc}
-                  >
-                    {m.label}
-                  </button>
-                ))}
+              <div className={styles.dropdownWrap} ref={wrapRef}>
+                <button
+                  type="button"
+                  ref={triggerRef}
+                  onClick={() => setOpen((v) => !v)}
+                  className={`${styles.dropdownTrigger} ${motivo ? styles.dropdownTriggerOn : ''}`}
+                  aria-haspopup="listbox"
+                  aria-expanded={open}
+                >
+                  {motivo ? motivo : 'Selecciona un motivo'}
+                  <span className={styles.dropdownCaret} aria-hidden="true">
+                    ▾
+                  </span>
+                </button>
+                {open && (
+                  <ul className={styles.dropdownMenu} role="listbox">
+                    {MOTIVOS.map((m) => (
+                      <li
+                        key={m.value}
+                        role="option"
+                        aria-selected={motivo === m.value}
+                        ref={(el) => {
+                          dropdownItemRefs.current[m.value] = el;
+                        }}
+                        onClick={() => {
+                          setMotivo(m.value);
+                          setSent(false);
+                          setOpen(false);
+                        }}
+                        className={`${styles.dropdownItem} ${motivo === m.value ? styles.dropdownItemOn : ''}`}
+                        title={m.desc}
+                      >
+                        <span className={styles.dropdownItemLabel}>{m.label}</span>
+                        <span className={styles.dropdownItemDesc}>{m.desc}</span>
+                      </li>
+                    ))}
+                  </ul>
+                )}
               </div>
             </div>
 
-            <form className={styles.contactForm} onSubmit={handleSubmit}>
-              <input type="hidden" name="motivo" value={motivo ?? ''} />
+            {/* Cuerpo del composer: form, link a /support, o confirmación. */}
+            {sent ? (
+              <div className={styles.sentBox}>
+                <h3 className={styles.sentTitle}>¡Mensaje enviado!</h3>
+                <p className={styles.sentText}>
+                  Te respondemos en 24–48 h hábiles al correo que indicaste.
+                </p>
+                <button
+                  type="button"
+                  className={styles.btnSecondary}
+                  onClick={() => {
+                    setSent(false);
+                    setMotivo(null);
+                    setNombre('');
+                    setEmail('');
+                    setAsunto('');
+                    setMensaje('');
+                  }}
+                >
+                  Enviar otro mensaje
+                </button>
+              </div>
+            ) : isCentroSoporte ? (
+              <div className={styles.supportRedirect}>
+                <p className={styles.supportRedirectText}>
+                  El Centro de soporte tiene artículos, guías y respuestas frecuentes para resolver
+                  tu duda al instante.
+                </p>
+                <Link to="/support" className={styles.btnSend}>
+                  Visitar Centro de soporte →
+                </Link>
+              </div>
+            ) : (
+              <form className={styles.contactForm} onSubmit={handleSubmit}>
+                <input type="hidden" name="motivo" value={motivo ?? ''} />
 
-              <div className={styles.formRow}>
+                <div className={styles.formRow}>
+                  <div className={styles.formGroup}>
+                    <label className={styles.formLabel}>Nombre</label>
+                    <input
+                      className={styles.formInput}
+                      type="text"
+                      placeholder="Tu nombre"
+                      value={nombre}
+                      onChange={(e) => setNombre(e.target.value)}
+                      required
+                    />
+                  </div>
+                  <div className={styles.formGroup}>
+                    <label className={styles.formLabel}>Correo electrónico</label>
+                    <input
+                      className={styles.formInput}
+                      type="email"
+                      placeholder="tu@correo.com"
+                      value={email}
+                      onChange={(e) => setEmail(e.target.value)}
+                      required
+                    />
+                  </div>
+                </div>
+
                 <div className={styles.formGroup}>
-                  <label className={styles.formLabel}>Nombre</label>
+                  <label className={styles.formLabel}>Asunto</label>
                   <input
                     className={styles.formInput}
                     type="text"
-                    placeholder="Tu nombre"
+                    placeholder={
+                      motivo
+                        ? `${motivo} — describe tu consulta`
+                        : 'Describe brevemente tu consulta'
+                    }
+                    value={asunto}
+                    onChange={(e) => setAsunto(e.target.value)}
                     required
                   />
                 </div>
+
                 <div className={styles.formGroup}>
-                  <label className={styles.formLabel}>Correo electrónico</label>
-                  <input
-                    className={styles.formInput}
-                    type="email"
-                    placeholder="tu@correo.com"
+                  <label className={styles.formLabel}>Mensaje</label>
+                  <textarea
+                    className={styles.formTextarea}
+                    placeholder="Cuéntanos con detalle. Entre más información nos des, mejor podremos ayudarte."
+                    value={mensaje}
+                    onChange={(e) => setMensaje(e.target.value)}
                     required
                   />
                 </div>
-              </div>
 
-              <div className={styles.formGroup}>
-                <label className={styles.formLabel}>Asunto</label>
-                <input
-                  className={styles.formInput}
-                  type="text"
-                  placeholder={asuntoPlaceholder}
-                  required
-                />
-              </div>
-
-              <div className={styles.formGroup}>
-                <label className={styles.formLabel}>Mensaje</label>
-                <textarea
-                  className={styles.formTextarea}
-                  placeholder="Cuéntanos con detalle. Entre más información nos des, mejor podremos ayudarte."
-                  required
-                />
-              </div>
-
-              <button type="submit" className={styles.btnSend}>
-                Enviar mensaje →
-              </button>
-            </form>
+                <button type="submit" className={styles.btnSend} disabled={sending}>
+                  {sending ? 'Enviando…' : 'Enviar mensaje →'}
+                </button>
+              </form>
+            )}
           </section>
         </main>
       </div>
+
+      {/* SVG del cable · fixed sobre todo, sin capturar pointer events. */}
+      {cable && (
+        <svg className={styles.cableSvg} aria-hidden="true">
+          <defs>
+            <linearGradient id="cableGradient" x1="0%" y1="0%" x2="100%" y2="0%">
+              <stop offset="0%" stopColor="#00c27a" stopOpacity="0.95" />
+              <stop offset="100%" stopColor="#8aeac0" stopOpacity="0.95" />
+            </linearGradient>
+            <filter id="cableGlow" x="-30%" y="-30%" width="160%" height="160%">
+              <feGaussianBlur stdDeviation="2.5" />
+            </filter>
+          </defs>
+          {/* Halo difuso. */}
+          <path
+            d={cablePath}
+            stroke="#00c27a"
+            strokeOpacity="0.35"
+            strokeWidth="6"
+            fill="none"
+            filter="url(#cableGlow)"
+          />
+          {/* Cable principal con dasharray viajando. */}
+          <path
+            d={cablePath}
+            stroke="url(#cableGradient)"
+            strokeWidth="2"
+            fill="none"
+            strokeDasharray="6 6"
+            className={styles.cablePath}
+          />
+        </svg>
+      )}
 
       {/* Footer · TODO: cuando se bridgeen cookies/prensa/empleo */}
       <footer className={styles.pageFooter}>

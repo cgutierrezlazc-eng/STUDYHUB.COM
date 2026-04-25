@@ -390,6 +390,187 @@
   font-weight: 600;
 }
 
+/* ───────── dropdown de motivo ───────── */
+.dropdownWrap {
+  position: relative;
+  flex: 1;
+  min-width: 220px;
+}
+.dropdownTrigger {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  width: 100%;
+  padding: 8px 14px;
+  border-radius: 20px;
+  border: 1px solid var(--border-2);
+  background: var(--surface-2);
+  color: var(--text-3);
+  font-size: 13px;
+  font-family: 'Inter', sans-serif;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.15s;
+}
+.dropdownTrigger:hover {
+  border-color: var(--green);
+  color: var(--green);
+}
+.dropdownTriggerOn {
+  border-color: var(--green);
+  color: var(--green);
+  background: rgba(0, 194, 122, 0.08);
+  font-weight: 600;
+}
+.dropdownCaret {
+  font-size: 12px;
+  opacity: 0.7;
+}
+.dropdownMenu {
+  position: absolute;
+  top: calc(100% + 6px);
+  left: 0;
+  right: 0;
+  z-index: 60;
+  list-style: none;
+  margin: 0;
+  padding: 6px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  box-shadow: 0 12px 32px rgba(0, 0, 0, 0.45);
+  max-height: 360px;
+  overflow-y: auto;
+}
+.dropdownItem {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  padding: 10px 12px;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: background 0.12s;
+}
+.dropdownItem:hover {
+  background: var(--surface-2);
+}
+.dropdownItemOn {
+  background: rgba(0, 194, 122, 0.1);
+}
+.dropdownItemLabel {
+  font-size: 13.5px;
+  color: var(--text);
+  font-weight: 600;
+}
+.dropdownItemOn .dropdownItemLabel {
+  color: var(--green);
+}
+.dropdownItemDesc {
+  font-size: 11.5px;
+  color: var(--text-4);
+  line-height: 1.45;
+}
+
+/* ───────── cable SVG (animación motivo → sidebar) ───────── */
+.cableSvg {
+  position: fixed;
+  inset: 0;
+  width: 100vw;
+  height: 100vh;
+  z-index: 50;
+  pointer-events: none;
+  overflow: visible;
+}
+.cablePath {
+  stroke-linecap: round;
+  animation: cableFlow 0.9s linear infinite;
+}
+@keyframes cableFlow {
+  from {
+    stroke-dashoffset: 0;
+  }
+  to {
+    stroke-dashoffset: -24;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .cablePath {
+    animation: none;
+  }
+}
+
+/* ───────── card enchufada (sidebar) ───────── */
+.channelRow.enchufado {
+  border-color: var(--green);
+  background: var(--surface-3);
+  box-shadow:
+    0 0 0 2px var(--green),
+    0 0 24px rgba(0, 194, 122, 0.45);
+  transition: all 0.4s ease;
+}
+.channelRow.enchufado .channelRowLabel {
+  color: var(--green);
+}
+
+/* ───────── confirmación de envío ───────── */
+.sentBox {
+  padding: 24px 16px;
+  text-align: center;
+  border-top: 1px solid var(--border-2);
+  margin-top: 8px;
+}
+.sentTitle {
+  font-family: 'Funnel Display', sans-serif;
+  font-size: 22px;
+  color: var(--green);
+  margin: 0 0 8px;
+  letter-spacing: -0.01em;
+}
+.sentText {
+  font-size: 14px;
+  color: var(--text-2);
+  margin: 0 0 16px;
+}
+.btnSecondary {
+  padding: 10px 18px;
+  border-radius: 10px;
+  background: transparent;
+  color: var(--text-2);
+  font-size: 13px;
+  font-weight: 600;
+  border: 1px solid var(--border);
+  cursor: pointer;
+  transition: all 0.15s;
+  font-family: 'Inter', sans-serif;
+}
+.btnSecondary:hover {
+  border-color: var(--green);
+  color: var(--green);
+}
+
+/* ───────── redirect a Centro de soporte ───────── */
+.supportRedirect {
+  padding: 18px 16px 6px;
+  border-top: 1px solid var(--border-2);
+  margin-top: 8px;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  align-items: flex-start;
+}
+.supportRedirectText {
+  font-size: 14px;
+  color: var(--text-2);
+  margin: 0;
+  line-height: 1.55;
+}
+.supportRedirect .btnSend {
+  align-self: flex-start;
+  text-decoration: none;
+  display: inline-block;
+}
+
 /* ───────── form ───────── */
 .contactForm {
   display: flex;
@@ -467,6 +648,12 @@
 .btnSend:hover {
   background: var(--green-3);
   box-shadow: 0 0 20px rgba(0, 194, 122, 0.3);
+}
+.btnSend:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+  box-shadow: none;
+  background: var(--green);
 }
 
 /* ───────── footer ───────── */
