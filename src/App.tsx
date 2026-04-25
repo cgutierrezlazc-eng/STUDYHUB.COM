@@ -18,6 +18,7 @@ const Start = lazy(() => import('./pages/Start'));
 const Terms = lazy(() => import('./pages/Terms'));
 const Privacy = lazy(() => import('./pages/Privacy'));
 const Support = lazy(() => import('./pages/Support'));
+const Contact = lazy(() => import('./pages/Contact'));
 
 function NotFoundWithNav() {
   const navigate = useNavigate();
@@ -34,6 +35,7 @@ export default function App() {
           <Route path="/terms" element={<Terms />} />
           <Route path="/privacy" element={<Privacy />} />
           <Route path="/support" element={<Support />} />
+          <Route path="/contact" element={<Contact />} />
           <Route path="*" element={<NotFoundWithNav />} />
         </Routes>
       </Suspense>

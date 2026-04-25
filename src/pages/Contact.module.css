@@ -1,0 +1,699 @@
+/**
+ * Contact.module.css
+ *
+ * Rediseño visual M01.4 · Contacto. Adopta el lenguaje visual del perfil
+ * social v2 (facegram): cards `.dCard` con sombra suave, layout grid
+ * 360px + 1fr a 1095px max-width, composer pill y chips de motivo estilo
+ * `.d-privacy-chip`.
+ *
+ * Tokens (`--bg`, `--text`, `--surface`, etc.) se redefinen aquí dentro
+ * del scope local del módulo (clase `.page`) para preservar la paleta
+ * "Orbit Dark" sin chocar con los tokens de CONNIKU.
+ */
+
+.page {
+  /* ORBIT-U · Orbit Dark tokens (copia literal de shared/tokens.css) */
+  --bg: #050608;
+  --surface: #0d0e11;
+  --surface-2: #15181d;
+  --surface-3: #1a1d23;
+  --border: #262a32;
+  --border-2: #1f2229;
+  --text: #e8e8e6;
+  --text-2: #b8b8b4;
+  --text-3: #8a8a86;
+  --text-4: #5c5f65;
+  --green: #00c27a;
+  --green-2: #006e4a;
+  --green-3: #8aeac0;
+
+  /* Fondo Nebula montado vía HexNebulaCanvas (z-index 0).
+     El .page mantiene background plano de respaldo por si el canvas
+     no carga (reduced motion, JS off, etc.). */
+  background: var(--bg);
+  color: var(--text);
+  font-family: 'Inter', sans-serif;
+  font-size: 15px;
+  line-height: 1.7;
+  min-height: 100vh;
+  width: 100%;
+  position: relative;
+  isolation: isolate;
+}
+
+:global(body):has(.page) {
+  background: #050608;
+}
+
+.nebulaBg {
+  position: fixed;
+  inset: 0;
+  width: 100vw;
+  height: 100vh;
+  z-index: 0;
+  pointer-events: none;
+  display: block;
+}
+
+/* Topbar y layout deben quedar encima del canvas. */
+.topbar,
+.layout {
+  position: relative;
+  z-index: 1;
+}
+
+/* ───────── topbar ───────── */
+.topbar {
+  position: sticky;
+  top: 0;
+  z-index: 100;
+  background: rgba(5, 6, 8, 0.92);
+  backdrop-filter: blur(12px);
+  border-bottom: 1px solid var(--border);
+  padding: 14px 32px;
+  display: flex;
+  align-items: center;
+  gap: 20px;
+}
+.backLink {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 12px;
+  color: var(--text-4);
+  text-decoration: none;
+  transition: color 0.15s;
+}
+.backLink:hover {
+  color: var(--text-2);
+}
+.backLink svg {
+  width: 14px;
+  height: 14px;
+  flex-shrink: 0;
+}
+.topbarSep {
+  width: 1px;
+  height: 16px;
+  background: var(--border);
+}
+.topbarBrand {
+  font-size: 16px;
+}
+.topbarTitle {
+  font-family: 'Geist Mono', monospace;
+  font-size: 11px;
+  color: var(--text-4);
+  letter-spacing: 0.06em;
+}
+
+/* ───────── layout grid (perfil-social-v2) ───────── */
+.layout {
+  max-width: 1095px;
+  margin: 16px auto;
+  padding: 0 16px;
+  display: grid;
+  grid-template-columns: 360px 1fr;
+  gap: 16px;
+  align-items: start;
+}
+@media (max-width: 768px) {
+  .layout {
+    grid-template-columns: 1fr;
+  }
+}
+
+.sidebar {
+  display: flex;
+  flex-direction: column;
+  /* Sticky tipo Facebook · sigue al usuario al scrollear el feed.
+     top respeta la altura del topbar sticky (~56px) + 16px de aire. */
+  position: sticky;
+  top: 72px;
+  max-height: calc(100vh - 88px);
+  overflow-y: auto;
+  scrollbar-width: thin;
+  scrollbar-color: var(--border) transparent;
+}
+.sidebar::-webkit-scrollbar {
+  width: 6px;
+}
+.sidebar::-webkit-scrollbar-thumb {
+  background: var(--border);
+  border-radius: 3px;
+}
+.sidebar::-webkit-scrollbar-track {
+  background: transparent;
+}
+@media (max-width: 768px) {
+  .sidebar {
+    position: static;
+    max-height: none;
+    overflow: visible;
+  }
+}
+.feed {
+  display: flex;
+  flex-direction: column;
+}
+
+/* ───────── d-card (estilo facegram) ───────── */
+.dCard {
+  background: var(--surface);
+  border-radius: 10px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.09);
+  border: 1px solid var(--border-2);
+  padding: 16px;
+  margin-bottom: 14px;
+}
+.dCardTitle {
+  font-family: 'Funnel Display', sans-serif;
+  font-size: 18px;
+  font-weight: 700;
+  color: var(--text);
+  margin: 0 0 12px;
+  letter-spacing: -0.01em;
+}
+.dCardText {
+  font-size: 13.5px;
+  color: var(--text-2);
+  margin: 0 0 10px;
+  line-height: 1.6;
+}
+.dCardText:last-child {
+  margin-bottom: 0;
+}
+
+/* sidebar · lista clave/valor */
+.infoList {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+.infoList li {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  padding: 8px 10px;
+  border-radius: 8px;
+  background: var(--surface-2);
+  border: 1px solid var(--border-2);
+}
+.infoKey {
+  font-family: 'Geist Mono', monospace;
+  font-size: 10px;
+  color: var(--text-4);
+  letter-spacing: 0.07em;
+  text-transform: uppercase;
+}
+.infoVal {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text);
+}
+
+/* sidebar · canales */
+.channelsList {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.channelRow {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  padding: 10px 12px;
+  border-radius: 8px;
+  background: var(--surface-2);
+  border: 1px solid var(--border-2);
+  text-decoration: none;
+  transition: all 0.15s;
+}
+.channelRow:hover {
+  border-color: var(--green);
+  background: var(--surface-3);
+}
+.channelRowLabel {
+  font-family: 'Geist Mono', monospace;
+  font-size: 10px;
+  color: var(--text-4);
+  letter-spacing: 0.07em;
+  text-transform: uppercase;
+}
+.channelRowAddr {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--green);
+}
+.channelRowDesc {
+  font-size: 11.5px;
+  color: var(--text-4);
+  line-height: 1.45;
+}
+
+/* sidebar · legal */
+.legalText {
+  font-size: 13px;
+  color: var(--text-2);
+  margin: 0 0 8px;
+  line-height: 1.55;
+}
+.legalTextSmall {
+  font-size: 11.5px;
+  color: var(--text-4);
+  margin: 0;
+  line-height: 1.5;
+}
+
+/* ───────── feed · header ───────── */
+.pageHead {
+  margin-bottom: 14px;
+  padding: 4px 4px 0;
+}
+.pageBadge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 3px 10px;
+  border-radius: 999px;
+  background: rgba(0, 194, 122, 0.08);
+  border: 1px solid rgba(0, 194, 122, 0.2);
+  font-family: 'Geist Mono', monospace;
+  font-size: 10px;
+  color: var(--green-3);
+  letter-spacing: 0.08em;
+  margin-bottom: 12px;
+}
+.pageBadge::before {
+  content: '';
+  width: 5px;
+  height: 5px;
+  border-radius: 50%;
+  background: var(--green);
+}
+.pageTitle {
+  font-family: 'Funnel Display', sans-serif;
+  font-weight: 900;
+  font-size: clamp(28px, 4vw, 40px);
+  letter-spacing: -0.04em;
+  color: var(--text);
+  margin: 0 0 8px;
+}
+.pageSub {
+  font-size: 14px;
+  color: var(--text-3);
+  margin: 0;
+  max-width: 540px;
+  line-height: 1.6;
+}
+
+/* ───────── composer card ───────── */
+.composerCard {
+  padding: 12px 0 16px;
+}
+.composer {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+  padding: 4px 16px 12px;
+}
+.composerAvatar {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  background: linear-gradient(145deg, var(--green) 0%, var(--green-2) 100%);
+  flex-shrink: 0;
+}
+/* Título a la derecha del avatar verde · ya no parece input. */
+.composerPill {
+  flex: 1;
+  font-family: 'Funnel Display', sans-serif;
+  font-weight: 800;
+  font-size: 18px;
+  letter-spacing: -0.01em;
+  color: var(--text);
+  margin: 0;
+  padding: 0;
+  background: transparent;
+  border: none;
+}
+
+/* divider + chips de motivo */
+.composerActs {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+  border-top: 1px solid var(--border-2);
+  padding: 10px 16px 4px;
+}
+.pgLabel {
+  font-family: 'Geist Mono', monospace;
+  font-size: 11px;
+  color: var(--text-4);
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  margin-right: 2px;
+}
+.chipsWrap {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+.chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 5px 12px;
+  border-radius: 20px;
+  font-size: 12px;
+  font-weight: 500;
+  border: 1px solid var(--border-2);
+  background: var(--surface-2);
+  color: var(--text-3);
+  cursor: pointer;
+  transition: all 0.15s;
+  font-family: 'Inter', sans-serif;
+}
+.chip:hover {
+  border-color: var(--green);
+  color: var(--green);
+  background: var(--surface-3);
+}
+.chipOn {
+  border-color: var(--green);
+  color: var(--green);
+  background: rgba(0, 194, 122, 0.08);
+  font-weight: 600;
+}
+
+/* ───────── dropdown de motivo ───────── */
+.dropdownWrap {
+  position: relative;
+  flex: 1;
+  min-width: 220px;
+}
+.dropdownTrigger {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  width: 100%;
+  padding: 8px 14px;
+  border-radius: 20px;
+  border: 1px solid var(--border-2);
+  background: var(--surface-2);
+  color: var(--text-3);
+  font-size: 13px;
+  font-family: 'Inter', sans-serif;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.15s;
+}
+.dropdownTrigger:hover {
+  border-color: var(--green);
+  color: var(--green);
+}
+.dropdownTriggerOn {
+  border-color: var(--green);
+  color: var(--green);
+  background: rgba(0, 194, 122, 0.08);
+  font-weight: 600;
+}
+.dropdownCaret {
+  font-size: 12px;
+  opacity: 0.7;
+}
+.dropdownMenu {
+  position: absolute;
+  top: calc(100% + 6px);
+  left: 0;
+  right: 0;
+  z-index: 60;
+  list-style: none;
+  margin: 0;
+  padding: 6px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  box-shadow: 0 12px 32px rgba(0, 0, 0, 0.45);
+  max-height: 360px;
+  overflow-y: auto;
+}
+.dropdownItem {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  padding: 10px 12px;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: background 0.12s;
+}
+.dropdownItem:hover {
+  background: var(--surface-2);
+}
+.dropdownItemOn {
+  background: rgba(0, 194, 122, 0.1);
+}
+.dropdownItemLabel {
+  font-size: 13.5px;
+  color: var(--text);
+  font-weight: 600;
+}
+.dropdownItemOn .dropdownItemLabel {
+  color: var(--green);
+}
+.dropdownItemDesc {
+  font-size: 11.5px;
+  color: var(--text-4);
+  line-height: 1.45;
+}
+
+/* ───────── cable SVG (animación motivo → sidebar) ───────── */
+.cableSvg {
+  position: fixed;
+  inset: 0;
+  width: 100vw;
+  height: 100vh;
+  z-index: 50;
+  pointer-events: none;
+  overflow: visible;
+}
+/* Pulso de luz viajando dentro del cable.
+   stroke-dasharray="28 320" en JSX define un segmento brillante de 28px
+   seguido de 320px en blanco; al desplazar dashoffset el segmento recorre
+   el path entero, dando sensación de luz fluyendo por dentro de la línea. */
+.cableLight {
+  animation: cableLightFlow 1.8s linear infinite;
+}
+@keyframes cableLightFlow {
+  from {
+    stroke-dashoffset: 348;
+  }
+  to {
+    stroke-dashoffset: 0;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .cableLight {
+    animation: none;
+    opacity: 0;
+  }
+}
+
+/* ───────── card enchufada (sidebar) ───────── */
+.channelRow.enchufado {
+  border-color: var(--green);
+  background: var(--surface-3);
+  box-shadow:
+    0 0 0 2px var(--green),
+    0 0 24px rgba(0, 194, 122, 0.45);
+  transition: all 0.4s ease;
+}
+.channelRow.enchufado .channelRowLabel {
+  color: var(--green);
+}
+
+/* ───────── confirmación de envío ───────── */
+.sentBox {
+  padding: 24px 16px;
+  text-align: center;
+  border-top: 1px solid var(--border-2);
+  margin-top: 8px;
+}
+.sentTitle {
+  font-family: 'Funnel Display', sans-serif;
+  font-size: 22px;
+  color: var(--green);
+  margin: 0 0 8px;
+  letter-spacing: -0.01em;
+}
+.sentText {
+  font-size: 14px;
+  color: var(--text-2);
+  margin: 0 0 16px;
+}
+.btnSecondary {
+  padding: 10px 18px;
+  border-radius: 10px;
+  background: transparent;
+  color: var(--text-2);
+  font-size: 13px;
+  font-weight: 600;
+  border: 1px solid var(--border);
+  cursor: pointer;
+  transition: all 0.15s;
+  font-family: 'Inter', sans-serif;
+}
+.btnSecondary:hover {
+  border-color: var(--green);
+  color: var(--green);
+}
+
+/* ───────── redirect a Centro de soporte ───────── */
+.supportRedirect {
+  padding: 18px 16px 6px;
+  border-top: 1px solid var(--border-2);
+  margin-top: 8px;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  align-items: flex-start;
+}
+.supportRedirectText {
+  font-size: 14px;
+  color: var(--text-2);
+  margin: 0;
+  line-height: 1.55;
+}
+.supportRedirect .btnSend {
+  align-self: flex-start;
+  text-decoration: none;
+  display: inline-block;
+}
+
+/* ───────── form ───────── */
+.contactForm {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  padding: 12px 16px 4px;
+  border-top: 1px solid var(--border-2);
+  margin-top: 8px;
+}
+.formRow {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+}
+@media (max-width: 580px) {
+  .formRow {
+    grid-template-columns: 1fr;
+  }
+}
+.formGroup {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+.formLabel {
+  font-family: 'Geist Mono', monospace;
+  font-size: 10px;
+  font-weight: 600;
+  color: var(--text-4);
+  text-transform: uppercase;
+  letter-spacing: 0.07em;
+}
+.formInput,
+.formTextarea {
+  padding: 11px 14px;
+  border-radius: 10px;
+  background: var(--surface-2);
+  border: 1px solid var(--border-2);
+  color: var(--text);
+  font-size: 14px;
+  font-family: 'Inter', sans-serif;
+  transition: all 0.15s;
+  outline: none;
+}
+.formInput::placeholder,
+.formTextarea::placeholder {
+  color: var(--text-4);
+}
+.formInput:focus,
+.formTextarea:focus {
+  border-color: var(--green);
+  box-shadow: 0 0 0 3px rgba(0, 194, 122, 0.08);
+  background: var(--surface);
+}
+.formTextarea {
+  resize: vertical;
+  min-height: 140px;
+  line-height: 1.55;
+}
+.btnSend {
+  align-self: flex-end;
+  padding: 12px 22px;
+  border-radius: 10px;
+  background: var(--green);
+  color: #0b0c0e;
+  font-size: 14px;
+  font-weight: 800;
+  border: none;
+  cursor: pointer;
+  transition: all 0.2s;
+  letter-spacing: -0.01em;
+  margin-top: 4px;
+  font-family: 'Inter', sans-serif;
+}
+.btnSend:hover {
+  background: var(--green-3);
+  box-shadow: 0 0 20px rgba(0, 194, 122, 0.3);
+}
+.btnSend:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+  box-shadow: none;
+  background: var(--green);
+}
+
+/* ───────── footer ───────── */
+.pageFooter {
+  border-top: 1px solid var(--border);
+  padding: 24px 32px;
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+  max-width: 1095px;
+  margin: 24px auto 0;
+}
+.footerCopy {
+  font-size: 11px;
+  color: var(--text-4);
+  font-family: 'Geist Mono', monospace;
+}
+.footerLinks {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 16px;
+}
+.footerLinks a,
+.footerLinks span {
+  font-size: 11px;
+  color: var(--text-4);
+  text-decoration: none;
+  transition: color 0.15s;
+  cursor: pointer;
+}
+.footerLinks a:hover {
+  color: var(--text-2);
+}
+.footerLinks .active {
+  color: var(--green);
+  cursor: default;
+}

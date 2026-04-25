@@ -173,6 +173,28 @@ export default [
     },
   },
   {
+    // Vanilla JS dentro de src/ (motores legacy migrados, ej. hex-nebula).
+    // Necesita globals de browser para que no-undef no rompa.
+    files: ["src/**/*.js"],
+    languageOptions: {
+      ecmaVersion: "latest",
+      sourceType: "module",
+      globals: {
+        window: "readonly",
+        document: "readonly",
+        navigator: "readonly",
+        performance: "readonly",
+        requestAnimationFrame: "readonly",
+        cancelAnimationFrame: "readonly",
+        module: "readonly",
+        console: "readonly",
+      },
+    },
+    rules: {
+      "no-unused-vars": "off",
+    },
+  },
+  {
     ignores: [
       "dist/**",
       "node_modules/**",
