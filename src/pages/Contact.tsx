@@ -208,22 +208,9 @@ export default function Contact() {
   const activeSidebarKey = motivoOption?.sidebarKey ?? null;
   const isCentroSoporte = motivo === 'Centro de soporte';
 
-  // Conector orbital: trayectoria curva tipo "estela" — coherente con los
-  // dots orbitando en /start. Sale del vértice IZQUIERDO del composer, hace
-  // una curva Bezier suave por el corredor seguro entre composer y sidebar,
-  // y entra por el borde DERECHO del sidebar card. Sin atravesar inputs.
-  const cablePath = cable
-    ? (() => {
-        const xm = (cable.x1 + cable.x2) / 2; // corredor seguro
-        // Control points: salimos horizontal, entramos horizontal — curva
-        // en S suave que sigue el espacio entre los dos cuadros.
-        const c1x = xm;
-        const c1y = cable.y1;
-        const c2x = xm;
-        const c2y = cable.y2;
-        return `M ${cable.x1} ${cable.y1} C ${c1x} ${c1y}, ${c2x} ${c2y}, ${cable.x2} ${cable.y2}`;
-      })()
-    : '';
+  // Conector recto · línea directa entre el vértice IZQUIERDO del composer
+  // y el borde DERECHO del sidebar card. Pulcro y balanceado.
+  const cablePath = cable ? `M ${cable.x1} ${cable.y1} L ${cable.x2} ${cable.y2}` : '';
 
   return (
     <div className={styles.page}>
