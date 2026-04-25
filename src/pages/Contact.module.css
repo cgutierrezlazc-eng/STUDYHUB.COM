@@ -482,21 +482,25 @@
   pointer-events: none;
   overflow: visible;
 }
-.cablePath {
-  stroke-linecap: round;
-  animation: cableFlow 0.9s linear infinite;
+/* Pulso de luz viajando dentro del cable.
+   stroke-dasharray="28 320" en JSX define un segmento brillante de 28px
+   seguido de 320px en blanco; al desplazar dashoffset el segmento recorre
+   el path entero, dando sensación de luz fluyendo por dentro de la línea. */
+.cableLight {
+  animation: cableLightFlow 1.8s linear infinite;
 }
-@keyframes cableFlow {
+@keyframes cableLightFlow {
   from {
-    stroke-dashoffset: 0;
+    stroke-dashoffset: 348;
   }
   to {
-    stroke-dashoffset: -24;
+    stroke-dashoffset: 0;
   }
 }
 @media (prefers-reduced-motion: reduce) {
-  .cablePath {
+  .cableLight {
     animation: none;
+    opacity: 0;
   }
 }
 

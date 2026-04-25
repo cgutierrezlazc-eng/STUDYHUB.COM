@@ -584,14 +584,27 @@ export default function Contact() {
             fill="none"
             filter="url(#cableGlow)"
           />
-          {/* Cable principal con dasharray viajando. */}
+          {/* Cable principal · línea sólida con la paleta orbital. */}
           <path
             d={cablePath}
             stroke="url(#cableGradient)"
-            strokeWidth="2"
+            strokeWidth="2.5"
+            strokeLinecap="round"
+            strokeLinejoin="round"
             fill="none"
-            strokeDasharray="6 6"
-            className={styles.cablePath}
+          />
+          {/* Luz viajando por dentro · dash corto + offset animado. */}
+          <path
+            d={cablePath}
+            stroke="#ffffff"
+            strokeOpacity="0.95"
+            strokeWidth="2.5"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            fill="none"
+            strokeDasharray="28 320"
+            className={styles.cableLight}
+            filter="url(#cableGlow)"
           />
         </svg>
       )}
