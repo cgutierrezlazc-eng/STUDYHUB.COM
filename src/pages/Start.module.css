@@ -124,34 +124,99 @@
   pointer-events: none;
   overflow: visible;
   z-index: 2;
-  transition:
-    border-color 1.2s ease,
-    box-shadow 1.4s ease;
 }
 .orbR1 {
   width: 170px;
   height: 170px;
-  border: 1px solid rgba(0, 194, 122, 0.15);
 }
 .orbR2 {
   width: 280px;
   height: 280px;
-  border: 1px dashed rgba(196, 154, 58, 0.12);
 }
 .orbR3 {
   width: 390px;
   height: 390px;
-  border: 1px dotted rgba(0, 150, 204, 0.1);
 }
 .orbR4 {
   width: 500px;
   height: 500px;
-  border: 1px solid rgba(107, 78, 255, 0.09);
 }
 .orbR5 {
   width: 610px;
   height: 610px;
-  border: 1px dashed rgba(255, 74, 28, 0.08);
+}
+
+/* ─── Estela orbital ─────────────────────────────────────────
+   Reemplaza el círculo completo del border por un arco de ~90°
+   que viaja detrás del dot, sincronizado con el arm correspondiente.
+   El ::before se rota a la misma velocidad y delay que el arm,
+   y el mask conic-gradient muestra solo los 90° antes del top
+   (donde está el dot al inicio).
+─────────────────────────────────────────────────────────────── */
+.orbR1::before,
+.orbR2::before,
+.orbR3::before,
+.orbR4::before,
+.orbR5::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: 50%;
+  border: 1.5px solid currentColor;
+  pointer-events: none;
+  -webkit-mask: conic-gradient(
+    transparent 0deg,
+    transparent 270deg,
+    rgba(0, 0, 0, 0.15) 280deg,
+    rgba(0, 0, 0, 0.55) 330deg,
+    black 358deg,
+    black 360deg
+  );
+  mask: conic-gradient(
+    transparent 0deg,
+    transparent 270deg,
+    rgba(0, 0, 0, 0.15) 280deg,
+    rgba(0, 0, 0, 0.55) 330deg,
+    black 358deg,
+    black 360deg
+  );
+  transform-origin: center;
+  animation-name: trail-spin;
+  animation-timing-function: linear;
+  animation-iteration-count: infinite;
+}
+@keyframes trail-spin {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+.orbR1::before {
+  color: rgba(0, 194, 122, 0.55);
+  animation-duration: 18s;
+  animation-delay: -3s;
+}
+.orbR2::before {
+  color: rgba(196, 154, 58, 0.5);
+  animation-duration: 32s;
+  animation-delay: -10s;
+}
+.orbR3::before {
+  color: rgba(0, 150, 204, 0.45);
+  animation-duration: 50s;
+  animation-delay: -22s;
+}
+.orbR4::before {
+  color: rgba(107, 78, 255, 0.42);
+  animation-duration: 72s;
+  animation-delay: -35s;
+}
+.orbR5::before {
+  color: rgba(255, 74, 28, 0.38);
+  animation-duration: 96s;
+  animation-delay: -55s;
 }
 .revealed .orbR1 {
   border-color: rgba(0, 194, 122, 0.4);
