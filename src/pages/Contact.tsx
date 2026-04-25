@@ -180,7 +180,8 @@ export default function Contact() {
     }
     setSending(true);
     try {
-      const baseUrl = import.meta.env.VITE_API_URL || '';
+      // Mismo fallback que src/services/api.ts: backend de Render en prod.
+      const baseUrl = import.meta.env.VITE_API_URL || 'https://studyhub-api-bpco.onrender.com';
       const res = await fetch(`${baseUrl}/contact`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
