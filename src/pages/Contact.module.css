@@ -107,6 +107,31 @@
 .sidebar {
   display: flex;
   flex-direction: column;
+  /* Sticky tipo Facebook · sigue al usuario al scrollear el feed.
+     top respeta la altura del topbar sticky (~56px) + 16px de aire. */
+  position: sticky;
+  top: 72px;
+  max-height: calc(100vh - 88px);
+  overflow-y: auto;
+  scrollbar-width: thin;
+  scrollbar-color: var(--border) transparent;
+}
+.sidebar::-webkit-scrollbar {
+  width: 6px;
+}
+.sidebar::-webkit-scrollbar-thumb {
+  background: var(--border);
+  border-radius: 3px;
+}
+.sidebar::-webkit-scrollbar-track {
+  background: transparent;
+}
+@media (max-width: 768px) {
+  .sidebar {
+    position: static;
+    max-height: none;
+    overflow: visible;
+  }
 }
 .feed {
   display: flex;
