@@ -23,6 +23,7 @@
  */
 import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
+import HexNebulaCanvas from '../lib/hex-nebula/HexNebulaCanvas';
 import styles from './Contact.module.css';
 
 type Motivo =
@@ -75,7 +76,10 @@ export default function Contact() {
 
   return (
     <div className={styles.page}>
-      {/* TODO: cuando se bridgee el motor Nebula → src/lib/hex-nebula */}
+      <HexNebulaCanvas
+        options={{ hexSize: 34, intensity: 0.5, bgColor: '#0A0C12' }}
+        className={styles.nebulaBg}
+      />
 
       <div className={styles.topbar}>
         <Link to="/" className={styles.backLink}>
@@ -167,11 +171,10 @@ export default function Contact() {
                 <span className={styles.channelRowAddr}>/support →</span>
                 <span className={styles.channelRowDesc}>Artículos de ayuda y guías</span>
               </Link>
-              {/* TODO: cuando se bridgee prensa.html → ruta /prensa */}
-              <a href="#" className={styles.channelRow} onClick={handlePendiente}>
+              <a href="mailto:prensa@conniku.com" className={styles.channelRow}>
                 <span className={styles.channelRowLabel}>Prensa y medios</span>
-                <span className={styles.channelRowAddr}>Kit de prensa →</span>
-                <span className={styles.channelRowDesc}>Recursos para cobertura periodística</span>
+                <span className={styles.channelRowAddr}>prensa@conniku.com</span>
+                <span className={styles.channelRowDesc}>Entrevistas, notas y cobertura</span>
               </a>
             </div>
           </section>

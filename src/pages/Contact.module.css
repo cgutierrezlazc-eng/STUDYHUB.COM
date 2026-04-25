@@ -27,7 +27,9 @@
   --green-2: #006e4a;
   --green-3: #8aeac0;
 
-  /* TODO: cuando se bridgee el motor Nebula → src/lib/hex-nebula */
+  /* Fondo Nebula montado vía HexNebulaCanvas (z-index 0).
+     El .page mantiene background plano de respaldo por si el canvas
+     no carga (reduced motion, JS off, etc.). */
   background: var(--bg);
   color: var(--text);
   font-family: 'Inter', sans-serif;
@@ -41,6 +43,23 @@
 
 :global(body):has(.page) {
   background: #050608;
+}
+
+.nebulaBg {
+  position: fixed;
+  inset: 0;
+  width: 100vw;
+  height: 100vh;
+  z-index: 0;
+  pointer-events: none;
+  display: block;
+}
+
+/* Topbar y layout deben quedar encima del canvas. */
+.topbar,
+.layout {
+  position: relative;
+  z-index: 1;
 }
 
 /* ───────── topbar ───────── */
