@@ -498,6 +498,187 @@ export default function Start() {
             { top: '38%', left: '88%', '--dur': '4.8s', '--delay': '1.6s' } as React.CSSProperties
           }
         />
+        {/* Estrellas extra · distribuidas por toda la pantalla */}
+        <span
+          className={`${styles.star} ${styles.s}`}
+          style={
+            { top: '3%', left: '32%', '--dur': '2.6s', '--delay': '0.3s' } as React.CSSProperties
+          }
+        />
+        <span
+          className={`${styles.star} ${styles.m} ${styles.green}`}
+          style={
+            { top: '17%', left: '8%', '--dur': '3.6s', '--delay': '1.1s' } as React.CSSProperties
+          }
+        />
+        <span
+          className={`${styles.star} ${styles.s} ${styles.cyan}`}
+          style={
+            { top: '4%', left: '47%', '--dur': '2.9s', '--delay': '0.5s' } as React.CSSProperties
+          }
+        />
+        <span
+          className={`${styles.star} ${styles.m}`}
+          style={
+            { top: '7%', left: '64%', '--dur': '3.3s', '--delay': '1.9s' } as React.CSSProperties
+          }
+        />
+        <span
+          className={`${styles.star} ${styles.l}`}
+          style={
+            { top: '19%', left: '38%', '--dur': '4.1s', '--delay': '0.7s' } as React.CSSProperties
+          }
+        />
+        <span
+          className={`${styles.star} ${styles.s}`}
+          style={
+            { top: '24%', left: '78%', '--dur': '2.4s', '--delay': '0.2s' } as React.CSSProperties
+          }
+        />
+        <span
+          className={`${styles.star} ${styles.m} ${styles.orange}`}
+          style={
+            { top: '32%', left: '15%', '--dur': '3.7s', '--delay': '1.5s' } as React.CSSProperties
+          }
+        />
+        <span
+          className={`${styles.star} ${styles.xl} ${styles.green}`}
+          style={
+            { top: '34%', left: '64%', '--dur': '4s', '--delay': '0.9s' } as React.CSSProperties
+          }
+        />
+        <span
+          className={`${styles.star} ${styles.s}`}
+          style={
+            { top: '41%', left: '24%', '--dur': '2.5s', '--delay': '1.3s' } as React.CSSProperties
+          }
+        />
+        <span
+          className={`${styles.star} ${styles.m}`}
+          style={
+            { top: '47%', left: '50%', '--dur': '3.4s', '--delay': '0.4s' } as React.CSSProperties
+          }
+        />
+        <span
+          className={`${styles.star} ${styles.l} ${styles.cyan}`}
+          style={
+            { top: '49%', left: '90%', '--dur': '4.3s', '--delay': '1.8s' } as React.CSSProperties
+          }
+        />
+        <span
+          className={`${styles.star} ${styles.s}`}
+          style={
+            { top: '53%', left: '7%', '--dur': '2.2s', '--delay': '0.6s' } as React.CSSProperties
+          }
+        />
+        <span
+          className={`${styles.star} ${styles.m}`}
+          style={
+            { top: '56%', left: '35%', '--dur': '3.5s', '--delay': '1.0s' } as React.CSSProperties
+          }
+        />
+        <span
+          className={`${styles.star} ${styles.s} ${styles.green}`}
+          style={
+            { top: '62%', left: '67%', '--dur': '2.7s', '--delay': '0.8s' } as React.CSSProperties
+          }
+        />
+        <span
+          className={`${styles.star} ${styles.l} ${styles.orange}`}
+          style={
+            { top: '64%', left: '4%', '--dur': '3.9s', '--delay': '1.7s' } as React.CSSProperties
+          }
+        />
+        <span
+          className={`${styles.star} ${styles.m}`}
+          style={
+            { top: '67%', left: '50%', '--dur': '3.1s', '--delay': '0.1s' } as React.CSSProperties
+          }
+        />
+        <span
+          className={`${styles.star} ${styles.s}`}
+          style={
+            { top: '70%', left: '28%', '--dur': '2.3s', '--delay': '1.4s' } as React.CSSProperties
+          }
+        />
+        <span
+          className={`${styles.star} ${styles.xl}`}
+          style={
+            { top: '74%', left: '92%', '--dur': '4.5s', '--delay': '0.9s' } as React.CSSProperties
+          }
+        />
+        <span
+          className={`${styles.star} ${styles.m} ${styles.cyan}`}
+          style={
+            { top: '78%', left: '40%', '--dur': '3.8s', '--delay': '1.2s' } as React.CSSProperties
+          }
+        />
+        <span
+          className={`${styles.star} ${styles.s}`}
+          style={
+            { top: '83%', left: '18%', '--dur': '2.6s', '--delay': '0.3s' } as React.CSSProperties
+          }
+        />
+        <span
+          className={`${styles.star} ${styles.m}`}
+          style={
+            { top: '85%', left: '55%', '--dur': '3.2s', '--delay': '1.6s' } as React.CSSProperties
+          }
+        />
+        <span
+          className={`${styles.star} ${styles.l} ${styles.green}`}
+          style={
+            { top: '88%', left: '85%', '--dur': '4s', '--delay': '0.5s' } as React.CSSProperties
+          }
+        />
+        <span
+          className={`${styles.star} ${styles.s}`}
+          style={
+            { top: '92%', left: '32%', '--dur': '2.8s', '--delay': '1.1s' } as React.CSSProperties
+          }
+        />
+        <span
+          className={`${styles.star} ${styles.s} ${styles.orange}`}
+          style={
+            { top: '94%', left: '70%', '--dur': '2.4s', '--delay': '0.7s' } as React.CSSProperties
+          }
+        />
+        <span
+          className={`${styles.star} ${styles.m}`}
+          style={
+            { top: '96%', left: '12%', '--dur': '3.6s', '--delay': '1.4s' } as React.CSSProperties
+          }
+        />
+        <span
+          className={`${styles.star} ${styles.s}`}
+          style={
+            { top: '13%', left: '52%', '--dur': '2.9s', '--delay': '0.4s' } as React.CSSProperties
+          }
+        />
+        <span
+          className={`${styles.star} ${styles.m} ${styles.green}`}
+          style={
+            { top: '21%', left: '20%', '--dur': '3.4s', '--delay': '1.8s' } as React.CSSProperties
+          }
+        />
+        <span
+          className={`${styles.star} ${styles.s}`}
+          style={
+            { top: '27%', left: '60%', '--dur': '2.5s', '--delay': '0.6s' } as React.CSSProperties
+          }
+        />
+        <span
+          className={`${styles.star} ${styles.l}`}
+          style={
+            { top: '45%', left: '70%', '--dur': '4.2s', '--delay': '1.0s' } as React.CSSProperties
+          }
+        />
+        <span
+          className={`${styles.star} ${styles.s} ${styles.cyan}`}
+          style={
+            { top: '60%', left: '21%', '--dur': '2.7s', '--delay': '0.2s' } as React.CSSProperties
+          }
+        />
       </div>
 
       <div className={styles.pulseWave} />

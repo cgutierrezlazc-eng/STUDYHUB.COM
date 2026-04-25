@@ -195,28 +195,28 @@
 }
 .orbR1 .orbTrail {
   color: rgba(0, 194, 122, 0.55);
-  animation-duration: 18s;
-  animation-delay: -3s;
+  animation-duration: 22s;
+  animation-delay: -1.83s;
 }
 .orbR2 .orbTrail {
   color: rgba(196, 154, 58, 0.5);
-  animation-duration: 32s;
-  animation-delay: -10s;
+  animation-duration: 38s;
+  animation-delay: -10.5s;
 }
 .orbR3 .orbTrail {
   color: rgba(0, 150, 204, 0.45);
-  animation-duration: 50s;
-  animation-delay: -22s;
+  animation-duration: 55s;
+  animation-delay: -30.5s;
 }
 .orbR4 .orbTrail {
   color: rgba(107, 78, 255, 0.42);
-  animation-duration: 72s;
-  animation-delay: -35s;
+  animation-duration: 80s;
+  animation-delay: -62s;
 }
 .orbR5 .orbTrail {
   color: rgba(255, 74, 28, 0.38);
-  animation-duration: 96s;
-  animation-delay: -55s;
+  animation-duration: 105s;
+  animation-delay: -102s;
 }
 
 /* ─── Órbitas decorativas extra (r6, r7) ─────────────────────
@@ -238,12 +238,12 @@
   transform-origin: 0 425px;
 }
 .armDecoA {
-  animation: arm-spin 110s linear infinite;
-  animation-delay: -45s;
+  animation: arm-spin 130s linear infinite;
+  animation-delay: -18s; /* ~50° · cuadrante I */
 }
 .armDecoB {
-  animation: arm-spin 145s linear infinite;
-  animation-delay: -80s;
+  animation: arm-spin 170s linear infinite;
+  animation-delay: -113s; /* ~239° · cuadrante III */
 }
 .visDecoA {
   background: radial-gradient(circle at 35% 30%, #f9a8d4, #e91e8c);
@@ -255,13 +255,13 @@
 }
 .orbR6 .orbTrail {
   color: rgba(233, 30, 140, 0.42);
-  animation-duration: 110s;
-  animation-delay: -45s;
+  animation-duration: 130s;
+  animation-delay: -18s;
 }
 .orbR7 .orbTrail {
   color: rgba(20, 184, 166, 0.38);
-  animation-duration: 145s;
-  animation-delay: -80s;
+  animation-duration: 170s;
+  animation-delay: -113s;
 }
 .revealed .orbR1 {
   border-color: rgba(0, 194, 122, 0.4);
@@ -312,25 +312,29 @@
     transform: rotate(360deg);
   }
 }
+/* Velocidades y delays repartidos en los 4 cuadrantes para que al
+   entrar a la página los dots NO estén alineados. Cada delay
+   negativo equivale a un fragmento de duración: posición inicial
+   en el círculo = (delay / duration) * 360°. */
 .armConniku {
-  animation: arm-spin 18s linear infinite;
-  animation-delay: -3s;
+  animation: arm-spin 22s linear infinite;
+  animation-delay: -1.83s; /* ~30° · cuadrante I superior derecho */
 }
 .armTutores {
-  animation: arm-spin 32s linear infinite;
-  animation-delay: -10s;
+  animation: arm-spin 38s linear infinite;
+  animation-delay: -10.5s; /* ~100° · cuadrante II derecho-abajo */
 }
 .armEmpleos {
-  animation: arm-spin 50s linear infinite;
-  animation-delay: -22s;
+  animation: arm-spin 55s linear infinite;
+  animation-delay: -30.5s; /* ~200° · cuadrante III abajo-izquierda */
 }
 .armEntrar {
-  animation: arm-spin 72s linear infinite;
-  animation-delay: -35s;
+  animation: arm-spin 80s linear infinite;
+  animation-delay: -62s; /* ~280° · cuadrante IV izquierda-arriba */
 }
 .armCrear {
-  animation: arm-spin 96s linear infinite;
-  animation-delay: -55s;
+  animation: arm-spin 105s linear infinite;
+  animation-delay: -102s; /* ~350° · casi top, justo antes de cerrar */
 }
 
 /* Planet dot */
