@@ -41,6 +41,17 @@
   font-size: 15px;
   line-height: 1.7;
   min-height: 100vh;
+  /* Cubrir todo el viewport · evita que se vea el body claro de CONNIKU
+     a los lados del contenido centrado. */
+  width: 100%;
+  position: relative;
+  isolation: isolate;
+}
+/* Forzar fondo oscuro en html/body mientras esta página está montada,
+   por si algún ancestor pinta encima. Limita scope con :has() para no
+   afectar al resto de la app. */
+:global(body):has(.page) {
+  background: #050608;
 }
 
 /* top bar */
