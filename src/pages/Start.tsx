@@ -308,10 +308,13 @@ export default function Start() {
   function handleEngineClick() {
     if (!startedRef.current) {
       startReveal();
-    } else {
-      // TODO: cuando se bridgee conniku.html en CONNIKU, navegar ahí.
-      go('/');
+      return;
     }
+    // Durante la animación del reveal (~6 s) el click no responde.
+    // El original hacía wrap.onclick=null y reasignaba al final.
+    if (!revealedRef.current) return;
+    // TODO: cuando se bridgee conniku.html en CONNIKU, navegar ahí.
+    go('/');
   }
 
   function handleConnikuBtn(e: React.MouseEvent) {
