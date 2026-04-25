@@ -208,35 +208,9 @@ export default function Contact() {
   const activeSidebarKey = motivoOption?.sidebarKey ?? null;
   const isCentroSoporte = motivo === 'Centro de soporte';
 
-  // Path ortogonal del cable: sale del vértice IZQUIERDO del composer, viaja
-  // por el corredor entre composer y sidebar (nunca encima de inputs), y
-  // entra al borde derecho del sidebar card. Esquinas con arcos redondeados.
-  // Importante: x1 (composer.left) > x2 (sidebar.right), así que avanzamos
-  // hacia la izquierda restando.
-  const cablePath = cable
-    ? (() => {
-        const xm = (cable.x1 + cable.x2) / 2; // corredor central
-        const r = 12; // radio de las esquinas
-        const goingDown = cable.y2 > cable.y1;
-        // Tramo 1 horizontal (derecha → izquierda): x1 → xm + r
-        // Esquina 1: arco a (xm, y1 ± r)
-        // Tramo 2 vertical: → y2 ∓ r
-        // Esquina 2: arco a (xm - r, y2)
-        // Tramo 3 horizontal: → x2
-        const sweep1 = goingDown ? 1 : 0;
-        const sweep2 = goingDown ? 1 : 0;
-        const corner1Y = goingDown ? cable.y1 + r : cable.y1 - r;
-        const v2 = goingDown ? cable.y2 - r : cable.y2 + r;
-        return [
-          `M ${cable.x1} ${cable.y1}`,
-          `L ${xm + r} ${cable.y1}`,
-          `A ${r} ${r} 0 0 ${sweep1} ${xm} ${corner1Y}`,
-          `L ${xm} ${v2}`,
-          `A ${r} ${r} 0 0 ${sweep2 ? 0 : 1} ${xm - r} ${cable.y2}`,
-          `L ${cable.x2} ${cable.y2}`,
-        ].join(' ');
-      })()
-    : '';
+  // Conector recto · línea directa entre el vértice IZQUIERDO del composer
+  // y el borde DERECHO del sidebar card. Pulcro y balanceado.
+  const cablePath = cable ? `M ${cable.x1} ${cable.y1} L ${cable.x2} ${cable.y2}` : '';
 
   return (
     <div className={styles.page}>
@@ -558,55 +532,65 @@ export default function Contact() {
         </main>
       </div>
 
-      {/* SVG del cable · fixed sobre todo, sin capturar pointer events. */}
+      {/* Conector orbital · trayectoria curva con dots viajando, coherente
+          con los planetas en /start. Fixed sobre todo, sin pointer events.
+          - Línea base: hairline 1px muy sutil (guía de la trayectoria).
+          - 3 dots con animateMotion siguiendo el path; cada uno con su
+            color de la paleta orbital y su propio glow. */}
       {cable && (
         <svg className={styles.cableSvg} aria-hidden="true">
           <defs>
-            {/* Gradiente con la paleta de los planetas/órbitas de /start */}
-            <linearGradient id="cableGradient" x1="0%" y1="0%" x2="100%" y2="0%">
-              <stop offset="0%" stopColor="#e91e8c" stopOpacity="0.95" />
-              <stop offset="18%" stopColor="#14b8a6" stopOpacity="0.95" />
-              <stop offset="36%" stopColor="#00c27a" stopOpacity="0.95" />
-              <stop offset="54%" stopColor="#ffe9b8" stopOpacity="0.95" />
-              <stop offset="72%" stopColor="#0096cc" stopOpacity="0.95" />
-              <stop offset="88%" stopColor="#6b4eff" stopOpacity="0.95" />
-              <stop offset="100%" stopColor="#ff4a1c" stopOpacity="0.95" />
-            </linearGradient>
-            <filter id="cableGlow" x="-30%" y="-30%" width="160%" height="160%">
-              <feGaussianBlur stdDeviation="2.5" />
+            <filter id="orbitDotGlow" x="-200%" y="-200%" width="500%" height="500%">
+              <feGaussianBlur stdDeviation="2.2" />
+            </filter>
+            <filter id="orbitDotGlowSoft" x="-200%" y="-200%" width="500%" height="500%">
+              <feGaussianBlur stdDeviation="4" />
             </filter>
           </defs>
-          {/* Halo difuso · usa el mismo gradiente para tintar el glow. */}
+
+          {/* Trayectoria sutil · referencia visual de la órbita. */}
           <path
+            id="orbitPath"
             d={cablePath}
-            stroke="url(#cableGradient)"
-            strokeOpacity="0.4"
-            strokeWidth="7"
-            fill="none"
-            filter="url(#cableGlow)"
-          />
-          {/* Cable principal · línea sólida con la paleta orbital. */}
-          <path
-            d={cablePath}
-            stroke="url(#cableGradient)"
-            strokeWidth="2.5"
+            stroke="rgba(232, 232, 230, 0.18)"
+            strokeWidth="1"
             strokeLinecap="round"
-            strokeLinejoin="round"
             fill="none"
           />
-          {/* Luz viajando por dentro · dash corto + offset animado. */}
-          <path
-            d={cablePath}
-            stroke="#ffffff"
-            strokeOpacity="0.95"
-            strokeWidth="2.5"
-            strokeLinecap="round"
-            strokeLinejoin="round"
-            fill="none"
-            strokeDasharray="28 320"
-            className={styles.cableLight}
-            filter="url(#cableGlow)"
-          />
+
+          {/* Dot 1 · verde Conniku · líder */}
+          <g>
+            <circle r="6" fill="#00c27a" opacity="0.35" filter="url(#orbitDotGlowSoft)">
+              <animateMotion dur="2.6s" repeatCount="indefinite" path={cablePath} />
+            </circle>
+            <circle r="3" fill="#00c27a" filter="url(#orbitDotGlow)">
+              <animateMotion dur="2.6s" repeatCount="indefinite" path={cablePath} />
+            </circle>
+          </g>
+
+          {/* Dot 2 · cyan · escalonado a 1/3 del recorrido */}
+          <g>
+            <circle r="5" fill="#0096cc" opacity="0.3" filter="url(#orbitDotGlowSoft)">
+              <animateMotion dur="2.6s" repeatCount="indefinite" path={cablePath} begin="-0.87s" />
+            </circle>
+            <circle r="2.5" fill="#67e8f9" filter="url(#orbitDotGlow)">
+              <animateMotion dur="2.6s" repeatCount="indefinite" path={cablePath} begin="-0.87s" />
+            </circle>
+          </g>
+
+          {/* Dot 3 · violeta · escalonado a 2/3 del recorrido */}
+          <g>
+            <circle r="5" fill="#6b4eff" opacity="0.3" filter="url(#orbitDotGlowSoft)">
+              <animateMotion dur="2.6s" repeatCount="indefinite" path={cablePath} begin="-1.73s" />
+            </circle>
+            <circle r="2.5" fill="#c4b5fd" filter="url(#orbitDotGlow)">
+              <animateMotion dur="2.6s" repeatCount="indefinite" path={cablePath} begin="-1.73s" />
+            </circle>
+          </g>
+
+          {/* Anclas · pequeño dot fijo en cada extremo (origen + destino) */}
+          <circle cx={cable.x1} cy={cable.y1} r="3" fill="#00c27a" filter="url(#orbitDotGlow)" />
+          <circle cx={cable.x2} cy={cable.y2} r="3" fill="#00c27a" filter="url(#orbitDotGlow)" />
         </svg>
       )}
 

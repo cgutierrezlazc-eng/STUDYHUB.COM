@@ -27,8 +27,9 @@ from database import (
 from fastapi import APIRouter, Body, Depends, File, Form, HTTPException, Request, UploadFile
 from middleware import create_access_token, create_refresh_token, decode_token, get_current_user
 from pydantic import BaseModel, EmailStr
-from shared.legal_texts import AGE_DECLARATION_HASH, AGE_DECLARATION_VERSION
 from constants.legal_versions import (
+    AGE_DECLARATION_TEXT_HASH as AGE_DECLARATION_HASH,
+    AGE_DECLARATION_VERSION,
     CANONICAL_DOC_HASHES,
     CANONICAL_DOC_VERSIONS,
     COOKIE_CONSENT_POLICY_HASH,
