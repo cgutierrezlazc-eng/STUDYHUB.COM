@@ -9,7 +9,7 @@
  * Backend pendiente: handleLogin/handleRegistro disparan alert provisorio.
  */
 import React, { useEffect, useRef, useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import styles from './Start.module.css';
 
 type ModalKind = null | 'entrar' | 'crear';
@@ -860,23 +860,24 @@ export default function Start() {
           © 2026 Conniku SpA · Todos los derechos reservados
         </span>
         <nav className={styles.footerLinks}>
-          {/* TODO: cuando se bridgeen las páginas legales/soporte */}
-          <a href="#" onClick={handlePending}>
-            Términos de servicio
-          </a>
+          <Link to="/terms">Términos de servicio</Link>
           <div className={styles.footerSep} />
+          {/* TODO: cuando se bridgee privacidad.html → /privacy */}
           <a href="#" onClick={handlePending}>
             Política de privacidad
           </a>
           <div className={styles.footerSep} />
+          {/* TODO: cuando se bridgee soporte.html → /support */}
           <a href="#" onClick={handlePending}>
             Soporte
           </a>
           <div className={styles.footerSep} />
+          {/* TODO: cuando se bridgee contacto.html → /contact */}
           <a href="#" onClick={handlePending}>
             Contacto
           </a>
           <div className={styles.footerSep} />
+          {/* TODO: cuando se bridgee empleo-conniku.html → /careers */}
           <a href="#" onClick={handlePending}>
             Trabaja con nosotros
           </a>
