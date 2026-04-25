@@ -188,8 +188,26 @@ export default function Contact() {
         body: JSON.stringify({ motivo, nombre, email, asunto, mensaje }),
       });
       if (!res.ok) {
-        const err = (await res.json().catch(() => ({}))) as { detail?: string };
-        throw new Error(err.detail || 'Error al enviar');
+        // Backend Pydantic devuelve detail como string (errores custom) o
+        // array de objetos {loc, msg, type, ...} (errores de validación).
+        // Hay que serializarlo a algo legible para el usuario.
+        type ValidationItem = { loc?: (string | number)[]; msg?: string };
+        const err = (await res.json().catch(() => ({}))) as {
+          detail?: string | ValidationItem[];
+        };
+        let msg = 'Error al enviar';
+        if (typeof err.detail === 'string') {
+          msg = err.detail;
+        } else if (Array.isArray(err.detail)) {
+          msg = err.detail
+            .map((item) => {
+              const field = (item.loc || []).filter((p) => p !== 'body').join('.');
+              return field ? `${field}: ${item.msg}` : item.msg;
+            })
+            .filter(Boolean)
+            .join(' · ');
+        }
+        throw new Error(msg);
       }
       setSent(true);
     } catch (err) {
@@ -481,6 +499,8 @@ export default function Contact() {
                       value={nombre}
                       onChange={(e) => setNombre(e.target.value)}
                       required
+                      minLength={2}
+                      maxLength={100}
                     />
                   </div>
                   <div className={styles.formGroup}>
@@ -509,6 +529,8 @@ export default function Contact() {
                     value={asunto}
                     onChange={(e) => setAsunto(e.target.value)}
                     required
+                    minLength={3}
+                    maxLength={150}
                   />
                 </div>
 
@@ -520,6 +542,8 @@ export default function Contact() {
                     value={mensaje}
                     onChange={(e) => setMensaje(e.target.value)}
                     required
+                    minLength={10}
+                    maxLength={5000}
                   />
                 </div>
 
