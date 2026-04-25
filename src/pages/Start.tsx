@@ -584,11 +584,14 @@ export default function Start() {
       {/* Panel A */}
       <div className={styles.panelA} ref={panelARef}>
         <div className={styles.paBadge}>ORBIT-U · CONNIKU</div>
-        {/* TODO: reemplazar con wordmark oficial cuando llegue M01-logo */}
         <div className={styles.paLogo}>
-          conn<em>i</em>k
-          <span className={styles.paUtile}>
-            u<span className={styles.paUdot}>.</span>
+          <span className="brand on-dark" aria-label="Conniku">
+            conn<span>i</span>
+            <span className="k-letter">k</span>
+            <span className="u-pack">
+              <span className="u-letter">u</span>
+              <span className="dot"></span>
+            </span>
           </span>
         </div>
         <div className={styles.paProduct}>ORBIT · U</div>
@@ -668,11 +671,12 @@ export default function Start() {
               ✕
             </button>
             <div className={styles.modalLogo}>
-              {/* TODO: reemplazar con wordmark oficial cuando llegue M01-logo */}
-              <span className={styles.modalLogoMark}>
-                conn<em>i</em>k
-                <span className={styles.modalLogoTile}>
-                  u<span className={styles.modalLogoDot}>.</span>
+              <span className="brand on-dark" aria-label="Conniku">
+                conn<span>i</span>
+                <span className="k-letter">k</span>
+                <span className="u-pack">
+                  <span className="u-letter">u</span>
+                  <span className="dot"></span>
                 </span>
               </span>
             </div>
@@ -730,11 +734,12 @@ export default function Start() {
               ✕
             </button>
             <div className={styles.modalLogo}>
-              {/* TODO: reemplazar con wordmark oficial cuando llegue M01-logo */}
-              <span className={styles.modalLogoMark}>
-                conn<em>i</em>k
-                <span className={styles.modalLogoTile}>
-                  u<span className={styles.modalLogoDot}>.</span>
+              <span className="brand on-dark" aria-label="Conniku">
+                conn<span>i</span>
+                <span className="k-letter">k</span>
+                <span className="u-pack">
+                  <span className="u-letter">u</span>
+                  <span className="dot"></span>
                 </span>
               </span>
             </div>

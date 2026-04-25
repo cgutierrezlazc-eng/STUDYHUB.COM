@@ -7,6 +7,7 @@ import { isNative, initNative } from './services/capacitor';
 import ErrorBoundary from './components/ErrorBoundary';
 import App from './App';
 import './styles/global.css';
+import './styles/ConnikuWordmark.css';
 
 // Add native platform class for CSS targeting
 if (isNative) {

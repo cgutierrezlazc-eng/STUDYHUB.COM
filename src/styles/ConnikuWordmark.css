@@ -1,0 +1,70 @@
+/* ============================================================
+   Conniku · Wordmark · CSS oficial
+   v1.2 · tile cuadrado · u centrada · dot fuera del centrado
+   ============================================================ */
+
+@import url('https://fonts.googleapis.com/css2?family=Funnel+Display:wght@900&display=swap');
+
+.brand {
+  display: inline-flex;
+  align-items: baseline;
+  font-family: 'Funnel Display', -apple-system, sans-serif;
+  font-weight: 900;
+  letter-spacing: -0.055em;
+  line-height: 1;
+  color: #0D0F10;
+  text-decoration: none;
+  white-space: nowrap;
+}
+
+/* sobre fondos oscuros */
+.brand.on-dark { color: #F5F4EF; }
+
+/* k delante del cuadrado verde, con stroke negro mínimo */
+.brand .k-letter {
+  position: relative;
+  z-index: 2;
+  -webkit-text-stroke: 0.5px #0D0F10;
+  text-stroke: 0.5px #0D0F10;
+  paint-order: stroke fill;
+}
+
+/* u-pack · contenedor de la u y el dot · stacking context propio */
+.brand .u-pack {
+  position: relative;
+  display: inline-block;
+  color: #0D0F10;
+  isolation: isolate;
+}
+
+/* cuadrado verde · INVIOLABLE · DETRÁS · rotado -8° */
+.brand .u-pack::before {
+  content: '';
+  position: absolute;
+  left: 50%;
+  top: 59%;
+  width: 0.97em;
+  height: 0.97em;
+  border-radius: 0.18em;
+  background: #D9FF3A;
+  transform: translate(-50%, -50%) rotate(-8deg);
+  z-index: -1;
+}
+
+/* u en flujo natural · DELANTE del tile */
+.brand .u-pack .u-letter {
+  position: relative;
+  display: inline-block;
+  color: #0D0F10;
+}
+
+/* dot naranja · cola derecha de la u */
+.brand .u-pack .dot {
+  position: absolute;
+  right: -0.06em;
+  bottom: 0.06em;
+  width: 0.13em;
+  height: 0.13em;
+  border-radius: 50%;
+  background: #FF4A1C;
+}
