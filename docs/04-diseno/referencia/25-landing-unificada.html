@@ -1,0 +1,1127 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Conniku — Tu U entera. En una sola app.</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Funnel+Display:wght@400;500;600;700;800;900&family=Geist+Mono:wght@400;500;600;700&display=swap" />
+  <style>
+    :root {
+      --ink: #0D0F10; --ink-2: #2B2E30; --ink-3: #696C6F; --ink-4: #A0A3A7;
+      --paper: #F5F4EF; --paper-2: #EBE9E1; --paper-3: #DBD9CF;
+      --line: #D2CFC3; --line-soft: #E2DFD4; --card: #FFFFFF;
+      --lime: #D9FF3A; --lime-ink: #181F08;
+      --pink: #FF4D3A; --cream: #FFE9B8;
+      --violet: #6B4EFF; --cyan: #00C2FF; --orange: #FF4A1C;
+      --blue: #2D62C8; --electric: #2F55F0;
+      --font-display: 'Funnel Display', -apple-system, sans-serif;
+      --font-mono: 'Geist Mono', ui-monospace, monospace;
+      --ease: cubic-bezier(.2,.8,.2,1);
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    html, body { background: var(--paper); color: var(--ink); font-family: var(--font-display); overflow-x: hidden; }
+    ::selection { background: var(--lime); color: var(--lime-ink); }
+
+    /* ═════ PROGRESS TOP ═════ */
+    .top-progress {
+      background: var(--ink); color: #fff; padding: 10px 32px;
+      display: flex; align-items: center; justify-content: space-between;
+      font-family: var(--font-mono); font-size: 11px;
+      letter-spacing: .08em; text-transform: uppercase;
+    }
+    .top-progress .left { display: flex; align-items: center; gap: 12px; }
+    .pulse { width: 8px; height: 8px; border-radius: 50%; background: var(--lime); animation: pulse 1.6s var(--ease) infinite; }
+    @keyframes pulse { 0% { box-shadow: 0 0 0 0 rgba(217,255,58,.7); } 70% { box-shadow: 0 0 0 10px rgba(217,255,58,0); } 100% { box-shadow: 0 0 0 0 rgba(217,255,58,0); } }
+    .top-progress .bar { width: 120px; height: 4px; background: rgba(255,255,255,.15); border-radius: 4px; overflow: hidden; }
+    .top-progress .bar-fill { width: 34%; height: 100%; background: linear-gradient(90deg, var(--lime), var(--pink)); }
+
+    /* ═════ NAV ═════ */
+    .nav-wrap { padding: 20px 32px; display: flex; justify-content: center; }
+    .nav {
+      max-width: 1280px; width: 100%;
+      background: var(--card); border: 1px solid var(--line);
+      border-radius: 999px; padding: 10px 14px 10px 20px;
+      display: flex; align-items: center; gap: 28px;
+    }
+    .logo-wrap { display: flex; align-items: center; gap: 10px; }
+    .logo-tile { width: 30px; height: 30px; display: block; flex-shrink: 0; }
+    .logo-text { font-weight: 700; font-size: 20px; letter-spacing: -.02em; }
+    .nav-links { display: flex; gap: 24px; flex: 1; }
+    .nav-link { font-size: 15px; font-weight: 600; color: var(--ink-2); cursor: pointer; }
+    .nav-link:hover { color: var(--ink); }
+    .nav-ghost { padding: 8px 18px; font-weight: 600; font-size: 14px; color: var(--ink); cursor: pointer; }
+    .nav-cta { background: var(--ink); color: #fff; padding: 10px 14px 10px 20px; border: 0; border-radius: 999px; font-family: var(--font-display); font-weight: 700; font-size: 14px; display: flex; align-items: center; gap: 10px; cursor: pointer; transition: transform 180ms var(--ease); }
+    .nav-cta:hover { transform: translateY(-1px); }
+    .nav-cta .ring { width: 26px; height: 26px; border-radius: 50%; background: var(--lime); color: var(--ink); display: grid; place-items: center; font-weight: 900; font-size: 14px; }
+
+    /* ═════ SECTION ═════ */
+    .section { padding: 100px 32px; max-width: 1280px; margin: 0 auto; position: relative; }
+
+    /* ═════ 1. HERO ═════ */
+    .hero { padding-top: 60px; padding-bottom: 140px; position: relative; overflow: visible; }
+    .hero::before { content: ""; position: absolute; top: 40px; right: -120px; width: 460px; height: 460px; background: var(--lime); border-radius: 50%; opacity: .35; filter: blur(90px); z-index: -1; }
+    .hero::after { content: ""; position: absolute; bottom: 100px; left: -100px; width: 460px; height: 460px; background: var(--pink); border-radius: 50%; opacity: .3; filter: blur(100px); z-index: -1; }
+
+    .status-chip {
+      display: inline-flex; align-items: center; gap: 10px;
+      background: var(--card); border: 1px solid var(--line);
+      border-radius: 999px; padding: 8px 14px;
+      font-family: var(--font-mono); font-size: 12px;
+      color: var(--ink-2); letter-spacing: .08em; text-transform: uppercase;
+      margin-bottom: 28px;
+    }
+    .status-chip .dot { width: 8px; height: 8px; border-radius: 50%; background: var(--orange); }
+    .status-chip .count { background: var(--lime); color: var(--lime-ink); padding: 2px 9px; border-radius: 999px; font-weight: 700; letter-spacing: 0; }
+
+    .hero h1 {
+      font-weight: 900; font-size: clamp(80px, 13vw, 192px);
+      line-height: .86; letter-spacing: -.05em;
+    }
+    .hero h1 .line { display: block; }
+    .hero h1 .chip-lime { background: var(--lime); padding: 0 18px; border-radius: 18px; display: inline-block; transform: rotate(-1.2deg); }
+    .hero h1 .chip-pink { color: var(--pink); position: relative; display: inline-block; }
+    .hero h1 .chip-pink::before { content: ""; position: absolute; top: 16px; left: -12px; width: 12px; height: 12px; border-radius: 50%; background: var(--cream); box-shadow: 28px 30px 0 var(--cyan), -8px 60px 0 var(--ink), 48px -20px 0 var(--violet), 90px 50px 0 var(--lime); }
+    .hero h1 .chip-cream { background: var(--cream); padding: 0 18px; border-radius: 18px; display: inline-block; transform: rotate(.8deg); }
+
+    .hero-copy { display: grid; grid-template-columns: 1.1fr 1fr; gap: 60px; margin-top: 48px; align-items: end; }
+    .hero-desc { font-size: 22px; line-height: 1.4; color: var(--ink-2); max-width: 480px; font-weight: 500; }
+    .hero-desc strong { background: var(--lime); padding: 1px 6px; border-radius: 4px; font-weight: 700; }
+
+    .hero-ctas { display: flex; gap: 14px; align-items: center; }
+    .btn-hero-primary {
+      background: var(--ink); color: #fff; border: 0; border-radius: 999px;
+      padding: 16px 18px 16px 30px; font-family: var(--font-display);
+      font-weight: 700; font-size: 17px; cursor: pointer;
+      display: flex; align-items: center; gap: 14px;
+      transition: transform 180ms var(--ease);
+    }
+    .btn-hero-primary:hover { transform: translateY(-2px); }
+    .btn-hero-primary .ring-big { width: 34px; height: 34px; background: var(--lime); color: var(--ink); border-radius: 50%; display: grid; place-items: center; font-weight: 900; font-size: 17px; }
+    .btn-hero-secondary { background: transparent; border: 2px solid var(--ink); padding: 14px 26px; border-radius: 999px; font-family: var(--font-display); font-weight: 700; font-size: 17px; cursor: pointer; color: var(--ink); transition: all 180ms var(--ease); }
+    .btn-hero-secondary:hover { background: var(--ink); color: var(--lime); }
+
+    .hero-free-pill {
+      display: flex; align-items: center; gap: 8px;
+      font-family: var(--font-mono); font-size: 12px; letter-spacing: .08em;
+      text-transform: uppercase; color: var(--ink-3); font-weight: 700;
+      margin-top: 18px;
+    }
+    .hero-free-pill .ok {
+      width: 18px; height: 18px; border-radius: 50%;
+      background: var(--lime); color: var(--lime-ink);
+      display: grid; place-items: center; font-weight: 900; font-size: 11px;
+    }
+
+    /* ═════ 2. SECTION LABEL ═════ */
+    .sec-label {
+      font-family: var(--font-mono); font-size: 12px; letter-spacing: .14em;
+      text-transform: uppercase; color: var(--ink-3); margin-bottom: 14px;
+      display: flex; align-items: center; gap: 12px;
+    }
+    .sec-label::before { content: ""; width: 32px; height: 2px; background: var(--ink); }
+
+    .sec-h2 {
+      font-weight: 900; font-size: clamp(56px, 7.5vw, 112px);
+      line-height: .9; letter-spacing: -.045em;
+    }
+    .sec-h2 .hl { background: var(--lime); padding: 0 10px; border-radius: 10px; transform: rotate(-.8deg); display: inline-block; }
+    .sec-h2 .hl-pink { background: var(--pink); color: #fff; padding: 0 10px; border-radius: 10px; transform: rotate(.6deg); display: inline-block; }
+
+    /* ═════ 3. UNIFICACIÓN — declaración + problemas + rail ═════ */
+    .unif-section {
+      padding: 140px 32px; background: var(--paper);
+      border-top: 1px solid var(--line-soft); border-bottom: 1px solid var(--line-soft);
+      position: relative; overflow: hidden;
+    }
+    .unif-section::before { content: ""; position: absolute; top: 40px; left: 10%; width: 14px; height: 14px; border-radius: 50%; background: var(--pink); box-shadow: 280px 30px 0 var(--cyan), 540px 60px 0 var(--violet), 780px 20px 0 var(--ink), 1040px 90px 0 var(--lime); }
+    .unif-inner { max-width: 1280px; margin: 0 auto; }
+
+    .declaration {
+      font-weight: 900; font-size: clamp(64px, 10vw, 152px);
+      line-height: .9; letter-spacing: -.05em;
+      text-align: center; max-width: 1200px; margin: 0 auto 80px;
+    }
+    .declaration .l1 { display: block; }
+    .declaration .l2 { display: block; }
+    .declaration .chip { background: var(--lime); color: var(--lime-ink); padding: 0 14px; border-radius: 16px; display: inline-block; transform: rotate(-1deg); }
+    .declaration .chip-pink { background: var(--pink); color: #fff; padding: 0 14px; border-radius: 16px; display: inline-block; transform: rotate(.8deg); }
+
+    .problems-grid {
+      display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px;
+      margin-bottom: 60px;
+    }
+    .problem-card {
+      background: var(--card); border: 2px solid var(--ink); border-radius: 24px;
+      padding: 28px; display: flex; flex-direction: column; gap: 14px;
+      transition: all 200ms var(--ease);
+    }
+    .problem-card:hover { transform: translateY(-3px); box-shadow: 8px 8px 0 var(--ink); }
+    .problem-card:nth-child(1) { transform: rotate(-.5deg); }
+    .problem-card:nth-child(3) { transform: rotate(.4deg); }
+    .problem-card:nth-child(1):hover, .problem-card:nth-child(3):hover { transform: translateY(-3px) rotate(0); }
+
+    .problem-label { font-family: var(--font-mono); font-size: 11px; letter-spacing: .12em; text-transform: uppercase; color: var(--ink-3); font-weight: 700; }
+    .problem-before {
+      font-weight: 900; font-size: 26px; letter-spacing: -.025em; line-height: 1.1;
+      text-decoration: line-through; text-decoration-color: var(--pink);
+      text-decoration-thickness: 3px; color: var(--ink-3);
+    }
+    .problem-arrow {
+      font-family: var(--font-mono); font-size: 11px; letter-spacing: .12em;
+      text-transform: uppercase; color: var(--ink-3); font-weight: 700;
+      display: flex; align-items: center; gap: 8px;
+    }
+    .problem-arrow::before { content: "▼"; font-size: 9px; color: var(--lime-ink); background: var(--lime); padding: 3px 7px; border-radius: 999px; }
+    .problem-after {
+      font-weight: 900; font-size: 26px; letter-spacing: -.025em; line-height: 1.1;
+      color: var(--ink);
+    }
+    .problem-after .hl-y { background: var(--lime); color: var(--lime-ink); padding: 0 6px; border-radius: 6px; }
+    .problem-desc { font-size: 13.5px; line-height: 1.45; color: var(--ink-2); margin-top: 6px; font-weight: 500; }
+
+    .rail-wrap { padding: 30px 0; margin: 0 -32px; overflow: hidden; position: relative; background: var(--ink); }
+    .rail { display: flex; gap: 20px; animation: antiroll 40s linear infinite; width: max-content; padding: 0 20px; }
+    @keyframes antiroll { from { transform: translateX(0); } to { transform: translateX(-50%); } }
+    .rail-chip {
+      border: 2px solid var(--lime); border-radius: 18px;
+      padding: 14px 28px; font-weight: 800; font-size: clamp(40px, 5.5vw, 72px);
+      letter-spacing: -.035em; white-space: nowrap;
+      background: var(--lime); color: var(--lime-ink);
+    }
+    .rail-chip:nth-child(2n) { background: var(--ink); color: var(--lime); border-color: var(--lime); transform: rotate(-1deg); }
+    .rail-chip:nth-child(3n) { transform: rotate(1deg); }
+
+    /* ═════ 4. STICKER GRID ═════ */
+    .stickers-grid {
+      display: grid; grid-template-columns: repeat(12, 1fr);
+      gap: 16px; margin-top: 48px;
+    }
+    .stk {
+      border: 2px solid var(--ink); border-radius: 24px; padding: 28px;
+      transition: all 200ms var(--ease); cursor: pointer;
+      display: flex; flex-direction: column; gap: 12px;
+      position: relative;
+    }
+    .stk:hover { transform: translateY(-3px); box-shadow: 8px 8px 0 var(--ink); }
+    .stk-num {
+      position: absolute; top: 20px; right: 20px; background: var(--ink); color: #fff;
+      border-radius: 999px; padding: 4px 11px; font-family: var(--font-mono);
+      font-size: 10px; letter-spacing: .1em; font-weight: 700;
+    }
+    .stk h3 { font-weight: 800; font-size: clamp(24px, 2.8vw, 32px); letter-spacing: -.025em; line-height: 1.05; }
+    .stk p { font-size: 14px; line-height: 1.5; color: var(--ink-2); }
+    /* Stickers con fondo claro: texto p oscuro */
+    .stk-lime { background: var(--lime); color: var(--lime-ink); grid-column: span 6; transform: rotate(-1deg); }
+    .stk-lime p { color: var(--lime-ink); opacity: .78; }
+    .stk-cream { background: var(--cream); grid-column: span 4; transform: rotate(-.5deg); }
+    .stk-cream p { color: var(--ink); opacity: .78; }
+    .stk-white { background: var(--card); grid-column: span 6; transform: rotate(-.4deg); }
+    .stk-white p { color: var(--ink-2); }
+    /* Stickers con fondo oscuro: texto p claro */
+    .stk-pink { background: var(--pink); color: #fff; grid-column: span 6; transform: rotate(.8deg); }
+    .stk-pink p { color: rgba(255,255,255,.88); }
+    .stk-ink { background: var(--ink); color: #fff; grid-column: span 4; transform: rotate(.4deg); }
+    .stk-ink p { color: rgba(255,255,255,.75); }
+    .stk-violet { background: var(--violet); color: #fff; grid-column: span 4; transform: rotate(-.7deg); }
+    .stk-violet p { color: rgba(255,255,255,.85); }
+    .stk-orange { background: var(--orange); color: #fff; grid-column: span 6; transform: rotate(.3deg); }
+    .stk-orange p { color: rgba(255,255,255,.88); }
+    /* Stk-num override para los de fondo oscuro */
+    .stk-pink .stk-num, .stk-violet .stk-num, .stk-orange .stk-num { background: #fff; color: var(--ink); }
+    .stk-ink .stk-num { background: var(--lime); color: var(--lime-ink); }
+
+    /* ═════ 5. FREE vs PRO ═════ */
+    .plans-section { padding: 120px 32px; }
+    .plans-inner { max-width: 1280px; margin: 0 auto; }
+    .plans-intro { text-align: center; max-width: 800px; margin: 0 auto 56px; }
+    .plans-intro .sec-h2 { margin-bottom: 18px; }
+    .plans-intro p { font-size: 18px; color: var(--ink-2); line-height: 1.5; font-weight: 500; }
+    .plans-intro p strong { background: var(--lime); padding: 1px 6px; border-radius: 4px; font-weight: 700; }
+
+    .plans-grid {
+      display: grid; grid-template-columns: 1fr 1fr; gap: 20px;
+      margin-bottom: 40px;
+    }
+    .plan-card {
+      border: 2px solid var(--ink); border-radius: 28px;
+      padding: 40px 36px; position: relative;
+    }
+    .plan-free { background: var(--card); }
+    .plan-pro { background: var(--ink); color: #fff; transform: rotate(.3deg); box-shadow: 8px 8px 0 var(--lime); }
+    .plan-pro::before { content: ""; position: absolute; top: -40px; right: -40px; width: 180px; height: 180px; background: var(--lime); border-radius: 50%; opacity: .15; filter: blur(60px); }
+
+    .plan-badge {
+      display: inline-flex; align-items: center; gap: 8px;
+      font-family: var(--font-mono); font-size: 11px;
+      font-weight: 800; letter-spacing: .14em; text-transform: uppercase;
+      padding: 6px 14px; border-radius: 999px; margin-bottom: 20px;
+    }
+    .plan-free .plan-badge { background: var(--paper-2); color: var(--ink); }
+    .plan-pro .plan-badge { background: var(--lime); color: var(--lime-ink); }
+
+    .plan-title { font-weight: 900; font-size: 48px; letter-spacing: -.035em; line-height: 1; margin-bottom: 10px; }
+    .plan-subtitle { font-size: 16px; color: var(--ink-2); line-height: 1.4; margin-bottom: 28px; font-weight: 500; }
+    .plan-pro .plan-subtitle { color: rgba(255,255,255,.8); }
+
+    .plan-features { display: flex; flex-direction: column; gap: 13px; padding-top: 26px; border-top: 1px solid var(--line); }
+    .plan-pro .plan-features { border-top-color: rgba(255,255,255,.12); }
+
+    .pf-item {
+      display: flex; align-items: flex-start; gap: 12px; font-size: 14.5px;
+      line-height: 1.35; font-weight: 500;
+    }
+    .pf-check {
+      width: 22px; height: 22px; border-radius: 50%;
+      display: grid; place-items: center; font-weight: 900; font-size: 11px; flex-shrink: 0;
+      margin-top: 1px;
+    }
+    .plan-free .pf-check { background: var(--ink); color: var(--lime); }
+    .plan-pro .pf-check { background: var(--lime); color: var(--lime-ink); }
+    .pf-item strong { font-weight: 700; }
+    .plan-free strong { background: var(--cream); padding: 0 3px; border-radius: 2px; }
+    .plan-pro strong { background: var(--lime); color: var(--lime-ink); padding: 0 4px; border-radius: 3px; }
+
+    .plan-cta {
+      margin-top: 30px; display: flex; align-items: center; justify-content: space-between;
+      padding-top: 26px; border-top: 1px solid var(--line);
+    }
+    .plan-pro .plan-cta { border-top-color: rgba(255,255,255,.12); }
+    .plan-cta-btn {
+      padding: 12px 14px 12px 20px; border-radius: 999px; border: 0; cursor: pointer;
+      font-family: var(--font-display); font-weight: 800; font-size: 14px;
+      display: flex; align-items: center; gap: 10px; transition: transform 150ms var(--ease);
+    }
+    .plan-cta-btn:hover { transform: translateY(-1px); }
+    .plan-free .plan-cta-btn { background: var(--ink); color: #fff; }
+    .plan-free .plan-cta-btn .ring-pc { width: 24px; height: 24px; background: var(--lime); color: var(--ink); border-radius: 50%; display: grid; place-items: center; font-weight: 900; font-size: 13px; }
+    .plan-pro .plan-cta-btn { background: var(--lime); color: var(--lime-ink); }
+    .plan-pro .plan-cta-btn .ring-pc { width: 24px; height: 24px; background: var(--ink); color: var(--lime); border-radius: 50%; display: grid; place-items: center; font-weight: 900; font-size: 13px; }
+
+    .plan-cta-hint { font-family: var(--font-mono); font-size: 11px; letter-spacing: .06em; font-weight: 600; }
+    .plan-free .plan-cta-hint { color: var(--ink-3); }
+    .plan-pro .plan-cta-hint { color: rgba(255,255,255,.6); }
+    .plan-cta-hint strong { color: var(--lime-ink); font-weight: 800; }
+    .plan-pro .plan-cta-hint strong { color: var(--lime); }
+
+    /* Desbloquea Pro sin pagar */
+    .unlock-card {
+      background: var(--violet); color: #fff; border: 2px solid var(--ink);
+      border-radius: 28px; padding: 48px 40px;
+      display: grid; grid-template-columns: 1fr 2fr; gap: 40px; align-items: center;
+      position: relative; overflow: hidden; transform: rotate(-.5deg);
+      box-shadow: 10px 10px 0 var(--ink);
+    }
+    .unlock-card::before { content: ""; position: absolute; top: -50px; right: -50px; width: 220px; height: 220px; background: var(--lime); border-radius: 50%; opacity: .2; filter: blur(60px); }
+
+    .unlock-left { position: relative; z-index: 2; }
+    .unlock-label { font-family: var(--font-mono); font-size: 11px; color: var(--lime); letter-spacing: .12em; text-transform: uppercase; font-weight: 800; margin-bottom: 16px; display: flex; align-items: center; gap: 8px; }
+    .unlock-label::before { content: "★"; font-size: 14px; }
+    .unlock-left h3 { font-weight: 900; font-size: 44px; letter-spacing: -.035em; line-height: .95; }
+    .unlock-left h3 .hl { background: var(--lime); color: var(--lime-ink); padding: 0 8px; border-radius: 8px; transform: rotate(-1deg); display: inline-block; }
+    .unlock-left p { color: rgba(255,255,255,.82); font-size: 15px; line-height: 1.5; margin-top: 14px; font-weight: 500; }
+
+    .unlock-ways { position: relative; z-index: 2; display: flex; flex-direction: column; gap: 12px; }
+    .unlock-way {
+      background: rgba(255,255,255,.08); border: 1px solid rgba(255,255,255,.15);
+      border-radius: 16px; padding: 18px 20px;
+      display: grid; grid-template-columns: auto 1fr auto; gap: 16px; align-items: center;
+    }
+    .uw-num {
+      width: 40px; height: 40px; background: var(--lime); color: var(--lime-ink);
+      border-radius: 12px; display: grid; place-items: center;
+      font-weight: 900; font-size: 18px; font-family: var(--font-display);
+      letter-spacing: -.02em;
+    }
+    .uw-body .uw-title { font-weight: 800; font-size: 16px; letter-spacing: -.01em; }
+    .uw-body .uw-desc { font-size: 12.5px; color: rgba(255,255,255,.72); margin-top: 3px; font-weight: 500; line-height: 1.35; }
+    .uw-reward {
+      background: var(--lime); color: var(--lime-ink);
+      padding: 5px 12px; border-radius: 999px;
+      font-family: var(--font-mono); font-size: 10px; font-weight: 800;
+      letter-spacing: .08em; text-transform: uppercase;
+    }
+
+    /* ═════ 6. TICKER (mantener) ═════ */
+    .ticker-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 60px; margin-top: 48px; align-items: center; }
+    .ticker-stack { position: relative; height: 420px; }
+    .notif-card {
+      position: absolute; background: var(--card); border: 2px solid var(--ink);
+      border-radius: 20px; padding: 20px; display: flex; gap: 14px; align-items: start;
+      transition: all 400ms var(--ease);
+    }
+    .notif-card:nth-child(1) { top: 0; left: 0; right: 40px; transform: rotate(-1.5deg); opacity: .4; }
+    .notif-card:nth-child(2) { top: 70px; left: 20px; right: 20px; transform: rotate(.8deg); opacity: .7; }
+    .notif-card.highlight { top: 140px; left: 0; right: 0; transform: rotate(-.5deg); opacity: 1; box-shadow: 8px 8px 0 var(--ink); }
+    .notif-icon { width: 44px; height: 44px; border-radius: 12px; display: grid; place-items: center; font-weight: 900; font-size: 18px; flex-shrink: 0; }
+    .notif-body .n-title { font-weight: 700; font-size: 15px; }
+    .notif-body .n-sub { font-family: var(--font-mono); font-size: 10.5px; color: var(--ink-3); letter-spacing: .06em; text-transform: uppercase; margin-top: 2px; }
+    .notif-body .n-msg { font-size: 13px; color: var(--ink-2); margin-top: 8px; line-height: 1.4; }
+
+    /* ═════ 7. BIG STATS ═════ */
+    .big-stats { display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; margin-top: 56px; }
+    .stat-big { padding: 32px 28px; border: 2px solid var(--ink); border-radius: 24px; transition: transform 200ms var(--ease); }
+    .stat-big:hover { transform: translateY(-4px); }
+    .stat-big.hl { background: var(--ink); color: #fff; }
+    .stat-big.hl .s-label { color: var(--lime); }
+    .stat-big .s-label { font-family: var(--font-mono); font-size: 11px; color: var(--ink-3); letter-spacing: .14em; text-transform: uppercase; margin-bottom: 14px; }
+    .stat-big .s-val { font-family: var(--font-display); font-weight: 900; font-size: clamp(60px, 6vw, 96px); line-height: .95; letter-spacing: -.04em; font-feature-settings: 'tnum'; }
+    .stat-big .s-desc { font-size: 14px; color: var(--ink-2); margin-top: 12px; line-height: 1.4; }
+    .stat-big.hl .s-desc { color: rgba(255,255,255,.7); }
+
+    /* ═════ 8. MANIFESTO ═════ */
+    .manifesto {
+      padding: 140px 32px; text-align: center; position: relative; overflow: hidden;
+    }
+    .manifesto::before { content: ""; position: absolute; top: -60px; left: 10%; width: 280px; height: 280px; background: var(--cyan); border-radius: 50%; opacity: .2; filter: blur(80px); }
+    .manifesto::after { content: ""; position: absolute; bottom: -60px; right: 10%; width: 320px; height: 320px; background: var(--pink); border-radius: 50%; opacity: .22; filter: blur(90px); }
+    .manifesto .ml { font-family: var(--font-mono); font-size: 13px; letter-spacing: .14em; text-transform: uppercase; color: var(--ink-3); }
+    .manifesto h2 { font-weight: 900; font-size: clamp(64px, 9.5vw, 144px); line-height: .9; letter-spacing: -.055em; margin-top: 30px; max-width: 1100px; margin-left: auto; margin-right: auto; }
+    .manifesto h2 .l1 { display: block; }
+    .manifesto h2 .l1 .hl-lime { background: var(--lime); color: var(--lime-ink); padding: 0 12px; border-radius: 14px; display: inline-block; transform: rotate(-1.2deg); }
+    .manifesto h2 .l2 { display: block; margin-top: 8px; }
+    .manifesto h2 .l2 .hl-pink { background: var(--pink); color: #fff; padding: 0 14px; border-radius: 14px; display: inline-block; transform: rotate(1.2deg); position: relative; }
+    .manifesto h2 .l2 .hl-pink::before { content: ""; position: absolute; top: 18px; left: -18px; width: 10px; height: 10px; border-radius: 50%; background: var(--cream); box-shadow: 24px 30px 0 var(--cyan), -8px 50px 0 var(--lime), 34px -18px 0 var(--ink); }
+    .manifesto .mb { margin-top: 28px; font-family: var(--font-mono); font-size: 14px; color: var(--ink-3); letter-spacing: .1em; text-transform: uppercase; }
+
+    /* ═════ 9. TESTIMONIOS ═════ */
+    .testi-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; margin-top: 48px; }
+    .testi-card { background: var(--card); border: 2px solid var(--ink); border-radius: 24px; padding: 24px; }
+    .testi-card:nth-child(1) { transform: rotate(-.8deg); }
+    .testi-card:nth-child(3) { transform: rotate(.6deg); }
+    .testi-head { display: flex; align-items: center; gap: 12px; margin-bottom: 16px; }
+    .t-av { width: 44px; height: 44px; border-radius: 50%; font-weight: 800; display: grid; place-items: center; flex-shrink: 0; font-family: var(--font-display); }
+    .av-felipe { background: linear-gradient(135deg, #D9FF3A, #FFE9B8); color: #181F08; }
+    .av-pia { background: linear-gradient(135deg, #FFE9B8, #D9FF3A); color: #181F08; }
+    .av-barbara { background: linear-gradient(135deg, #FF4D3A, #6B4EFF); color: #fff; }
+    .testi-card .t-info .t-name { font-weight: 700; font-size: 14px; }
+    .testi-card .t-info .t-u { font-family: var(--font-mono); font-size: 10px; letter-spacing: .08em; text-transform: uppercase; color: var(--ink-3); margin-top: 2px; }
+    .testi-card .t-bubble { padding: 12px 14px; border-radius: 16px; font-size: 14px; line-height: 1.4; margin-bottom: 8px; }
+    .testi-card .t-bubble.incoming { background: var(--paper-2); color: var(--ink); border-bottom-left-radius: 5px; }
+    .testi-card .t-bubble.outgoing { background: var(--ink); color: #fff; border-bottom-right-radius: 5px; margin-left: 30px; }
+    .testi-card .t-react { margin-top: 10px; display: flex; gap: 6px; }
+    .t-emoji-chip { background: var(--cream); border: 1px solid var(--ink); border-radius: 999px; padding: 3px 8px; font-family: var(--font-mono); font-size: 10px; font-weight: 700; }
+
+    /* ═════ 10. GLOBAL (sin países) ═════ */
+    .global-section {
+      background: var(--ink); color: #fff; padding: 120px 32px; position: relative; overflow: hidden;
+    }
+    .global-section::before { content: ""; position: absolute; top: -80px; right: -80px; width: 400px; height: 400px; background: var(--violet); border-radius: 50%; opacity: .2; filter: blur(100px); }
+    .global-section::after { content: ""; position: absolute; bottom: -60px; left: -60px; width: 320px; height: 320px; background: var(--pink); border-radius: 50%; opacity: .18; filter: blur(80px); }
+
+    .global-inner { max-width: 1280px; margin: 0 auto; position: relative; z-index: 2; }
+
+    .global-label { font-family: var(--font-mono); font-size: 12px; color: var(--lime); letter-spacing: .14em; text-transform: uppercase; margin-bottom: 22px; display: flex; align-items: center; gap: 12px; font-weight: 700; }
+    .global-label::before { content: ""; width: 32px; height: 2px; background: var(--lime); }
+
+    .global-h2 { font-weight: 900; font-size: clamp(64px, 8.5vw, 128px); line-height: .92; letter-spacing: -.05em; max-width: 1100px; }
+    .global-h2 .hl-lime { background: var(--lime); color: var(--lime-ink); padding: 0 14px; border-radius: 14px; transform: rotate(-1deg); display: inline-block; }
+    .global-h2 .hl-cream { background: var(--cream); color: var(--ink); padding: 0 14px; border-radius: 14px; transform: rotate(1deg); display: inline-block; }
+
+    /* Constelación con mapa mundial */
+    .constellation {
+      margin-top: 60px; position: relative; height: 420px;
+      border: 1px solid rgba(255,255,255,.1); border-radius: 24px;
+      background: radial-gradient(ellipse at center, rgba(107,78,255,.12) 0%, transparent 65%);
+      overflow: hidden;
+    }
+    .const-label {
+      position: absolute; top: 20px; left: 24px; z-index: 3;
+      display: flex; align-items: center; gap: 10px;
+      font-family: var(--font-mono); font-size: 11px;
+      color: rgba(255,255,255,.75); letter-spacing: .14em;
+      text-transform: uppercase; font-weight: 700;
+    }
+    .const-label::before { content: ""; width: 8px; height: 8px; border-radius: 50%; background: var(--lime); animation: pulse 1.6s var(--ease) infinite; }
+
+    .const-counter {
+      position: absolute; top: 20px; right: 24px; z-index: 3;
+      display: flex; align-items: baseline; gap: 8px;
+      font-family: var(--font-mono); font-size: 10px;
+      color: rgba(255,255,255,.55); letter-spacing: .08em;
+      text-transform: uppercase; font-weight: 700;
+    }
+    .const-counter .ccv { font-family: var(--font-display); font-size: 22px; font-weight: 900; color: var(--lime); letter-spacing: -.02em; font-feature-settings: 'tnum'; }
+
+    /* Mapa mundial SVG */
+    .world-map {
+      position: absolute; inset: 0; z-index: 1;
+      display: flex; align-items: center; justify-content: center;
+    }
+    .world-map svg {
+      width: 90%; max-width: 1100px; height: auto;
+      opacity: .32;
+    }
+    .world-map svg path {
+      fill: none; stroke: rgba(217,255,58,.45); stroke-width: 1.2;
+      stroke-linejoin: round;
+    }
+
+    /* Puntos sobre mapa */
+    .const-point {
+      position: absolute; border-radius: 50%; z-index: 2;
+      transform: translate(-50%, -50%);
+    }
+    .cp-big { width: 16px; height: 16px; background: var(--lime); box-shadow: 0 0 0 7px rgba(217,255,58,.25), 0 0 28px rgba(217,255,58,.5); animation: constPulse 3s var(--ease) infinite; }
+    .cp-med { width: 11px; height: 11px; background: var(--cyan); box-shadow: 0 0 0 5px rgba(0,194,255,.22), 0 0 16px rgba(0,194,255,.3); }
+    .cp-sm { width: 7px; height: 7px; background: var(--pink); box-shadow: 0 0 0 3px rgba(255,77,58,.2), 0 0 10px rgba(255,77,58,.25); }
+    .cp-xs { width: 5px; height: 5px; background: #fff; opacity: .6; box-shadow: 0 0 6px rgba(255,255,255,.4); }
+    .cp-violet { width: 9px; height: 9px; background: var(--violet); box-shadow: 0 0 0 4px rgba(107,78,255,.2); }
+    .cp-cream { width: 8px; height: 8px; background: var(--cream); box-shadow: 0 0 10px rgba(255,233,184,.5); }
+    .cp-orange { width: 8px; height: 8px; background: var(--orange); box-shadow: 0 0 0 4px rgba(255,74,28,.2); }
+
+    /* Etiqueta de región en punto */
+    .const-point .cp-label {
+      position: absolute; bottom: calc(100% + 12px); left: 50%; transform: translateX(-50%);
+      font-family: var(--font-mono); font-size: 9px; color: rgba(255,255,255,.85);
+      letter-spacing: .1em; text-transform: uppercase; font-weight: 700;
+      white-space: nowrap; background: rgba(13,15,16,.85); padding: 3px 8px; border-radius: 999px;
+      border: 1px solid rgba(217,255,58,.3);
+    }
+    .const-point.cp-big .cp-label { background: var(--lime); color: var(--lime-ink); border-color: var(--lime-ink); }
+
+    @keyframes constPulse { 0%, 100% { transform: translate(-50%, -50%) scale(1); opacity: 1; } 50% { transform: translate(-50%, -50%) scale(1.25); opacity: .85; } }
+
+    .global-stats { margin-top: 50px; display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; }
+    .global-stat { border: 1px solid rgba(255,255,255,.12); border-radius: 20px; padding: 26px 24px; background: rgba(255,255,255,.02); }
+    .global-stat.hl { background: var(--lime); color: var(--lime-ink); border-color: var(--lime); }
+    .gs-label { font-family: var(--font-mono); font-size: 10px; letter-spacing: .12em; text-transform: uppercase; color: rgba(255,255,255,.5); margin-bottom: 12px; font-weight: 700; }
+    .global-stat.hl .gs-label { color: var(--lime-ink); opacity: .65; }
+    .gs-v { font-weight: 900; font-size: clamp(44px, 5vw, 72px); letter-spacing: -.04em; line-height: 1; font-feature-settings: 'tnum'; }
+    .gs-desc { font-size: 12.5px; color: rgba(255,255,255,.6); margin-top: 10px; line-height: 1.4; font-weight: 500; }
+    .global-stat.hl .gs-desc { color: var(--lime-ink); opacity: .75; }
+
+    .global-closure { margin-top: 50px; text-align: center; font-size: 18px; color: rgba(255,255,255,.7); font-weight: 500; line-height: 1.5; max-width: 700px; margin-left: auto; margin-right: auto; }
+    .global-closure strong { color: #fff; }
+
+    .lang-row { margin-top: 36px; display: flex; gap: 10px; flex-wrap: wrap; justify-content: center; }
+    .lang-pill { font-family: var(--font-mono); font-size: 11px; letter-spacing: .1em; padding: 8px 14px; border-radius: 999px; font-weight: 800; text-transform: uppercase; }
+    .lang-pill.active { background: var(--lime); color: var(--lime-ink); }
+    .lang-pill.soon { background: rgba(255,255,255,.08); color: rgba(255,255,255,.6); }
+
+    /* ═════ 11. FINAL CTA ═════ */
+    .final-cta { padding: 140px 32px; text-align: center; position: relative; }
+    .final-cta h2 { font-weight: 900; font-size: clamp(56px, 8vw, 120px); line-height: .95; letter-spacing: -.045em; }
+    .final-cta h2 .hl { background: var(--lime); color: var(--lime-ink); padding: 0 14px; border-radius: 14px; display: inline-block; transform: rotate(-1deg); }
+    .final-cta p { margin-top: 28px; font-size: 20px; color: var(--ink-2); max-width: 540px; margin-left: auto; margin-right: auto; line-height: 1.4; }
+    .final-cta .cta-row { margin-top: 36px; display: flex; gap: 14px; justify-content: center; }
+
+    /* ═════ 12. FOOTER ═════ */
+    footer { background: var(--ink); color: #fff; padding: 80px 32px 40px; }
+    .footer-tracks { max-width: 1280px; margin: 0 auto; display: grid; grid-template-columns: repeat(5, 1fr); gap: 40px; }
+    .track-col .col-label { font-family: var(--font-mono); font-size: 10px; letter-spacing: .14em; text-transform: uppercase; color: var(--lime); margin-bottom: 18px; }
+    .track-row { padding: 8px 0; display: flex; gap: 12px; color: rgba(255,255,255,.7); cursor: pointer; font-size: 13px; transition: color 150ms; font-weight: 500; }
+    .track-row:hover { color: #fff; }
+    .track-num { font-family: var(--font-mono); font-size: 11px; opacity: .5; letter-spacing: .05em; }
+    .footer-bottom { max-width: 1280px; margin: 60px auto 0; padding-top: 30px; border-top: 1px solid rgba(255,255,255,.1); display: flex; justify-content: space-between; font-family: var(--font-mono); font-size: 11px; color: rgba(255,255,255,.5); letter-spacing: .06em; }
+
+    @media (max-width: 1080px) {
+      .hero h1 { font-size: 72px; }
+      .hero-copy { grid-template-columns: 1fr; gap: 24px; }
+      .problems-grid { grid-template-columns: 1fr; }
+      .stickers-grid { grid-template-columns: 1fr; }
+      .stk { grid-column: span 12; }
+      .plans-grid { grid-template-columns: 1fr; }
+      .unlock-card { grid-template-columns: 1fr; padding: 32px 24px; }
+      .big-stats { grid-template-columns: 1fr 1fr; }
+      .testi-grid { grid-template-columns: 1fr; }
+      .global-stats { grid-template-columns: 1fr 1fr; }
+      .footer-tracks { grid-template-columns: 1fr 1fr; }
+      .ticker-grid { grid-template-columns: 1fr; }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- ═════ PROGRESS TOP ═════ -->
+  <div class="top-progress">
+    <div class="left">
+      <div class="pulse"></div>
+      <span>Semestre 2026-1</span>
+    </div>
+    <div class="bar"><div class="bar-fill"></div></div>
+    <span>34% · día 41 de 120</span>
+  </div>
+
+  <!-- ═════ NAV ═════ -->
+  <div class="nav-wrap">
+    <div class="nav">
+      <div class="logo-wrap">
+        <div class="logo-tile"><svg viewBox="0 0 100 100" aria-label="Conniku" style="width:100%;height:100%;display:block"><rect width="100" height="100" rx="22" fill="#0D0F10"/><mask id="ckL_25_landing_unificada" maskUnits="userSpaceOnUse"><rect width="100" height="100" fill="#fff"/><circle cx="58" cy="50" r="24" fill="#000"/></mask><rect x="12" y="12" width="76" height="76" rx="14" fill="#D9FF3A" mask="url(#ckL_25_landing_unificada)"/><circle cx="58" cy="50" r="5" fill="#FF4A1C"/></svg></div>
+        <div class="logo-text">conniku.</div>
+      </div>
+      <div class="nav-links">
+        <div class="nav-link">Producto</div>
+        <div class="nav-link">Planes</div>
+        <div class="nav-link">Para tu U</div>
+        <div class="nav-link">Blog</div>
+      </div>
+      <div class="nav-ghost">Entrar</div>
+      <button class="nav-cta">
+        Empezar gratis
+        <div class="ring">→</div>
+      </button>
+    </div>
+  </div>
+
+  <!-- ═════ 1. HERO ═════ -->
+  <section class="section hero">
+    <div class="status-chip">
+      <div class="dot"></div>
+      <span>estudiando ahora mismo</span>
+      <span class="count">127</span>
+    </div>
+
+    <h1>
+      <span class="line"><span class="chip-pink">Tu U</span> entera.</span>
+      <span class="line">En una</span>
+      <span class="line"><span class="chip-cream">sola app</span>.</span>
+    </h1>
+
+    <div class="hero-copy">
+      <div>
+        <p class="hero-desc">
+          Calendario sincronizado, documentos con conversación, tutores verificados, biblioteca completa, empleo asistido y diploma propio. <strong>Todo en un lugar.</strong>
+        </p>
+        <div class="hero-free-pill">
+          <div class="ok">✓</div>
+          <span>Gratis para empezar · sin tarjeta</span>
+        </div>
+      </div>
+      <div class="hero-ctas">
+        <button class="btn-hero-primary">
+          Entrar gratis
+          <div class="ring-big">→</div>
+        </button>
+        <button class="btn-hero-secondary">Ver demo</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- ═════ 2. UNIFICACIÓN (declaración + problemas + rail positivo) ═════ -->
+  <section class="unif-section">
+    <div class="unif-inner">
+
+      <div class="declaration">
+        <span class="l1"><span class="chip">Una sola app</span>.</span>
+        <span class="l2">Toda tu <span class="chip-pink">universidad</span>.</span>
+      </div>
+
+      <div class="problems-grid">
+        <div class="problem-card">
+          <div class="problem-label">Antes</div>
+          <div class="problem-before">Apuntes perdidos en el chat del grupo</div>
+          <div class="problem-arrow">Ahora</div>
+          <div class="problem-after">Workspaces <span class="hl-y">en vivo</span> con chat y versiones</div>
+          <div class="problem-desc">Trabaja en grupo con documentos compartidos en tiempo real. Versionado automático. Nunca se pierde nada.</div>
+        </div>
+
+        <div class="problem-card">
+          <div class="problem-label">Antes</div>
+          <div class="problem-before">Tutores sin verificar, pagos sin garantía</div>
+          <div class="problem-arrow">Ahora</div>
+          <div class="problem-after">Todos <span class="hl-y">titulados</span>, pago protegido</div>
+          <div class="problem-desc">Conniku intermedia el pago. Si la clase no cumple, te devuelves. Cero estafas posibles.</div>
+        </div>
+
+        <div class="problem-card">
+          <div class="problem-label">Antes</div>
+          <div class="problem-before">Cursos extra sin validez para tu CV</div>
+          <div class="problem-arrow">Ahora</div>
+          <div class="problem-after">Diploma <span class="hl-y">verificable</span> con hash criptográfico</div>
+          <div class="problem-desc">Certificado digital con validación criptográfica. Las empresas lo verifican en segundos.</div>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- Rail positivo -->
+    <div class="rail-wrap">
+      <div class="rail">
+        <div class="rail-chip">UN SOLO LUGAR</div>
+        <div class="rail-chip">HECHO PARA TI</div>
+        <div class="rail-chip">TU U DE VERDAD</div>
+        <div class="rail-chip">SIN APPS SUELTAS</div>
+        <div class="rail-chip">PAGO PROTEGIDO</div>
+        <div class="rail-chip">FORMACIÓN CON PESO</div>
+        <div class="rail-chip">COMUNIDAD VERIFICADA</div>
+        <div class="rail-chip">TODO JUNTO</div>
+        <div class="rail-chip">SIEMPRE AL DÍA</div>
+        <div class="rail-chip">UN SOLO LUGAR</div>
+        <div class="rail-chip">HECHO PARA TI</div>
+        <div class="rail-chip">TU U DE VERDAD</div>
+        <div class="rail-chip">SIN APPS SUELTAS</div>
+        <div class="rail-chip">PAGO PROTEGIDO</div>
+        <div class="rail-chip">FORMACIÓN CON PESO</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ═════ 3. STICKER GRID 7 CAPACIDADES ═════ -->
+  <section class="section">
+    <div class="sec-label">02 · lo que hace Conniku</div>
+    <h2 class="sec-h2">Todo lo que necesitas en tu U, <span class="hl">en un solo lugar</span>.</h2>
+
+    <div class="stickers-grid">
+      <div class="stk stk-lime">
+        <span class="stk-num">01</span>
+        <h3>Calendario sincronizado</h3>
+        <p>Tu semestre completo al día automáticamente. Asignaturas, entregas, clases, todo en tiempo real.</p>
+      </div>
+      <div class="stk stk-pink">
+        <span class="stk-num">02</span>
+        <h3>Documentos con conversación</h3>
+        <p>Chatea con tu propio material y con cada libro de la biblioteca. Resúmenes y explicaciones a tu nivel.</p>
+      </div>
+      <div class="stk stk-cream">
+        <span class="stk-num">03</span>
+        <h3>Escritura académica asistida</h3>
+        <p>Athena revisa tus informes y sugiere mejoras concretas sin escribir por ti. Citas, fuentes, coherencia.</p>
+      </div>
+      <div class="stk stk-ink">
+        <span class="stk-num">04</span>
+        <h3>Biblioteca +70k</h3>
+        <p>Académicos y generales. Por tu carrera. Con conversación libro por libro. Offline disponible.</p>
+      </div>
+      <div class="stk stk-violet">
+        <span class="stk-num">05</span>
+        <h3>Tutorías verificadas</h3>
+        <p>Titulados con verificación. Conniku intermedia el pago. Garantía antifraude real.</p>
+      </div>
+      <div class="stk stk-orange">
+        <span class="stk-num">06</span>
+        <h3>CV asistido + empleo</h3>
+        <p>Editor inteligente de CV y ofertas filtradas por tu carrera con porcentaje de match.</p>
+      </div>
+      <div class="stk stk-white">
+        <span class="stk-num">07</span>
+        <h3>Cursos + Diploma Conniku</h3>
+        <p>Formación interna certificable con hash verificable. Suma a tu perfil profesional desde el primer curso.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- ═════ 4. FREE vs PRO ═════ -->
+  <section class="plans-section">
+    <div class="plans-inner">
+
+      <div class="plans-intro">
+        <div class="sec-label" style="justify-content: center;">03 · empieza gratis</div>
+        <h2 class="sec-h2">Empieza gratis. <span class="hl">Crece</span> cuando quieras.</h2>
+        <p>Todo lo esencial de Conniku <strong>sin costo</strong>. Si quieres más, el plan Pro se puede desbloquear sin sacar la tarjeta.</p>
+      </div>
+
+      <div class="plans-grid">
+
+        <div class="plan-card plan-free">
+          <div class="plan-badge">★ Free · siempre gratis</div>
+          <h3 class="plan-title">Conniku Free</h3>
+          <p class="plan-subtitle">Todo lo que necesitas para empezar tu semestre y estudiar con tus compañeros. Sin tarjeta, sin límite de tiempo.</p>
+
+          <ul class="plan-features">
+            <li class="pf-item"><div class="pf-check">✓</div><div><strong>Calendario</strong> sincronizado con tu universidad</div></li>
+            <li class="pf-item"><div class="pf-check">✓</div><div><strong>3 workspaces</strong> grupales activos</div></li>
+            <li class="pf-item"><div class="pf-check">✓</div><div><strong>100 consultas mensuales</strong> a la biblioteca</div></li>
+            <li class="pf-item"><div class="pf-check">✓</div><div><strong>CV y perfil</strong> profesional editable</div></li>
+            <li class="pf-item"><div class="pf-check">✓</div><div>Acceso completo a <strong>comunidades</strong> y chat</div></li>
+            <li class="pf-item"><div class="pf-check">✓</div><div>Postular a <strong>3 ofertas</strong> laborales al mes</div></li>
+            <li class="pf-item"><div class="pf-check">✓</div><div><strong>Quizzes y flashcards</strong> ilimitados</div></li>
+            <li class="pf-item"><div class="pf-check">✓</div><div>Ver tutores y reservar clase pagando aparte</div></li>
+          </ul>
+
+          <div class="plan-cta">
+            <button class="plan-cta-btn">Entrar gratis <div class="ring-pc">→</div></button>
+            <div class="plan-cta-hint">Sin tarjeta</div>
+          </div>
+        </div>
+
+        <div class="plan-card plan-pro">
+          <div class="plan-badge">★ Pro · experiencia completa</div>
+          <h3 class="plan-title">Conniku Pro</h3>
+          <p class="plan-subtitle">Toda la plataforma sin límites. Para quienes estudian en serio y quieren la versión más poderosa de Conniku.</p>
+
+          <ul class="plan-features">
+            <li class="pf-item"><div class="pf-check">✓</div><div>Todo lo del Free, <strong>sin topes</strong></div></li>
+            <li class="pf-item"><div class="pf-check">✓</div><div>Biblioteca <strong>+70k completa</strong> con chat con cada libro</div></li>
+            <li class="pf-item"><div class="pf-check">✓</div><div><strong>Workspaces ilimitados</strong> con Athena asistiendo</div></li>
+            <li class="pf-item"><div class="pf-check">✓</div><div><strong>Athena</strong> como editora académica de tus trabajos</div></li>
+            <li class="pf-item"><div class="pf-check">✓</div><div>Postular a <strong>ofertas ilimitadas</strong> con CV asistido</div></li>
+            <li class="pf-item"><div class="pf-check">✓</div><div>Acceso a <strong>Cursos + Diploma Conniku</strong></div></li>
+            <li class="pf-item"><div class="pf-check">✓</div><div><strong>Export PDF y DOCX</strong> de todo lo que produces</div></li>
+            <li class="pf-item"><div class="pf-check">✓</div><div>Prioridad en tutores y <strong>descuento en clases</strong></div></li>
+          </ul>
+
+          <div class="plan-cta">
+            <button class="plan-cta-btn">Probar Pro <div class="ring-pc">→</div></button>
+            <div class="plan-cta-hint">O desbloquea abajo <strong>sin tarjeta</strong></div>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- Desbloquea Pro sin pagar -->
+      <div class="unlock-card">
+        <div class="unlock-left">
+          <div class="unlock-label">★ Exclusivo Conniku</div>
+          <h3>Desbloquea <span class="hl">Pro</span><br>sin sacar la tarjeta.</h3>
+          <p>Tres formas de tener Pro gratis, pensadas para estudiantes. Porque sabemos que la plata no sobra.</p>
+        </div>
+        <div class="unlock-ways">
+          <div class="unlock-way">
+            <div class="uw-num">1</div>
+            <div class="uw-body">
+              <div class="uw-title">Completa 6 cursos Conniku</div>
+              <div class="uw-desc">Termina 6 cursos cualquiera de Conniku Academy y recibes el diploma más el plan Pro automáticamente.</div>
+            </div>
+            <div class="uw-reward">+30 días Pro</div>
+          </div>
+
+          <div class="unlock-way">
+            <div class="uw-num">2</div>
+            <div class="uw-body">
+              <div class="uw-title">Acumula puntos estudiando</div>
+              <div class="uw-desc">Cada día que estudies, cada workspace que cierres, cada quiz que apruebes te da puntos. Los canjeas por Pro o tutorías.</div>
+            </div>
+            <div class="uw-reward">Puntos</div>
+          </div>
+
+          <div class="unlock-way">
+            <div class="uw-num">3</div>
+            <div class="uw-body">
+              <div class="uw-title">Refiere compañeros</div>
+              <div class="uw-desc">Cada compañero que se une con tu invitación te regala días Pro adicionales. Sin tope.</div>
+            </div>
+            <div class="uw-reward">Días Pro</div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </section>
+
+  <!-- ═════ 5. TICKER ═════ -->
+  <section class="section">
+    <div class="sec-label">04 · lo que pasa</div>
+    <div class="ticker-grid">
+      <div>
+        <h2 class="sec-h2">En tu uni,<br><span class="hl">siempre pasa algo</span>.</h2>
+        <p style="margin-top: 22px; font-size: 18px; color: var(--ink-2); line-height: 1.5; max-width: 440px; font-weight: 500;">
+          Clases en vivo, entregables grupales, tutorías reservadas, ofertas que aparecen justo cuando terminas tu carrera. Conniku te mantiene al día sin tener que buscar.
+        </p>
+      </div>
+      <div class="ticker-stack">
+        <div class="notif-card">
+          <div class="notif-icon" style="background: var(--cyan); color: var(--ink);">☎</div>
+          <div class="notif-body">
+            <div class="n-title">Tu tutora te respondió</div>
+            <div class="n-sub">hace 2 min · Tutoría Cálculo</div>
+            <div class="n-msg">"Perfecto, agendemos para el jueves 15:00"</div>
+          </div>
+        </div>
+        <div class="notif-card">
+          <div class="notif-icon" style="background: var(--cream);">◎</div>
+          <div class="notif-body">
+            <div class="n-title">Nueva oferta que coincide con tu CV</div>
+            <div class="n-sub">hace 5 min · 93% match</div>
+            <div class="n-msg">Una empresa grande busca practicante de tu carrera</div>
+          </div>
+        </div>
+        <div class="notif-card highlight">
+          <div class="notif-icon" style="background: var(--lime); color: var(--lime-ink);">★</div>
+          <div class="notif-body">
+            <div class="n-title">Completaste 12 días estudiando</div>
+            <div class="n-sub">hoy · Logro desbloqueado</div>
+            <div class="n-msg">Sigue así — 3 días más y desbloqueas "Mes entero" + 30 días Pro</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ═════ 6. BIG STATS ═════ -->
+  <section class="section">
+    <div class="sec-label">05 · en números</div>
+    <h2 class="sec-h2">Lo que <span class="hl">ya está pasando</span>.</h2>
+    <div class="big-stats">
+      <div class="stat-big hl">
+        <div class="s-label">Universidades sincronizadas</div>
+        <div class="s-val">14+</div>
+        <div class="s-desc">Y sumando · todas las principales del país conectadas</div>
+      </div>
+      <div class="stat-big">
+        <div class="s-label">Biblioteca</div>
+        <div class="s-val">+70k</div>
+        <div class="s-desc">Títulos académicos y generales en español</div>
+      </div>
+      <div class="stat-big">
+        <div class="s-label">Calificación</div>
+        <div class="s-val">4.9★</div>
+        <div class="s-desc">Miles de reseñas de estudiantes reales verificados</div>
+      </div>
+      <div class="stat-big">
+        <div class="s-label">Estafas en tutorías</div>
+        <div class="s-val">0</div>
+        <div class="s-desc">Pagos intermediados · garantía antifraude total</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ═════ 7. MANIFESTO ═════ -->
+  <section class="manifesto">
+    <div class="ml">— la emoción que queremos para ti —</div>
+    <h2>
+      <span class="l1"><span class="hl-lime">Concentración</span></span>
+      <span class="l2">con <span class="hl-pink">pertenencia</span>.</span>
+    </h2>
+    <div class="mb">Puedes enfocarte. Y no estás solo.</div>
+  </section>
+
+  <!-- ═════ 8. TESTIMONIOS ═════ -->
+  <section class="section">
+    <div class="sec-label">06 · lo que dicen</div>
+    <h2 class="sec-h2">Estudiantes <span class="hl-pink">reales</span>.</h2>
+    <div class="testi-grid">
+      <div class="testi-card">
+        <div class="testi-head">
+          <div class="t-av av-pia">PR</div>
+          <div class="t-info">
+            <div class="t-name">Pía Ramírez</div>
+            <div class="t-u">Medicina · 2º año</div>
+          </div>
+        </div>
+        <div class="t-bubble incoming">"¿De verdad puedes conversar con los libros?"</div>
+        <div class="t-bubble outgoing">Literal. Le pregunté al libro de anatomía un tema difícil y me explicó en 2 párrafos mejor que la clase</div>
+        <div class="t-bubble incoming">Y eso viene en el Free?</div>
+        <div class="t-bubble outgoing">Pro. Pero saqué Pro sin pagar completando cursos. Mira:</div>
+        <div class="t-react"><span class="t-emoji-chip">★ útil para 42 personas</span></div>
+      </div>
+      <div class="testi-card">
+        <div class="testi-head">
+          <div class="t-av av-felipe">FG</div>
+          <div class="t-info">
+            <div class="t-name">Felipe Gatica</div>
+            <div class="t-u">Ing. Industrial · 4º año</div>
+          </div>
+        </div>
+        <div class="t-bubble incoming">"Cómo conseguiste esa práctica?"</div>
+        <div class="t-bubble outgoing">Ofertas matcheadas por mi carrera + CV armado con el editor asistido. Sacá 3 entrevistas en 2 semanas</div>
+        <div class="t-bubble incoming">El Diploma Conniku también ayudó?</div>
+        <div class="t-bubble outgoing">La recruiter lo vio y me pidió que le cuente. Abrió puertas.</div>
+        <div class="t-react"><span class="t-emoji-chip">♥ útil para 84</span></div>
+      </div>
+      <div class="testi-card">
+        <div class="testi-head">
+          <div class="t-av av-barbara">BS</div>
+          <div class="t-info">
+            <div class="t-name">Bárbara Soto</div>
+            <div class="t-u">Ing. Comercial · 3º año</div>
+          </div>
+        </div>
+        <div class="t-bubble incoming">"Tutorías valen la pena?"</div>
+        <div class="t-bubble outgoing">Reservé con pago protegido. Si no me hubiera servido, devolución total</div>
+        <div class="t-bubble incoming">Y te sirvió?</div>
+        <div class="t-bubble outgoing">Saqué 6.8 en un ramo que iba a reprobar. Vale 10x lo que pagué.</div>
+        <div class="t-react"><span class="t-emoji-chip">◆ útil para 22</span></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ═════ 9. GLOBAL (sin países) ═════ -->
+  <section class="global-section">
+    <div class="global-inner">
+      <div class="global-label">07 · alcance</div>
+      <h2 class="global-h2">Tu U,<br><span class="hl-lime">donde esté</span>.<br>En tu <span class="hl-cream">idioma</span>.</h2>
+
+      <!-- Constelación con mapa mundial -->
+      <div class="constellation">
+        <div class="const-label">estudiantes conectados en el mundo · ahora</div>
+        <div class="const-counter"><span>Activos</span><span class="ccv">2.184</span></div>
+
+        <!-- Mapa mundial SVG — contornos continentales estilizados -->
+        <div class="world-map">
+          <svg viewBox="0 0 1000 500" xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="xMidYMid meet">
+            <!-- Norteamérica -->
+            <path d="M 80 120 Q 110 95 160 100 L 220 105 L 260 115 L 280 140 L 285 180 L 250 210 L 210 225 L 170 220 L 135 205 L 100 180 L 85 150 Z"/>
+            <!-- Centroamérica -->
+            <path d="M 210 225 L 235 245 L 250 265 L 240 275 L 220 270 Z"/>
+            <!-- Sudamérica -->
+            <path d="M 245 270 L 280 275 L 305 290 L 315 330 L 310 370 L 295 410 L 275 430 L 255 420 L 245 380 L 240 335 L 240 300 Z"/>
+            <!-- Groenlandia -->
+            <path d="M 300 70 L 335 75 L 350 95 L 340 115 L 315 110 L 300 90 Z"/>
+            <!-- Europa -->
+            <path d="M 455 110 L 495 105 L 530 115 L 545 135 L 530 155 L 500 165 L 475 160 L 460 140 Z"/>
+            <!-- Escandinavia -->
+            <path d="M 495 75 L 520 70 L 535 90 L 525 105 L 505 110 L 490 95 Z"/>
+            <!-- Reino Unido / Irlanda -->
+            <path d="M 445 120 L 460 115 L 465 135 L 455 145 L 442 138 Z"/>
+            <!-- África -->
+            <path d="M 470 180 L 525 175 L 555 195 L 575 235 L 570 285 L 555 330 L 525 365 L 495 370 L 475 340 L 465 290 L 460 240 L 465 205 Z"/>
+            <!-- Madagascar -->
+            <path d="M 595 330 L 610 335 L 612 360 L 600 370 L 592 355 Z"/>
+            <!-- Medio Oriente / Rusia Europea -->
+            <path d="M 545 135 L 600 125 L 650 130 L 680 150 L 640 170 L 600 175 L 575 165 Z"/>
+            <!-- Asia Central / Siberia -->
+            <path d="M 600 125 L 680 110 L 760 105 L 830 115 L 875 135 L 860 160 L 790 165 L 720 160 L 660 150 Z"/>
+            <!-- Asia del Sur (India) -->
+            <path d="M 680 170 L 720 175 L 740 195 L 735 230 L 715 245 L 695 235 L 680 210 Z"/>
+            <!-- China / Asia Este -->
+            <path d="M 760 155 L 825 150 L 860 170 L 870 200 L 850 225 L 810 230 L 775 215 L 760 190 Z"/>
+            <!-- Japón -->
+            <path d="M 880 175 L 895 180 L 898 200 L 888 215 L 878 205 Z"/>
+            <!-- Sudeste Asiático -->
+            <path d="M 800 240 L 830 245 L 850 260 L 845 285 L 820 290 L 798 280 L 790 260 Z"/>
+            <!-- Australia -->
+            <path d="M 820 330 L 875 325 L 905 345 L 895 375 L 860 385 L 820 380 L 800 360 Z"/>
+            <!-- Nueva Zelanda -->
+            <path d="M 920 390 L 935 395 L 938 415 L 925 420 L 918 405 Z"/>
+            <!-- Indonesia (islas) -->
+            <path d="M 780 290 L 800 295 L 810 305 L 795 315 L 780 308 Z"/>
+          </svg>
+        </div>
+
+        <!-- Puntos posicionados sobre continentes -->
+        <!-- Norteamérica -->
+        <div class="const-point cp-med" style="top: 32%; left: 17%;"></div>
+        <div class="const-point cp-sm" style="top: 38%; left: 20%;"></div>
+        <div class="const-point cp-xs" style="top: 28%; left: 14%;"></div>
+        <div class="const-point cp-xs" style="top: 42%; left: 23%;"></div>
+
+        <!-- Centro y Sudamérica — Conniku vive acá -->
+        <div class="const-point cp-big" style="top: 68%; left: 26%;">
+          <span class="cp-label">Conniku activo</span>
+        </div>
+        <div class="const-point cp-med" style="top: 58%; left: 24%;"></div>
+        <div class="const-point cp-cream" style="top: 76%; left: 25%;"></div>
+        <div class="const-point cp-sm" style="top: 55%; left: 22%;"></div>
+        <div class="const-point cp-xs" style="top: 82%; left: 27%;"></div>
+
+        <!-- Europa -->
+        <div class="const-point cp-med" style="top: 28%; left: 50%;"></div>
+        <div class="const-point cp-violet" style="top: 32%; left: 54%;"></div>
+        <div class="const-point cp-sm" style="top: 22%; left: 51%;"></div>
+        <div class="const-point cp-xs" style="top: 35%; left: 47%;"></div>
+
+        <!-- África -->
+        <div class="const-point cp-cream" style="top: 58%; left: 52%;"></div>
+        <div class="const-point cp-xs" style="top: 68%; left: 54%;"></div>
+        <div class="const-point cp-xs" style="top: 48%; left: 49%;"></div>
+
+        <!-- Asia -->
+        <div class="const-point cp-med" style="top: 34%; left: 78%;"></div>
+        <div class="const-point cp-violet" style="top: 42%; left: 82%;"></div>
+        <div class="const-point cp-xs" style="top: 28%; left: 81%;"></div>
+        <div class="const-point cp-sm" style="top: 48%; left: 75%;"></div>
+        <div class="const-point cp-orange" style="top: 38%; left: 88%;"></div>
+
+        <!-- Oceanía -->
+        <div class="const-point cp-cream" style="top: 72%; left: 85%;"></div>
+        <div class="const-point cp-xs" style="top: 80%; left: 92%;"></div>
+      </div>
+
+      <div class="global-stats">
+        <div class="global-stat hl">
+          <div class="gs-label">Universidades sincronizadas</div>
+          <div class="gs-v">14+</div>
+          <div class="gs-desc">Cualquier U con calendario digital se puede conectar</div>
+        </div>
+        <div class="global-stat">
+          <div class="gs-label">Estudiantes activos</div>
+          <div class="gs-v">+2k</div>
+          <div class="gs-desc">Crece cada semana en nuevas comunidades</div>
+        </div>
+        <div class="global-stat">
+          <div class="gs-label">Idiomas soportados</div>
+          <div class="gs-v">3</div>
+          <div class="gs-desc">Más en camino según la comunidad lo pida</div>
+        </div>
+        <div class="global-stat">
+          <div class="gs-label">Zonas horarias</div>
+          <div class="gs-v">24</div>
+          <div class="gs-desc">Funciona igual donde estés en el mundo</div>
+        </div>
+      </div>
+
+      <div class="global-closure">
+        Funciona en <strong>cualquier universidad</strong> con calendario digital. En <strong>cualquier zona horaria</strong>. En <strong>tu idioma</strong>.
+      </div>
+
+      <div class="lang-row">
+        <div class="lang-pill active">ES · Español</div>
+        <div class="lang-pill soon">EN · English</div>
+        <div class="lang-pill soon">PT · Português</div>
+        <div class="lang-pill soon">+ más según la comunidad</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ═════ 10. FINAL CTA ═════ -->
+  <section class="final-cta">
+    <h2>
+      Empieza gratis,<br>
+      <span class="hl">en 2 minutos</span>.
+    </h2>
+    <p>
+      Sin tarjeta. Sin compromiso. Conniku Free alcanza para empezar, y cuando quieras más, hay formas de desbloquear Pro sin pagar.
+    </p>
+    <div class="cta-row">
+      <button class="btn-hero-primary">
+        Crear cuenta gratis
+        <div class="ring-big">→</div>
+      </button>
+      <button class="btn-hero-secondary">Ver planes</button>
+    </div>
+  </section>
+
+  <!-- ═════ 11. FOOTER ═════ -->
+  <footer>
+    <div class="footer-tracks">
+      <div class="track-col">
+        <div class="col-label">Producto</div>
+        <div class="track-row"><span class="track-num">01</span> Calendario sincronizado</div>
+        <div class="track-row"><span class="track-num">02</span> Documentos con chat</div>
+        <div class="track-row"><span class="track-num">03</span> Biblioteca +70k</div>
+        <div class="track-row"><span class="track-num">04</span> Tutores verificados</div>
+        <div class="track-row"><span class="track-num">05</span> CV + empleo</div>
+        <div class="track-row"><span class="track-num">06</span> Cursos + Diploma</div>
+      </div>
+      <div class="track-col">
+        <div class="col-label">Planes</div>
+        <div class="track-row"><span class="track-num">01</span> Conniku Free</div>
+        <div class="track-row"><span class="track-num">02</span> Conniku Pro</div>
+        <div class="track-row"><span class="track-num">03</span> Desbloquear Pro gratis</div>
+        <div class="track-row"><span class="track-num">04</span> Puntos y recompensas</div>
+      </div>
+      <div class="track-col">
+        <div class="col-label">Empresa</div>
+        <div class="track-row"><span class="track-num">01</span> Sobre nosotros</div>
+        <div class="track-row"><span class="track-num">02</span> Trabajos abiertos</div>
+        <div class="track-row"><span class="track-num">03</span> Prensa</div>
+        <div class="track-row"><span class="track-num">04</span> Blog</div>
+        <div class="track-row"><span class="track-num">05</span> Investigación</div>
+      </div>
+      <div class="track-col">
+        <div class="col-label">Legal</div>
+        <div class="track-row"><span class="track-num">01</span> Términos</div>
+        <div class="track-row"><span class="track-num">02</span> Privacidad</div>
+        <div class="track-row"><span class="track-num">03</span> Cookies</div>
+        <div class="track-row"><span class="track-num">04</span> Reembolsos</div>
+        <div class="track-row"><span class="track-num">05</span> Accesibilidad</div>
+      </div>
+      <div class="track-col">
+        <div class="col-label">Apps</div>
+        <div class="track-row"><span class="track-num">01</span> iOS</div>
+        <div class="track-row"><span class="track-num">02</span> Android</div>
+        <div class="track-row"><span class="track-num">03</span> Mac desktop</div>
+        <div class="track-row"><span class="track-num">04</span> Windows desktop</div>
+        <div class="track-row"><span class="track-num">05</span> Extensión Chrome</div>
+      </div>
+    </div>
+    <div class="footer-bottom">
+      <div>© 2026 Conniku SpA</div>
+      <div>Hecho con ❉ para estudiantes</div>
+    </div>
+  </footer>
+
+</body>
+</html>

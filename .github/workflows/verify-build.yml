@@ -159,6 +159,21 @@ jobs:
           echo "::endgroup::"
 
       # ============================================================
+      # Sincronía de constantes legales Chile entre Python y TypeScript
+      # (labor_chile.py + tax_chile.py ↔ shared/chile_constants.ts)
+      # ============================================================
+      - name: "[4/6] Chile constants sync (Python ↔ TypeScript)"
+        run: |
+          echo "::group::Chile constants sync"
+          if [ -x "scripts/verify-chile-constants-sync.sh" ]; then
+            bash scripts/verify-chile-constants-sync.sh
+          else
+            echo "::error::scripts/verify-chile-constants-sync.sh missing or not executable"
+            exit 1
+          fi
+          echo "::endgroup::"
+
+      # ============================================================
       # VERIFICACIÓN 5: Archivos frozen
       # ============================================================
       - name: "[5/6] Frozen files protection"

@@ -38,3 +38,7 @@ apscheduler>=3.10.0
 pytest>=8.0.0
 pytest-asyncio>=0.23.0
 pytest-cov>=4.1.0
+
+# Linting (CLAUDE.md §Capas mecánicas — ruff usado en CI y pre-commit)
+ruff>=0.15.0
+mypy>=1.10.0

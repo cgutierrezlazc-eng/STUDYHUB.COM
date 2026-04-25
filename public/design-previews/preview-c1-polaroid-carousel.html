@@ -1,0 +1,535 @@
+<!DOCTYPE html>
+<html lang="es-CL">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>C1 · Polaroid con carousel — multi-módulo</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Funnel+Display:wght@400;600;700;800;900&family=Geist+Mono:wght@400;500;600;700&family=Patrick+Hand&display=swap" />
+<style>
+:root{
+  --ink:#0D0F10; --ink-2:#2B2E30; --ink-3:#696C6F;
+  --paper:#F5F4EF; --paper-2:#EBE9E1;
+  --lime:#D9FF3A; --orange:#FF4A1C; --cream:#FFE9B8; --violet:#6B4EFF; --cyan:#00C2FF; --pink:#FF4D3A;
+  --fd:'Funnel Display',-apple-system,sans-serif;
+  --fm:'Geist Mono',ui-monospace,monospace;
+  --fh:'Patrick Hand',cursive;
+  --ease:cubic-bezier(.2,.8,.2,1);
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{min-height:100%}
+body{background:#E8E5DB;color:var(--ink);font-family:var(--fd);padding:60px 40px;position:relative;overflow-x:hidden}
+body::before{content:"";position:fixed;inset:0;pointer-events:none;opacity:.07;mix-blend-mode:multiply;z-index:1;background-image:radial-gradient(circle at 1px 1px,var(--ink) 1px,transparent 0);background-size:3px 3px}
+.halftone{position:fixed;inset:0;pointer-events:none;z-index:0;overflow:hidden}
+.d1{position:absolute;top:-140px;left:-140px;width:620px;height:620px;background:radial-gradient(circle,var(--lime) 8%,transparent 10%);background-size:16px 16px;-webkit-mask:radial-gradient(circle at 40% 40%,#000 0%,transparent 42%);mask:radial-gradient(circle at 40% 40%,#000 0%,transparent 42%);opacity:.9;mix-blend-mode:multiply}
+.d2{position:absolute;bottom:-160px;right:-160px;width:640px;height:640px;background:radial-gradient(circle,var(--orange) 12%,transparent 14%);background-size:14px 14px;-webkit-mask:radial-gradient(circle at 60% 60%,#000 0%,transparent 42%);mask:radial-gradient(circle at 60% 60%,#000 0%,transparent 42%);opacity:.65;mix-blend-mode:multiply}
+
+.wrap{max-width:1100px;margin:0 auto;position:relative;z-index:5}
+.variant-header{font-family:var(--fm);font-size:11px;letter-spacing:.2em;text-transform:uppercase;color:var(--ink-3);margin-bottom:32px;display:flex;gap:24px;align-items:center}
+.variant-header::before{content:"C1";background:var(--orange);color:#fff;padding:3px 9px;border:1.5px solid var(--ink);font-weight:900;letter-spacing:.05em}
+.variant-header span.nav{margin-left:auto;display:flex;gap:14px}
+.variant-header span.nav a{color:var(--ink-3)}
+.variant-header span.nav a:hover{color:var(--ink)}
+
+/* ===== PREVIEW CARD C1 — Polaroid central rota entre módulos ===== */
+.preview-card{
+  display:block;
+  position:relative;
+  width:100%;
+  max-width:720px;
+  margin:0 auto;
+  padding:34px 30px 28px;
+  background:var(--paper);
+  border:2px solid var(--ink);
+  box-shadow:14px 14px 0 var(--ink);
+  transform:rotate(-1deg);
+  transition:transform .25s var(--ease), box-shadow .25s var(--ease);
+  text-decoration:none;
+  color:inherit;
+  overflow:visible;
+}
+.preview-card:hover{
+  transform:rotate(-1deg) translate(-3px,-5px);
+  box-shadow:18px 18px 0 var(--ink);
+}
+.preview-card:hover .module-layer{animation-play-state:paused}
+.preview-card:hover .dot-nav span::after{animation-play-state:paused}
+.preview-card:hover .tag-central span{animation-play-state:paused}
+
+.poly-stage{
+  position:relative;
+  height:350px;
+  margin-bottom:26px;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+}
+
+/* Polaroid lateral izquierda · fija · Perfil */
+.poly-left{
+  position:absolute;
+  left:2%;
+  top:30px;
+  background:var(--paper);
+  border:1.5px solid var(--ink);
+  padding:9px 9px 32px;
+  box-shadow:5px 5px 0 var(--ink);
+  width:165px;
+  transform:rotate(-8deg);
+  z-index:1;
+}
+.poly-left .scr{aspect-ratio:3/4;background:var(--lime);border:1.5px solid var(--ink);overflow:hidden;display:flex;flex-direction:column}
+.poly-left .tag{position:absolute;bottom:8px;left:12px;right:12px;font-family:var(--fh);font-size:14px;color:var(--ink);line-height:1}
+.poly-left .p-head{background:var(--ink);padding:8px;display:flex;align-items:center;gap:6px}
+.poly-left .p-head .av{width:18px;height:18px;border-radius:50%;background:var(--violet);border:1px solid var(--lime);display:flex;align-items:center;justify-content:center;color:#fff;font-weight:900;font-size:8px}
+.poly-left .p-head .n{font-family:var(--fd);font-weight:800;font-size:8px;color:var(--paper)}
+.poly-left .p-body{padding:8px;display:flex;flex-direction:column;gap:5px;flex:1}
+.poly-left .p-av-big{width:42px;height:42px;border-radius:50%;background:var(--violet);border:1.5px solid var(--ink);margin:4px auto 2px;display:flex;align-items:center;justify-content:center;color:#fff;font-weight:900;font-size:16px}
+.poly-left .p-nm{font-family:var(--fd);font-weight:800;font-size:9px;text-align:center;line-height:1}
+.poly-left .p-uni{font-family:var(--fm);font-size:5.5px;letter-spacing:.1em;text-transform:uppercase;color:var(--ink-2);text-align:center;margin-top:1px}
+.poly-left .p-stats{display:grid;grid-template-columns:repeat(3,1fr);gap:3px;margin-top:4px}
+.poly-left .p-stats div{background:var(--ink);color:var(--lime);padding:3px 2px;text-align:center;font-family:var(--fd);font-weight:900;font-size:9px;border-radius:2px;line-height:1}
+.poly-left .p-stats div small{display:block;font-size:5px;font-family:var(--fm);letter-spacing:.05em;color:var(--paper);font-weight:400;margin-top:1px}
+
+/* Polaroid CENTRAL · rota entre 5 módulos */
+.poly-central{
+  position:relative;
+  background:var(--paper);
+  border:1.5px solid var(--ink);
+  padding:12px 12px 42px;
+  box-shadow:8px 8px 0 var(--ink);
+  width:270px;
+  transform:rotate(1.5deg);
+  z-index:3;
+}
+.poly-central .tape{position:absolute;top:-10px;left:50%;transform:translateX(-50%) rotate(-4deg);width:72px;height:18px;background:rgba(217,255,58,.75);border:1px solid rgba(13,15,16,.2);box-shadow:1px 1px 0 rgba(13,15,16,.15);z-index:5}
+.poly-central .module-stage{
+  position:relative;
+  aspect-ratio:3/4;
+  background:var(--paper-2);
+  border:1.5px solid var(--ink);
+  overflow:hidden;
+}
+.poly-central .module-layer{
+  position:absolute;inset:0;
+  padding:10px 11px;
+  display:flex;flex-direction:column;gap:7px;
+  opacity:0;
+  animation:cycle 17.5s infinite;
+}
+.poly-central .module-layer:nth-child(1){animation-delay:0s}
+.poly-central .module-layer:nth-child(2){animation-delay:-14s}
+.poly-central .module-layer:nth-child(3){animation-delay:-10.5s}
+.poly-central .module-layer:nth-child(4){animation-delay:-7s}
+.poly-central .module-layer:nth-child(5){animation-delay:-3.5s}
+@keyframes cycle{
+  0%{opacity:0}
+  3%,18%{opacity:1}
+  21%,100%{opacity:0}
+}
+
+.poly-central .tag-central{
+  position:absolute;bottom:10px;left:14px;right:14px;
+  font-family:var(--fh);font-size:16px;color:var(--ink);line-height:1;
+  min-height:16px;
+}
+.poly-central .tag-central span{
+  position:absolute;left:0;right:0;opacity:0;
+  animation:lbl 17.5s infinite;
+}
+.poly-central .tag-central span:nth-child(1){animation-delay:0s}
+.poly-central .tag-central span:nth-child(2){animation-delay:-14s}
+.poly-central .tag-central span:nth-child(3){animation-delay:-10.5s}
+.poly-central .tag-central span:nth-child(4){animation-delay:-7s}
+.poly-central .tag-central span:nth-child(5){animation-delay:-3.5s}
+@keyframes lbl{
+  0%{opacity:0}
+  3%,18%{opacity:1}
+  21%,100%{opacity:0}
+}
+
+/* Topbar común de cada módulo */
+.m-top{display:flex;align-items:center;justify-content:space-between;padding-bottom:6px;border-bottom:1px solid var(--paper-2);flex-shrink:0}
+.m-top .k{font-family:var(--fm);font-size:6.5px;letter-spacing:.2em;text-transform:uppercase;color:var(--ink-3);margin-bottom:1px}
+.m-top .t{font-family:var(--fd);font-weight:800;font-size:10px;letter-spacing:-.02em;line-height:1}
+.m-top .avatar{width:18px;height:18px;border-radius:50%;background:var(--violet);display:flex;align-items:center;justify-content:center;color:#fff;font-weight:900;font-size:8px;border:1px solid var(--ink)}
+
+/* Dashboard dentro polaroid */
+.mod-dash .row{display:grid;grid-template-columns:1fr 1fr;gap:6px;flex:1;min-height:0}
+.mod-dash .w{border:1.5px solid var(--ink);padding:6px;display:flex;flex-direction:column;gap:2px;min-height:0}
+.mod-dash .w.lime{background:var(--lime)}
+.mod-dash .w.cream{background:var(--cream)}
+.mod-dash .w .wt{font-family:var(--fm);font-size:6px;letter-spacing:.15em;text-transform:uppercase;color:var(--ink-2)}
+.mod-dash .w .k{font-family:var(--fd);font-weight:900;font-size:20px;letter-spacing:-.03em;line-height:1}
+.mod-dash .w .lbl{font-family:var(--fd);font-size:7px;color:var(--ink-2)}
+.mod-dash .bar{height:2.5px;background:rgba(13,15,16,.15);border-radius:2px;overflow:hidden;margin-top:2px}
+.mod-dash .bar-fill{height:100%;background:var(--ink);width:78%}
+
+/* Biblioteca */
+.mod-lib .c{font-family:var(--fm);font-size:7px;color:var(--ink-3);letter-spacing:.1em}
+.mod-lib .books{display:grid;grid-template-columns:repeat(3,1fr);gap:5px;flex:1;min-height:0}
+.mod-lib .bk{background:var(--paper);border:1px solid var(--ink);padding:3px 3px 5px;display:flex;flex-direction:column;gap:2px;min-height:0}
+.mod-lib .bk .sp{height:30%;min-height:22px}
+.mod-lib .bk:nth-child(1) .sp{background:var(--violet)}
+.mod-lib .bk:nth-child(2) .sp{background:var(--orange)}
+.mod-lib .bk:nth-child(3) .sp{background:var(--cyan)}
+.mod-lib .bk:nth-child(4) .sp{background:var(--pink)}
+.mod-lib .bk:nth-child(5) .sp{background:var(--lime)}
+.mod-lib .bk:nth-child(6) .sp{background:var(--cream)}
+.mod-lib .bk .tt{font-family:var(--fd);font-weight:800;font-size:6.5px;line-height:1.1;letter-spacing:-.02em}
+.mod-lib .bk .au{font-family:var(--fm);font-size:5px;color:var(--ink-3);letter-spacing:.05em;text-transform:uppercase;line-height:1}
+
+/* Apuntes */
+.mod-ws .collab{display:flex}
+.mod-ws .collab .av{width:15px;height:15px;border-radius:50%;border:1.5px solid var(--paper);margin-left:-4px;display:flex;align-items:center;justify-content:center;color:#fff;font-weight:900;font-size:7px}
+.mod-ws .collab .av:nth-child(1){background:var(--violet)}
+.mod-ws .collab .av:nth-child(2){background:var(--orange)}
+.mod-ws .collab .av:nth-child(3){background:var(--cyan);color:var(--ink)}
+.mod-ws .doc{flex:1;display:flex;flex-direction:column;gap:4px;padding:3px 2px;overflow:hidden}
+.mod-ws .doc h3{font-family:var(--fd);font-weight:900;font-size:12px;letter-spacing:-.03em;line-height:1}
+.mod-ws .doc p{font-family:var(--fd);font-size:7.5px;line-height:1.35;color:var(--ink-2)}
+.mod-ws .doc .hlt{background:var(--lime);padding:0 2px}
+.mod-ws .doc .bullet{display:flex;gap:4px;font-family:var(--fd);font-size:7.5px;color:var(--ink-2);line-height:1.3}
+.mod-ws .doc .bullet::before{content:"•";color:var(--orange);font-weight:900}
+.mod-ws .doc .cursor{display:inline-block;width:1.5px;height:8px;background:var(--violet);animation:blink 1s steps(2) infinite;vertical-align:middle}
+@keyframes blink{50%{opacity:0}}
+
+/* Cursos */
+.mod-cur .list{flex:1;display:flex;flex-direction:column;gap:4px;min-height:0;overflow:hidden}
+.mod-cur .cr{border:1.5px solid var(--ink);padding:4px 5px;display:grid;grid-template-columns:22px 1fr auto;gap:5px;align-items:center}
+.mod-cur .cr .ic{width:20px;height:20px;border:1px solid var(--ink);display:flex;align-items:center;justify-content:center;font-family:var(--fd);font-weight:900;font-size:9px}
+.mod-cur .cr:nth-child(1) .ic{background:var(--lime)}
+.mod-cur .cr:nth-child(2) .ic{background:var(--violet);color:#fff}
+.mod-cur .cr:nth-child(3) .ic{background:var(--cream)}
+.mod-cur .cr:nth-child(4) .ic{background:var(--pink);color:#fff}
+.mod-cur .cr .nm{font-family:var(--fd);font-weight:800;font-size:8px;line-height:1.1;letter-spacing:-.01em}
+.mod-cur .cr .pg{font-family:var(--fm);font-size:5.5px;color:var(--ink-3);letter-spacing:.1em;margin-top:2px}
+.mod-cur .cr .pbar{width:100%;height:2px;background:var(--paper-2);margin-top:3px;border-radius:2px;overflow:hidden}
+.mod-cur .cr .pbar b{display:block;height:100%;background:var(--ink)}
+.mod-cur .cr .pct{font-family:var(--fd);font-weight:900;font-size:10px;letter-spacing:-.02em}
+
+/* Perfil */
+.mod-prf .hero{display:flex;gap:8px;align-items:center;padding:3px 0}
+.mod-prf .hero .av{width:38px;height:38px;border-radius:50%;background:var(--violet);border:1.5px solid var(--ink);display:flex;align-items:center;justify-content:center;color:#fff;font-weight:900;font-size:14px}
+.mod-prf .hero .nm{font-family:var(--fd);font-weight:800;font-size:11px;letter-spacing:-.02em;line-height:1}
+.mod-prf .hero .meta{font-family:var(--fm);font-size:6px;color:var(--ink-3);letter-spacing:.15em;text-transform:uppercase;margin-top:2px}
+.mod-prf .hero .role{display:inline-block;font-family:var(--fd);font-weight:800;font-size:6.5px;background:var(--lime);color:var(--ink);padding:1px 5px;border:1px solid var(--ink);margin-top:3px}
+.mod-prf .stats{display:grid;grid-template-columns:repeat(3,1fr);gap:4px;flex-shrink:0}
+.mod-prf .stats .st{border:1.5px solid var(--ink);padding:4px 5px;display:flex;flex-direction:column;gap:1px}
+.mod-prf .stats .st.lime{background:var(--lime)}
+.mod-prf .stats .st.cream{background:var(--cream)}
+.mod-prf .stats .st .v{font-family:var(--fd);font-weight:900;font-size:14px;line-height:1;letter-spacing:-.03em}
+.mod-prf .stats .st .l{font-family:var(--fm);font-size:5.5px;letter-spacing:.1em;text-transform:uppercase;color:var(--ink-3)}
+.mod-prf .ach{display:flex;gap:3px;flex-wrap:wrap}
+.mod-prf .ach .a{width:22px;height:22px;border-radius:50%;border:1.5px solid var(--ink);display:flex;align-items:center;justify-content:center;font-family:var(--fd);font-weight:900;font-size:8px}
+.mod-prf .ach .a:nth-child(1){background:var(--lime)}
+.mod-prf .ach .a:nth-child(2){background:var(--orange);color:#fff}
+.mod-prf .ach .a:nth-child(3){background:var(--cyan)}
+.mod-prf .ach .a:nth-child(4){background:var(--cream)}
+.mod-prf .ach .a:nth-child(5){background:var(--violet);color:#fff}
+
+/* Polaroid DERECHA · Chat constante */
+.poly-right{
+  position:absolute;
+  right:2%;
+  top:40px;
+  background:var(--paper);
+  border:1.5px solid var(--ink);
+  padding:9px 9px 32px;
+  box-shadow:5px 5px 0 var(--ink);
+  width:170px;
+  transform:rotate(6deg);
+  z-index:2;
+}
+.poly-right .tape{position:absolute;top:-8px;left:50%;transform:translateX(-50%) rotate(3deg);width:55px;height:14px;background:rgba(255,74,28,.6);border:1px solid rgba(13,15,16,.2);box-shadow:1px 1px 0 rgba(13,15,16,.15)}
+.poly-right .scr{aspect-ratio:3/4;background:var(--paper);border:1.5px solid var(--ink);overflow:hidden;display:flex;flex-direction:column}
+.poly-right .tag{position:absolute;bottom:8px;left:12px;right:12px;font-family:var(--fh);font-size:14px;color:var(--ink);line-height:1}
+.poly-right .c-head{background:var(--ink);padding:8px;display:flex;align-items:center;gap:6px}
+.poly-right .c-head .av{width:18px;height:18px;border-radius:50%;background:var(--lime);border:1px solid var(--ink);display:flex;align-items:center;justify-content:center;color:var(--ink);font-weight:900;font-size:8px;position:relative}
+.poly-right .c-head .av::after{content:".";color:var(--orange);font-weight:900;position:absolute;right:2px;bottom:1px;font-size:9px}
+.poly-right .c-head .t{font-family:var(--fd);font-weight:800;font-size:8px;color:var(--paper)}
+.poly-right .c-head .s{font-family:var(--fm);font-size:5px;color:var(--lime);letter-spacing:.15em;text-transform:uppercase;margin-top:1px;display:flex;align-items:center;gap:2px}
+.poly-right .c-head .s::before{content:"";width:4px;height:4px;background:#28C840;border-radius:50%}
+.poly-right .c-body{padding:8px;display:flex;flex-direction:column;gap:4px;flex:1}
+.poly-right .b{padding:4px 6px;border-radius:8px;font-size:7.5px;line-height:1.3;max-width:88%;color:var(--ink-2);font-family:var(--fd)}
+.poly-right .b.them{background:var(--paper-2);align-self:flex-start;border-bottom-left-radius:2px}
+.poly-right .b.me{background:var(--ink);color:var(--paper);align-self:flex-end;border-bottom-right-radius:2px}
+.poly-right .b.typ{background:var(--paper-2);display:flex;gap:2px;padding:5px 7px}
+.poly-right .b.typ span{width:3px;height:3px;background:var(--ink-3);border-radius:50%;animation:typing 1.4s infinite}
+.poly-right .b.typ span:nth-child(2){animation-delay:.2s}
+.poly-right .b.typ span:nth-child(3){animation-delay:.4s}
+@keyframes typing{0%,60%,100%{opacity:.3}30%{opacity:1}}
+
+/* DOTS NAV */
+.dot-nav-row{display:flex;justify-content:center;gap:6px;margin:14px 0 16px}
+.dot-nav-row span{width:30px;height:3px;background:rgba(13,15,16,.15);border-radius:2px;position:relative;overflow:hidden}
+.dot-nav-row span::after{content:"";position:absolute;inset:0;background:var(--ink);transform:translateX(-100%);animation:dot 17.5s infinite}
+.dot-nav-row span:nth-child(1)::after{animation-delay:0s}
+.dot-nav-row span:nth-child(2)::after{animation-delay:-14s}
+.dot-nav-row span:nth-child(3)::after{animation-delay:-10.5s}
+.dot-nav-row span:nth-child(4)::after{animation-delay:-7s}
+.dot-nav-row span:nth-child(5)::after{animation-delay:-3.5s}
+@keyframes dot{
+  0%{transform:translateX(-100%)}
+  3%,18%{transform:translateX(0)}
+  21%,100%{transform:translateX(100%)}
+}
+
+.preview-label{display:flex;align-items:flex-end;justify-content:space-between;gap:16px}
+.preview-kicker{font-family:var(--fm);font-size:11px;letter-spacing:.2em;text-transform:uppercase;color:var(--ink-3);display:inline-block;margin-bottom:10px}
+.preview-title{font-family:var(--fd);font-weight:800;font-size:clamp(26px,3vw,42px);line-height:.95;letter-spacing:-.03em;margin-bottom:8px;max-width:440px}
+.preview-title .acc{background:var(--lime);padding:0 6px;display:inline-block;transform:rotate(-1deg)}
+.preview-cta{font-family:var(--fd);font-size:14px;font-weight:700;color:var(--ink);display:inline-flex;align-items:center;gap:8px;flex-shrink:0}
+.arrow-ico{display:inline-block;width:26px;height:26px;border:1.5px solid var(--ink);border-radius:50%;display:flex;align-items:center;justify-content:center;font-weight:700;transition:transform .2s var(--ease)}
+.preview-card:hover .arrow-ico{transform:translateX(3px)}
+
+.note{max-width:720px;margin:28px auto 0;font-family:var(--fm);font-size:11px;letter-spacing:.1em;text-transform:uppercase;color:var(--ink-3);text-align:center;line-height:1.7}
+.note strong{color:var(--ink);font-weight:700}
+</style>
+</head>
+<body>
+<div class="halftone"><div class="d1"></div><div class="d2"></div></div>
+<div class="wrap">
+  <div class="variant-header">
+    <span>Polaroid central rota · perfil y chat fijos a los lados</span>
+    <span class="nav">
+      <a href="./preview-card-index.html">← índice</a>
+      <a href="./preview-v2-final.html">← V2 final (devices)</a>
+      <a href="./preview-c2-hybrid.html">→ C2 híbrido</a>
+    </span>
+  </div>
+
+  <a class="preview-card" href="#" aria-label="Conoce la plataforma completa">
+    <div class="poly-stage">
+
+      <!-- POLAROID IZQ · PERFIL FIJO -->
+      <div class="poly-left">
+        <div class="scr">
+          <div class="p-head"><div class="av">CG</div><div class="n">Perfil</div></div>
+          <div class="p-body">
+            <div class="p-av-big">CG</div>
+            <div class="p-nm">Cristian G.</div>
+            <div class="p-uni">U. de Chile</div>
+            <div class="p-stats">
+              <div>47<small>logros</small></div>
+              <div>12<small>cursos</small></div>
+              <div>89<small>avance</small></div>
+            </div>
+          </div>
+        </div>
+        <div class="tag">mi perfil</div>
+      </div>
+
+      <!-- POLAROID CENTRAL · CAROUSEL -->
+      <div class="poly-central">
+        <div class="tape"></div>
+        <div class="module-stage">
+
+          <!-- MÓDULO 1: DASHBOARD -->
+          <div class="module-layer mod-dash">
+            <div class="m-top">
+              <div>
+                <div class="k">Panel</div>
+                <div class="t">Hola Cristian</div>
+              </div>
+              <div class="avatar">CG</div>
+            </div>
+            <div class="row">
+              <div class="w lime">
+                <div class="wt">Progreso</div>
+                <div class="k">78%</div>
+                <div class="lbl">6 / 8 metas</div>
+                <div class="bar"><div class="bar-fill"></div></div>
+              </div>
+              <div class="w cream">
+                <div class="wt">Racha</div>
+                <div class="k">12<span style="font-size:8px">d</span></div>
+                <div class="lbl">Día 12 seguido</div>
+              </div>
+              <div class="w" style="grid-column:span 2;background:var(--paper)">
+                <div class="wt">Hoy</div>
+                <div style="display:flex;gap:5px;align-items:center;font-size:7.5px;font-family:var(--fd);margin-top:2px">
+                  <span style="width:5px;height:5px;background:var(--orange);border-radius:50%"></span>
+                  <b>Cálculo integral</b>
+                  <span style="color:var(--ink-3);margin-left:auto">18:30</span>
+                </div>
+                <div style="display:flex;gap:5px;align-items:center;font-size:7.5px;font-family:var(--fd);margin-top:3px">
+                  <span style="width:5px;height:5px;background:var(--violet);border-radius:50%"></span>
+                  <b>Química orgánica</b>
+                  <span style="color:var(--ink-3);margin-left:auto">mañana</span>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- MÓDULO 2: BIBLIOTECA -->
+          <div class="module-layer mod-lib">
+            <div class="m-top">
+              <div>
+                <div class="k">Biblioteca</div>
+                <div class="t">Tu colección</div>
+              </div>
+              <div class="c">124 libros</div>
+            </div>
+            <div class="books">
+              <div class="bk"><div class="sp"></div><div class="tt">Cálculo I</div><div class="au">Stewart</div></div>
+              <div class="bk"><div class="sp"></div><div class="tt">Química</div><div class="au">Wade</div></div>
+              <div class="bk"><div class="sp"></div><div class="tt">Física</div><div class="au">Sears</div></div>
+              <div class="bk"><div class="sp"></div><div class="tt">Inglés B2</div><div class="au">Oxford</div></div>
+              <div class="bk"><div class="sp"></div><div class="tt">Álgebra</div><div class="au">Lay</div></div>
+              <div class="bk"><div class="sp"></div><div class="tt">Biología</div><div class="au">Campbell</div></div>
+            </div>
+          </div>
+
+          <!-- MÓDULO 3: APUNTES -->
+          <div class="module-layer mod-ws">
+            <div class="m-top">
+              <div>
+                <div class="k">Apuntes</div>
+                <div class="t">Cálculo · grupo</div>
+              </div>
+              <div class="collab">
+                <div class="av">M</div>
+                <div class="av">J</div>
+                <div class="av">CG</div>
+              </div>
+            </div>
+            <div class="doc">
+              <h3>Integración por partes<span class="cursor"></span></h3>
+              <p>Se deriva del <span class="hlt">producto de derivadas</span>. Útil cuando el integrando es producto.</p>
+              <div class="bullet">Elegir u y dv con LIATE</div>
+              <div class="bullet">Calcular du y v</div>
+            </div>
+          </div>
+
+          <!-- MÓDULO 4: CURSOS -->
+          <div class="module-layer mod-cur">
+            <div class="m-top">
+              <div>
+                <div class="k">Cursos</div>
+                <div class="t">Rutas activas</div>
+              </div>
+            </div>
+            <div class="list">
+              <div class="cr">
+                <div class="ic">∫</div>
+                <div>
+                  <div class="nm">Cálculo Integral</div>
+                  <div class="pg">12 / 18</div>
+                  <div class="pbar"><b style="width:67%"></b></div>
+                </div>
+                <div class="pct">67%</div>
+              </div>
+              <div class="cr">
+                <div class="ic">⬢</div>
+                <div>
+                  <div class="nm">Química Org.</div>
+                  <div class="pg">8 / 20</div>
+                  <div class="pbar"><b style="width:40%"></b></div>
+                </div>
+                <div class="pct">40%</div>
+              </div>
+              <div class="cr">
+                <div class="ic">En</div>
+                <div>
+                  <div class="nm">Inglés B2</div>
+                  <div class="pg">15 / 16</div>
+                  <div class="pbar"><b style="width:94%"></b></div>
+                </div>
+                <div class="pct">94%</div>
+              </div>
+              <div class="cr">
+                <div class="ic">F</div>
+                <div>
+                  <div class="nm">Física Univ.</div>
+                  <div class="pg">3 / 24</div>
+                  <div class="pbar"><b style="width:12%"></b></div>
+                </div>
+                <div class="pct">12%</div>
+              </div>
+            </div>
+          </div>
+
+          <!-- MÓDULO 5: LOGROS -->
+          <div class="module-layer mod-prf">
+            <div class="m-top">
+              <div>
+                <div class="k">Logros</div>
+                <div class="t">Tu recorrido</div>
+              </div>
+            </div>
+            <div class="hero">
+              <div class="av">CG</div>
+              <div>
+                <div class="nm">Cristian G.</div>
+                <div class="meta">U. de Chile · 3°</div>
+                <div class="role">Ing. Civil</div>
+              </div>
+            </div>
+            <div class="stats">
+              <div class="st lime"><span class="v">47</span><span class="l">Logros</span></div>
+              <div class="st cream"><span class="v">12</span><span class="l">Cursos</span></div>
+              <div class="st"><span class="v">89%</span><span class="l">Avance</span></div>
+            </div>
+            <div class="ach">
+              <div class="a">🏆</div>
+              <div class="a">⚡</div>
+              <div class="a">📚</div>
+              <div class="a">🔥</div>
+              <div class="a">★</div>
+            </div>
+          </div>
+
+        </div>
+        <div class="tag-central">
+          <span>panel de estudio</span>
+          <span>biblioteca</span>
+          <span>apuntes grupales</span>
+          <span>cursos y rutas</span>
+          <span>mi perfil</span>
+        </div>
+      </div>
+
+      <!-- POLAROID DER · CHAT FIJO -->
+      <div class="poly-right">
+        <div class="tape"></div>
+        <div class="scr">
+          <div class="c-head">
+            <div class="av">u</div>
+            <div>
+              <div class="t">Asistente</div>
+              <div class="s">En línea</div>
+            </div>
+          </div>
+          <div class="c-body">
+            <div class="b them">Hola, ¿cap. 7?</div>
+            <div class="b me">Dale</div>
+            <div class="b them">Resumen + 6 preguntas listo.</div>
+            <div class="b me">Difíciles primero</div>
+            <div class="b typ"><span></span><span></span><span></span></div>
+          </div>
+        </div>
+        <div class="tag">chat asistente</div>
+      </div>
+
+    </div>
+
+    <!-- DOTS -->
+    <div class="dot-nav-row" aria-hidden="true">
+      <span></span><span></span><span></span><span></span><span></span>
+    </div>
+
+    <div class="preview-label">
+      <div>
+        <span class="preview-kicker">Tu universidad · en un solo lugar</span>
+        <h2 class="preview-title">Estudia, organiza y <span class="acc">avanza</span>.</h2>
+      </div>
+      <p class="preview-cta">Ver todo <span class="arrow-ico">→</span></p>
+    </div>
+  </a>
+
+  <p class="note"><strong>C1</strong> · 3 polaroids · la central rota entre 5 módulos · izq=perfil · der=chat · tape + caligrafía Patrick Hand · sabor editorial</p>
+</div>
+</body>
+</html>

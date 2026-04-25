@@ -1,0 +1,259 @@
+<!DOCTYPE html>
+<html lang="es-CL">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Conniku · Propuesta 03 · Risograph Zine</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Funnel+Display:wght@400;700;800;900&family=Geist+Mono:wght@400;500;600;700&display=swap" />
+<style>
+  :root{
+    --ink:#0D0F10; --paper:#F5F4EF; --cream:#FFE9B8;
+    --lime:#D9FF3A; --orange:#FF4A1C; --pink:#FF4D3A;
+    --fd:'Funnel Display',sans-serif; --fm:'Geist Mono',ui-monospace,monospace;
+    --ease:cubic-bezier(.2,.8,.2,1);
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{background:var(--cream);color:var(--ink);font-family:var(--fd);min-height:100vh;overflow-x:hidden;position:relative}
+  /* textura papel reciclado */
+  body::before{content:"";position:fixed;inset:0;pointer-events:none;z-index:1;opacity:.5;mix-blend-mode:multiply;
+    background-image:radial-gradient(circle at 2px 2px,rgba(13,15,16,.08) 1px,transparent 0),
+    radial-gradient(circle at 20px 40px,rgba(13,15,16,.04) 2px,transparent 0);background-size:8px 8px,40px 40px}
+  /* halftone capa */
+  body::after{content:"";position:fixed;inset:0;pointer-events:none;z-index:1;opacity:.15;mix-blend-mode:multiply;
+    background-image:radial-gradient(circle,var(--pink) 0.8px,transparent 1px);background-size:6px 6px}
+  a,button{color:inherit;text-decoration:none;font-family:inherit;border:0;background:0;cursor:pointer}
+  ::selection{background:var(--lime)}
+
+  .shell{max-width:1240px;margin:0 auto;padding:0 32px;position:relative;z-index:3}
+
+  /* NAV */
+  nav{padding:18px 32px;display:flex;justify-content:space-between;align-items:center;border-bottom:2.5px solid var(--ink);position:sticky;top:0;background:var(--cream);z-index:10}
+  .brand{font-family:var(--fd);font-weight:900;font-size:24px;letter-spacing:-.055em;display:inline-flex;align-items:baseline;color:var(--ink)}
+  .u-pack{display:inline-flex;align-items:baseline;background:var(--lime);color:var(--ink);padding:.07em .14em .07em .09em;border-radius:.2em;margin-left:.02em;box-shadow:2px 2px 0 var(--pink)}
+  .u-pack .dot{color:var(--orange)}
+  .nav-links{display:flex;gap:22px;align-items:center}
+  .nav-links a{font-family:var(--fm);font-size:11px;letter-spacing:.12em;text-transform:uppercase;font-weight:600}
+  .nav-cta{padding:10px 18px;background:var(--pink);color:#fff;border-radius:0;font-weight:700;font-size:13px;font-family:var(--fd);border:2px solid var(--ink);box-shadow:3px 3px 0 var(--ink);transform:rotate(-1deg)}
+
+  /* issue bar */
+  .issue{background:var(--ink);color:var(--paper);padding:8px 32px;font-family:var(--fm);font-size:11px;letter-spacing:.12em;display:flex;justify-content:space-between}
+  .issue span:nth-child(2){color:var(--lime)}
+
+  /* HERO */
+  .hero{padding:80px 32px 60px;border-bottom:2.5px solid var(--ink);position:relative}
+  .hero::before{content:"";position:absolute;top:40px;right:10%;width:140px;height:140px;border-radius:50%;background:var(--pink);mix-blend-mode:multiply;opacity:.85;z-index:0}
+  .hero::after{content:"";position:absolute;bottom:60px;left:8%;width:80px;height:80px;background:var(--lime);mix-blend-mode:multiply;transform:rotate(25deg);z-index:0}
+  .hero-inner{position:relative;z-index:2;display:grid;grid-template-columns:1.3fr 1fr;gap:60px;align-items:center}
+  .kicker{display:inline-flex;align-items:center;gap:10px;font-family:var(--fm);font-size:11px;letter-spacing:.18em;text-transform:uppercase;margin-bottom:24px;background:var(--ink);color:var(--paper);padding:6px 14px}
+  .kicker .d{width:6px;height:6px;background:var(--lime);border-radius:50%}
+  h1{font-family:var(--fd);font-weight:900;font-size:clamp(56px,9vw,130px);line-height:.9;letter-spacing:-.055em;margin-bottom:28px}
+  h1 .stamp{background:var(--pink);color:#fff;padding:0 14px;display:inline-block;transform:rotate(-2.5deg);border:3px solid var(--ink);box-shadow:5px 5px 0 var(--ink)}
+  h1 .out{color:var(--cream);-webkit-text-stroke:3px var(--ink);display:inline-block}
+  h1 .dot{color:var(--orange)}
+  .lead{font-size:18px;line-height:1.5;color:var(--ink);max-width:500px;margin-bottom:28px;font-weight:500}
+  .lead b{background:var(--lime);padding:2px 8px;font-weight:700;box-shadow:2px 2px 0 var(--ink)}
+  .cta-row{display:flex;gap:14px;flex-wrap:wrap}
+  .btn{padding:16px 24px;font-weight:700;font-size:14px;display:inline-flex;align-items:center;gap:10px;border:2.5px solid var(--ink);box-shadow:5px 5px 0 var(--ink);transition:all 160ms var(--ease)}
+  .btn:hover{transform:translate(-2px,-2px);box-shadow:7px 7px 0 var(--ink)}
+  .btn-p{background:var(--lime);color:var(--ink)}
+  .btn-g{background:var(--paper);color:var(--ink)}
+
+  /* poster overlap */
+  .poster{position:relative;height:440px}
+  .tag{position:absolute;padding:14px 18px;border:2.5px solid var(--ink);box-shadow:5px 5px 0 var(--ink);font-family:var(--fd);font-weight:800;font-size:14px}
+  .t1{top:20px;left:30px;background:var(--paper);transform:rotate(-4deg);width:180px}
+  .t2{top:140px;right:10px;background:var(--pink);color:#fff;transform:rotate(3deg);width:170px}
+  .t3{bottom:80px;left:60px;background:var(--lime);transform:rotate(-2deg);width:190px}
+  .t4{bottom:10px;right:30px;background:var(--ink);color:var(--paper);transform:rotate(2deg);width:160px}
+  .tag .n{font-family:var(--fm);font-size:10px;letter-spacing:.14em;opacity:.8;margin-bottom:6px}
+  .tag .stamp-circle{position:absolute;top:-12px;right:-12px;width:34px;height:34px;border-radius:50%;background:var(--orange);color:#fff;display:grid;place-items:center;font-family:var(--fm);font-size:9px;font-weight:700;border:2px solid var(--ink);transform:rotate(12deg)}
+
+  /* ═══ ZINE GRID (producto) ═══ */
+  .section{padding:90px 32px;border-bottom:2.5px solid var(--ink)}
+  .section.pink{background:var(--pink)}
+  .section.cream{background:var(--cream)}
+  .section.paper{background:var(--paper)}
+  .sec-head{margin-bottom:44px;max-width:720px}
+  .sec-kick{display:inline-block;font-family:var(--fm);font-size:11px;letter-spacing:.18em;text-transform:uppercase;background:var(--ink);color:var(--paper);padding:5px 12px;margin-bottom:20px}
+  h2{font-family:var(--fd);font-weight:900;font-size:clamp(44px,6vw,72px);letter-spacing:-.045em;line-height:.95}
+  h2 .hl{background:var(--lime);padding:0 12px;display:inline-block;transform:rotate(-1deg);border:3px solid var(--ink);box-shadow:5px 5px 0 var(--ink)}
+
+  .zine-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:18px}
+  .panel{padding:22px;border:2.5px solid var(--ink);box-shadow:6px 6px 0 var(--ink);min-height:200px;display:flex;flex-direction:column;gap:14px;position:relative;transition:all 200ms var(--ease)}
+  .panel:hover{transform:translate(-3px,-3px);box-shadow:9px 9px 0 var(--ink)}
+  .panel:nth-child(1){background:var(--lime);transform:rotate(-1deg)}
+  .panel:nth-child(2){background:var(--paper);transform:rotate(.6deg)}
+  .panel:nth-child(3){background:var(--ink);color:var(--paper);transform:rotate(-.5deg)}
+  .panel:nth-child(4){background:var(--orange);color:#fff;transform:rotate(.8deg)}
+  .panel:nth-child(5){background:var(--pink);color:#fff;transform:rotate(-.7deg)}
+  .panel:nth-child(6){background:var(--cream);transform:rotate(.5deg)}
+  .panel:nth-child(7){background:var(--paper);transform:rotate(-.3deg)}
+  .panel:nth-child(8){background:var(--lime);transform:rotate(.9deg)}
+  .panel:hover:nth-child(odd){transform:rotate(0) translate(-3px,-3px)}
+  .panel:hover:nth-child(even){transform:rotate(0) translate(-3px,-3px)}
+  .panel .shape{width:44px;height:44px;border:2.5px solid var(--ink);display:grid;place-items:center;font-family:var(--fd);font-weight:900;font-size:18px;background:var(--paper);color:var(--ink)}
+  .panel:nth-child(1) .shape{background:var(--pink);color:#fff}
+  .panel:nth-child(3) .shape{background:var(--lime);color:var(--ink)}
+  .panel:nth-child(4) .shape{background:var(--lime);color:var(--ink)}
+  .panel:nth-child(5) .shape{background:var(--cream);color:var(--ink)}
+  .panel .no{font-family:var(--fm);font-size:10px;letter-spacing:.14em;opacity:.8;margin-bottom:6px}
+  .panel h3{font-family:var(--fd);font-weight:900;font-size:19px;letter-spacing:-.025em;line-height:1.1}
+  .panel p{font-size:12px;line-height:1.45;opacity:.9;margin-top:auto}
+
+  /* overprint chip */
+  .panel .stamp-x{position:absolute;top:-12px;right:-10px;width:42px;height:42px;border-radius:50%;background:var(--orange);color:#fff;border:2.5px solid var(--ink);display:grid;place-items:center;font-family:var(--fm);font-size:9px;font-weight:700;transform:rotate(14deg);mix-blend-mode:multiply}
+
+  /* plans zine */
+  .plans-zine{display:grid;grid-template-columns:1fr 1fr;gap:26px;margin-top:40px}
+  .card{padding:32px;border:2.5px solid var(--ink);box-shadow:8px 8px 0 var(--ink)}
+  .card.free{background:var(--paper);transform:rotate(-.5deg)}
+  .card.pro{background:var(--ink);color:var(--paper);transform:rotate(.5deg)}
+  .card .bd{display:inline-block;font-family:var(--fm);font-size:10px;letter-spacing:.14em;text-transform:uppercase;padding:4px 10px;margin-bottom:16px;font-weight:700;border:2px solid var(--ink)}
+  .card.free .bd{background:var(--lime);color:var(--ink)}
+  .card.pro .bd{background:var(--orange);color:#fff;border-color:var(--paper)}
+  .card .tt{font-family:var(--fd);font-weight:900;font-size:36px;letter-spacing:-.04em;margin-bottom:10px}
+  .card .sb{font-size:14px;opacity:.75;margin-bottom:22px}
+  .card ul{list-style:none;display:flex;flex-direction:column;gap:10px;margin-bottom:26px;font-size:13px}
+  .card li{display:flex;gap:10px;align-items:flex-start;line-height:1.4}
+  .card li::before{content:"★";color:var(--orange);font-size:13px}
+  .card.pro li::before{color:var(--lime)}
+  .card .cta{padding:14px 22px;font-weight:700;font-size:14px;border:2.5px solid var(--ink);box-shadow:4px 4px 0 var(--ink);display:inline-flex;align-items:center;gap:10px}
+  .card.free .cta{background:var(--ink);color:var(--paper)}
+  .card.pro .cta{background:var(--lime);color:var(--ink);border-color:var(--paper);box-shadow:4px 4px 0 var(--paper)}
+
+  /* footer / colofón */
+  footer{padding:60px 32px 30px;background:var(--ink);color:var(--paper);border-top:2.5px solid var(--paper)}
+  .f-grid{display:grid;grid-template-columns:2fr 1fr 1fr 1fr;gap:40px;margin-bottom:30px}
+  .f-grid h4{font-family:var(--fm);font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:var(--lime);margin-bottom:14px}
+  .f-grid a{display:block;font-size:13px;margin-bottom:6px;color:rgba(245,244,239,.75)}
+  .f-grid a:hover{color:var(--lime)}
+  .colofon{border-top:2px solid var(--paper);padding-top:20px;font-family:var(--fm);font-size:10px;letter-spacing:.1em;display:flex;justify-content:space-between;color:rgba(245,244,239,.5)}
+  .colofon span::before{content:"✦ "}
+
+  @media (max-width:900px){
+    .hero-inner,.f-grid,.plans-zine{grid-template-columns:1fr}
+    .zine-grid{grid-template-columns:repeat(2,1fr)}
+    .poster{display:none}
+  }
+</style>
+</head>
+<body>
+
+<nav>
+  <a class="brand" href="#">conn<span>i</span>k<span class="u-pack">u<span class="dot">.</span></span></a>
+  <div class="nav-links">
+    <a href="#">Producto</a>
+    <a href="#">Cómo funciona</a>
+    <a href="#">Planes</a>
+    <a href="#">Business</a>
+    <a class="nav-cta" href="#">Crear cuenta</a>
+  </div>
+</nav>
+
+<div class="issue">
+  <span>ISSUE #001 · RISO-PRINT 2026 · SANTIAGO DE CHILE</span>
+  <span>★ 127 ESTUDIANDO AHORA</span>
+  <span>HECHO A MANO · EN CHILE</span>
+</div>
+
+<section class="hero">
+  <div class="shell">
+    <div class="hero-inner">
+      <div>
+        <span class="kicker"><span class="d"></span>Edición 2026 · Impreso en cuatro tintas</span>
+        <h1>Tu <span class="stamp">Universidad</span><br>entera<span class="dot">.</span><br><span class="out">En una sola app</span>.</h1>
+        <p class="lead">Calendario sincronizado, documentos con conversación, tutores verificados, biblioteca +70k, empleo asistido y diploma propio. <b>Todo en un lugar.</b></p>
+        <div class="cta-row">
+          <a class="btn btn-p" href="#">Entrar gratis →</a>
+          <a class="btn btn-g" href="#">Ver demo</a>
+        </div>
+      </div>
+      <div class="poster">
+        <div class="tag t1"><div class="n">Nº 01 · AGENDA</div>Calendario sincronizado</div>
+        <div class="tag t2"><div class="n">Nº 02 · IA</div>Athena escribe contigo</div>
+        <div class="tag t3"><div class="n">Nº 03 · HUMANOS</div>Tutores verificados<div class="stamp-circle">NEW</div></div>
+        <div class="tag t4"><div class="n">Nº 04 · EMPLEO</div>CV + ofertas</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="section">
+  <div class="shell">
+    <div class="sec-head">
+      <span class="sec-kick">★ Lo que hace Conniku ★</span>
+      <h2>Ocho capítulos <span class="hl">impresos a mano</span> para tu semestre.</h2>
+    </div>
+    <div class="zine-grid">
+      <div class="panel"><div class="shape">01</div><div class="no">CAPÍTULO UNO</div><h3>Calendario sincronizado</h3><p>Tu semestre al día. Asignaturas, entregas, clases.</p></div>
+      <div class="panel"><div class="shape">02</div><div class="no">CAPÍTULO DOS</div><h3>Documentos con conversación</h3><p>Chatea con tu material y con cada libro.</p></div>
+      <div class="panel"><div class="shape">03</div><div class="no">CAPÍTULO TRES</div><h3>Escritura asistida</h3><p>Athena revisa tus informes.</p></div>
+      <div class="panel"><div class="shape">04</div><div class="no">CAPÍTULO CUATRO</div><h3>Biblioteca +70k</h3><p>Académicos y generales. Offline.</p><div class="stamp-x">70k</div></div>
+      <div class="panel"><div class="shape">05</div><div class="no">CAPÍTULO CINCO</div><h3>Tutorías verificadas</h3><p>Titulados. Pago protegido.</p></div>
+      <div class="panel"><div class="shape">06</div><div class="no">CAPÍTULO SEIS</div><h3>CV + empleo</h3><p>Ofertas con match.</p></div>
+      <div class="panel"><div class="shape">07</div><div class="no">CAPÍTULO SIETE</div><h3>Cursos + Diploma</h3><p>Hash verificable.</p></div>
+      <div class="panel"><div class="shape">+</div><div class="no">PRÓXIMAMENTE</div><h3>Comunidades</h3><p>Quizzes, rooms, eventos.</p></div>
+    </div>
+  </div>
+</section>
+
+<section class="section paper">
+  <div class="shell">
+    <div class="sec-head">
+      <span class="sec-kick">★ Tarifas ★</span>
+      <h2>Empieza gratis. <span class="hl">Crece</span> cuando quieras.</h2>
+    </div>
+    <div class="plans-zine">
+      <div class="card free">
+        <span class="bd">★ Free · siempre gratis</span>
+        <div class="tt">Conniku Free</div>
+        <p class="sb">Todo lo esencial. Sin tarjeta.</p>
+        <ul>
+          <li>Calendario sincronizado</li>
+          <li>3 workspaces activos</li>
+          <li>100 consultas / mes a biblioteca</li>
+          <li>CV y perfil editable</li>
+          <li>3 postulaciones / mes</li>
+        </ul>
+        <a class="cta" href="#">Entrar gratis →</a>
+      </div>
+      <div class="card pro">
+        <span class="bd">★ Pro · experiencia completa</span>
+        <div class="tt">Conniku Pro</div>
+        <p class="sb">Sin límites. Para estudiar en serio.</p>
+        <ul>
+          <li>Todo Free sin topes</li>
+          <li>Biblioteca +70k con chat por libro</li>
+          <li>Workspaces ilimitados + Athena</li>
+          <li>Ofertas ilimitadas + CV asistido</li>
+          <li>Diploma Conniku</li>
+        </ul>
+        <a class="cta" href="#">Probar Pro →</a>
+      </div>
+    </div>
+  </div>
+</section>
+
+<footer>
+  <div class="shell">
+    <div class="f-grid">
+      <div>
+        <a class="brand" href="#" style="color:var(--paper);font-size:42px">conn<span>i</span>k<span class="u-pack">u<span class="dot">.</span></span></a>
+        <p style="margin-top:14px;font-size:13px;opacity:.7;max-width:300px">Tu universidad entera. En una sola app. Impreso con cariño en Chile.</p>
+      </div>
+      <div><h4>Producto</h4><a href="#">Biblioteca</a><a href="#">Workspaces</a><a href="#">Tutores</a></div>
+      <div><h4>Empresa</h4><a href="#">Nosotros</a><a href="#">Blog</a><a href="#">Prensa</a></div>
+      <div><h4>Legal</h4><a href="#">Términos</a><a href="#">Privacidad</a><a href="#">Cookies</a></div>
+    </div>
+    <div class="colofon">
+      <span>© 2026 Conniku · Santiago · Chile</span>
+      <span>Impreso en Funnel Display 900 + Geist Mono</span>
+      <span>Propuesta 03 · Risograph Zine</span>
+    </div>
+  </div>
+</footer>
+
+</body>
+</html>

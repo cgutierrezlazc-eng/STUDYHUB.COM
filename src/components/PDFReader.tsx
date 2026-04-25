@@ -1,11 +1,9 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 import * as pdfjsLib from 'pdfjs-dist';
 
-// Configurar worker para pdfjs-dist + Vite
-pdfjsLib.GlobalWorkerOptions.workerSrc = new URL(
-  'pdfjs-dist/build/pdf.worker.min.mjs',
-  import.meta.url
-).toString();
+// Nota: GlobalWorkerOptions.workerSrc se configura dentro del componente (useEffect)
+// para evitar que Vitest/jsdom falle al resolver new URL(..., import.meta.url)
+// en tiempo de import del módulo (M8 fix — 2026-04-22).
 
 interface PDFReaderProps {
   url: string;
@@ -30,6 +28,14 @@ export default function PDFReader({
   const renderingRef = useRef(false);
   const onErrorRef = useRef(onError);
   const onPageChangeRef = useRef(onPageChange);
+
+  // Configurar pdfjs worker (dentro del componente para compatibilidad con Vitest/jsdom)
+  useEffect(() => {
+    pdfjsLib.GlobalWorkerOptions.workerSrc = new URL(
+      'pdfjs-dist/build/pdf.worker.min.mjs',
+      import.meta.url
+    ).toString();
+  }, []);
 
   // Mantener refs actualizados sin causar re-renders
   useEffect(() => {

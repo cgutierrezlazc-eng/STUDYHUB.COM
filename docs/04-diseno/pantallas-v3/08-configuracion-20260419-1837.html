@@ -1,0 +1,678 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Conniku — Configuración (editorial)</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Funnel+Display:wght@400;500;600;700;800;900&family=Geist+Mono:wght@400;500;600;700&display=swap" />
+  <style>
+    :root {
+      --ink: #0D0F10; --ink-2: #2B2E30; --ink-3: #696C6F; --ink-4: #A0A3A7;
+      --paper: #F5F4EF; --paper-2: #EBE9E1; --paper-3: #DBD9CF;
+      --line: #D2CFC3; --line-soft: #E2DFD4; --card: #FFFFFF;
+      --lime: #D9FF3A; --lime-ink: #181F08;
+      --pink: #FF4D3A; --cream: #FFE9B8;
+      --violet: #6B4EFF; --cyan: #00C2FF; --orange: #FF4A1C;
+      --danger: #E53935; --danger-soft: #FFE5E3;
+      --font-display: 'Funnel Display', -apple-system, sans-serif;
+      --font-mono: 'Geist Mono', ui-monospace, monospace;
+      --ease: cubic-bezier(.2,.8,.2,1);
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    html, body { background: var(--paper); color: var(--ink); font-family: var(--font-display); }
+    body { min-height: 100vh; overflow-x: hidden; }
+    ::selection { background: var(--lime); color: var(--lime-ink); }
+
+    .top-progress {
+      background: var(--ink); color: #fff; padding: 8px 28px;
+      display: flex; align-items: center; justify-content: space-between;
+      font-family: var(--font-mono); font-size: 11px;
+      letter-spacing: .08em; text-transform: uppercase;
+    }
+    .top-progress .left { display: flex; align-items: center; gap: 12px; }
+    .pulse { width: 8px; height: 8px; border-radius: 50%; background: var(--lime); animation: pulse 1.6s var(--ease) infinite; }
+    @keyframes pulse { 0% { box-shadow: 0 0 0 0 rgba(217,255,58,.7); } 70% { box-shadow: 0 0 0 10px rgba(217,255,58,0); } 100% { box-shadow: 0 0 0 0 rgba(217,255,58,0); } }
+
+    .nav-wrap { padding: 18px 28px 0; display: flex; justify-content: center; }
+    .nav {
+      max-width: 1240px; width: 100%;
+      background: var(--card); border: 1px solid var(--line);
+      border-radius: 999px; padding: 10px 14px 10px 18px;
+      display: flex; align-items: center; gap: 28px;
+    }
+    .logo-wrap { display: flex; align-items: center; gap: 10px; }
+    .logo-tile { width: 28px; height: 28px; display: block; flex-shrink: 0; }
+    .logo-text { font-weight: 700; font-size: 20px; letter-spacing: -.02em; }
+    .nav-links { display: flex; gap: 22px; flex: 1; }
+    .nav-link { font-size: 15px; font-weight: 600; color: var(--ink-2); cursor: pointer; }
+    .nav-link.active { color: var(--ink); border-bottom: 2px solid var(--lime); padding-bottom: 4px; }
+    .search-slot { font-family: var(--font-mono); font-size: 13px; color: var(--ink-3); border: 1px solid var(--line-soft); border-radius: 999px; padding: 6px 14px; display: flex; align-items: center; gap: 8px; }
+    .kbd { background: var(--paper-2); padding: 2px 7px; border-radius: 6px; font-size: 11px; }
+    .btn-primary { background: var(--ink); color: #fff; border: 0; padding: 10px 14px 10px 20px; display: flex; align-items: center; gap: 10px; font-weight: 700; font-size: 14px; border-radius: 999px; cursor: pointer; font-family: var(--font-display); }
+    .btn-primary .ring { width: 26px; height: 26px; border-radius: 50%; background: var(--lime); display: grid; place-items: center; color: var(--ink); font-weight: 900; font-size: 14px; }
+
+    .main { max-width: 1240px; margin: 0 auto; padding: 48px 28px 120px; }
+
+    /* Hero config */
+    .hero { display: grid; grid-template-columns: 1.4fr 1fr; gap: 40px; margin-bottom: 48px; align-items: center; }
+    .hero h1 { font-weight: 900; font-size: clamp(48px, 7vw, 88px); line-height: .95; letter-spacing: -.04em; }
+    .hero h1 .chip { background: var(--cream); padding: 0 12px; border-radius: 12px; display: inline-block; transform: rotate(-1deg); }
+    .hero h1 .chip-lime { background: var(--lime); color: var(--lime-ink); padding: 0 12px; border-radius: 12px; display: inline-block; transform: rotate(1deg); }
+    .hero p { margin-top: 16px; font-size: 18px; color: var(--ink-2); line-height: 1.4; max-width: 440px; font-weight: 500; }
+
+    .me-card {
+      background: var(--ink); color: #fff; border-radius: 24px; padding: 28px;
+      display: flex; gap: 18px; align-items: center; transform: rotate(1deg);
+      box-shadow: 8px 8px 0 rgba(13,15,16,.1);
+    }
+    .me-card .avatar-big { width: 72px; height: 72px; border-radius: 50%; background: var(--lime); color: var(--lime-ink); display: grid; place-items: center; font-weight: 900; font-size: 26px; font-family: var(--font-display); letter-spacing: -.02em; flex-shrink: 0; }
+    .me-card .me-info .me-name { font-weight: 900; font-size: 22px; letter-spacing: -.02em; }
+    .me-card .me-info .me-email { font-family: var(--font-mono); font-size: 11px; color: rgba(255,255,255,.6); letter-spacing: .05em; margin-top: 3px; }
+    .me-card .me-info .me-u { font-size: 13px; color: rgba(255,255,255,.85); margin-top: 8px; }
+    .me-card .me-badges { margin-top: 10px; display: flex; gap: 6px; flex-wrap: wrap; }
+    .me-badge { font-family: var(--font-mono); font-size: 9px; padding: 3px 8px; border-radius: 999px; letter-spacing: .08em; text-transform: uppercase; font-weight: 700; }
+    .me-badge.pro { background: var(--lime); color: var(--lime-ink); }
+    .me-badge.verif { background: rgba(255,255,255,.15); color: #fff; }
+
+    /* Layout: sidebar + content */
+    .config-layout { display: grid; grid-template-columns: 240px 1fr; gap: 32px; }
+
+    /* Sidebar */
+    .side-nav { position: sticky; top: 20px; align-self: start; }
+    .side-section { margin-bottom: 22px; }
+    .side-section-title { font-family: var(--font-mono); font-size: 10px; letter-spacing: .14em; text-transform: uppercase; color: var(--ink-3); padding: 0 10px 8px; font-weight: 700; }
+    .side-item {
+      display: flex; align-items: center; gap: 10px; padding: 8px 12px; border-radius: 10px;
+      font-size: 14px; font-weight: 600; color: var(--ink-2); cursor: pointer;
+      transition: all 120ms var(--ease); margin-bottom: 2px;
+    }
+    .side-item:hover { background: var(--paper-2); color: var(--ink); }
+    .side-item.active { background: var(--ink); color: #fff; }
+    .side-item .dot { width: 7px; height: 7px; border-radius: 50%; background: var(--ink-4); flex-shrink: 0; }
+    .side-item.active .dot { background: var(--lime); }
+    .side-item.warn .dot { background: var(--pink); }
+    .side-item.danger { color: var(--danger); }
+    .side-item.danger .dot { background: var(--danger); }
+
+    /* Main content */
+    .content { min-width: 0; }
+
+    .section {
+      background: var(--card); border: 2px solid var(--ink); border-radius: 24px;
+      padding: 32px; margin-bottom: 24px;
+    }
+    .section.sticker-1 { transform: rotate(-.3deg); }
+    .section.sticker-2 { transform: rotate(.2deg); }
+
+    .sec-head { margin-bottom: 22px; padding-bottom: 18px; border-bottom: 1px solid var(--line-soft); }
+    .sec-label { font-family: var(--font-mono); font-size: 11px; letter-spacing: .14em; text-transform: uppercase; color: var(--ink-3); margin-bottom: 6px; display: flex; align-items: center; gap: 10px; }
+    .sec-label::before { content: ""; width: 20px; height: 2px; background: var(--ink); }
+    .sec-title { font-weight: 900; font-size: 28px; letter-spacing: -.025em; line-height: 1.05; }
+    .sec-subtitle { font-size: 14px; color: var(--ink-3); margin-top: 6px; line-height: 1.4; }
+
+    /* Form rows */
+    .form-row {
+      display: grid; grid-template-columns: 1fr 1.4fr;
+      gap: 20px; padding: 16px 0; border-bottom: 1px solid var(--line-soft);
+      align-items: center;
+    }
+    .form-row:last-child { border-bottom: 0; }
+    .form-label { font-weight: 700; font-size: 14px; }
+    .form-label .hint { font-weight: 500; color: var(--ink-3); font-size: 12px; margin-top: 2px; display: block; line-height: 1.4; }
+
+    .input {
+      background: var(--paper); border: 2px solid var(--ink); border-radius: 10px;
+      padding: 10px 14px; font-family: var(--font-display); font-size: 14px;
+      font-weight: 500; color: var(--ink); outline: none; width: 100%;
+    }
+    .input:focus { box-shadow: 4px 4px 0 var(--lime); }
+
+    /* Custom toggle */
+    .toggle-wrap { display: flex; align-items: center; gap: 14px; }
+    .toggle {
+      position: relative; width: 52px; height: 28px; background: var(--paper-2);
+      border: 2px solid var(--ink); border-radius: 999px; cursor: pointer;
+      transition: all 180ms var(--ease);
+    }
+    .toggle::after {
+      content: ""; position: absolute; top: 2px; left: 2px; width: 20px; height: 20px;
+      border-radius: 50%; background: var(--ink); transition: all 180ms var(--ease);
+    }
+    .toggle.active { background: var(--lime); }
+    .toggle.active::after { left: 26px; }
+    .toggle-label { font-family: var(--font-mono); font-size: 11px; font-weight: 700; letter-spacing: .08em; text-transform: uppercase; color: var(--ink-3); }
+    .toggle.active + .toggle-label { color: var(--ink); }
+
+    /* Select */
+    .select-pill {
+      display: inline-flex; align-items: center; gap: 8px;
+      background: var(--card); border: 2px solid var(--ink); border-radius: 999px;
+      padding: 8px 16px 8px 18px; font-family: var(--font-display); font-weight: 600;
+      font-size: 13px; cursor: pointer; transition: all 180ms var(--ease);
+    }
+    .select-pill:hover { transform: translateY(-1px); }
+    .select-pill .chev { font-size: 10px; color: var(--ink-3); }
+
+    /* Theme chooser */
+    .theme-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; }
+    .theme-opt {
+      border: 2px solid var(--line); border-radius: 14px; padding: 14px;
+      cursor: pointer; transition: all 180ms var(--ease); background: var(--card);
+    }
+    .theme-opt:hover { border-color: var(--ink); }
+    .theme-opt.active { border-color: var(--ink); box-shadow: 4px 4px 0 var(--lime); }
+    .theme-preview { height: 70px; border-radius: 8px; margin-bottom: 10px; position: relative; overflow: hidden; }
+    .theme-preview.editorial { background: var(--paper); border: 1px solid var(--line); }
+    .theme-preview.editorial::before { content: ""; position: absolute; top: 12px; left: 10px; width: 30px; height: 8px; background: var(--ink); border-radius: 2px; }
+    .theme-preview.editorial::after { content: ""; position: absolute; top: 26px; left: 10px; width: 20px; height: 8px; background: var(--lime); border-radius: 2px; }
+    .theme-preview.dark { background: var(--ink); }
+    .theme-preview.dark::before { content: ""; position: absolute; top: 12px; left: 10px; width: 30px; height: 8px; background: #fff; border-radius: 2px; opacity: .9; }
+    .theme-preview.dark::after { content: ""; position: absolute; top: 26px; left: 10px; width: 20px; height: 8px; background: var(--lime); border-radius: 2px; }
+    .theme-preview.auto { background: linear-gradient(135deg, var(--paper) 50%, var(--ink) 50%); }
+    .theme-name { font-weight: 700; font-size: 13px; }
+    .theme-meta { font-family: var(--font-mono); font-size: 10px; color: var(--ink-3); letter-spacing: .08em; text-transform: uppercase; margin-top: 4px; }
+
+    /* Pro card */
+    .pro-card {
+      background: var(--pink); color: #fff; border-radius: 24px; padding: 28px;
+      display: grid; grid-template-columns: 1fr auto; gap: 20px; align-items: center;
+      border: 2px solid var(--ink); transform: rotate(-.3deg); margin-bottom: 24px;
+      position: relative; overflow: hidden;
+    }
+    .pro-card::before { content: ""; position: absolute; top: -30px; right: -30px; width: 100px; height: 100px; background: var(--lime); border-radius: 50%; opacity: .4; filter: blur(20px); }
+    .pro-card .label-p { font-family: var(--font-mono); font-size: 11px; letter-spacing: .12em; text-transform: uppercase; color: var(--lime); font-weight: 700; margin-bottom: 8px; }
+    .pro-card h3 { font-weight: 900; font-size: 28px; letter-spacing: -.02em; line-height: 1.1; }
+    .pro-card h3 .hl-ink { background: var(--ink); color: var(--lime); padding: 0 8px; border-radius: 6px; transform: rotate(1deg); display: inline-block; }
+    .pro-card p { color: rgba(255,255,255,.9); font-size: 13px; margin-top: 8px; line-height: 1.4; }
+    .plan-info { text-align: right; position: relative; z-index: 2; }
+    .plan-info .plan-price { font-family: var(--font-display); font-weight: 900; font-size: 40px; letter-spacing: -.03em; line-height: 1; font-feature-settings: 'tnum'; }
+    .plan-info .plan-period { font-family: var(--font-mono); font-size: 11px; color: rgba(255,255,255,.7); letter-spacing: .08em; text-transform: uppercase; }
+    .plan-info .plan-renewal { font-size: 11px; color: rgba(255,255,255,.8); margin-top: 10px; }
+    .plan-actions { margin-top: 10px; display: flex; gap: 8px; justify-content: flex-end; }
+    .ghost-btn { background: rgba(255,255,255,.15); color: #fff; border: 0; padding: 6px 12px; border-radius: 999px; font-family: var(--font-mono); font-size: 10px; letter-spacing: .08em; text-transform: uppercase; font-weight: 700; cursor: pointer; }
+
+    /* Legal tickets table */
+    .tickets-list { display: flex; flex-direction: column; gap: 10px; }
+    .ticket {
+      background: var(--paper); border: 1px solid var(--line); border-radius: 12px;
+      padding: 14px 18px;
+      display: grid; grid-template-columns: 1fr auto auto; gap: 16px; align-items: center;
+    }
+    .ticket:hover { border-color: var(--ink); }
+    .ticket-doc { font-weight: 700; font-size: 14px; }
+    .ticket-meta { font-family: var(--font-mono); font-size: 10px; color: var(--ink-3); letter-spacing: .04em; margin-top: 4px; }
+    .ticket-meta .hash { color: var(--ink-2); background: var(--paper-2); padding: 0 4px; border-radius: 3px; }
+    .ticket-status {
+      font-family: var(--font-mono); font-size: 10px; letter-spacing: .1em;
+      text-transform: uppercase; padding: 4px 10px; border-radius: 999px;
+      background: var(--cream); color: var(--ink); font-weight: 700;
+      display: flex; align-items: center; gap: 5px;
+    }
+    .ticket-status::before { content: "★"; color: var(--ink); }
+    .ticket-action { font-family: var(--font-mono); font-size: 10px; letter-spacing: .08em; text-transform: uppercase; color: var(--ink); cursor: pointer; font-weight: 700; text-decoration: underline; text-underline-offset: 2px; text-decoration-thickness: 2px; }
+
+    .legal-note {
+      background: var(--cream); border: 1.5px solid var(--ink); border-radius: 12px;
+      padding: 14px 18px; margin-top: 16px; display: flex; gap: 12px; align-items: flex-start;
+    }
+    .legal-note .label { font-family: var(--font-mono); font-size: 10px; letter-spacing: .12em; text-transform: uppercase; color: var(--ink); font-weight: 700; display: block; margin-bottom: 4px; }
+    .legal-note p { font-size: 13px; color: var(--ink-2); line-height: 1.4; }
+    .legal-note .icon-note { font-size: 18px; font-weight: 900; color: var(--ink); line-height: 1; }
+
+    /* Danger zone */
+    .danger-section {
+      background: var(--card); border: 2px solid var(--danger); border-radius: 24px;
+      padding: 28px; margin-top: 32px;
+    }
+    .danger-section .sec-label { color: var(--danger); }
+    .danger-section .sec-label::before { background: var(--danger); }
+    .danger-section .sec-title { color: var(--danger); }
+    .danger-row {
+      display: flex; justify-content: space-between; align-items: center; gap: 20px;
+      padding: 14px 0; border-bottom: 1px solid var(--danger-soft);
+    }
+    .danger-row:last-child { border-bottom: 0; }
+    .danger-row .title { font-weight: 700; font-size: 15px; }
+    .danger-row .desc { font-size: 13px; color: var(--ink-2); line-height: 1.4; max-width: 480px; margin-top: 3px; }
+    .btn-danger {
+      background: var(--card); color: var(--danger); border: 2px solid var(--danger);
+      border-radius: 10px; padding: 9px 18px; font-family: var(--font-display);
+      font-weight: 700; font-size: 13px; cursor: pointer; transition: all 150ms var(--ease);
+    }
+    .btn-danger:hover { background: var(--danger); color: #fff; }
+
+    /* Save bar */
+    .save-bar {
+      position: sticky; bottom: 20px; background: var(--ink); color: #fff;
+      border-radius: 999px; padding: 10px 14px 10px 22px;
+      display: flex; justify-content: space-between; align-items: center;
+      margin-top: 24px; box-shadow: 0 10px 30px rgba(13,15,16,.2);
+    }
+    .save-bar .msg { font-family: var(--font-mono); font-size: 11px; letter-spacing: .08em; text-transform: uppercase; display: flex; align-items: center; gap: 10px; }
+    .save-bar .msg .chg { background: var(--lime); color: var(--lime-ink); padding: 2px 8px; border-radius: 999px; font-weight: 700; font-size: 10px; letter-spacing: 0; }
+    .save-bar .actions-bar { display: flex; gap: 6px; }
+    .save-bar .ghost-reset { background: transparent; color: rgba(255,255,255,.8); border: 1px solid rgba(255,255,255,.2); padding: 8px 14px; border-radius: 999px; font-family: var(--font-display); font-size: 13px; font-weight: 600; cursor: pointer; }
+    .save-bar .save-go { background: var(--lime); color: var(--lime-ink); border: 0; padding: 8px 14px 8px 18px; border-radius: 999px; font-family: var(--font-display); font-weight: 700; font-size: 13px; cursor: pointer; display: flex; align-items: center; gap: 8px; }
+    .save-bar .save-go .ring-go { width: 22px; height: 22px; background: var(--ink); color: var(--lime); border-radius: 50%; display: grid; place-items: center; font-weight: 900; font-size: 12px; }
+
+    @media (max-width: 1080px) {
+      .hero { grid-template-columns: 1fr; }
+      .config-layout { grid-template-columns: 1fr; }
+      .side-nav { position: static; }
+      .form-row { grid-template-columns: 1fr; gap: 8px; }
+      .theme-grid { grid-template-columns: 1fr; }
+    }
+  
+    /* ═══ Logo oficial wordmark integrado · 00-BRAND-LOGO.md · INVIOLABLE ═══ */
+    .brand {
+      display: inline-flex; align-items: baseline;
+      font-family: var(--font-display, 'Funnel Display'); font-weight: 900;
+      font-size: 24px; letter-spacing: -.055em; line-height: 1;
+      color: var(--ink, #0D0F10); text-decoration: none;
+      white-space: nowrap;
+    }
+    .brand .u-pack {
+      display: inline-flex; align-items: baseline;
+      background: var(--lime, #D9FF3A);
+      color: var(--ink, #0D0F10);
+      padding: .07em .14em .07em .09em;
+      border-radius: .2em;
+      margin-left: .02em;
+    }
+    .brand .u-pack .dot { color: var(--orange, #FF4A1C); }
+  </style>
+</head>
+<body>
+
+  <div class="top-progress">
+    <div class="left">
+      <div class="pulse"></div>
+      <span>Configuración</span>
+    </div>
+    <span>Los cambios guardados quedan registrados con hash y timestamp</span>
+  </div>
+
+  <div class="nav-wrap">
+    <div class="nav">
+      <a class="brand" href="#" aria-label="Conniku">conn<span>i</span>k<span class="u-pack">u<span class="dot">.</span></span></a>
+      <div class="nav-links">
+        <div class="nav-link">Estudio</div>
+        <div class="nav-link">Biblioteca</div>
+        <div class="nav-link">Tutores</div>
+        <div class="nav-link">Empleo</div>
+        <div class="nav-link">Comunidad</div>
+      </div>
+      <div class="search-slot">
+        <span>Buscar</span>
+        <span class="kbd">⌘K</span>
+      </div>
+      <button class="btn-primary">
+        Crear
+        <span class="ring">+</span>
+      </button>
+    </div>
+  </div>
+
+  <main class="main">
+
+    <section class="hero">
+      <div>
+        <h1>
+          Tu <span class="chip">Conniku</span>,<br>
+          tu <span class="chip-lime">forma</span>.
+        </h1>
+        <p>Ajusta tu cuenta, controla tu privacidad, gestiona tu suscripción y revisa tu historial legal.</p>
+      </div>
+
+      <div class="me-card">
+        <div class="avatar-big">CG</div>
+        <div class="me-info">
+          <div class="me-name">Cristian Gutiérrez L.</div>
+          <div class="me-email">cristian@conniku.com</div>
+          <div class="me-u">Ing. Comercial · U de Chile · 4º año</div>
+          <div class="me-badges">
+            <div class="me-badge pro">Conniku Pro</div>
+            <div class="me-badge verif">★ Verificado U</div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <div class="config-layout">
+
+      <aside class="side-nav">
+        <div class="side-section">
+          <div class="side-section-title">Personal</div>
+          <div class="side-item active"><span class="dot"></span>Cuenta</div>
+          <div class="side-item"><span class="dot"></span>Apariencia</div>
+          <div class="side-item"><span class="dot"></span>Idioma</div>
+          <div class="side-item"><span class="dot"></span>Accesibilidad</div>
+        </div>
+
+        <div class="side-section">
+          <div class="side-section-title">Comunicación</div>
+          <div class="side-item"><span class="dot"></span>Notificaciones</div>
+          <div class="side-item warn"><span class="dot"></span>Privacidad</div>
+          <div class="side-item"><span class="dot"></span>Bloqueados</div>
+        </div>
+
+        <div class="side-section">
+          <div class="side-section-title">Seguridad</div>
+          <div class="side-item"><span class="dot"></span>Clave</div>
+          <div class="side-item"><span class="dot"></span>2FA</div>
+          <div class="side-item"><span class="dot"></span>Sesiones activas</div>
+        </div>
+
+        <div class="side-section">
+          <div class="side-section-title">Cuenta</div>
+          <div class="side-item"><span class="dot"></span>Suscripción</div>
+          <div class="side-item"><span class="dot"></span>Métodos de pago</div>
+          <div class="side-item"><span class="dot"></span>Facturación</div>
+        </div>
+
+        <div class="side-section">
+          <div class="side-section-title">Legal y datos</div>
+          <div class="side-item"><span class="dot"></span>Documentos aceptados</div>
+          <div class="side-item"><span class="dot"></span>Exportar datos</div>
+          <div class="side-item danger"><span class="dot"></span>Eliminar cuenta</div>
+        </div>
+      </aside>
+
+      <div class="content">
+
+        <div class="pro-card">
+          <div>
+            <div class="label-p">★ Tu plan</div>
+            <h3>Eres <span class="hl-ink">Conniku Pro</span> desde marzo</h3>
+            <p>Acceso ilimitado a biblioteca +70k, chat con libros, workspaces colaborativos sin límite, tutores verificados con pago protegido.</p>
+          </div>
+          <div class="plan-info">
+            <div class="plan-price">$9.990</div>
+            <div class="plan-period">al mes · CLP</div>
+            <div class="plan-renewal">Renovación automática: 12 mayo</div>
+            <div class="plan-actions">
+              <button class="ghost-btn">Cambiar plan</button>
+              <button class="ghost-btn">Cancelar</button>
+            </div>
+          </div>
+        </div>
+
+        <div class="section sticker-1">
+          <div class="sec-head">
+            <div class="sec-label">Personal</div>
+            <h2 class="sec-title">Datos de cuenta</h2>
+            <p class="sec-subtitle">Esta información identifica tu cuenta. Los cambios pueden requerir re-verificación.</p>
+          </div>
+
+          <div class="form-row">
+            <div class="form-label">
+              Nombre completo
+              <span class="hint">Como aparecerá en tu perfil público y CV.</span>
+            </div>
+            <input class="input" value="Cristian Gutiérrez Lazcano" />
+          </div>
+
+          <div class="form-row">
+            <div class="form-label">
+              Nombre de usuario
+              <span class="hint">conniku.com/u/cristian-gl</span>
+            </div>
+            <input class="input" value="cristian-gl" />
+          </div>
+
+          <div class="form-row">
+            <div class="form-label">
+              Correo electrónico
+              <span class="hint">Para inicio de sesión y notificaciones críticas.</span>
+            </div>
+            <input class="input" value="cristian@conniku.com" type="email" />
+          </div>
+
+          <div class="form-row">
+            <div class="form-label">
+              Universidad
+              <span class="hint">Verificada con tu correo institucional.</span>
+            </div>
+            <div class="select-pill">Universidad del Alba ★ <span class="chev">▾</span></div>
+          </div>
+
+          <div class="form-row">
+            <div class="form-label">
+              Carrera
+              <span class="hint">Se usa para personalizar empleos, tutores y biblioteca.</span>
+            </div>
+            <div class="select-pill">Ing. Comercial · 4º año <span class="chev">▾</span></div>
+          </div>
+        </div>
+
+        <div class="section sticker-2">
+          <div class="sec-head">
+            <div class="sec-label">Apariencia</div>
+            <h2 class="sec-title">Cómo se ve Conniku</h2>
+            <p class="sec-subtitle">Editorial, oscuro, o automático según tu sistema.</p>
+          </div>
+
+          <div class="theme-grid">
+            <div class="theme-opt active">
+              <div class="theme-preview editorial"></div>
+              <div class="theme-name">Editorial</div>
+              <div class="theme-meta">Warm paper</div>
+            </div>
+            <div class="theme-opt">
+              <div class="theme-preview dark"></div>
+              <div class="theme-name">Oscuro</div>
+              <div class="theme-meta">Noche · ink</div>
+            </div>
+            <div class="theme-opt">
+              <div class="theme-preview auto"></div>
+              <div class="theme-name">Automático</div>
+              <div class="theme-meta">Según tu sistema</div>
+            </div>
+          </div>
+
+          <div class="form-row" style="margin-top: 20px;">
+            <div class="form-label">
+              Reducir animaciones
+              <span class="hint">Para accesibilidad o bajo consumo de batería.</span>
+            </div>
+            <div class="toggle-wrap">
+              <div class="toggle"></div>
+              <span class="toggle-label">Desactivado</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="section">
+          <div class="sec-head">
+            <div class="sec-label">Notificaciones</div>
+            <h2 class="sec-title">Qué avisos recibes</h2>
+            <p class="sec-subtitle">Controla por canal. Los críticos de seguridad siempre llegan.</p>
+          </div>
+
+          <div class="form-row">
+            <div class="form-label">
+              Mensajes directos
+              <span class="hint">Cuando otro estudiante te escribe.</span>
+            </div>
+            <div class="toggle-wrap">
+              <div class="toggle active"></div>
+              <span class="toggle-label">Push · email · app</span>
+            </div>
+          </div>
+
+          <div class="form-row">
+            <div class="form-label">
+              Actividad en workspaces
+              <span class="hint">Cambios, comentarios, ediciones en vivo.</span>
+            </div>
+            <div class="toggle-wrap">
+              <div class="toggle active"></div>
+              <span class="toggle-label">Solo app</span>
+            </div>
+          </div>
+
+          <div class="form-row">
+            <div class="form-label">
+              Nuevas clases sincronizadas
+              <span class="hint">Cuando tu U actualiza tu calendario académico.</span>
+            </div>
+            <div class="toggle-wrap">
+              <div class="toggle active"></div>
+              <span class="toggle-label">Push · email</span>
+            </div>
+          </div>
+
+          <div class="form-row">
+            <div class="form-label">
+              Comunidad y comentarios
+              <span class="hint">Respuestas y menciones en posts públicos.</span>
+            </div>
+            <div class="toggle-wrap">
+              <div class="toggle"></div>
+              <span class="toggle-label">Desactivado</span>
+            </div>
+          </div>
+
+          <div class="form-row">
+            <div class="form-label">
+              Novedades de Conniku
+              <span class="hint">Nuevas features, mejoras, anuncios. No es spam.</span>
+            </div>
+            <div class="toggle-wrap">
+              <div class="toggle active"></div>
+              <span class="toggle-label">Solo email</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="section sticker-1">
+          <div class="sec-head">
+            <div class="sec-label">Legal y datos</div>
+            <h2 class="sec-title">Documentos que aceptaste</h2>
+            <p class="sec-subtitle">Registro auditable de cada documento legal que leíste y aceptaste. Queda 5 años como evidencia ante cualquier disputa.</p>
+          </div>
+
+          <div class="tickets-list">
+
+            <div class="ticket">
+              <div>
+                <div class="ticket-doc">Términos y Condiciones del servicio</div>
+                <div class="ticket-meta">
+                  versión 2.1.0 · leído 18 abr 2026 · 14:23 UTC · IP 190.110.xx.xx · <span class="hash">SHA-256 ab3e..7f2c</span>
+                </div>
+              </div>
+              <div class="ticket-status">Leído y aceptado</div>
+              <div class="ticket-action">Ver documento</div>
+            </div>
+
+            <div class="ticket">
+              <div>
+                <div class="ticket-doc">Política de Privacidad</div>
+                <div class="ticket-meta">
+                  versión 1.8.2 · leído 18 abr 2026 · 14:24 UTC · IP 190.110.xx.xx · <span class="hash">SHA-256 f10c..b8e1</span>
+                </div>
+              </div>
+              <div class="ticket-status">Leído y aceptado</div>
+              <div class="ticket-action">Ver documento</div>
+            </div>
+
+            <div class="ticket">
+              <div>
+                <div class="ticket-doc">Declaración jurada de mayoría de edad</div>
+                <div class="ticket-meta">
+                  versión 1.0.0 · aceptado 18 abr 2026 · 14:24 UTC · Ley 19.628 · <span class="hash">SHA-256 9a2d..4c81</span>
+                </div>
+              </div>
+              <div class="ticket-status">Leído y aceptado</div>
+              <div class="ticket-action">Ver documento</div>
+            </div>
+
+            <div class="ticket">
+              <div>
+                <div class="ticket-doc">Política de Reembolso Conniku Pro</div>
+                <div class="ticket-meta">
+                  versión 1.2.0 · leído 23 mar 2026 · 09:12 UTC · Art. 3bis Ley 19.496 · <span class="hash">SHA-256 e7fa..22b9</span>
+                </div>
+              </div>
+              <div class="ticket-status">Leído y aceptado</div>
+              <div class="ticket-action">Ver documento</div>
+            </div>
+
+            <div class="ticket">
+              <div>
+                <div class="ticket-doc">Política de Cookies</div>
+                <div class="ticket-meta">
+                  versión 1.0.3 · leído 18 abr 2026 · 14:22 UTC · <span class="hash">SHA-256 4b8c..e7d2</span>
+                </div>
+              </div>
+              <div class="ticket-status">Leído y aceptado</div>
+              <div class="ticket-action">Ver documento</div>
+            </div>
+
+          </div>
+
+          <div class="legal-note">
+            <span class="icon-note">★</span>
+            <div>
+              <span class="label">Sobre este registro</span>
+              <p>
+                Cada vez que abres y aceptas un documento legal, Conniku guarda un ticket con hash criptográfico de la versión, tu IP, timestamp UTC y duración de lectura. Estos registros son evidencia legal auditable y sobreviven 5 años incluso si eliminas tu cuenta, según Ley 19.628 Art. 11. Si cambia una versión, se te pide re-aceptar con la nueva.
+              </p>
+            </div>
+          </div>
+        </div>
+
+        <div class="danger-section">
+          <div class="sec-head">
+            <div class="sec-label">Zona peligrosa</div>
+            <h2 class="sec-title">Acciones que no se deshacen</h2>
+          </div>
+
+          <div class="danger-row">
+            <div>
+              <div class="title">Exportar todos tus datos</div>
+              <div class="desc">Descargas un archivo ZIP con tu perfil, posts, documentos, mensajes, workspaces y logs de actividad. Cumple con Art. 12 Ley 19.628.</div>
+            </div>
+            <button class="btn-danger">Solicitar ZIP</button>
+          </div>
+
+          <div class="danger-row">
+            <div>
+              <div class="title">Cerrar sesión en todos los dispositivos</div>
+              <div class="desc">Invalida tu token actual en web, móvil y escritorio. Tendrás que volver a iniciar sesión en cada dispositivo.</div>
+            </div>
+            <button class="btn-danger">Cerrar todo</button>
+          </div>
+
+          <div class="danger-row">
+            <div>
+              <div class="title">Eliminar mi cuenta permanentemente</div>
+              <div class="desc">Borra tu perfil, posts y workspaces (salvo evidencia legal, que se conserva 5 años). Esta acción no se puede deshacer. Si tienes suscripción activa, cancélala primero.</div>
+            </div>
+            <button class="btn-danger">Eliminar cuenta</button>
+          </div>
+        </div>
+
+        <div class="save-bar">
+          <div class="msg">
+            Tienes <span class="chg">3 cambios</span> sin guardar
+          </div>
+          <div class="actions-bar">
+            <button class="ghost-reset">Descartar</button>
+            <button class="save-go">
+              Guardar
+              <div class="ring-go">→</div>
+            </button>
+          </div>
+        </div>
+
+      </div>
+
+    </div>
+
+  </main>
+
+</body>
+</html>

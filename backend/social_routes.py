@@ -941,8 +941,8 @@ def get_comments(
 @router.get("/feed")
 def get_feed(
     page: int = Query(1, ge=1),
-    sort: str = Query("recent", regex="^(recent|smart)$"),
-    filter: str = Query("all", regex="^(all|career|university|friends)$"),
+    sort: str = Query("recent", pattern="^(recent|smart)$"),
+    filter: str = Query("all", pattern="^(all|career|university|friends)$"),
     user: User = Depends(get_current_user),
     db: Session = Depends(get_db),
 ):

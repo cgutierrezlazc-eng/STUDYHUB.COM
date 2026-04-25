@@ -27,12 +27,21 @@
 | `src/pages/Jobs.tsx` | null-safety | 2026-04-14 | Null-safety en cv.competencies (3 fixes) |
 | `.gitignore` | iCloud rules | 2026-04-14 | Regla para ignorar duplicados iCloud |
 | `src/admin/tools/BibliotecaDocumentos.tsx` | hooks order | 2026-04-16 | Guard movido después de hooks (rules-of-hooks fix) |
-| `src/pages/HRDashboard.tsx` | completo | 2026-04-16 | 9 botones HR + rules-of-hooks fix |
+| `src/pages/HRDashboard.tsx` | completo | 2026-04-22 | 9 botones HR + rules-of-hooks fix. RUT corregido 2026-04-22 (78.395.702-7). |
 | `backend/hr_routes.py` | completo | 2026-04-16 | 53 rutas, 3 generadores PDF legales (Anexo, Pacto HE, Descuento Vol.) |
 | `shared/legal_texts.py` | completo | 2026-04-18 | bloque-1-auth-edad: fuente de verdad del texto canónico + hash SHA-256. Editar requiere bump AGE_DECLARATION_VERSION y actualizar espejo .ts (test CI valida sincronía) |
 | `shared/legal_texts.ts` | completo | 2026-04-18 | bloque-1-auth-edad: espejo TypeScript del texto canónico. Hash hardcoded debe coincidir con shared/legal_texts.py |
 | `scripts/verify-legal-texts-sync.sh` | completo | 2026-04-18 | bloque-1-auth-edad: gate CI que valida sincronía hash Python↔TS. Si divergen, bloquea merge |
-| `backend/collab_ws.py` | completo | 2026-04-18 | bloque-2b: V1 Trabajos Grupales. Deprecado 2026-04-19 (router deshabilitado en server.py). Tabla BD preservada. |
 | `backend/workspaces_export.py` | completo | 2026-04-19 | hardening-c1-ssrf: whitelist dominios + blacklist RFC1918/link-local/loopback + HTTPS-only + timeout 5s + cap 5MB. Editar = riesgo SSRF. |
 | `backend/workspaces_athena.py` | completo | 2026-04-19 | bloque-2c: rate-limit Athena + cuotas Free/Pro + integración Anthropic. Editar sin auditoría = riesgo de regresión en cupo LLM. |
-| `backend/collab_routes.py` | export_pdf L455-516 | 2026-04-19 | hardening-c1-ssrf: export_pdf usa sanitize_html + inline_remote_images. Router deshabilitado 2026-04-19 pero archivo preservado por si se reactiva. |
+| `src/pages/Landing/Landing.tsx` | completo | 2026-04-20 | bloque-rollout-v3-ola-1: landing v3 canónica editorial. |
+| `src/pages/Landing/Landing.module.css` | completo | 2026-04-20 | bloque-rollout-v3-ola-1: estilos v3 de landing. |
+| `src/pages/Landing/sections/HeroSection.tsx` | completo | 2026-04-20 | bloque-rollout-v3-ola-1 |
+| `src/pages/Landing/sections/ProductSection.tsx` | completo | 2026-04-20 | bloque-rollout-v3-ola-1 |
+| `src/pages/Landing/sections/HowSection.tsx` | completo | 2026-04-20 | bloque-rollout-v3-ola-1 |
+| `src/pages/Landing/sections/PricingSection.tsx` | completo | 2026-04-20 | bloque-rollout-v3-ola-1 |
+| `src/pages/Landing/sections/AppSection.tsx` | completo | 2026-04-20 | bloque-rollout-v3-ola-1 |
+| `src/pages/Landing/sections/BusinessPanel.tsx` | completo | 2026-04-20 | bloque-rollout-v3-ola-1 |
+| `public/favicon.svg` | completo | 2026-04-20 | bloque-rollout-v3-ola-1: favicon oficial LOGO.04 |
+| `docs/brand/LOGO-SPEC.md` | completo | 2026-04-20 | bloque-rollout-v3-ola-1: spec canónica del logo |
+| `src/pages/UnderConstruction.tsx` | completo | 2026-04-20 | bloque-rollout-v3-ola-1: landing pública temporal + acceso discreto CEO |

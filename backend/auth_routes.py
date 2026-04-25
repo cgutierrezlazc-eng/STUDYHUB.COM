@@ -13,11 +13,30 @@ from datetime import date, datetime, timedelta
 from typing import Optional
 
 import bcrypt
-from database import DATA_DIR, TutoringRequest, User, UserAgreement, UserSession, gen_id, get_db
+from database import (
+    DATA_DIR,
+    CookieConsent,
+    DocumentView,
+    TutoringRequest,
+    User,
+    UserAgreement,
+    UserSession,
+    gen_id,
+    get_db,
+)
 from fastapi import APIRouter, Body, Depends, File, Form, HTTPException, Request, UploadFile
 from middleware import create_access_token, create_refresh_token, decode_token, get_current_user
 from pydantic import BaseModel, EmailStr
 from shared.legal_texts import AGE_DECLARATION_HASH, AGE_DECLARATION_VERSION
+from constants.legal_versions import (
+    CANONICAL_DOC_HASHES,
+    CANONICAL_DOC_VERSIONS,
+    COOKIE_CONSENT_POLICY_HASH,
+    COOKIE_CONSENT_POLICY_VERSION,
+    DOC_KEY_TO_AGREEMENT_HASH,
+    DOC_KEY_TO_DOCUMENT_TYPE,
+    REACCEPT_DOCUMENTS,
+)
 from sqlalchemy import func, or_
 from sqlalchemy.orm import Session
 
@@ -108,6 +127,159 @@ def record_age_declaration(
     )
     db.add(agreement)
     return agreement
+
+
+# ─── Validación de evidencia de lectura y registro de consentimiento multi-doc ─
+# Bloque multi-document-consent-v1 — Decisiones D-M2/D-M5/D-M6 aprobadas 2026-04-21.
+#
+# Referencia legal:
+# - GDPR Art. 7(1): el responsable debe demostrar que el interesado consintió.
+#   URL: https://eur-lex.europa.eu/legal-content/ES/TXT/?uri=CELEX:32016R0679
+# - Ley 19.628 Art. 4° (Chile): consentimiento expreso del titular.
+#   URL: https://www.bcn.cl/leychile/navegar?idNorma=141599
+
+REQUIRED_DOC_KEYS: list[str] = ["terms", "privacy", "cookies", "age-declaration"]
+
+
+def validate_legal_reading_evidence(
+    db: Session,
+    legal_session_token: str,
+) -> dict[str, DocumentView]:
+    """Valida que el session_token tenga evidencia de lectura de los 4 documentos.
+
+    Verifica:
+    1. Que existan 4 filas en document_views con scrolled_to_end=True, una por
+       cada doc_key requerido (terms, privacy, cookies, age-declaration).
+    2. Que los doc_hash de cada fila coincidan con los hashes canónicos vigentes
+       (protección contra cache stale o versión desactualizada).
+    3. Que el session_token no esté ya vinculado a un usuario (previene reuso).
+
+    Retorna: dict[doc_key → DocumentView] con el último registro válido por doc.
+    Lanza HTTPException 422 si faltan documentos o hashes incorrectos.
+    Lanza HTTPException 409 si session_token ya está vinculado a usuario.
+    """
+    # Verificar idempotencia: si las views ya tienen user_id, el token fue usado
+    existing_linked = (
+        db.query(DocumentView)
+        .filter(
+            DocumentView.session_token == legal_session_token,
+            DocumentView.user_id.isnot(None),
+        )
+        .first()
+    )
+    if existing_linked is not None:
+        raise HTTPException(
+            409,
+            "Este token de sesión de consentimiento ya fue utilizado en un registro previo.",
+        )
+
+    # Recuperar todas las vistas con scrolled_to_end=True para este token
+    views = (
+        db.query(DocumentView)
+        .filter(
+            DocumentView.session_token == legal_session_token,
+            DocumentView.scrolled_to_end.is_(True),
+        )
+        .all()
+    )
+
+    # Agrupar por doc_key — tomar la más reciente (mayor viewed_at_utc)
+    latest_by_key: dict[str, DocumentView] = {}
+    for view in views:
+        existing = latest_by_key.get(view.doc_key)
+        if existing is None or view.viewed_at_utc > existing.viewed_at_utc:
+            latest_by_key[view.doc_key] = view
+
+    # Validar que los 4 docs requeridos estén presentes
+    missing_docs = [key for key in REQUIRED_DOC_KEYS if key not in latest_by_key]
+    if missing_docs:
+        missing_display = ", ".join(missing_docs)
+        raise HTTPException(
+            422,
+            f"Debes leer los 4 documentos legales antes de registrarte: {missing_display}",
+        )
+
+    # Validar que los hashes coincidan con los vigentes (R-A2 del plan)
+    hash_mismatches: list[str] = []
+    for doc_key in REQUIRED_DOC_KEYS:
+        view = latest_by_key[doc_key]
+        expected_hash = CANONICAL_DOC_HASHES.get(doc_key, "")
+        if view.doc_hash != expected_hash:
+            hash_mismatches.append(doc_key)
+
+    if hash_mismatches:
+        raise HTTPException(
+            422,
+            "La versión de los documentos ha cambiado. Recarga la página e intenta de nuevo. "
+            f"Documentos con hash desactualizado: {', '.join(hash_mismatches)}",
+        )
+
+    return latest_by_key
+
+
+def record_multi_document_consent(
+    db: Session,
+    user_id: str,
+    legal_session_token: str,
+    request: Request | None,
+    user_timezone: str | None,
+    latest_by_key: dict[str, "DocumentView"],
+) -> None:
+    """Registra el consentimiento multi-documento de forma atómica.
+
+    Dentro de la misma transacción que crea al usuario:
+    1. Crea 4 filas en user_agreements (terms, privacy, cookies, age_declaration).
+    2. Transfiere document_views del session_token al user_id.
+    3. Crea 1 fila en cookie_consents con categories_accepted=['necessary'].
+
+    Debe llamarse DENTRO de la transacción (antes del db.commit() del caller).
+    """
+    import json as _json
+
+    now_utc = datetime.utcnow()
+    client_ip = _get_client_ip(request)
+    user_agent_str = request.headers.get("user-agent", "") if request else None
+
+    # 1. Crear 4 filas user_agreements
+    for doc_key in REQUIRED_DOC_KEYS:
+        doc_type = DOC_KEY_TO_DOCUMENT_TYPE[doc_key]
+        version, hash_val = DOC_KEY_TO_AGREEMENT_HASH[doc_key]
+        agreement = UserAgreement(
+            user_id=user_id,
+            document_type=doc_type,
+            text_version=version,
+            text_version_hash=hash_val,
+            accepted_at_utc=now_utc,
+            user_timezone=user_timezone,
+            client_ip=client_ip,
+            user_agent=user_agent_str,
+        )
+        db.add(agreement)
+
+    # 2. Transferir document_views: user_id = new_user.id
+    db.query(DocumentView).filter(
+        DocumentView.session_token == legal_session_token
+    ).update({"user_id": user_id}, synchronize_session="fetch")
+
+    # 3. Crear cookie_consent mínimo con ['necessary']
+    # Referencia: GDPR Art. 5(3) ePrivacy — solo necesarias por defecto.
+    retention_expires = now_utc + timedelta(days=365)  # 1 año de retención del banner
+    cookie_consent = CookieConsent(
+        visitor_uuid=legal_session_token,  # reutilizamos como visitor_uuid para trazar
+        user_id=user_id,
+        accepted_at_utc=now_utc,
+        user_timezone=user_timezone,
+        client_ip=client_ip,
+        user_agent=user_agent_str,
+        policy_version=COOKIE_CONSENT_POLICY_VERSION,
+        policy_hash=COOKIE_CONSENT_POLICY_HASH,
+        categories_accepted=_json.dumps(["necessary"]),
+        origin="register",
+        retention_expires_at=retention_expires,
+        revoked_at_utc=None,
+        revocation_reason=None,
+    )
+    db.add(cookie_consent)
 
 
 # ─── Username content moderation ───────────────────────────────
@@ -301,6 +473,12 @@ class RegisterRequest(BaseModel):
     mentoring_price_per_hour: float | None = None
     professional_title: str = ""
     study_start_date: str = ""
+    # UUID4 generado por el frontend al iniciar el flujo de consentimiento.
+    # Identifica la sesión anónima cuyas document_views se transfieren al usuario
+    # al completar el registro (D-M2 = A, D-M5 = A).
+    # Referencia: GDPR Art. 7(1) — el responsable debe demostrar el consentimiento.
+    # URL: https://eur-lex.europa.eu/legal-content/ES/TXT/?uri=CELEX:32016R0679
+    legal_session_token: str
 
 
 class LoginRequest(BaseModel):
@@ -502,6 +680,11 @@ def register(req: RegisterRequest, request: Request = None, db: Session = Depend
     if not req.tos_accepted:
         raise HTTPException(400, "Debes aceptar los términos de servicio")
 
+    # Validar evidencia de lectura de los 4 documentos legales (D-M6 = A).
+    # Lanza 422 si faltan documentos, hashes incorrectos, o 409 si ya fue usado.
+    # Referencia: GDPR Art. 7(1) — el responsable debe demostrar el consentimiento.
+    legal_views = validate_legal_reading_evidence(db, req.legal_session_token)
+
     import json as _json
 
     # Generate or validate username
@@ -581,16 +764,28 @@ def register(req: RegisterRequest, request: Request = None, db: Session = Depend
     db.add(user)
     db.flush()  # asegura user.id disponible sin soltar la transacción
 
-    # Registrar aceptación del checkbox declarativo de edad como evidencia probatoria
-    # (CLAUDE.md §Componente 3). Va en la misma transacción que la creación del user.
-    record_age_declaration(
-        db=db,
-        user_id=user.id,
-        request=request,
-        user_timezone=req.user_timezone,
-    )
+    # Registrar consentimiento multi-documento como evidencia probatoria atómica.
+    # Crea 4 user_agreements + transfiere document_views + crea cookie_consent mínimo.
+    # Referencia: GDPR Art. 7(1) — demostrabilidad del consentimiento.
+    # Bloque multi-document-consent-v1, D-M5 = A.
+    try:
+        record_multi_document_consent(
+            db=db,
+            user_id=user.id,
+            legal_session_token=req.legal_session_token,
+            request=request,
+            user_timezone=req.user_timezone,
+            latest_by_key=legal_views,
+        )
+        db.commit()
+    except Exception as exc:
+        db.rollback()
+        raise HTTPException(
+            status_code=500,
+            detail="Error al registrar evidencia legal del consentimiento. "
+                   "El registro se revirtió; por favor intenta de nuevo."
+        ) from exc
 
-    db.commit()
     db.refresh(user)
 
     # Process referral code if provided
@@ -2108,4 +2303,181 @@ def migrate_username_prefixes(
         "skipped": len(skipped),
         "failed": len(failed),
         "details": {"updated": updated, "skipped": skipped, "failed": failed}
+    }
+
+
+# ────────────────────────────────────────────────────────────────────────
+# Pieza 6 — Re-aceptación de documentos legales (bloque-legal-consolidation-v2)
+# ────────────────────────────────────────────────────────────────────────
+#
+# Cuando Conniku publica una versión nueva de los Términos y Condiciones,
+# de la Política de Privacidad o de la Política de Cookies, los usuarios
+# existentes NO quedan automáticamente vinculados por la versión nueva.
+# Deben re-aceptarla de forma explícita, con la misma evidencia probatoria
+# que se exige en el alta: timestamp UTC, hash del texto, IP, user-agent,
+# zona horaria, document_type, version.
+#
+# Mecanismo:
+#   1. El frontend llama a ``GET /auth/reaccept-status`` después del login.
+#      Responde con la lista de documentos pendientes (ya sea porque el
+#      usuario nunca los aceptó o porque aceptó una versión anterior).
+#   2. Si la lista está vacía, el usuario continúa normalmente.
+#   3. Si no está vacía, el frontend monta LegalReacceptanceModal. El
+#      usuario debe abrir cada documento y marcar el checkbox final.
+#   4. Al confirmar, el frontend llama a ``POST /auth/reaccept-legal`` con
+#      la lista ``[{document_type, text_version, text_version_hash}]``.
+#      El backend valida que las ternas coincidan con las publicadas e
+#      inserta una fila nueva por documento en ``user_agreements``.
+#
+# Feature flag ``LEGAL_GATE_ENFORCE``: si está en "false" (default), los
+# endpoints funcionan pero el middleware de enforce no bloquea el acceso
+# a otras rutas. Esto permite desplegar el código en producción sin
+# riesgo de lockout mientras se monitorea. Se activa manualmente una vez
+# confirmado el correcto funcionamiento.
+
+LEGAL_GATE_ENFORCE: bool = os.environ.get("LEGAL_GATE_ENFORCE", "false").lower() in ("1", "true", "yes")
+
+
+def record_document_acceptance(
+    db: Session,
+    user_id: str,
+    request: Request | None,
+    user_timezone: str | None,
+    document_type: str,
+    text_version: str,
+    text_version_hash: str,
+) -> UserAgreement:
+    """Registra la aceptación append-only de un documento legal.
+
+    No elimina filas anteriores: cada nueva aceptación produce una nueva
+    fila. Así queda historia completa de qué versiones aceptó el usuario
+    a lo largo del tiempo, útil para auditoría y disputas.
+    """
+    agreement = UserAgreement(
+        user_id=user_id,
+        document_type=document_type,
+        text_version=text_version,
+        text_version_hash=text_version_hash,
+        accepted_at_utc=datetime.utcnow(),
+        user_timezone=user_timezone,
+        client_ip=_get_client_ip(request),
+        user_agent=request.headers.get("user-agent", "") if request else None,
+    )
+    db.add(agreement)
+    return agreement
+
+
+def _pending_reaccept_for_user(db: Session, user_id: str) -> list[dict]:
+    """Devuelve la lista de documentos que este usuario debe re-aceptar.
+
+    Un documento está pendiente cuando NO existe ninguna fila en
+    ``user_agreements`` para ese ``document_type`` con el par
+    ``(text_version, text_version_hash)`` canónico publicado hoy.
+    """
+    pending: list[dict] = []
+    for document_type, version, hash_value in REACCEPT_DOCUMENTS:
+        row = (
+            db.query(UserAgreement)
+            .filter(
+                UserAgreement.user_id == user_id,
+                UserAgreement.document_type == document_type,
+                UserAgreement.text_version == version,
+                UserAgreement.text_version_hash == hash_value,
+            )
+            .first()
+        )
+        if row is None:
+            pending.append(
+                {
+                    "document_type": document_type,
+                    "version": version,
+                    "hash": hash_value,
+                }
+            )
+    return pending
+
+
+@router.get("/reaccept-status")
+def reaccept_status(user: User = Depends(get_current_user), db: Session = Depends(get_db)):
+    """Devuelve qué documentos legales vigentes el usuario aún no ha aceptado.
+
+    Siempre responde 200, incluso cuando hay documentos pendientes: el
+    status se infiere de la longitud de ``pending``. El frontend toma la
+    decisión de montar el modal o continuar.
+    """
+    pending = _pending_reaccept_for_user(db, user.id)
+    return {
+        "user_id": user.id,
+        "pending": pending,
+        "is_up_to_date": len(pending) == 0,
+        "enforce_enabled": LEGAL_GATE_ENFORCE,
+    }
+
+
+class ReacceptDocumentPayload(BaseModel):
+    document_type: str
+    text_version: str
+    text_version_hash: str
+
+
+class ReacceptLegalRequest(BaseModel):
+    documents: list[ReacceptDocumentPayload]
+    user_timezone: str | None = None
+
+
+@router.post("/reaccept-legal")
+def reaccept_legal(
+    req: ReacceptLegalRequest,
+    request: Request,
+    user: User = Depends(get_current_user),
+    db: Session = Depends(get_db),
+):
+    """Registra la re-aceptación por parte del usuario de uno o más documentos.
+
+    Valida que cada (document_type, version, hash) enviado por el cliente
+    coincida con alguna de las entradas canónicas publicadas en
+    ``REACCEPT_DOCUMENTS``. Si alguna terna no coincide, la operación
+    completa se rechaza y no se escribe ninguna fila. Esto previene que
+    un cliente con bundle obsoleto o alterado registre un hash incorrecto.
+    """
+    if not req.documents:
+        raise HTTPException(status_code=400, detail="Se requiere al menos un documento")
+
+    canon = {(dt, ver, h): True for (dt, ver, h) in REACCEPT_DOCUMENTS}
+    invalid: list[str] = []
+    for doc in req.documents:
+        key = (doc.document_type, doc.text_version, doc.text_version_hash)
+        if key not in canon:
+            invalid.append(doc.document_type)
+    if invalid:
+        raise HTTPException(
+            status_code=409,
+            detail={
+                "error": "hash_or_version_mismatch",
+                "invalid_document_types": invalid,
+                "hint": "Recarga la página para obtener la versión publicada vigente",
+            },
+        )
+
+    # Append-only: una fila nueva por cada document_type enviado.
+    written: list[dict] = []
+    for doc in req.documents:
+        record_document_acceptance(
+            db=db,
+            user_id=user.id,
+            request=request,
+            user_timezone=req.user_timezone,
+            document_type=doc.document_type,
+            text_version=doc.text_version,
+            text_version_hash=doc.text_version_hash,
+        )
+        written.append({"document_type": doc.document_type, "version": doc.text_version})
+
+    db.commit()
+
+    pending = _pending_reaccept_for_user(db, user.id)
+    return {
+        "accepted": written,
+        "pending": pending,
+        "is_up_to_date": len(pending) == 0,
     }

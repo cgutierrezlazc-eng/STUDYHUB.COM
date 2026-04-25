@@ -1,0 +1,1102 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Conniku — Workspace con Athena inline</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Funnel+Display:wght@400;500;600;700;800;900&family=Geist+Mono:wght@400;500;600;700&family=Times+New+Roman&display=swap" />
+  <style>
+    :root {
+      --ink: #0D0F10; --ink-2: #2B2E30; --ink-3: #696C6F; --ink-4: #A0A3A7;
+      --paper: #F5F4EF; --paper-2: #EBE9E1; --paper-3: #DBD9CF;
+      --line: #D2CFC3; --line-soft: #E2DFD4; --card: #FFFFFF;
+      --lime: #D9FF3A; --lime-ink: #181F08;
+      --pink: #FF4D3A; --cream: #FFE9B8;
+      --violet: #6B4EFF; --cyan: #00C2FF; --orange: #FF4A1C;
+      --electric: #2F55F0;
+      --doc-bg: #f1f3f4;
+      --doc-text: #1a1a1a;
+      --font-display: 'Funnel Display', -apple-system, sans-serif;
+      --font-mono: 'Geist Mono', ui-monospace, monospace;
+      --font-doc: 'Times New Roman', Georgia, serif;
+      --ease: cubic-bezier(.2,.8,.2,1);
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    html, body { background: var(--paper); color: var(--ink); font-family: var(--font-display); height: 100vh; overflow: hidden; }
+    body { display: flex; flex-direction: column; }
+    ::selection { background: var(--lime); color: var(--lime-ink); }
+
+    /* Top app bar */
+    .app-bar {
+      background: var(--card); border-bottom: 1px solid var(--line);
+      padding: 10px 20px; display: flex; align-items: center; gap: 16px; flex-shrink: 0;
+    }
+    .logo-tile { width: 28px; height: 28px; display: block; flex-shrink: 0; }
+    .breadcrumb { display: flex; align-items: center; gap: 8px; font-family: var(--font-mono); font-size: 11px; letter-spacing: .06em; color: var(--ink-3); text-transform: uppercase; }
+    .bc-link { cursor: pointer; }
+    .bc-link:hover { color: var(--ink); }
+    .bc-sep { color: var(--ink-4); }
+    .bc-current { color: var(--ink); font-weight: 700; max-width: 280px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .bc-tag { background: var(--pink); color: #fff; padding: 3px 8px; border-radius: 999px; letter-spacing: .08em; font-weight: 700; font-size: 9px; }
+
+    .app-bar-right { margin-left: auto; display: flex; align-items: center; gap: 14px; }
+    .save-stat { display: flex; align-items: center; gap: 8px; font-family: var(--font-mono); font-size: 10.5px; letter-spacing: .06em; text-transform: uppercase; color: var(--ink-3); }
+    .save-stat .s-d { width: 7px; height: 7px; border-radius: 50%; background: var(--lime); animation: pulse 1.6s var(--ease) infinite; }
+    @keyframes pulse { 0% { box-shadow: 0 0 0 0 rgba(217,255,58,.7); } 70% { box-shadow: 0 0 0 10px rgba(217,255,58,0); } 100% { box-shadow: 0 0 0 0 rgba(217,255,58,0); } }
+
+    .participants { display: flex; align-items: center; }
+    .part {
+      width: 30px; height: 30px; border-radius: 50%; border: 2px solid var(--card);
+      margin-left: -8px; display: grid; place-items: center;
+      font-weight: 800; font-size: 11px; position: relative; cursor: pointer;
+      font-family: var(--font-display);
+      background-size: cover; background-position: center;
+    }
+    .part:first-child { margin-left: 0; }
+    .part .live-ring { position: absolute; inset: -3px; border-radius: 50%; border: 2px solid var(--orange); pointer-events: none; }
+
+    /* Avatares "con foto": patrones coloridos con iniciales */
+    .av-felipe { background: linear-gradient(135deg, var(--lime) 0%, var(--cream) 100%); color: var(--lime-ink); }
+    .av-victoria { background: linear-gradient(135deg, var(--pink) 0%, var(--orange) 100%); color: #fff; }
+    .av-daniela { background: linear-gradient(135deg, var(--violet) 0%, var(--electric) 100%); color: #fff; }
+    .av-luis { background: linear-gradient(135deg, var(--cyan) 0%, var(--electric) 100%); color: var(--ink); }
+    .av-pia { background: linear-gradient(135deg, var(--cream) 0%, var(--lime) 100%); color: var(--lime-ink); }
+    .av-barbara { background: linear-gradient(135deg, var(--pink) 0%, var(--violet) 100%); color: #fff; }
+    .av-cristian { background: linear-gradient(135deg, var(--ink) 0%, var(--violet) 100%); color: var(--lime); }
+
+    .share-btn { background: var(--ink); color: #fff; padding: 8px 12px 8px 16px; border: 0; border-radius: 999px; display: flex; align-items: center; gap: 8px; font-family: var(--font-display); font-weight: 700; font-size: 13px; cursor: pointer; transition: all 150ms var(--ease); }
+    .share-btn:hover { transform: translateY(-1px); }
+    .share-btn .ring-s { width: 22px; height: 22px; border-radius: 50%; background: var(--lime); color: var(--ink); display: grid; place-items: center; font-weight: 900; font-size: 12px; }
+    .icon-btn { width: 34px; height: 34px; border-radius: 10px; background: var(--card); border: 1px solid var(--line); display: grid; place-items: center; cursor: pointer; color: var(--ink-2); font-size: 15px; transition: all 150ms var(--ease); }
+    .icon-btn:hover { background: var(--paper-2); color: var(--ink); }
+    .icon-btn.athena { background: var(--ink); color: var(--lime); border-color: var(--ink); position: relative; font-weight: 900; }
+    .icon-btn.athena::after { content: ""; position: absolute; top: -3px; right: -3px; width: 10px; height: 10px; border-radius: 50%; background: var(--lime); border: 2px solid var(--card); }
+
+    /* Editor toolbar */
+    .toolbar {
+      background: var(--paper); border-bottom: 1px solid var(--line);
+      padding: 10px 20px; display: flex; align-items: center; gap: 6px;
+      flex-wrap: nowrap; flex-shrink: 0; overflow-x: auto;
+    }
+    .toolbar::-webkit-scrollbar { height: 0; }
+    .tb-group { display: flex; align-items: center; gap: 2px; }
+    .tb-sep { width: 1px; height: 20px; background: var(--line); margin: 0 6px; flex-shrink: 0; }
+    .tb-btn {
+      min-width: 30px; height: 30px; border-radius: 6px; border: 0; background: transparent;
+      display: grid; place-items: center; cursor: pointer; color: var(--ink-2);
+      font-family: var(--font-display); font-weight: 700; font-size: 13px;
+      transition: all 100ms var(--ease); padding: 0 6px;
+    }
+    .tb-btn:hover { background: var(--paper-2); color: var(--ink); }
+    .tb-btn.active { background: var(--ink); color: #fff; }
+    .tb-select {
+      display: flex; align-items: center; gap: 6px; padding: 6px 10px; border-radius: 6px;
+      cursor: pointer; font-family: var(--font-display); font-weight: 500;
+      font-size: 13px; color: var(--ink); background: var(--card);
+      border: 1px solid var(--line); white-space: nowrap;
+    }
+    .tb-select:hover { border-color: var(--ink); }
+    .tb-select .chev-tb { color: var(--ink-3); font-size: 10px; }
+    .tb-select.fs { min-width: 52px; justify-content: space-between; }
+    .tb-size-input { width: 46px; text-align: center; background: var(--card); border: 1px solid var(--line); border-radius: 6px; padding: 5px; font-family: var(--font-mono); font-size: 12px; font-weight: 600; color: var(--ink); outline: none; }
+    .tb-color-btn { position: relative; }
+    .tb-color-btn::after { content: ""; position: absolute; bottom: 3px; left: 6px; right: 6px; height: 3px; background: var(--pink); border-radius: 1px; }
+    .tb-color-btn.highlight::after { background: var(--lime); }
+
+    /* Cover + editor layout */
+    .editor-shell { flex: 1; display: grid; grid-template-columns: 1fr 320px; min-height: 0; transition: grid-template-columns 200ms var(--ease); }
+    .editor-shell.with-athena { grid-template-columns: 1fr 360px 320px; }
+    .editor-main { overflow-y: auto; background: var(--doc-bg); }
+    .editor-main::-webkit-scrollbar { width: 8px; }
+    .editor-main::-webkit-scrollbar-track { background: transparent; }
+    .editor-main::-webkit-scrollbar-thumb { background: rgba(0,0,0,.2); border-radius: 4px; }
+
+    /* Cover del documento (portada del trabajo) */
+    .doc-cover {
+      background: linear-gradient(120deg, var(--pink) 0%, var(--orange) 35%, var(--cream) 65%, var(--lime) 100%);
+      padding: 56px 60px 40px; position: relative; overflow: hidden;
+    }
+    .doc-cover::before {
+      content: ""; position: absolute; top: 20px; left: 40px;
+      width: 12px; height: 12px; border-radius: 50%; background: var(--ink);
+      box-shadow:
+        140px 30px 0 var(--violet),
+        320px 12px 0 var(--cyan),
+        60px 100px 0 var(--ink),
+        500px 80px 0 var(--ink),
+        740px 40px 0 var(--lime),
+        860px 120px 0 var(--ink),
+        1020px 70px 0 var(--pink),
+        260px 160px 0 var(--cream);
+    }
+    .doc-cover-inner { position: relative; z-index: 2; max-width: 900px; margin: 0 auto; }
+    .cover-tag-row { display: flex; gap: 8px; margin-bottom: 20px; }
+    .cover-tag {
+      background: var(--ink); color: #fff; padding: 5px 12px; border-radius: 999px;
+      font-family: var(--font-mono); font-size: 10px; letter-spacing: .1em;
+      text-transform: uppercase; font-weight: 700;
+    }
+    .cover-tag.live { background: var(--card); color: var(--ink); display: flex; align-items: center; gap: 7px; }
+    .cover-tag.live::before { content: ""; width: 7px; height: 7px; border-radius: 50%; background: var(--orange); animation: pulse 1.6s var(--ease) infinite; }
+    .cover-tag.facultad { background: var(--cream); color: var(--ink); }
+
+    .cover-title {
+      font-family: var(--font-display); font-weight: 900;
+      font-size: clamp(40px, 5vw, 64px); letter-spacing: -.03em;
+      line-height: 1.02; color: var(--ink); margin-bottom: 20px;
+    }
+    .cover-title .hl-ink { background: var(--ink); color: var(--lime); padding: 0 10px; border-radius: 10px; display: inline-block; transform: rotate(-1deg); }
+
+    .cover-meta-strip {
+      display: flex; align-items: center; gap: 24px; flex-wrap: wrap;
+      background: rgba(13,15,16,.12); backdrop-filter: blur(4px);
+      border: 1.5px solid rgba(13,15,16,.25); border-radius: 20px;
+      padding: 14px 22px;
+    }
+    .cov-meta { display: flex; flex-direction: column; gap: 3px; }
+    .cov-meta .l { font-family: var(--font-mono); font-size: 9.5px; letter-spacing: .12em; text-transform: uppercase; color: var(--ink-2); font-weight: 600; }
+    .cov-meta .v { font-weight: 700; font-size: 14px; color: var(--ink); letter-spacing: -.01em; }
+    .cov-participants {
+      display: flex; align-items: center; margin-left: auto;
+    }
+    .cov-part { width: 28px; height: 28px; border-radius: 50%; border: 2px solid var(--card); margin-left: -6px; display: grid; place-items: center; font-weight: 800; font-size: 10px; font-family: var(--font-display); }
+    .cov-part:first-child { margin-left: 0; }
+
+    /* Document paper */
+    .paper-zone { padding: 40px 20px 80px; min-height: calc(100% - 340px); display: flex; justify-content: center; }
+    .paper {
+      width: 816px; max-width: 100%; min-height: 1056px;
+      background: var(--card); border-radius: 2px;
+      box-shadow: 0 1px 3px rgba(60,64,67,.15), 0 4px 20px rgba(60,64,67,.1);
+      padding: 96px; color: var(--doc-text); font-family: var(--font-doc);
+      font-size: 15px; line-height: 1.6; position: relative;
+    }
+    .paper h1.doc-title {
+      font-family: var(--font-doc); font-size: 32px; font-weight: 700;
+      color: var(--doc-text); margin-bottom: 8px; line-height: 1.2;
+    }
+    .paper .doc-subtitle {
+      font-family: var(--font-doc); font-size: 15px; color: #5f6368;
+      font-style: italic; margin-bottom: 28px;
+    }
+    .paper h2 { font-family: var(--font-doc); font-size: 22px; font-weight: 700; color: var(--doc-text); margin: 28px 0 12px; line-height: 1.3; }
+    .paper h3 { font-family: var(--font-doc); font-size: 17px; font-weight: 700; color: var(--doc-text); margin: 20px 0 8px; line-height: 1.3; }
+    .paper p { margin-bottom: 12px; text-align: justify; }
+    .paper ul, .paper ol { margin: 10px 0 14px 32px; }
+    .paper ul li, .paper ol li { margin-bottom: 6px; }
+
+    /* Selección en vivo de colaborador */
+    .live-sel-f {
+      background: rgba(217,255,58,.38); border-radius: 2px;
+      position: relative; padding: 0 1px;
+    }
+    .live-sel-f::before { content: "Felipe G."; position: absolute; top: -18px; left: 0; background: var(--lime); color: var(--lime-ink); padding: 2px 7px; border-radius: 4px 4px 4px 0; font-family: var(--font-mono); font-size: 9.5px; font-weight: 700; letter-spacing: .03em; white-space: nowrap; }
+
+    .live-cursor-v { position: relative; display: inline-block; }
+    .live-cursor-v .c-line { display: inline-block; width: 2px; height: 18px; background: var(--pink); vertical-align: text-bottom; animation: blink 1.2s infinite; }
+    @keyframes blink { 0%, 50% { opacity: 1; } 51%, 100% { opacity: 0; } }
+    .live-cursor-v .c-lbl {
+      position: absolute; top: -20px; left: -3px;
+      background: var(--pink); color: #fff;
+      padding: 2px 7px; border-radius: 5px 5px 5px 0;
+      font-family: var(--font-mono); font-size: 9.5px; font-weight: 700;
+      letter-spacing: .03em; white-space: nowrap;
+    }
+
+    .doc-table {
+      width: 100%; border-collapse: collapse; margin: 14px 0;
+      font-family: var(--font-doc); font-size: 14px;
+    }
+    .doc-table th, .doc-table td {
+      border: 1px solid #c8ccd1; padding: 8px 12px; text-align: left;
+    }
+    .doc-table th { background: #f8f9fa; font-weight: 700; }
+
+    .doc-callout {
+      border-left: 4px solid #5f6368; background: #f1f3f4;
+      padding: 12px 16px; margin: 14px 0; font-style: italic;
+      border-radius: 0 6px 6px 0; color: #3c4043;
+    }
+
+    /* Status bar inferior del editor */
+    .editor-status {
+      background: var(--paper); border-top: 1px solid var(--line);
+      padding: 8px 20px; display: flex; align-items: center;
+      gap: 18px; flex-shrink: 0;
+      font-family: var(--font-mono); font-size: 10.5px; letter-spacing: .06em;
+      text-transform: uppercase; color: var(--ink-3);
+    }
+    .editor-status .s-item { display: flex; align-items: center; gap: 6px; }
+    .editor-status .s-item .v { color: var(--ink); font-weight: 700; font-family: var(--font-mono); }
+    .editor-status .mode { margin-left: auto; background: var(--lime); color: var(--lime-ink); padding: 3px 10px; border-radius: 999px; font-weight: 700; letter-spacing: .08em; }
+    .editor-status .fit { display: flex; align-items: center; gap: 6px; }
+
+    /* Right panel: Chat / Members / Versions */
+    .right-pane {
+      background: var(--card); border-left: 1px solid var(--line);
+      display: flex; flex-direction: column; overflow: hidden;
+    }
+    .rp-tabs { display: flex; padding: 12px 18px 0; gap: 3px; border-bottom: 1px solid var(--line-soft); }
+    .rp-tab { padding: 7px 11px; font-family: var(--font-display); font-weight: 600; font-size: 12.5px; color: var(--ink-3); cursor: pointer; border-bottom: 2px solid transparent; display: flex; align-items: center; gap: 5px; }
+    .rp-tab.active { color: var(--ink); border-bottom-color: var(--lime); font-weight: 700; }
+    .rp-tab .count-sm { background: var(--paper-2); color: var(--ink-2); font-family: var(--font-mono); font-size: 9px; padding: 1px 6px; border-radius: 999px; letter-spacing: 0; font-weight: 700; }
+    .rp-tab.active .count-sm { background: var(--ink); color: var(--lime); }
+
+    .rp-head { padding: 14px 18px 12px; border-bottom: 1px solid var(--line-soft); }
+    .rp-head h3 { font-weight: 800; font-size: 15px; letter-spacing: -.01em; }
+    .rp-head .sub { font-family: var(--font-mono); font-size: 10px; color: var(--ink-3); letter-spacing: .06em; margin-top: 2px; }
+
+    .chat-stream { flex: 1; overflow-y: auto; padding: 14px 18px; display: flex; flex-direction: column; gap: 10px; }
+    .chat-stream::-webkit-scrollbar { width: 4px; }
+    .chat-stream::-webkit-scrollbar-thumb { background: var(--line); border-radius: 4px; }
+
+    .ws-msg { display: flex; gap: 9px; }
+    .ws-msg.mine { flex-direction: row-reverse; }
+    .ws-msg .m-av { width: 28px; height: 28px; border-radius: 50%; flex-shrink: 0; display: grid; place-items: center; font-weight: 800; font-size: 10.5px; font-family: var(--font-display); }
+    .ws-msg .m-body { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 3px; }
+    .ws-msg.mine .m-body { align-items: flex-end; }
+    .ws-msg .m-top { display: flex; align-items: baseline; gap: 6px; }
+    .ws-msg .m-name { font-weight: 700; font-size: 12px; }
+    .ws-msg .m-time { font-family: var(--font-mono); font-size: 9.5px; color: var(--ink-3); letter-spacing: .04em; }
+    .ws-msg .m-bubble { padding: 8px 12px; border-radius: 14px; font-size: 12.5px; line-height: 1.4; max-width: 90%; font-weight: 500; }
+    .ws-msg .m-bubble.received { background: var(--paper-2); border-bottom-left-radius: 4px; color: var(--ink); }
+    .ws-msg.mine .m-bubble { background: var(--ink); color: #fff; border-bottom-right-radius: 4px; }
+
+    .sys-note {
+      background: var(--cream); border-radius: 10px; padding: 8px 12px;
+      font-size: 11px; color: var(--ink-2); display: flex; align-items: center;
+      gap: 7px; font-family: var(--font-mono); letter-spacing: .02em; font-weight: 500;
+    }
+    .sys-note .sys-d { width: 5px; height: 5px; border-radius: 50%; background: var(--violet); flex-shrink: 0; }
+    .sys-note strong { color: var(--ink); font-family: var(--font-display); font-weight: 700; letter-spacing: 0; font-size: 12px; }
+
+    .date-div { text-align: center; font-family: var(--font-mono); font-size: 9px; letter-spacing: .14em; text-transform: uppercase; color: var(--ink-3); margin: 6px 0; position: relative; }
+
+    .rp-composer { padding: 10px 14px 14px; border-top: 1px solid var(--line-soft); display: flex; gap: 8px; }
+    .rp-composer input { flex: 1; background: var(--paper-2); border: 0; border-radius: 999px; padding: 8px 14px; font-family: var(--font-display); font-size: 12.5px; color: var(--ink); outline: none; font-weight: 500; }
+    .rp-send { width: 32px; height: 32px; border-radius: 50%; background: var(--ink); color: var(--lime); border: 0; display: grid; place-items: center; cursor: pointer; font-size: 13px; font-weight: 900; }
+
+    /* Athena panel */
+    .athena-pane {
+      background: var(--ink); color: #fff; border-right: 1px solid var(--line);
+      display: flex; flex-direction: column; overflow: hidden;
+    }
+    .ath-head {
+      padding: 16px 18px 14px; border-bottom: 1px solid rgba(255,255,255,.1);
+      display: flex; align-items: center; gap: 10px;
+    }
+    .ath-icon { width: 34px; height: 34px; border-radius: 10px; background: var(--lime); color: var(--lime-ink); display: grid; place-items: center; font-weight: 900; font-size: 16px; flex-shrink: 0; }
+    .ath-title { font-weight: 800; font-size: 15px; letter-spacing: -.01em; }
+    .ath-subtitle { font-family: var(--font-mono); font-size: 10px; color: rgba(255,255,255,.55); letter-spacing: .08em; margin-top: 2px; }
+    .ath-actions { margin-left: auto; display: flex; gap: 4px; }
+    .ath-icon-btn { width: 28px; height: 28px; border-radius: 6px; background: rgba(255,255,255,.08); border: 0; color: var(--lime); display: grid; place-items: center; cursor: pointer; font-size: 13px; font-weight: 900; }
+    .ath-icon-btn:hover { background: rgba(255,255,255,.15); }
+    .ath-icon-btn.close { color: rgba(255,255,255,.5); font-weight: 400; font-size: 15px; }
+
+    .ath-analysis { padding: 14px 18px 10px; background: rgba(217,255,58,.05); border-bottom: 1px solid rgba(255,255,255,.1); }
+    .ath-analysis .label {
+      display: flex; align-items: center; gap: 7px;
+      font-family: var(--font-mono); font-size: 9.5px; letter-spacing: .14em;
+      text-transform: uppercase; color: var(--lime); font-weight: 700; margin-bottom: 8px;
+    }
+    .ath-analysis .label .live-d { width: 6px; height: 6px; border-radius: 50%; background: var(--lime); animation: pulse 1.6s var(--ease) infinite; }
+    .ath-section { margin-bottom: 10px; }
+    .ath-sec-h {
+      font-family: var(--font-mono); font-size: 9px; letter-spacing: .12em;
+      color: rgba(255,255,255,.6); text-transform: uppercase; font-weight: 700;
+      margin-bottom: 4px;
+    }
+    .ath-sec-body { font-size: 12.5px; line-height: 1.45; color: rgba(255,255,255,.9); font-weight: 400; }
+    .ath-sec-body strong { color: var(--lime); font-weight: 700; }
+
+    .ath-chat { flex: 1; overflow-y: auto; padding: 14px 18px; display: flex; flex-direction: column; gap: 10px; }
+    .ath-chat::-webkit-scrollbar { width: 4px; }
+    .ath-chat::-webkit-scrollbar-thumb { background: rgba(255,255,255,.1); border-radius: 4px; }
+    .ath-msg { padding: 10px 13px; border-radius: 14px; font-size: 13px; line-height: 1.45; max-width: 90%; font-weight: 500; }
+    .ath-msg.user { background: var(--lime); color: var(--lime-ink); align-self: flex-end; border-bottom-right-radius: 4px; }
+    .ath-msg.athena { background: rgba(255,255,255,.08); color: #fff; border-bottom-left-radius: 4px; }
+    .ath-msg.athena .ref { font-family: var(--font-mono); font-size: 9.5px; color: var(--lime); letter-spacing: .06em; font-weight: 700; margin-bottom: 4px; text-transform: uppercase; }
+
+    .ath-suggestions { padding: 14px 18px; border-top: 1px solid rgba(255,255,255,.1); }
+    .ath-sug-title { font-family: var(--font-mono); font-size: 9.5px; letter-spacing: .12em; color: rgba(255,255,255,.5); text-transform: uppercase; margin-bottom: 8px; font-weight: 700; }
+    .ath-sug { display: flex; flex-direction: column; gap: 6px; }
+    .ath-sug-item {
+      background: rgba(255,255,255,.06); border: 1px solid rgba(255,255,255,.1);
+      border-radius: 10px; padding: 9px 12px; font-size: 12px;
+      cursor: pointer; transition: all 150ms var(--ease); color: rgba(255,255,255,.85);
+      display: flex; align-items: center; gap: 8px; font-weight: 500;
+    }
+    .ath-sug-item:hover { background: rgba(217,255,58,.08); border-color: var(--lime); color: var(--lime); }
+    .ath-sug-item .ico-s { color: var(--lime); font-weight: 900; }
+
+    .ath-composer { padding: 12px 18px 14px; border-top: 1px solid rgba(255,255,255,.1); display: flex; gap: 8px; }
+    .ath-composer input { flex: 1; background: rgba(255,255,255,.08); border: 0; border-radius: 999px; padding: 8px 14px; font-family: var(--font-display); font-size: 12.5px; color: #fff; outline: none; font-weight: 500; }
+    .ath-composer input::placeholder { color: rgba(255,255,255,.5); }
+    .ath-send { width: 32px; height: 32px; border-radius: 50%; background: var(--lime); color: var(--lime-ink); border: 0; display: grid; place-items: center; cursor: pointer; font-size: 13px; font-weight: 900; }
+
+    /* Members mini list (collapsed in right panel if tab Miembros selected) */
+    .members-list { padding: 6px 18px; }
+    .mem-item { padding: 10px 0; display: flex; align-items: center; gap: 12px; border-bottom: 1px solid var(--line-soft); }
+    .mem-item:last-child { border-bottom: 0; }
+    .mem-item .mem-av { width: 36px; height: 36px; border-radius: 50%; display: grid; place-items: center; font-weight: 800; font-size: 12px; flex-shrink: 0; font-family: var(--font-display); position: relative; }
+    .mem-info { flex: 1; }
+    .mem-name { font-weight: 700; font-size: 13px; }
+    .mem-meta { font-family: var(--font-mono); font-size: 10px; color: var(--ink-3); letter-spacing: .04em; margin-top: 2px; }
+    .role-pill { font-family: var(--font-mono); font-size: 9px; padding: 3px 8px; border-radius: 999px; letter-spacing: .08em; text-transform: uppercase; font-weight: 700; }
+    .role-pill.owner { background: var(--ink); color: var(--lime); }
+    .role-pill.editor { background: var(--cream); color: var(--ink); }
+    .role-pill.viewer { background: var(--paper-2); color: var(--ink-2); }
+
+    @media (max-width: 1200px) {
+      .editor-shell { grid-template-columns: 1fr 280px; }
+      .editor-shell.with-athena { grid-template-columns: 1fr 300px 280px; }
+      .paper { padding: 60px; }
+    }
+
+    /* ═════ ATHENA INLINE MARKS + POPUPS ═════ */
+
+    /* Marca en texto del documento */
+    .ath-mark {
+      background: linear-gradient(transparent 60%, rgba(217,255,58,.55) 60%);
+      border-bottom: 2px dashed var(--pink); cursor: pointer;
+      padding: 0 2px; position: relative;
+      transition: background 150ms var(--ease);
+    }
+    .ath-mark:hover { background: linear-gradient(transparent 60%, rgba(217,255,58,.85) 60%); }
+    .ath-mark .mark-pin {
+      position: absolute; top: -9px; right: -14px;
+      width: 20px; height: 20px; border-radius: 50%;
+      background: var(--lime); color: var(--doc-text);
+      display: grid; place-items: center;
+      font-family: var(--font-display); font-weight: 900; font-size: 10px;
+      border: 2px solid var(--doc-text); z-index: 3;
+      box-shadow: 0 2px 6px rgba(0,0,0,.2);
+    }
+
+    /* Ecuación del documento con marca */
+    .doc-eq {
+      text-align: center; padding: 12px 18px; background: #f1f3f4;
+      border-radius: 8px; font-family: 'Courier New', monospace;
+      font-size: 16px; margin: 12px 0; position: relative;
+    }
+    .doc-eq .ath-mark { padding: 3px 6px; }
+
+    /* Popup de Athena flotante al lado del paper */
+    .paper-zone {
+      position: relative;
+    }
+    .paper {
+      position: relative;
+    }
+
+    .ath-popup {
+      position: absolute; left: calc(100% + 20px); top: 0;
+      width: 320px; background: var(--card);
+      border: 2px solid var(--ink); border-radius: 16px;
+      padding: 16px 16px 14px;
+      box-shadow: 6px 6px 0 var(--ink);
+      transform: rotate(-.5deg);
+      z-index: 10;
+    }
+    .ath-popup:nth-of-type(2n) { transform: rotate(.4deg); }
+
+    .ath-popup::before {
+      content: ""; position: absolute; top: 28px; left: -34px;
+      width: 26px; height: 2px;
+      background: repeating-linear-gradient(90deg, var(--pink) 0 4px, transparent 4px 8px);
+    }
+    .ath-popup::after {
+      content: ""; position: absolute; top: 22px; left: -44px;
+      width: 14px; height: 14px; border-radius: 50%;
+      background: var(--lime); border: 2px solid var(--ink);
+    }
+
+    .ap-head {
+      display: flex; align-items: center; gap: 10px;
+      padding-bottom: 10px; margin-bottom: 10px;
+      border-bottom: 1px solid var(--line-soft);
+    }
+    .ap-head .ap-avatar {
+      width: 26px; height: 26px; border-radius: 7px;
+      background: linear-gradient(135deg, var(--lime), var(--cream));
+      color: var(--lime-ink); display: grid; place-items: center;
+      font-family: var(--font-display); font-weight: 900; font-size: 13px;
+      flex-shrink: 0; position: relative;
+    }
+    .ap-head .ap-avatar::after {
+      content: ""; position: absolute; bottom: -1px; right: -1px;
+      width: 9px; height: 9px; border-radius: 50%; background: var(--orange);
+      border: 2px solid var(--card);
+    }
+    .ap-head .ap-name { font-weight: 800; font-size: 12.5px; letter-spacing: -.01em; }
+    .ap-head .ap-sub { font-family: var(--font-mono); font-size: 9px; color: var(--ink-3); letter-spacing: .06em; text-transform: uppercase; font-weight: 600; margin-top: 2px; }
+    .ap-head .ap-close {
+      margin-left: auto; width: 20px; height: 20px; border-radius: 6px;
+      background: var(--paper-2); border: 0; color: var(--ink-3); font-size: 12px;
+      cursor: pointer; display: grid; place-items: center; font-weight: 700;
+    }
+
+    .ap-label {
+      display: inline-block; font-family: var(--font-mono); font-size: 9px;
+      letter-spacing: .12em; text-transform: uppercase; font-weight: 800;
+      padding: 3px 8px; border-radius: 999px; margin-bottom: 8px;
+    }
+    .ap-label.impr { background: var(--pink); color: #fff; }
+    .ap-label.calc { background: var(--cyan); color: var(--ink); }
+
+    .ap-body {
+      font-family: var(--font-display); font-size: 12.5px; line-height: 1.5;
+      color: var(--ink); font-weight: 450;
+    }
+    .ap-body p { margin-bottom: 8px; }
+    .ap-body strong { background: var(--cream); padding: 0 3px; border-radius: 2px; font-weight: 700; }
+    .ap-body em { color: var(--ink-2); font-weight: 600; font-style: normal; }
+
+    .ap-data {
+      background: var(--paper); border: 1px solid var(--line);
+      border-radius: 8px; padding: 8px 10px; margin: 8px 0;
+      display: flex; flex-direction: column; gap: 4px;
+      font-size: 11.5px;
+    }
+    .ap-data-row { display: flex; justify-content: space-between; align-items: baseline; gap: 8px; }
+    .ap-data-row .key { font-family: var(--font-mono); font-size: 10px; color: var(--ink-3); letter-spacing: .04em; }
+    .ap-data-row .v { font-weight: 800; font-family: var(--font-display); letter-spacing: -.01em; font-size: 13px; font-feature-settings: 'tnum'; }
+
+    .ap-suggestion {
+      background: var(--cream); border: 1.5px solid var(--ink);
+      border-radius: 8px; padding: 9px 11px; margin: 8px 0;
+      font-family: var(--font-doc); font-size: 12px; line-height: 1.4;
+      color: var(--ink); font-style: italic;
+    }
+    .ap-suggestion strong { background: var(--lime); padding: 0 3px; border-radius: 2px; font-weight: 700; font-style: normal; }
+
+    .ap-formula-box {
+      background: var(--paper-2); border-radius: 6px;
+      padding: 8px 10px; margin: 8px 0;
+      font-family: 'Courier New', monospace; font-size: 11.5px; color: var(--ink);
+      line-height: 1.55; text-align: center;
+    }
+    .ap-formula-box strong { background: var(--lime); padding: 0 3px; border-radius: 2px; font-weight: 700; font-family: 'Courier New', monospace; }
+    .ap-formula-box .tick { color: var(--lime-ink); background: var(--lime); padding: 1px 5px; border-radius: 999px; font-family: var(--font-display); font-weight: 900; font-size: 10px; margin-left: 4px; }
+    .ap-formula-box .cross { color: #fff; background: var(--pink); padding: 1px 5px; border-radius: 999px; font-family: var(--font-display); font-weight: 900; font-size: 10px; margin-left: 4px; }
+
+    .ap-actions {
+      display: flex; gap: 5px; margin-top: 10px; padding-top: 8px;
+      border-top: 1px solid var(--line-soft); flex-wrap: wrap;
+    }
+    .ap-btn {
+      font-family: var(--font-mono); font-size: 9.5px;
+      letter-spacing: .06em; text-transform: uppercase; font-weight: 800;
+      padding: 6px 10px; border-radius: 999px; border: 0; cursor: pointer;
+      transition: transform 150ms var(--ease);
+    }
+    .ap-btn:hover { transform: translateY(-1px); }
+    .ap-btn.primary { background: var(--ink); color: var(--lime); }
+    .ap-btn.ghost { background: var(--paper-2); color: var(--ink-2); }
+    .ap-btn.ghost:hover { background: var(--ink); color: #fff; }
+
+    /* Reposicionar paper-zone para que los popups no se salgan */
+    .paper-zone {
+      padding-right: 380px;
+    }
+
+    @media (max-width: 1400px) {
+      .paper-zone { padding-right: 40px; }
+      .ath-popup { position: relative; left: 0; top: 0; margin: 12px auto; }
+      .ath-popup::before, .ath-popup::after { display: none; }
+    }
+  </style>
+</head>
+<body>
+
+  <div class="app-bar">
+    <div class="logo-tile"><svg viewBox="0 0 100 100" aria-label="Conniku" style="width:100%;height:100%;display:block"><rect width="100" height="100" rx="22" fill="#0D0F10"/><mask id="ckL_24_workspace_athena_popups" maskUnits="userSpaceOnUse"><rect width="100" height="100" fill="#fff"/><circle cx="58" cy="50" r="24" fill="#000"/></mask><rect x="12" y="12" width="76" height="76" rx="14" fill="#D9FF3A" mask="url(#ckL_24_workspace_athena_popups)"/><circle cx="58" cy="50" r="5" fill="#FF4A1C"/></svg></div>
+    <div class="breadcrumb">
+      <span class="bc-link">Workspaces</span>
+      <span class="bc-sep">/</span>
+      <span class="bc-tag">Grupal</span>
+      <span class="bc-current">Análisis de mercado · Food Service Chile</span>
+    </div>
+    <div class="app-bar-right">
+      <div class="save-stat">
+        <div class="s-d"></div>
+        <span>Guardado hace 2 s</span>
+      </div>
+      <div class="participants">
+        <div class="part av-cristian" title="Cristian Gutiérrez">CG</div>
+        <div class="part av-felipe" title="Felipe Gatica">FG<div class="live-ring"></div></div>
+        <div class="part av-victoria" title="Victoria Navarro">VN<div class="live-ring"></div></div>
+        <div class="part av-daniela" title="Daniela Herrera">DH<div class="live-ring"></div></div>
+        <div class="part av-luis" title="Luis Pérez">LP</div>
+        <div class="part av-pia" title="Pía Ramírez">PR</div>
+        <div class="part av-barbara" title="Bárbara Soto">BS</div>
+      </div>
+      <button class="share-btn">
+        Compartir
+        <div class="ring-s">→</div>
+      </button>
+      <div class="icon-btn athena" title="Athena · 2 sugerencias abiertas">A<span style="position: absolute; top: -8px; right: -8px; background: var(--pink); color: #fff; font-family: var(--font-mono); font-size: 9px; font-weight: 800; width: 16px; height: 16px; border-radius: 50%; display: grid; place-items: center; border: 2px solid var(--card);">2</span></div>
+      <div class="icon-btn">⋯</div>
+    </div>
+  </div>
+
+  <div class="toolbar">
+    <div class="tb-group">
+      <button class="tb-btn" title="Deshacer">↶</button>
+      <button class="tb-btn" title="Rehacer">↷</button>
+    </div>
+    <div class="tb-sep"></div>
+    <div class="tb-group">
+      <div class="tb-select">Texto normal <span class="chev-tb">▾</span></div>
+    </div>
+    <div class="tb-sep"></div>
+    <div class="tb-group">
+      <div class="tb-select">Times New Roman <span class="chev-tb">▾</span></div>
+    </div>
+    <div class="tb-sep"></div>
+    <div class="tb-group">
+      <button class="tb-btn" title="Tamaño menor">−</button>
+      <input class="tb-size-input" value="15" />
+      <button class="tb-btn" title="Tamaño mayor">+</button>
+    </div>
+    <div class="tb-sep"></div>
+    <div class="tb-group">
+      <button class="tb-btn" title="Negrita" style="font-weight: 900;">B</button>
+      <button class="tb-btn active" title="Cursiva" style="font-style: italic;">I</button>
+      <button class="tb-btn" title="Subrayar" style="text-decoration: underline;">U</button>
+      <button class="tb-btn" title="Tachado" style="text-decoration: line-through;">S</button>
+    </div>
+    <div class="tb-sep"></div>
+    <div class="tb-group">
+      <button class="tb-btn tb-color-btn" title="Color texto">A</button>
+      <button class="tb-btn tb-color-btn highlight" title="Resaltado">⬚</button>
+    </div>
+    <div class="tb-sep"></div>
+    <div class="tb-group">
+      <button class="tb-btn" title="Link">⇌</button>
+      <button class="tb-btn" title="Imagen">▢</button>
+      <button class="tb-btn" title="Tabla">⊞</button>
+      <button class="tb-btn" title="Línea horizontal">―</button>
+      <button class="tb-btn" title="Cita">❞</button>
+      <button class="tb-btn" title="Código">&lt;/&gt;</button>
+    </div>
+    <div class="tb-sep"></div>
+    <div class="tb-group">
+      <button class="tb-btn" title="Alinear izquierda">⯇</button>
+      <button class="tb-btn active" title="Centrar">≡</button>
+      <button class="tb-btn" title="Alinear derecha">⯈</button>
+      <button class="tb-btn" title="Justificar">☰</button>
+    </div>
+    <div class="tb-sep"></div>
+    <div class="tb-group">
+      <button class="tb-btn" title="Lista">•</button>
+      <button class="tb-btn" title="Numerada">1.</button>
+      <button class="tb-btn" title="Tareas">☐</button>
+      <button class="tb-btn" title="Sangría derecha">→</button>
+      <button class="tb-btn" title="Sangría izquierda">←</button>
+    </div>
+    <div class="tb-sep"></div>
+    <div class="tb-group">
+      <div class="tb-select">Exportar <span class="chev-tb">▾</span></div>
+    </div>
+  </div>
+
+  <div class="editor-shell with-athena">
+
+    <main class="editor-main">
+
+      <div class="doc-cover">
+        <div class="doc-cover-inner">
+          <div class="cover-tag-row">
+            <div class="cover-tag live">7 editando</div>
+            <div class="cover-tag">Grupal · Grupo 3</div>
+            <div class="cover-tag facultad">Facultad de Economía · UDP</div>
+            <div class="cover-tag">Marketing III</div>
+          </div>
+          <h1 class="cover-title">
+            Análisis de mercado:<br>
+            <span class="hl-ink">Food Service</span> Chile 2026
+          </h1>
+          <div class="cover-meta-strip">
+            <div class="cov-meta">
+              <div class="l">Entrega</div>
+              <div class="v">Viernes 25 abr · 23:59</div>
+            </div>
+            <div class="cov-meta">
+              <div class="l">Extensión</div>
+              <div class="v">14 pp · 3.420 palabras</div>
+            </div>
+            <div class="cov-meta">
+              <div class="l">Avance</div>
+              <div class="v">62% completado</div>
+            </div>
+            <div class="cov-meta">
+              <div class="l">Última ed.</div>
+              <div class="v">hace 3 seg · Felipe G.</div>
+            </div>
+            <div class="cov-participants">
+              <div class="cov-part av-cristian" title="Cristian G.">CG</div>
+              <div class="cov-part av-felipe" title="Felipe G.">FG</div>
+              <div class="cov-part av-victoria" title="Victoria N.">VN</div>
+              <div class="cov-part av-daniela" title="Daniela H.">DH</div>
+              <div class="cov-part av-luis" title="Luis P.">LP</div>
+              <div class="cov-part av-pia" title="Pía R.">PR</div>
+              <div class="cov-part av-barbara" title="Bárbara S.">BS</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="paper-zone">
+        <article class="paper">
+          <h1 class="doc-title">Análisis de mercado: Food Service en Chile 2026</h1>
+          <div class="doc-subtitle">Trabajo grupal — Marketing III — Universidad Diego Portales — Grupo 3</div>
+
+          <h2>1. Introducción</h2>
+
+          <p>
+            El sector de food service en Chile ha experimentado una transformación profunda durante los últimos tres años, impulsada por tres fuerzas simultáneas: la consolidación de los canales digitales de delivery, el aumento sostenido del ticket promedio en categorías premium, y la <span class="live-sel-f">recuperación post-pandémica</span> del consumo fuera del hogar. Este informe analiza los principales actores del mercado, las tendencias emergentes de consumo y las oportunidades estratégicas para nuevos entrantes durante el período 2026-2028.
+          </p>
+
+          <p>
+            Según datos de la Asociación Chilena de Gastronomía (ACHIGA), el sector representa aproximadamente el 3.8% del PIB nacional y emplea a más de 450.000 personas directamente. La composición del mercado se distribuye entre restaurantes tradicionales, cadenas de fast food, dark kitchens y emprendimientos de <span class="live-cursor-v"><span class="c-line"></span><span class="c-lbl">Victoria N.</span></span> comida saludable.
+          </p>
+
+          <p>
+            <span class="ath-mark">
+              El delivery en Chile crece porque la gente tiene menos tiempo para cocinar.
+              <span class="mark-pin">1</span>
+            </span>
+            Este fenómeno ha transformado la forma en que los consumidores urbanos acceden a la alimentación preparada, especialmente en los grupos etarios entre 20 y 45 años.
+          </p>
+
+          <!-- POPUP 1: frase vaga sobre delivery -->
+          <div class="ath-popup" style="top: 340px;">
+            <div class="ap-head">
+              <div class="ap-avatar">A</div>
+              <div>
+                <div class="ap-name">Athena</div>
+                <div class="ap-sub">hace 6 s · sobre frase 1</div>
+              </div>
+              <button class="ap-close">×</button>
+            </div>
+
+            <span class="ap-label impr">★ imprecisión analítica</span>
+
+            <div class="ap-body">
+              <p>La frase es intuitivamente correcta pero <strong>académicamente vaga</strong>. Para un informe de Marketing III necesitas causas medibles.</p>
+
+              <p><em>Los drivers reales del crecimiento son:</em></p>
+
+              <div class="ap-data">
+                <div class="ap-data-row"><span class="key">Adopción apps delivery 25-45 años</span><span class="v">71%</span></div>
+                <div class="ap-data-row"><span class="key">Reducción tiempo cocción hogar vs 2019</span><span class="v">−23%</span></div>
+                <div class="ap-data-row"><span class="key">Expansión cobertura riders desde 2022</span><span class="v">3x</span></div>
+                <div class="ap-data-row"><span class="key">Densidad riders centros metropolitanos</span><span class="v">+48%</span></div>
+              </div>
+
+              <p><em>Reescritura propuesta:</em></p>
+
+              <div class="ap-suggestion">
+                "El delivery en Chile crece impulsado por cuatro factores medibles: adopción de apps (<strong>71%</strong> en adultos urbanos), reducción del tiempo dedicado a cocinar en el hogar (<strong>−23% vs 2019</strong>), expansión triplicada de cobertura de riders desde 2022, y densidad consolidada en centros metropolitanos."
+              </div>
+            </div>
+
+            <div class="ap-actions">
+              <button class="ap-btn primary">Aplicar</button>
+              <button class="ap-btn ghost">Fuente</button>
+              <button class="ap-btn ghost">Otra versión</button>
+            </div>
+          </div>
+
+          <h2>2. Tamaño del mercado y composición</h2>
+
+          <p>
+            El mercado chileno de food service alcanzó un valor estimado de USD 8.4 billones al cierre del año 2025, con una proyección de crecimiento compuesto anual (CAGR) del 6.2% hacia 2028. La composición por canal se distribuye de la siguiente manera:
+          </p>
+
+          <table class="doc-table">
+            <thead>
+              <tr>
+                <th>Canal</th>
+                <th>Participación 2025</th>
+                <th>CAGR 2026-2028</th>
+                <th>Ticket promedio</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td>Restaurantes tradicionales</td>
+                <td>42%</td>
+                <td>3.8%</td>
+                <td>$18.900</td>
+              </tr>
+              <tr>
+                <td>Fast food y cadenas</td>
+                <td>26%</td>
+                <td>5.1%</td>
+                <td>$6.400</td>
+              </tr>
+              <tr>
+                <td>Delivery puro / dark kitchens</td>
+                <td>18%</td>
+                <td>11.4%</td>
+                <td>$12.200</td>
+              </tr>
+              <tr>
+                <td>Comida saludable / bowls</td>
+                <td>9%</td>
+                <td>14.8%</td>
+                <td>$9.800</td>
+              </tr>
+              <tr>
+                <td>Catering corporativo</td>
+                <td>5%</td>
+                <td>4.2%</td>
+                <td>$8.400</td>
+              </tr>
+            </tbody>
+          </table>
+
+          <p>
+            La categoría de <em>dark kitchens</em> muestra el segundo mayor crecimiento proyectado, con una CAGR del 11.4%. Este dato confirma lo que los fundadores de plataformas como Cornershop Foods, Rappi Turbo y Pedidos Ya han sostenido desde 2023: el consumidor chileno urbano prefiere consolidar su consumo gastronómico en canales digitales de entrega rápida, con especial énfasis en los segmentos socioeconómicos C1 y C2 en Santiago, Concepción y Viña del Mar.
+          </p>
+
+          <p>
+            Proyectando el tamaño del mercado hacia el cierre del 2028 con la CAGR del 6.2%:
+          </p>
+
+          <div class="doc-eq">
+            <span class="ath-mark">
+              Mercado 2028 = 8.4 + (6.2% × 3) = <strong>9.966 billones USD</strong>
+              <span class="mark-pin" style="background: var(--cyan);">2</span>
+            </span>
+          </div>
+
+          <!-- POPUP 2: cálculo CAGR mal aplicado -->
+          <div class="ath-popup" style="top: 1060px;">
+            <div class="ap-head">
+              <div class="ap-avatar">A</div>
+              <div>
+                <div class="ap-name">Athena</div>
+                <div class="ap-sub">hace 2 s · sobre cálculo</div>
+              </div>
+              <button class="ap-close">×</button>
+            </div>
+
+            <span class="ap-label calc">★ error financiero</span>
+
+            <div class="ap-body">
+              <p>La fórmula <strong>CAGR no es aditiva</strong>. El crecimiento compuesto se aplica multiplicativamente: cada año crece sobre el valor anterior, no sobre el valor inicial.</p>
+
+              <p><em>Fórmula correcta:</em></p>
+
+              <div class="ap-formula-box">
+                V₂₀₂₈ = V₂₀₂₅ × (1 + r)ⁿ
+              </div>
+
+              <p><em>Aplicando tus números:</em></p>
+
+              <div class="ap-formula-box">
+                = 8.4 × (1.062)³<br>
+                = 8.4 × 1.1977<br>
+                = <strong>10.06 billones USD</strong> <span class="tick">✓</span>
+              </div>
+
+              <p><em>Tu cálculo actual:</em></p>
+
+              <div class="ap-formula-box" style="background: rgba(255,77,58,.08);">
+                8.4 + (6.2% × 3) = 9.966 <span class="cross">✗</span>
+              </div>
+
+              <p>Subestimas <strong>USD 94 millones</strong>. En informes de mercado, esa diferencia puede cambiar la conclusión sobre si el sector es o no atractivo para inversión.</p>
+            </div>
+
+            <div class="ap-actions">
+              <button class="ap-btn primary">Aplicar corrección</button>
+              <button class="ap-btn ghost">Explica fórmula</button>
+            </div>
+          </div>
+
+          <div class="doc-callout">
+            Los bowls y poke constituyen la categoría de comida saludable con mayor tracción en estudiantes universitarios entre 20 y 28 años, con una tasa de recompra mensual superior al 60% según estudio GfK Q4 2025.
+          </div>
+
+          <h2>3. Análisis de los principales actores</h2>
+
+          <h3>3.1 Cadenas internacionales</h3>
+
+          <p>
+            Las cadenas internacionales mantienen una posición dominante en el segmento de fast food con participaciones de mercado estables desde 2022. McDonald's lidera con un 28% de share en su categoría, seguido por KFC (14%) y Burger King (11%). Sin embargo, todas ellas enfrentan presión competitiva de cadenas locales como Doggis, Pedro Juan y Diego y La Picá del Negro, que han crecido cerca de 22% interanual apalancándose en canales digitales propios.
+          </p>
+
+          <h3>3.2 Dark kitchens y delivery</h3>
+
+          <p>
+            El modelo de <em>dark kitchen</em> — cocinas operativas sin atención al público, orientadas exclusivamente al delivery — ha pasado de representar 6% del mercado en 2023 a 18% en 2025. La rentabilidad por metro cuadrado del modelo supera en 2.3x a la de los restaurantes tradicionales, según datos de ACHIGA.
+          </p>
+
+          <ul>
+            <li>Menor inversión inicial en infraestructura y mobiliario</li>
+            <li>Ausencia de costos asociados a atención presencial</li>
+            <li>Mayor flexibilidad para rotar menús según demanda</li>
+            <li>Dependencia crítica de plataformas de delivery (Rappi, Pedidos Ya, Uber Eats)</li>
+          </ul>
+
+          <p>
+            Esta dependencia representa simultáneamente la principal vulnerabilidad del modelo: los márgenes de las dark kitchens se ven comprimidos por las comisiones de plataforma, que oscilan entre 18% y 32% según volumen mensual.
+          </p>
+
+          <h2>4. Oportunidades identificadas</h2>
+
+          <p>
+            El análisis cruzado de las tendencias de consumo y la composición competitiva del mercado permite identificar tres oportunidades estratégicas concretas para nuevos entrantes durante 2026-2028...
+          </p>
+        </article>
+      </div>
+    </main>
+
+    <aside class="athena-pane">
+      <div class="ath-head">
+        <div class="ath-icon">A</div>
+        <div>
+          <div class="ath-title">Athena</div>
+          <div class="ath-subtitle">Experta académica</div>
+        </div>
+        <div class="ath-actions">
+          <button class="ath-icon-btn" title="Re-analizar documento">☀</button>
+          <button class="ath-icon-btn close" title="Cerrar">×</button>
+        </div>
+      </div>
+
+      <div class="ath-analysis">
+        <div class="label">
+          <div class="live-d"></div>
+          Análisis automático · hace 4 s
+        </div>
+
+        <div class="ath-section">
+          <div class="ath-sec-h">★ 2 sugerencias abiertas · en el documento</div>
+          <div class="ath-sec-body">
+            Marqué dos frases en el documento con ventanas flotantes. <strong>1.</strong> Frase imprecisa sobre el delivery en sección 1. <strong>2.</strong> Error de cálculo financiero (CAGR aditivo en vez de compuesto) en sección 2.
+          </div>
+        </div>
+
+        <div class="ath-section">
+          <div class="ath-sec-h">★ Contenido general</div>
+          <div class="ath-sec-body">
+            El análisis de dark kitchens es <strong>sólido pero le falta data 2026</strong>. Te recomiendo citar el informe Endeavor Chile de enero 2026 sobre la caída de comisiones de Rappi (ahora 21% promedio).
+          </div>
+        </div>
+
+        <div class="ath-section">
+          <div class="ath-sec-h">★ Estructura</div>
+          <div class="ath-sec-body">
+            La sección 4 de oportunidades recién arranca. Considera cerrar con <strong>una matriz FODA</strong> por oportunidad. Aumenta el impacto académico del informe.
+          </div>
+        </div>
+      </div>
+
+      <div class="ath-chat">
+        <div class="ath-msg user">Cuál es la tasa de crecimiento real del sector dark kitchen en 2025?</div>
+        <div class="ath-msg athena">
+          <div class="ref">★ Cengel tablas · ACHIGA Q4 2025</div>
+          La tasa real de crecimiento del sector dark kitchen en Chile durante 2025 fue del <strong>14.6% interanual</strong>, superando la proyección original (11%). Los drivers principales fueron: expansión de Pedidos Ya Turbo a 6 ciudades nuevas y la consolidación de marcas virtuales multiformato. Tu informe menciona 11.4% CAGR 2026-2028 que es correcto, pero podrías mencionar el 14.6% histórico como contexto.
+        </div>
+      </div>
+
+      <div class="ath-suggestions">
+        <div class="ath-sug-title">Sugerencias rápidas</div>
+        <div class="ath-sug">
+          <div class="ath-sug-item"><span class="ico-s">★</span> Revisa mi ortografía y gramática</div>
+          <div class="ath-sug-item"><span class="ico-s">◆</span> Investiga sobre el tema del documento</div>
+          <div class="ath-sug-item"><span class="ico-s">✎</span> Sugiere cómo mejorar la redacción</div>
+          <div class="ath-sug-item"><span class="ico-s">❞</span> Agrega referencias académicas</div>
+        </div>
+      </div>
+
+      <div class="ath-composer">
+        <input type="text" placeholder="Pregúntale a Athena..." />
+        <button class="ath-send">→</button>
+      </div>
+    </aside>
+
+    <aside class="right-pane">
+
+      <div class="rp-tabs">
+        <div class="rp-tab active">Chat <span class="count-sm">23</span></div>
+        <div class="rp-tab">Miembros <span class="count-sm">7</span></div>
+        <div class="rp-tab">Historial</div>
+      </div>
+
+      <div class="rp-head">
+        <h3>Chat del grupo</h3>
+        <div class="sub">7 miembros · sincronía en vivo</div>
+      </div>
+
+      <div class="chat-stream">
+
+        <div class="date-div">hoy</div>
+
+        <div class="ws-msg">
+          <div class="m-av av-felipe">FG</div>
+          <div class="m-body">
+            <div class="m-top">
+              <span class="m-name">Felipe G.</span>
+              <span class="m-time">09:42</span>
+            </div>
+            <div class="m-bubble received">Hola banda. Empecé la sección 1. Si alguien tiene la data actualizada de ACHIGA me avisa</div>
+          </div>
+        </div>
+
+        <div class="ws-msg">
+          <div class="m-av av-victoria">VN</div>
+          <div class="m-body">
+            <div class="m-top">
+              <span class="m-name">Victoria N.</span>
+              <span class="m-time">09:48</span>
+            </div>
+            <div class="m-bubble received">Yo tengo el informe Q4 2025, te lo subo al workspace en un toque</div>
+          </div>
+        </div>
+
+        <div class="sys-note">
+          <div class="sys-d"></div>
+          <span><strong>Victoria N.</strong> subió archivo "ACHIGA Q4 2025.pdf"</span>
+        </div>
+
+        <div class="ws-msg">
+          <div class="m-av av-daniela">DH</div>
+          <div class="m-body">
+            <div class="m-top">
+              <span class="m-name">Daniela H.</span>
+              <span class="m-time">10:05</span>
+            </div>
+            <div class="m-bubble received">Cristian, puedes tomar la sección 3.2 de dark kitchens? Yo sigo con la tabla de tamaños de mercado</div>
+          </div>
+        </div>
+
+        <div class="ws-msg mine">
+          <div class="m-av av-cristian">CG</div>
+          <div class="m-body">
+            <div class="m-top">
+              <span class="m-time">10:07</span>
+              <span class="m-name">Tú</span>
+            </div>
+            <div class="m-bubble">Dale, la tomo. Athena me está ayudando con las referencias</div>
+          </div>
+        </div>
+
+        <div class="ws-msg">
+          <div class="m-av av-luis">LP</div>
+          <div class="m-body">
+            <div class="m-top">
+              <span class="m-name">Luis P.</span>
+              <span class="m-time">10:12</span>
+            </div>
+            <div class="m-bubble received">Recuerden que hay que agregar la matriz FODA al final. La Margarita insiste con eso</div>
+          </div>
+        </div>
+
+        <div class="ws-msg">
+          <div class="m-av av-pia">PR</div>
+          <div class="m-body">
+            <div class="m-top">
+              <span class="m-name">Pía R.</span>
+              <span class="m-time">10:14</span>
+            </div>
+            <div class="m-bubble received">Yo me encargo de la FODA una vez que tengamos todas las oportunidades listas</div>
+          </div>
+        </div>
+
+        <div class="sys-note">
+          <div class="sys-d"></div>
+          <span><strong>Bárbara S.</strong> entró al workspace</span>
+        </div>
+
+        <div class="ws-msg">
+          <div class="m-av av-barbara">BS</div>
+          <div class="m-body">
+            <div class="m-top">
+              <span class="m-name">Bárbara S.</span>
+              <span class="m-time">10:18</span>
+            </div>
+            <div class="m-bubble received">Hola! Vengo llegando. Reviso todo y doy feedback general, estoy con la parte de conclusiones</div>
+          </div>
+        </div>
+
+        <div class="sys-note">
+          <div class="sys-d" style="background: var(--orange);"></div>
+          <span><strong>Felipe G.</strong> comentó en pág. 3 · "revisar dato"</span>
+        </div>
+
+        <div class="ws-msg">
+          <div class="m-av av-victoria">VN</div>
+          <div class="m-body">
+            <div class="m-top">
+              <span class="m-name">Victoria N.</span>
+              <span class="m-time">10:31</span>
+            </div>
+            <div class="m-bubble received">¿Nos juntamos el sábado a las 4pm en la biblioteca a revisar todo antes de enviar?</div>
+          </div>
+        </div>
+
+        <div class="ws-msg mine">
+          <div class="m-av av-cristian">CG</div>
+          <div class="m-body">
+            <div class="m-top">
+              <span class="m-time">10:32</span>
+              <span class="m-name">Tú</span>
+            </div>
+            <div class="m-bubble">Yo voy. Sala de grupos piso 3</div>
+          </div>
+        </div>
+
+        <div class="ws-msg">
+          <div class="m-av av-daniela">DH</div>
+          <div class="m-body">
+            <div class="m-top">
+              <span class="m-name">Daniela H.</span>
+              <span class="m-time">10:33</span>
+            </div>
+            <div class="m-bubble received">Voy. Traigo café</div>
+          </div>
+        </div>
+
+        <div class="ws-msg">
+          <div class="m-av av-pia">PR</div>
+          <div class="m-body">
+            <div class="m-top">
+              <span class="m-name">Pía R.</span>
+              <span class="m-time">10:34</span>
+            </div>
+            <div class="m-bubble received">+1 al café ☕</div>
+          </div>
+        </div>
+
+      </div>
+
+      <div class="rp-composer">
+        <input type="text" placeholder="Mensaje al grupo..." />
+        <button class="rp-send">→</button>
+      </div>
+
+    </aside>
+
+  </div>
+
+  <div class="editor-status">
+    <div class="s-item"><span>Palabras</span> <span class="v">3.420</span></div>
+    <div class="s-item"><span>Caracteres</span> <span class="v">21.680</span></div>
+    <div class="s-item"><span>Páginas</span> <span class="v">14</span></div>
+    <div class="s-item"><span>Tamaño hoja</span> <span class="v">Carta · 816 px</span></div>
+    <div class="fit">
+      <span class="s-item"><span>Márgenes</span> <span class="v">96 px / 1"</span></span>
+    </div>
+    <div class="mode">Modo edición</div>
+  </div>
+
+</body>
+</html>

@@ -352,8 +352,8 @@ export default function DeleteAccount({ onNavigate }: Props) {
         {/* Datos menores */}
         <h2 style={styles.h2}>Eliminación de cuentas de menores</h2>
         <p style={styles.p}>
-          Conniku está diseñado para mayores de 16 años. Si eres padre, madre o tutor legal y
-          necesitas eliminar la cuenta de un menor de 16 años, contáctanos en{' '}
+          Conniku está diseñado exclusivamente para mayores de 18 años. Si eres padre, madre o tutor
+          legal y necesitas eliminar la cuenta de un menor de 18 años, contáctanos en{' '}
           <a href="mailto:privacidad@conniku.com" style={{ color: '#2D62C8' }}>
             privacidad@conniku.com
           </a>{' '}
@@ -405,8 +405,8 @@ export default function DeleteAccount({ onNavigate }: Props) {
 
         <div style={{ marginTop: 40, paddingTop: 20, borderTop: '1px solid var(--border)' }}>
           <p style={{ fontSize: 13, fontStyle: 'italic', color: 'var(--text-muted)' }}>
-            Conniku SpA · RUT 78.395.702-7 · Santiago, Chile · privacidad@conniku.com · Versión 1.0
-            — Abril 2026
+            Conniku SpA · RUT 78.395.702-7 · Antofagasta, Chile · privacidad@conniku.com · Versión
+            1.0 — Abril 2026
           </p>
         </div>
       </div>

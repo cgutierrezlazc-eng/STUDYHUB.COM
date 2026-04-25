@@ -1,0 +1,781 @@
+<!DOCTYPE html>
+<html lang="es-CL">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Conniku — Tu carrera · Paso 3 de 6</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Funnel+Display:wght@400;500;600;700;800;900&family=Geist+Mono:wght@400;500;600;700&display=swap" />
+  <style>
+    :root {
+      --ink: #0D0F10; --ink-2: #2B2E30; --ink-3: #696C6F; --ink-4: #A0A3A7;
+      --paper: #F5F4EF; --paper-2: #EBE9E1; --line: #D2CFC3; --card: #FFFFFF;
+      --lime: #D9FF3A; --lime-ink: #181F08;
+      --pink: #FF4D3A; --cream: #FFE9B8;
+      --violet: #6B4EFF; --cyan: #00C2FF; --orange: #FF4A1C;
+      --font-display: 'Funnel Display', -apple-system, BlinkMacSystemFont, sans-serif;
+      --font-mono: 'Geist Mono', ui-monospace, monospace;
+      --ease: cubic-bezier(.2,.8,.2,1);
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    html, body { background: var(--paper); color: var(--ink); font-family: var(--font-display); height: 100vh; overflow: hidden; }
+    ::selection { background: var(--lime); color: var(--lime-ink); }
+    a, button { color: inherit; font-family: inherit; }
+    button { cursor: pointer; border: 0; background: transparent; }
+
+    /* ═══ Partículas globales · CURVA PASO 3 / 6 — intensidad 60% ═══ */
+    .panel-fx { position: fixed; inset: 0; pointer-events: none; z-index: 1; overflow: hidden; }
+    .panel-fx .light-far { position: absolute; border-radius: 50%; mix-blend-mode: multiply; }
+    .panel-fx .light-mid { position: absolute; border-radius: 50%; mix-blend-mode: multiply; }
+    .panel-fx .sp { position: absolute; border-radius: 50%; display: block; }
+    .sp-pink { background: var(--pink); } .sp-lime { background: var(--lime); }
+    .sp-cyan { background: var(--cyan); } .sp-cream { background: var(--cream); }
+    .sp-violet { background: var(--violet); }
+    .lf-lime { background: var(--lime); } .lf-pink { background: var(--pink); }
+    .lf-violet { background: var(--violet); } .lf-cyan { background: var(--cyan); }
+    .lf-cream { background: var(--cream); }
+
+    /* ═══ Nav superior ═══ */
+    .nav {
+      position: fixed; top: 0; left: 0; right: 0; z-index: 20; height: 64px;
+      padding: 0 40px; display: flex; align-items: center; justify-content: space-between;
+      background: rgba(245, 244, 239, 0.8);
+      backdrop-filter: blur(14px); -webkit-backdrop-filter: blur(14px);
+      border-bottom: 1px solid rgba(13, 15, 16, 0.08);
+    }
+    /* Wordmark integrado oficial · ver docs/design-system/mockups/assets/branding/LOGO.md §1.1 */
+    .brand {
+      display: inline-flex; align-items: baseline;
+      font-family: var(--font-display); font-weight: 900;
+      font-size: 24px; letter-spacing: -.055em; line-height: 1;
+      color: var(--ink); text-decoration: none;
+      white-space: nowrap;
+    }
+    .brand .u-pack {
+      display: inline-flex; align-items: baseline;
+      background: var(--lime);
+      color: var(--ink); /* La u siempre en ink — regla inviolable LOGO.md §2 */
+      padding: .07em .14em .07em .09em;
+      border-radius: .2em;
+      margin-left: .02em;
+    }
+    .brand .u-pack .dot { color: var(--orange); }
+    .nav-right { display: flex; gap: 10px; align-items: center; }
+
+    .back-btn {
+      display: inline-flex; align-items: center; gap: 8px;
+      padding: 7px 14px 7px 9px;
+      border-radius: 999px;
+      border: 1px solid rgba(13,15,16,.2);
+      background: rgba(255,255,255,.6);
+      color: var(--ink);
+      font-family: var(--font-display); font-weight: 600; font-size: 13px;
+      text-decoration: none;
+      transition: all 200ms var(--ease);
+    }
+    .back-btn:hover { background: var(--ink); color: var(--paper); border-color: var(--ink); transform: translateX(-2px); }
+    .back-btn .ba {
+      width: 22px; height: 22px; border-radius: 50%;
+      background: var(--ink); color: var(--lime);
+      display: grid; place-items: center;
+      font-weight: 900; font-size: 12px;
+    }
+    .back-btn:hover .ba { background: var(--lime); color: var(--ink); }
+
+    .nav-step {
+      font-family: var(--font-mono); font-size: 11px;
+      letter-spacing: .14em; text-transform: uppercase;
+      color: var(--ink-3);
+      padding: 6px 12px;
+      border: 1px solid rgba(13,15,16,.15);
+      border-radius: 999px;
+    }
+    .nav-step strong { color: var(--ink); font-weight: 800; }
+
+    /* ═══ Main layout ═══ */
+    main {
+      position: relative; z-index: 3;
+      height: 100vh;
+      padding: 64px 40px 24px;
+      display: grid; place-items: center;
+    }
+
+    .card-wrap {
+      width: 100%; max-width: 880px;
+      display: flex; flex-direction: column; gap: 18px;
+    }
+
+    /* Progress 6 pasos — versión paper */
+    .progress {
+      display: grid; grid-template-columns: repeat(6, 1fr); gap: 6px;
+    }
+    .progress .step {
+      height: 6px; border-radius: 3px;
+      background: rgba(13,15,16,.1);
+      position: relative;
+      transition: background 300ms var(--ease);
+    }
+    .progress .step.done { background: var(--ink); }
+    .progress .step.active {
+      background: var(--ink);
+    }
+    .progress .step.active::after {
+      content: ""; position: absolute;
+      top: 50%; right: -3px; transform: translateY(-50%);
+      width: 10px; height: 10px; border-radius: 50%;
+      background: var(--lime);
+      border: 2px solid var(--ink);
+      animation: step-pulse 1.4s var(--ease) infinite;
+    }
+    @keyframes step-pulse {
+      0%, 100% { transform: translateY(-50%) scale(1); }
+      50% { transform: translateY(-50%) scale(1.2); }
+    }
+
+    /* Card principal — ink sobre paper (inversión del paso 2) */
+    .onb-card {
+      background: var(--ink); color: var(--paper);
+      border: 2px solid var(--ink);
+      border-radius: 28px 36px 24px 32px;
+      padding: 28px 32px 24px;
+      position: relative;
+      transform: rotate(-0.3deg);
+      box-shadow:
+        10px 10px 0 rgba(13,15,16,0.12),
+        0 16px 32px rgba(13,15,16,0.18);
+      display: grid;
+      grid-template-columns: 1.15fr 1fr;
+      gap: 28px;
+      align-items: start;
+    }
+
+    /* Sección izquierda: kicker + título + form */
+    .onb-kicker {
+      font-family: var(--font-mono); font-size: 10px;
+      letter-spacing: .14em; text-transform: uppercase;
+      color: rgba(245,244,239,.55);
+      margin-bottom: 8px;
+    }
+    .onb-kicker .v-code { color: var(--lime); font-weight: 700; }
+    .onb-kicker .sep { color: var(--ink-4); margin: 0 6px; }
+
+    .onb-title {
+      font-family: var(--font-display); font-weight: 900;
+      font-size: clamp(30px, 3.6vw, 44px);
+      letter-spacing: -.035em; line-height: 1;
+      color: var(--paper); margin-bottom: 10px;
+    }
+    .onb-title .hl {
+      background: var(--lime); color: var(--lime-ink);
+      padding: 0 10px; border-radius: 10px;
+      transform: rotate(-.6deg); display: inline-block;
+    }
+
+    .onb-sub {
+      font-size: 13.5px; line-height: 1.5;
+      color: rgba(245,244,239,.7);
+      margin-bottom: 18px;
+    }
+
+    /* Form fields */
+    .field { margin-bottom: 11px; }
+    .field label {
+      display: block; font-family: var(--font-mono);
+      font-size: 10px; font-weight: 600;
+      letter-spacing: .08em; text-transform: uppercase;
+      color: rgba(245,244,239,.6); margin-bottom: 5px;
+    }
+    .field input, .field select {
+      width: 100%;
+      background: rgba(255,255,255,.06);
+      border: 1.5px solid rgba(245,244,239,.22);
+      border-radius: 10px;
+      padding: 10px 13px;
+      font-family: var(--font-display);
+      font-size: 14px; font-weight: 500;
+      color: var(--paper); outline: none;
+      transition: all 180ms var(--ease);
+      -webkit-appearance: none; appearance: none;
+    }
+    .field input::placeholder { color: rgba(245,244,239,.35); }
+    .field select option { background: var(--ink); color: var(--paper); }
+    .field select {
+      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath d='M1 1.5L6 6.5L11 1.5' stroke='%23F5F4EF' stroke-width='2' stroke-linecap='round' stroke-linejoin='round' fill='none'/%3E%3C/svg%3E");
+      background-repeat: no-repeat;
+      background-position: right 14px center;
+      padding-right: 36px;
+    }
+    .field input:focus, .field select:focus {
+      border-color: var(--lime);
+      background: rgba(217,255,58,.06);
+      box-shadow: 0 0 0 3px rgba(217,255,58,.18);
+    }
+    .field .hint {
+      font-family: var(--font-mono); font-size: 10px;
+      color: rgba(245,244,239,.45); margin-top: 4px;
+      letter-spacing: .02em;
+    }
+
+    /* Pair fields (año + semestre en dos columnas) */
+    .field-pair {
+      display: grid; grid-template-columns: 1fr 1fr;
+      gap: 10px; margin-bottom: 11px;
+    }
+    .field-pair .field { margin-bottom: 0; }
+
+    /* Submit */
+    .onb-actions { margin-top: 14px; }
+    .btn-next {
+      width: 100%;
+      background: var(--lime); color: var(--lime-ink);
+      padding: 13px 16px 13px 20px;
+      border-radius: 999px;
+      font-family: var(--font-display); font-weight: 800; font-size: 15px;
+      text-decoration: none;
+      display: flex; align-items: center; justify-content: space-between;
+      transition: all 180ms var(--ease);
+      border: 2px solid var(--lime-ink);
+      cursor: pointer;
+    }
+    .btn-next:hover { transform: translateY(-2px); box-shadow: 4px 4px 0 rgba(245,244,239,.22); }
+    .btn-next:disabled { opacity: 0.45; cursor: not-allowed; transform: none; box-shadow: none; }
+    .btn-next .ring {
+      width: 30px; height: 30px; background: var(--ink);
+      color: var(--lime); border-radius: 50%;
+      display: grid; place-items: center;
+      font-weight: 900; font-size: 14px;
+    }
+
+    .skip-link {
+      margin-top: 10px;
+      text-align: center;
+      font-family: var(--font-mono); font-size: 11px;
+      color: rgba(245,244,239,.55);
+    }
+    .skip-link a {
+      color: rgba(245,244,239,.8); text-decoration: underline;
+      text-decoration-thickness: 1px; text-underline-offset: 3px;
+      font-weight: 500;
+    }
+    .skip-link a:hover { color: var(--paper); }
+
+    /* Sección derecha: preview de lo que viene */
+    .onb-right {
+      display: flex; flex-direction: column; gap: 14px;
+    }
+
+    .uni-confirm {
+      background: rgba(255,255,255,.04);
+      border: 1.5px solid rgba(245,244,239,.12);
+      border-radius: 16px;
+      padding: 14px 16px;
+      display: flex; align-items: center; gap: 12px;
+    }
+    .uni-confirm .uc-logo {
+      width: 42px; height: 42px; border-radius: 10px;
+      background: linear-gradient(135deg, #8B1538, #B12D40);
+      color: #fff; display: grid; place-items: center;
+      font-weight: 900; font-size: 16px; flex-shrink: 0;
+      font-family: var(--font-display); letter-spacing: -.02em;
+      border: 2px solid var(--ink);
+    }
+    .uni-confirm .uc-body { min-width: 0; flex: 1; }
+    .uni-confirm .uc-label {
+      font-family: var(--font-mono); font-size: 10px;
+      letter-spacing: .1em; text-transform: uppercase;
+      color: var(--lime); font-weight: 700;
+    }
+    .uni-confirm .uc-name {
+      font-family: var(--font-display); font-weight: 800;
+      font-size: 15px; color: var(--paper);
+      letter-spacing: -.01em; margin-top: 3px;
+    }
+    .uni-confirm .uc-email {
+      font-family: var(--font-mono); font-size: 10px;
+      color: rgba(245,244,239,.55); margin-top: 2px;
+    }
+    .uc-badge {
+      flex-shrink: 0;
+      font-family: var(--font-mono); font-size: 9px;
+      background: var(--lime); color: var(--lime-ink);
+      padding: 3px 8px; border-radius: 999px;
+      letter-spacing: .08em; text-transform: uppercase; font-weight: 800;
+    }
+
+    /* Preview "Lo que aparece al terminar" */
+    .preview-box {
+      background: var(--paper); color: var(--ink);
+      border-radius: 18px;
+      padding: 16px 18px;
+      position: relative;
+      transform: rotate(.8deg);
+      box-shadow: 6px 6px 0 rgba(217,255,58,.6);
+      border: 2px solid var(--paper);
+    }
+    .preview-box .pv-label {
+      font-family: var(--font-mono); font-size: 10px;
+      letter-spacing: .12em; text-transform: uppercase;
+      color: var(--ink-3); font-weight: 700;
+      display: flex; align-items: center; gap: 8px;
+      margin-bottom: 10px;
+    }
+    .preview-box .pv-label::before {
+      content: ""; width: 6px; height: 6px; border-radius: 50%;
+      background: var(--orange);
+    }
+    .preview-box h3 {
+      font-family: var(--font-display); font-weight: 900;
+      font-size: 17px; letter-spacing: -.02em; line-height: 1.15;
+      color: var(--ink);
+    }
+    .preview-box h3 .hl {
+      background: var(--cream); padding: 0 5px; border-radius: 5px;
+    }
+    .preview-box p {
+      font-size: 12.5px; color: var(--ink-2); margin-top: 8px;
+      line-height: 1.45;
+    }
+
+    .pv-list {
+      margin-top: 12px;
+      display: flex; flex-direction: column; gap: 7px;
+    }
+    .pv-row {
+      display: flex; align-items: center; gap: 8px;
+      font-size: 12px; color: var(--ink-2); font-weight: 500;
+    }
+    .pv-row .ck {
+      width: 18px; height: 18px; border-radius: 50%;
+      background: var(--ink); color: var(--lime);
+      display: grid; place-items: center;
+      font-weight: 900; font-size: 10px;
+      flex-shrink: 0;
+    }
+    .pv-row strong { color: var(--ink); font-weight: 700; }
+
+    /* Nota legal al pie */
+    .legal-note {
+      margin-top: auto;
+      padding: 10px 12px;
+      background: rgba(255,233,184,.08);
+      border: 1px solid rgba(255,233,184,.2);
+      border-radius: 10px;
+      display: flex; align-items: flex-start; gap: 9px;
+      font-size: 11px; line-height: 1.4;
+      color: rgba(245,244,239,.65);
+    }
+    .legal-note .ln-dot {
+      width: 7px; height: 7px; border-radius: 50%;
+      background: var(--cream); flex-shrink: 0; margin-top: 4px;
+    }
+    .legal-note strong { color: var(--paper); font-weight: 700; }
+
+    @media (max-width: 900px) {
+      .onb-card { grid-template-columns: 1fr; gap: 20px; padding: 24px; }
+      .onb-right { order: 2; }
+      main { padding: 80px 20px 20px; }
+    }
+
+    /* ═══ Transición editorial entre páginas ═══ */
+    .page-transition {
+      position: fixed; inset: 0; z-index: 999;
+      background: #0D0F10;
+      display: grid; place-items: center;
+      opacity: 0; pointer-events: none;
+      transition: opacity 1260ms cubic-bezier(.2,.8,.2,1);
+    }
+    .page-transition.leaving { opacity: 1; pointer-events: auto; }
+    .pt-wrap {
+      display: flex; flex-direction: column; align-items: center; gap: 18px;
+      transform: scale(.8) rotate(-6deg); opacity: 0;
+      transition: transform 1860ms cubic-bezier(.2,.8,.2,1), opacity 1260ms cubic-bezier(.2,.8,.2,1);
+    }
+    .page-transition.leaving .pt-wrap { transform: scale(1) rotate(0); opacity: 1; }
+    .pt-icon {
+      width: 110px; height: 110px;
+      border-radius: 22%;
+      background: #D9FF3A;
+      border: 3px solid #0D0F10;
+      box-shadow: 10px 10px 0 rgba(13,15,16,.5), 0 24px 60px rgba(217,255,58,.22);
+      transform: rotate(-3deg);
+      display: block;
+    }
+    .pt-icon svg { width: 100%; height: 100%; display: block; }
+    .pt-label {
+      font-family: 'Geist Mono', ui-monospace, monospace;
+      font-size: 11px; letter-spacing: .14em; text-transform: uppercase;
+      color: rgba(245,244,239,.7);
+      display: inline-flex; align-items: center; gap: 8px;
+    }
+    .pt-label .pt-dot {
+      width: 7px; height: 7px; border-radius: 50%;
+      background: #FF4A1C;
+      animation: pt-pulse 1.2s cubic-bezier(.2,.8,.2,1) infinite;
+    }
+    @keyframes pt-pulse {
+      0%, 100% { transform: scale(1); opacity: 1; }
+      50% { transform: scale(1.6); opacity: .4; }
+    }
+    .pt-sp {
+      position: absolute; border-radius: 50%;
+      opacity: 0; transform: scale(.3);
+      transition: opacity 1800ms cubic-bezier(.2,.8,.2,1), transform 1920ms cubic-bezier(.2,.8,.2,1);
+    }
+    .page-transition.leaving .pt-sp { opacity: .8; transform: scale(1); }
+
+    @media (prefers-reduced-motion: reduce) {
+      .page-transition, .pt-wrap, .pt-icon, .pt-label .pt-dot { transition: none !important; animation: none !important; }
+      .progress .step.active::after { animation: none !important; }
+    }
+  </style>
+</head>
+<body>
+
+<!-- Partículas bouncing globales · CURVA PASO 3 / 6 — intensidad 60% -->
+<!-- Fondo paper, mix-blend-mode: multiply para que se noten contra el blanco roto -->
+<div class="panel-fx" aria-hidden="true">
+  <!-- Luces far reducidas a 2 · opacidades bajas -->
+  <span class="light-far lf-lime" style="top:-60px; right:-40px; width:280px; height:280px"></span>
+  <span class="light-far lf-pink" style="bottom:-80px; left:-60px; width:240px; height:240px"></span>
+  <!-- Luces mid reducidas a 1 -->
+  <span class="light-mid lf-violet" style="top:22%; right:8%; width:80px; height:80px"></span>
+  <!-- Splatters reducidos a 7 (antes 11) -->
+  <span class="sp sp-pink" style="top:14%; left:18%; width:6px; height:6px"></span>
+  <span class="sp sp-lime" style="top:24%; left:72%; width:8px; height:8px"></span>
+  <span class="sp sp-cyan" style="top:38%; left:10%; width:5px; height:5px"></span>
+  <span class="sp sp-violet" style="top:58%; left:86%; width:6px; height:6px"></span>
+  <span class="sp sp-cream" style="top:72%; left:28%; width:9px; height:9px"></span>
+  <span class="sp sp-pink" style="top:84%; left:68%; width:7px; height:7px"></span>
+  <span class="sp sp-lime" style="top:50%; left:50%; width:5px; height:5px"></span>
+</div>
+
+<!-- Nav -->
+<nav class="nav">
+  <a href="02-landing-20260419-1650.html" class="brand">conn<span>i</span>k<span class="u-pack">u<span class="dot">.</span></span></a>
+  <div class="nav-right">
+    <span class="nav-step">Paso <strong>3</strong> de 6</span>
+    <a href="02-verificacion-20260419-1650.html" class="back-btn">
+      <span class="ba">←</span>
+      Atrás
+    </a>
+  </div>
+</nav>
+
+<main>
+  <div class="card-wrap">
+
+    <!-- Progress 6 pasos -->
+    <div class="progress" aria-label="Progreso onboarding">
+      <div class="step done" title="Crear cuenta"></div>
+      <div class="step done" title="Verificar universidad"></div>
+      <div class="step active" title="Carrera y año"></div>
+      <div class="step" title="Intereses"></div>
+      <div class="step" title="Comunidades"></div>
+      <div class="step" title="Listo"></div>
+    </div>
+
+    <!-- Card principal -->
+    <div class="onb-card">
+
+      <!-- Izquierda: kicker + título + form -->
+      <div class="onb-left">
+        <div class="onb-kicker">
+          <span class="v-code">PASO 03</span>
+          <span class="sep">·</span>
+          <span>CARRERA Y AÑO ACADÉMICO</span>
+        </div>
+        <h1 class="onb-title">Cuéntanos qué <span class="hl">estudias</span>.</h1>
+        <p class="onb-sub">Con tu carrera y año filtramos material, asignaturas, compañeros y oportunidades que de verdad te sirven. Puedes cambiarlo cuando quieras.</p>
+
+        <div class="field">
+          <label for="carrera">Carrera</label>
+          <!--
+            ⚠ LISTA PROVISORIA DE MOCKUP · NO ES LA LISTA OFICIAL DE PRODUCCIÓN
+            Ver Regla 04 en docs/design-system/pending-rules-for-master-doc.md
+            En producción esta lista debe consumirse de <CareerSelect />
+            filtrada por la institución seleccionada en el paso 2, usando
+            SIES/MINEDUC como fuente canónica. NO hardcodear.
+          -->
+          <select id="carrera" required>
+            <option value="" disabled selected>Selecciona tu carrera</option>
+            <optgroup label="Ingeniería y Tecnología">
+              <option>Ingeniería Civil</option>
+              <option>Ingeniería Civil Industrial</option>
+              <option>Ingeniería Civil Informática / Computación</option>
+              <option>Ingeniería Civil Eléctrica</option>
+              <option>Ingeniería Civil Mecánica</option>
+              <option>Ingeniería Civil Química</option>
+              <option>Ingeniería en Construcción</option>
+              <option>Ingeniería Comercial</option>
+            </optgroup>
+            <optgroup label="Salud">
+              <option>Medicina</option>
+              <option>Odontología</option>
+              <option>Enfermería</option>
+              <option>Kinesiología</option>
+              <option>Nutrición y Dietética</option>
+              <option>Fonoaudiología</option>
+              <option>Tecnología Médica</option>
+              <option>Química y Farmacia</option>
+              <option>Obstetricia</option>
+            </optgroup>
+            <optgroup label="Ciencias Sociales y Humanidades">
+              <option>Derecho</option>
+              <option>Psicología</option>
+              <option>Sociología</option>
+              <option>Trabajo Social</option>
+              <option>Antropología</option>
+              <option>Historia</option>
+              <option>Filosofía</option>
+              <option>Periodismo</option>
+              <option>Pedagogía (varias menciones)</option>
+            </optgroup>
+            <optgroup label="Arte, Diseño y Arquitectura">
+              <option>Arquitectura</option>
+              <option>Diseño</option>
+              <option>Artes Visuales</option>
+              <option>Música</option>
+              <option>Teatro</option>
+            </optgroup>
+            <optgroup label="Ciencias Económicas y Contables">
+              <option>Contador Auditor</option>
+              <option>Administración de Empresas</option>
+              <option>Economía</option>
+            </optgroup>
+            <optgroup label="Ciencias Naturales y Agronomía">
+              <option>Biología</option>
+              <option>Química</option>
+              <option>Agronomía</option>
+              <option>Medicina Veterinaria</option>
+              <option>Ingeniería Forestal</option>
+            </optgroup>
+            <option value="otra">Otra (la agregamos al rato)</option>
+          </select>
+          <div class="hint">Más de 180 carreras disponibles · busca por nombre.</div>
+        </div>
+
+        <div class="field-pair">
+          <div class="field">
+            <label for="anio">Año académico</label>
+            <select id="anio" required>
+              <option value="" disabled selected>Elegir</option>
+              <option>1° año</option>
+              <option>2° año</option>
+              <option>3° año</option>
+              <option>4° año</option>
+              <option>5° año</option>
+              <option>6° año</option>
+              <option>7° año o superior</option>
+              <option>Egresado / Titulándose</option>
+            </select>
+          </div>
+          <div class="field">
+            <label for="semestre">Semestre actual</label>
+            <select id="semestre" required>
+              <option value="" disabled selected>Elegir</option>
+              <option>Primer semestre 2026</option>
+              <option>Segundo semestre 2026</option>
+              <option>Receso / vacaciones</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="onb-actions">
+          <a href="#" class="btn-next" id="next-btn" aria-disabled="true">
+            Continuar a intereses
+            <span class="ring">→</span>
+          </a>
+        </div>
+
+        <div class="skip-link">
+          <a href="#">Saltar por ahora · Lo completo después</a>
+        </div>
+      </div>
+
+      <!-- Derecha: confirmación U + preview -->
+      <aside class="onb-right">
+
+        <div class="uni-confirm">
+          <div class="uc-logo">U</div>
+          <div class="uc-body">
+            <div class="uc-label">Universidad verificada</div>
+            <div class="uc-name">Universidad de Chile</div>
+            <div class="uc-email">@uchile.cl</div>
+          </div>
+          <span class="uc-badge">✓ OK</span>
+        </div>
+
+        <div class="preview-box">
+          <div class="pv-label">Lo que vas a tener al terminar</div>
+          <h3>Tu workspace con <span class="hl">tus ramos</span> del semestre.</h3>
+          <p>Material oficial, calendario académico, compañeros de asignatura y oportunidades filtradas por tu carrera.</p>
+          <div class="pv-list">
+            <div class="pv-row"><span class="ck">✓</span><span><strong>Calendario académico</strong> con tus ramos</span></div>
+            <div class="pv-row"><span class="ck">✓</span><span><strong>Material oficial</strong> de cada asignatura</span></div>
+            <div class="pv-row"><span class="ck">✓</span><span><strong>Compañeros</strong> de carrera y ramo</span></div>
+            <div class="pv-row"><span class="ck">✓</span><span><strong>Ofertas</strong> filtradas por tu área</span></div>
+          </div>
+        </div>
+
+        <div class="legal-note">
+          <span class="ln-dot"></span>
+          <div>Tus datos académicos se procesan bajo la <strong>Ley 19.628</strong> de Protección de Vida Privada. Puedes editarlos o borrarlos en cualquier momento desde Configuración.</div>
+        </div>
+
+      </aside>
+
+    </div>
+
+  </div>
+</main>
+
+<!-- Transición editorial entre páginas -->
+<div class="page-transition" aria-hidden="true">
+  <span class="pt-sp" style="top:14%;left:22%;width:10px;height:10px;background:#FF4D3A"></span>
+  <span class="pt-sp" style="top:22%;left:72%;width:8px;height:8px;background:#D9FF3A"></span>
+  <span class="pt-sp" style="top:68%;left:18%;width:12px;height:12px;background:#00C2FF"></span>
+  <span class="pt-sp" style="top:78%;left:78%;width:9px;height:9px;background:#6B4EFF"></span>
+  <span class="pt-sp" style="top:42%;left:88%;width:7px;height:7px;background:#FFE9B8"></span>
+  <span class="pt-sp" style="top:52%;left:10%;width:6px;height:6px;background:#FF4A1C"></span>
+  <div class="pt-wrap">
+    <div class="pt-icon">
+      <svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+        <rect width="100" height="100" rx="22" fill="#D9FF3A"/>
+        <text x="50" y="71" text-anchor="middle" font-family="Funnel Display, -apple-system, sans-serif" font-weight="900" font-size="84" fill="#0D0F10" letter-spacing="-4">u</text>
+        <circle cx="77" cy="68" r="6" fill="#FF4A1C"/>
+      </svg>
+    </div>
+    <div class="pt-label"><span class="pt-dot"></span>conniku. cargando</div>
+  </div>
+</div>
+
+<script>
+// ═══ Habilitar botón continuar solo cuando los 3 selects están llenos ═══
+(function () {
+  const carrera = document.querySelector('#carrera');
+  const anio = document.querySelector('#anio');
+  const semestre = document.querySelector('#semestre');
+  const btn = document.querySelector('#next-btn');
+  if (!carrera || !anio || !semestre || !btn) return;
+
+  function check() {
+    const ok = carrera.value && anio.value && semestre.value;
+    if (ok) {
+      btn.removeAttribute('aria-disabled');
+      btn.setAttribute('href', '02-intereses-20260419-1650.html');
+      btn.style.opacity = '1';
+      btn.style.pointerEvents = 'auto';
+    } else {
+      btn.setAttribute('aria-disabled', 'true');
+      btn.setAttribute('href', '#');
+      btn.style.opacity = '0.45';
+      btn.style.pointerEvents = 'none';
+    }
+  }
+  // Estado inicial: desactivado
+  btn.style.opacity = '0.45';
+  btn.style.pointerEvents = 'none';
+  [carrera, anio, semestre].forEach(s => s.addEventListener('change', check));
+})();
+
+// ═══ Partículas bouncing — curva 60% ═══
+(function () {
+  const container = document.querySelector('.panel-fx');
+  if (!container) return;
+  if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+  const elements = Array.from(container.querySelectorAll('.sp, .light-far, .light-mid'));
+  let containerW = container.clientWidth;
+  let containerH = container.clientHeight;
+  const state = elements.map((el) => {
+    const isFar = el.classList.contains('light-far');
+    const isMid = el.classList.contains('light-mid');
+    const rect = el.getBoundingClientRect();
+    const crInit = container.getBoundingClientRect();
+    const initLeft = rect.left - crInit.left;
+    const initTop = rect.top - crInit.top;
+    const w = rect.width, h = rect.height;
+    // Paso 3/6 — intensidad 60%: velocidades y opacidades más atenuadas que paso 2
+    let base;
+    if (isFar) base = 0.08 + Math.random() * 0.18;      // antes 0.12-0.34 → ahora 0.08-0.26
+    else if (isMid) base = 0.12 + Math.random() * 0.26; // antes 0.18-0.52 → ahora 0.12-0.38
+    else base = 0.30 + Math.random() * 1.0;             // antes 0.45-1.65 → ahora 0.30-1.30
+    const angle = Math.random() * Math.PI * 2;
+    let opacity;
+    if (isFar) opacity = 0.14 + Math.random() * 0.22;   // antes 0.18-0.48 → 0.14-0.36
+    else if (isMid) opacity = 0.16 + Math.random() * 0.26; // antes 0.22-0.56 → 0.16-0.42
+    else opacity = 0.40 + Math.random() * 0.25;         // antes 0.55-0.80 → 0.40-0.65
+    let blur;
+    if (isFar) blur = 55 + Math.random() * 50;
+    else if (isMid) blur = 18 + Math.random() * 26;
+    else blur = Math.random() * 3;
+    el.style.opacity = opacity.toFixed(3);
+    el.style.filter = 'blur(' + blur.toFixed(2) + 'px)';
+    return {
+      el, initLeft, initTop, w, h,
+      tx: 0, ty: 0,
+      vx: Math.cos(angle) * base,
+      vy: Math.sin(angle) * base,
+      minSpeed: isFar ? 0.08 : (isMid ? 0.15 : 0.35)
+    };
+  });
+  window.addEventListener('resize', () => {
+    containerW = container.clientWidth;
+    containerH = container.clientHeight;
+  });
+  function step() {
+    for (let i = 0; i < state.length; i++) {
+      const s = state[i];
+      s.tx += s.vx; s.ty += s.vy;
+      const left = s.initLeft + s.tx, top = s.initTop + s.ty;
+      const right = left + s.w, bottom = top + s.h;
+      if (left < 0 && s.vx < 0) { s.vx = -s.vx * (0.92 + Math.random() * 0.16); s.vy += (Math.random() - 0.5) * 0.4; }
+      else if (right > containerW && s.vx > 0) { s.vx = -s.vx * (0.92 + Math.random() * 0.16); s.vy += (Math.random() - 0.5) * 0.4; }
+      if (top < 0 && s.vy < 0) { s.vy = -s.vy * (0.92 + Math.random() * 0.16); s.vx += (Math.random() - 0.5) * 0.4; }
+      else if (bottom > containerH && s.vy > 0) { s.vy = -s.vy * (0.92 + Math.random() * 0.16); s.vx += (Math.random() - 0.5) * 0.4; }
+      const sp = Math.hypot(s.vx, s.vy);
+      if (sp < s.minSpeed) {
+        const ang = Math.atan2(s.vy, s.vx) || Math.random() * Math.PI * 2;
+        s.vx = Math.cos(ang) * s.minSpeed;
+        s.vy = Math.sin(ang) * s.minSpeed;
+      }
+      s.el.style.transform = 'translate3d(' + s.tx + 'px,' + s.ty + 'px,0)';
+    }
+    raf = requestAnimationFrame(step);
+  }
+  let raf = requestAnimationFrame(step);
+  document.addEventListener('visibilitychange', () => {
+    if (document.hidden) cancelAnimationFrame(raf);
+    else raf = requestAnimationFrame(step);
+  });
+})();
+
+// ═══ Transiciones entre páginas ═══
+(function () {
+  const overlay = document.querySelector('.page-transition');
+  if (!overlay) return;
+  if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+  function shouldTransition(a) {
+    const href = a.getAttribute('href');
+    if (!href) return false;
+    if (href.startsWith('#')) return false;
+    if (/^(https?:|mailto:|tel:)/.test(href)) return false;
+    if (a.target === '_blank') return false;
+    if (a.hasAttribute('download')) return false;
+    if (a.hasAttribute('data-no-transition')) return false;
+    if (a.getAttribute('aria-disabled') === 'true') return false;
+    return true;
+  }
+  document.addEventListener('click', (e) => {
+    const a = e.target.closest('a[href]');
+    if (!a || !shouldTransition(a)) return;
+    e.preventDefault();
+    overlay.classList.add('leaving');
+    setTimeout(() => { window.location.href = a.href; }, 2850);
+  });
+  window.addEventListener('pageshow', () => { overlay.classList.remove('leaving'); });
+})();
+</script>
+
+</body>
+</html>

@@ -154,7 +154,7 @@ const FAQ_SECTIONS: { title: string; icon: React.ReactNode; items: FAQItem[] }[]
       },
       {
         q: '¿Cómo solicito un reembolso?',
-        a: 'Ve a Suscripción → "Solicitar reembolso". Tienes derecho de retracto de 10 días hábiles desde la contratación (Art. 3 bis Ley 19.496). Si el servicio fue completamente ejecutado con tu consentimiento durante ese período, el retracto puede no aplicar. Adicionalmente, ofrecemos 7 días de garantía interna. Respondemos en 5 días hábiles.',
+        a: 'Ve a Suscripción → "Solicitar reembolso". Tienes derecho de retracto de 10 días corridos desde la contratación (Art. 3 bis letra b, Ley 19.496). Si el servicio fue completamente ejecutado con tu consentimiento durante ese período, el retracto puede no aplicar. Adicionalmente, ofrecemos 7 días de garantía interna. Respondemos en 5 días hábiles.',
         tags: ['reembolso', 'devolver', 'dinero'],
       },
       {

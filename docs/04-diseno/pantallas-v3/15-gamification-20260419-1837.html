@@ -1,0 +1,538 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Conniku — Logros y racha</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Funnel+Display:wght@400;500;600;700;800;900&family=Geist+Mono:wght@400;500;600;700&display=swap" />
+  <style>
+    :root {
+      --ink: #0D0F10; --ink-2: #2B2E30; --ink-3: #696C6F; --ink-4: #A0A3A7;
+      --paper: #F5F4EF; --paper-2: #EBE9E1; --line: #D2CFC3; --card: #FFFFFF;
+      --lime: #D9FF3A; --lime-ink: #181F08;
+      --pink: #FF4D3A; --cream: #FFE9B8;
+      --violet: #6B4EFF; --cyan: #00C2FF; --orange: #FF4A1C;
+      --font-display: 'Funnel Display', -apple-system, sans-serif;
+      --font-mono: 'Geist Mono', ui-monospace, monospace;
+      --ease: cubic-bezier(.2,.8,.2,1);
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    html, body { background: var(--paper); color: var(--ink); font-family: var(--font-display); }
+    body { min-height: 100vh; overflow-x: hidden; }
+    ::selection { background: var(--lime); color: var(--lime-ink); }
+
+    .av { display: grid; place-items: center; font-weight: 800; font-family: var(--font-display); overflow: hidden; position: relative; }
+    .av-felipe { background: linear-gradient(135deg, #D9FF3A, #FFE9B8); color: #181F08; }
+    .av-victoria { background: linear-gradient(135deg, #FF4D3A, #FF4A1C); color: #fff; }
+    .av-daniela { background: linear-gradient(135deg, #6B4EFF, #2F55F0); color: #fff; }
+    .av-luis { background: linear-gradient(135deg, #00C2FF, #2F55F0); color: #0D0F10; }
+    .av-pia { background: linear-gradient(135deg, #FFE9B8, #D9FF3A); color: #181F08; }
+    .av-barbara { background: linear-gradient(135deg, #FF4D3A, #6B4EFF); color: #fff; }
+    .av-cristian { background: linear-gradient(135deg, #0D0F10, #6B4EFF); color: #D9FF3A; }
+
+    .top-progress { background: var(--ink); color: #fff; padding: 8px 28px; display: flex; align-items: center; justify-content: space-between; font-family: var(--font-mono); font-size: 11px; letter-spacing: .08em; text-transform: uppercase; }
+    .top-progress .left { display: flex; align-items: center; gap: 12px; }
+    .pulse { width: 8px; height: 8px; border-radius: 50%; background: var(--lime); animation: pulse 1.6s var(--ease) infinite; }
+    @keyframes pulse { 0% { box-shadow: 0 0 0 0 rgba(217,255,58,.7); } 70% { box-shadow: 0 0 0 10px rgba(217,255,58,0); } 100% { box-shadow: 0 0 0 0 rgba(217,255,58,0); } }
+
+    .nav-wrap { padding: 18px 28px 0; display: flex; justify-content: center; }
+    .nav { max-width: 1240px; width: 100%; background: var(--card); border: 1px solid var(--line); border-radius: 999px; padding: 10px 14px 10px 18px; display: flex; align-items: center; gap: 28px; }
+    .logo-wrap { display: flex; align-items: center; gap: 10px; }
+    .logo-tile { width: 28px; height: 28px; display: block; flex-shrink: 0; }
+    .logo-text { font-weight: 700; font-size: 20px; letter-spacing: -.02em; }
+    .nav-links { display: flex; gap: 22px; flex: 1; }
+    .nav-link { font-size: 15px; font-weight: 600; color: var(--ink-2); cursor: pointer; }
+    .nav-link.active { color: var(--ink); border-bottom: 2px solid var(--lime); padding-bottom: 4px; }
+    .search-slot { font-family: var(--font-mono); font-size: 13px; color: var(--ink-3); border: 1px solid var(--line); border-radius: 999px; padding: 6px 14px; display: flex; align-items: center; gap: 8px; }
+
+    .main { max-width: 1240px; margin: 0 auto; padding: 40px 28px 120px; }
+
+    /* Hero: racha + puntos */
+    .hero-gm {
+      background: var(--ink); color: #fff; border-radius: 32px; padding: 48px;
+      display: grid; grid-template-columns: 1.3fr 1fr; gap: 48px; margin-bottom: 40px;
+      position: relative; overflow: hidden;
+    }
+    .hero-gm::before { content: ""; position: absolute; top: -60px; right: -60px; width: 320px; height: 320px; background: var(--lime); border-radius: 50%; opacity: .15; filter: blur(80px); }
+    .hero-gm::after { content: ""; position: absolute; bottom: -40px; left: -40px; width: 260px; height: 260px; background: var(--pink); border-radius: 50%; opacity: .2; filter: blur(80px); }
+
+    .hero-left { position: relative; z-index: 2; }
+    .hero-left .greeting { font-family: var(--font-mono); font-size: 12px; letter-spacing: .12em; text-transform: uppercase; color: var(--lime); font-weight: 700; margin-bottom: 10px; }
+    .hero-left h1 { font-weight: 900; font-size: clamp(48px, 6vw, 80px); letter-spacing: -.045em; line-height: .95; }
+    .hero-left h1 .hl-lime { background: var(--lime); color: var(--lime-ink); padding: 0 12px; border-radius: 14px; display: inline-block; transform: rotate(-1deg); }
+    .hero-left h1 .hl-pink { background: var(--pink); color: #fff; padding: 0 12px; border-radius: 14px; display: inline-block; transform: rotate(.8deg); }
+
+    .hero-metrics { margin-top: 32px; display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 16px; }
+    .hm-item { background: rgba(255,255,255,.06); border: 1px solid rgba(255,255,255,.12); border-radius: 16px; padding: 16px 18px; }
+    .hm-item.hl { background: var(--lime); color: var(--lime-ink); border-color: var(--lime); }
+    .hm-label { font-family: var(--font-mono); font-size: 10px; color: rgba(255,255,255,.55); letter-spacing: .1em; text-transform: uppercase; font-weight: 700; }
+    .hm-item.hl .hm-label { color: var(--lime-ink); opacity: .7; }
+    .hm-v { font-weight: 900; font-size: 36px; letter-spacing: -.03em; line-height: 1; margin-top: 8px; font-feature-settings: 'tnum'; }
+
+    /* Streak viz */
+    .streak-card {
+      position: relative; z-index: 2;
+      background: var(--lime); color: var(--lime-ink); border-radius: 24px; padding: 32px;
+      transform: rotate(1.5deg); box-shadow: 8px 8px 0 var(--pink);
+    }
+    .streak-label { font-family: var(--font-mono); font-size: 11px; letter-spacing: .14em; text-transform: uppercase; font-weight: 700; color: var(--lime-ink); opacity: .6; }
+    .streak-big { font-weight: 900; font-size: 120px; letter-spacing: -.045em; line-height: 1; font-feature-settings: 'tnum'; }
+    .streak-sub { font-size: 17px; font-weight: 700; letter-spacing: -.01em; margin-top: 4px; }
+    .streak-days { margin-top: 24px; display: flex; gap: 6px; }
+    .streak-day {
+      flex: 1; height: 40px; border-radius: 8px;
+      background: rgba(13,15,16,.12); border: 1.5px solid rgba(13,15,16,.2);
+      display: grid; place-items: center; font-family: var(--font-mono); font-size: 9px;
+      color: var(--lime-ink); opacity: .4; font-weight: 700; letter-spacing: .04em; text-transform: uppercase;
+    }
+    .streak-day.done { background: var(--lime-ink); color: var(--lime); opacity: 1; border-color: var(--lime-ink); }
+    .streak-day.today { background: var(--pink); color: #fff; border-color: var(--pink); opacity: 1; }
+
+    /* Sec label */
+    .sec-label { display: flex; align-items: center; gap: 12px; font-family: var(--font-mono); font-size: 11px; letter-spacing: .14em; text-transform: uppercase; color: var(--ink-3); margin: 56px 0 18px; font-weight: 600; }
+    .sec-label::before { content: ""; width: 32px; height: 2px; background: var(--ink); }
+    .sec-h2 { font-weight: 900; font-size: clamp(40px, 5vw, 64px); line-height: .95; letter-spacing: -.035em; margin-bottom: 28px; }
+    .sec-h2 .hl { background: var(--cream); padding: 0 10px; border-radius: 10px; transform: rotate(-.6deg); display: inline-block; }
+
+    /* Achievement grid */
+    .achv-grid {
+      display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px;
+    }
+    .achv {
+      border: 2px solid var(--ink); border-radius: 24px; padding: 24px;
+      cursor: pointer; transition: all 200ms var(--ease); position: relative;
+    }
+    .achv:hover { transform: translateY(-4px); box-shadow: 8px 8px 0 var(--ink); }
+    .achv:nth-child(5n+1) { transform: rotate(-.8deg); }
+    .achv:nth-child(5n+3) { transform: rotate(.5deg); }
+    .achv:nth-child(5n+5) { transform: rotate(-.4deg); }
+    .achv-ico { width: 60px; height: 60px; border-radius: 16px; display: grid; place-items: center; font-weight: 900; font-size: 28px; margin-bottom: 16px; }
+    .achv-title { font-weight: 800; font-size: 18px; letter-spacing: -.02em; line-height: 1.1; margin-bottom: 6px; }
+    .achv-desc { font-size: 13px; color: var(--ink-2); line-height: 1.35; margin-bottom: 14px; font-weight: 500; }
+    .achv-meta { padding-top: 12px; border-top: 1px solid var(--line); font-family: var(--font-mono); font-size: 10px; color: var(--ink-3); letter-spacing: .04em; display: flex; justify-content: space-between; }
+    .achv-meta .pts { color: var(--ink); font-weight: 800; }
+
+    .achv.done-lime { background: var(--lime); color: var(--lime-ink); }
+    .achv.done-lime .achv-ico { background: var(--ink); color: var(--lime); }
+    .achv.done-lime .achv-meta { border-color: rgba(13,15,16,.15); color: var(--lime-ink); opacity: .7; }
+    .achv.done-lime .achv-meta .pts { opacity: 1; }
+    .achv.done-pink { background: var(--pink); color: #fff; }
+    .achv.done-pink .achv-ico { background: #fff; color: var(--pink); }
+    .achv.done-pink .achv-meta { border-color: rgba(255,255,255,.2); color: rgba(255,255,255,.8); }
+    .achv.done-cream { background: var(--cream); }
+    .achv.done-cream .achv-ico { background: var(--ink); color: var(--cream); }
+    .achv.done-violet { background: var(--violet); color: #fff; }
+    .achv.done-violet .achv-ico { background: var(--lime); color: var(--ink); }
+    .achv.done-violet .achv-meta { border-color: rgba(255,255,255,.2); color: rgba(255,255,255,.75); }
+
+    .achv.locked { opacity: .6; background: var(--card); }
+    .achv.locked .achv-ico { background: var(--paper-2); color: var(--ink-4); }
+    .achv.locked::before { content: "✕"; position: absolute; top: 22px; right: 22px; font-size: 14px; color: var(--ink-4); font-weight: 900; }
+
+    .achv.progress { background: var(--card); }
+    .achv.progress .achv-ico { background: var(--cyan); color: var(--ink); }
+    .achv.progress::after {
+      content: "";
+      position: absolute; bottom: 60px; left: 24px; right: 24px;
+      height: 6px; background: var(--paper-2); border-radius: 999px; overflow: hidden;
+    }
+    .achv.progress-80::before {
+      content: ""; position: absolute; bottom: 60px; left: 24px; width: calc((100% - 48px) * .8); height: 6px; background: linear-gradient(90deg, var(--lime), var(--pink)); border-radius: 999px; z-index: 2;
+    }
+    .achv.progress-35::before {
+      content: ""; position: absolute; bottom: 60px; left: 24px; width: calc((100% - 48px) * .35); height: 6px; background: var(--cyan); border-radius: 999px; z-index: 2;
+    }
+
+    /* Leaderboard */
+    .leaderboard {
+      background: var(--card); border: 2px solid var(--ink); border-radius: 24px; padding: 32px;
+      display: grid; grid-template-columns: 1fr 1.5fr; gap: 32px;
+    }
+    .lb-head h3 { font-weight: 900; font-size: 30px; letter-spacing: -.025em; line-height: 1.05; }
+    .lb-head h3 .hl { background: var(--lime); color: var(--lime-ink); padding: 0 8px; border-radius: 8px; transform: rotate(-.8deg); display: inline-block; }
+    .lb-head p { font-family: var(--font-mono); font-size: 11px; color: var(--ink-3); letter-spacing: .06em; text-transform: uppercase; margin-top: 10px; font-weight: 600; }
+    .lb-head .your-pos { margin-top: 18px; padding: 16px; background: var(--ink); color: #fff; border-radius: 14px; }
+    .lb-head .yp-l { font-family: var(--font-mono); font-size: 10px; color: rgba(255,255,255,.5); letter-spacing: .1em; text-transform: uppercase; font-weight: 700; }
+    .lb-head .yp-v { font-weight: 900; font-size: 40px; color: var(--lime); letter-spacing: -.03em; line-height: 1; margin-top: 4px; font-feature-settings: 'tnum'; }
+    .lb-head .yp-sub { font-size: 13px; color: rgba(255,255,255,.75); margin-top: 6px; }
+
+    .lb-list { display: flex; flex-direction: column; gap: 8px; }
+    .lb-row {
+      display: grid; grid-template-columns: 48px 1fr auto auto; gap: 14px; align-items: center;
+      padding: 12px 18px; border: 1.5px solid var(--line); border-radius: 14px;
+      background: var(--paper); transition: all 150ms var(--ease);
+    }
+    .lb-row:hover { border-color: var(--ink); }
+    .lb-row.mine { background: var(--cream); border-color: var(--ink); border-width: 2px; }
+    .lb-rank { font-family: var(--font-display); font-weight: 900; font-size: 24px; letter-spacing: -.02em; text-align: center; }
+    .lb-rank.gold { color: var(--ink); }
+    .lb-rank.silver { color: var(--ink-2); }
+    .lb-rank.bronze { color: var(--ink-2); }
+    .lb-person { display: flex; align-items: center; gap: 12px; }
+    .lb-person .av { width: 36px; height: 36px; border-radius: 50%; font-size: 12px; }
+    .lb-person .nm { font-weight: 700; font-size: 14px; }
+    .lb-person .sub { font-family: var(--font-mono); font-size: 10px; color: var(--ink-3); letter-spacing: .04em; margin-top: 2px; }
+    .lb-points { font-family: var(--font-display); font-weight: 800; font-size: 16px; font-feature-settings: 'tnum'; }
+    .lb-points-label { font-family: var(--font-mono); font-size: 9px; color: var(--ink-3); letter-spacing: .06em; text-transform: uppercase; font-weight: 700; }
+    .lb-streak { font-family: var(--font-mono); font-size: 11px; font-weight: 700; padding: 4px 10px; border-radius: 999px; background: var(--lime); color: var(--lime-ink); letter-spacing: 0; }
+
+    /* Rewards */
+    .rewards-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 18px; margin-top: 28px; }
+    .reward {
+      background: var(--card); border: 2px solid var(--ink); border-radius: 24px;
+      padding: 24px; cursor: pointer; transition: all 200ms var(--ease);
+    }
+    .reward:hover { transform: translateY(-3px); box-shadow: 6px 6px 0 var(--ink); }
+    .reward:nth-child(2) { transform: rotate(.5deg); }
+    .reward-ico { width: 54px; height: 54px; border-radius: 14px; display: grid; place-items: center; font-weight: 900; font-size: 22px; margin-bottom: 14px; }
+    .ri-orange { background: var(--orange); color: #fff; }
+    .ri-cyan { background: var(--cyan); color: var(--ink); }
+    .ri-pink { background: var(--pink); color: #fff; }
+    .reward h4 { font-weight: 800; font-size: 18px; letter-spacing: -.015em; line-height: 1.1; margin-bottom: 6px; }
+    .reward p { font-size: 13px; color: var(--ink-2); line-height: 1.4; margin-bottom: 14px; }
+    .reward-cost {
+      display: flex; justify-content: space-between; align-items: center;
+      padding: 10px 14px; background: var(--paper); border-radius: 12px;
+    }
+    .reward-cost .rc-l { font-family: var(--font-mono); font-size: 10px; color: var(--ink-3); letter-spacing: .08em; text-transform: uppercase; font-weight: 700; }
+    .reward-cost .rc-v { font-weight: 900; font-size: 18px; color: var(--ink); font-feature-settings: 'tnum'; }
+    .reward-claim-btn { margin-top: 14px; background: var(--ink); color: #fff; padding: 9px 12px 9px 16px; border-radius: 999px; border: 0; font-family: var(--font-display); font-weight: 700; font-size: 13px; cursor: pointer; width: 100%; display: flex; align-items: center; justify-content: space-between; }
+    .reward-claim-btn .ring { width: 22px; height: 22px; background: var(--lime); color: var(--ink); border-radius: 50%; display: grid; place-items: center; font-weight: 900; font-size: 11px; }
+    .reward-claim-btn:disabled { opacity: .5; cursor: not-allowed; }
+
+    @media (max-width: 1080px) {
+      .hero-gm { grid-template-columns: 1fr; }
+      .achv-grid { grid-template-columns: 1fr 1fr; }
+      .leaderboard { grid-template-columns: 1fr; }
+      .rewards-grid { grid-template-columns: 1fr; }
+    }
+  
+    /* ═══ Logo oficial wordmark integrado · 00-BRAND-LOGO.md · INVIOLABLE ═══ */
+    .brand {
+      display: inline-flex; align-items: baseline;
+      font-family: var(--font-display, 'Funnel Display'); font-weight: 900;
+      font-size: 24px; letter-spacing: -.055em; line-height: 1;
+      color: var(--ink, #0D0F10); text-decoration: none;
+      white-space: nowrap;
+    }
+    .brand .u-pack {
+      display: inline-flex; align-items: baseline;
+      background: var(--lime, #D9FF3A);
+      color: var(--ink, #0D0F10);
+      padding: .07em .14em .07em .09em;
+      border-radius: .2em;
+      margin-left: .02em;
+    }
+    .brand .u-pack .dot { color: var(--orange, #FF4A1C); }
+  
+    /* ═══ Fotos del catálogo: siempre círculo + cara centrada ═══ */
+    .av:has(> img), .lb-person .av:has(> img) {
+      aspect-ratio: 1 / 1 !important;
+      border-radius: 50% !important;
+      overflow: hidden !important;
+      padding: 0 !important;
+    }
+    .av > img {
+      width: 100% !important;
+      height: 100% !important;
+      aspect-ratio: 1 / 1 !important;
+      border-radius: 50% !important;
+      object-fit: cover !important;
+      object-position: center 25% !important;
+      display: block !important;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="top-progress">
+    <div class="left">
+      <div class="pulse"></div>
+      <span>Logros · Racha · Puntos</span>
+    </div>
+    <span>12 días seguidos estudiando · +340 pts. esta semana</span>
+  </div>
+
+  <div class="nav-wrap">
+    <div class="nav">
+      <a class="brand" href="#" aria-label="Conniku">conn<span>i</span>k<span class="u-pack">u<span class="dot">.</span></span></a>
+      <div class="nav-links">
+        <div class="nav-link">Estudio</div>
+        <div class="nav-link">Biblioteca</div>
+        <div class="nav-link">Tutores</div>
+        <div class="nav-link">Empleo</div>
+        <div class="nav-link active">Logros</div>
+        <div class="nav-link">Comunidad</div>
+      </div>
+      <div class="search-slot"><span>Buscar</span></div>
+    </div>
+  </div>
+
+  <main class="main">
+
+    <section class="hero-gm">
+      <div class="hero-left">
+        <div class="greeting">★ Buenas, Cristian</div>
+        <h1>
+          Vas con<br>
+          <span class="hl-lime">racha</span>.<br>
+          <span class="hl-pink">Sigue así</span>.
+        </h1>
+        <div class="hero-metrics">
+          <div class="hm-item">
+            <div class="hm-label">Puntos totales</div>
+            <div class="hm-v">4.820</div>
+          </div>
+          <div class="hm-item hl">
+            <div class="hm-label">Rank actual</div>
+            <div class="hm-v">#12</div>
+          </div>
+          <div class="hm-item">
+            <div class="hm-label">Logros</div>
+            <div class="hm-v">18</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="streak-card">
+        <div class="streak-label">tu racha</div>
+        <div class="streak-big">12</div>
+        <div class="streak-sub">días seguidos estudiando</div>
+        <div class="streak-days">
+          <div class="streak-day done">L</div>
+          <div class="streak-day done">M</div>
+          <div class="streak-day done">M</div>
+          <div class="streak-day done">J</div>
+          <div class="streak-day done">V</div>
+          <div class="streak-day done">S</div>
+          <div class="streak-day today">D</div>
+        </div>
+      </div>
+    </section>
+
+    <div class="sec-label">Logros · 18 de 42 desbloqueados</div>
+    <h2 class="sec-h2">Los logros que <span class="hl">ya son tuyos</span>.</h2>
+
+    <div class="achv-grid">
+
+      <div class="achv done-lime">
+        <div class="achv-ico">★</div>
+        <div class="achv-title">Constancia 12d</div>
+        <div class="achv-desc">12 días seguidos entrando a Conniku y estudiando. Imparable.</div>
+        <div class="achv-meta">
+          <span>Desbloqueado 18 abr</span>
+          <span class="pts">+300 pts</span>
+        </div>
+      </div>
+
+      <div class="achv done-pink">
+        <div class="achv-ico">❁</div>
+        <div class="achv-title">Biblioteca 70</div>
+        <div class="achv-desc">Consultaste 70 libros de la biblioteca +70k. Eres un crack.</div>
+        <div class="achv-meta">
+          <span>Desbloqueado 12 abr</span>
+          <span class="pts">+200 pts</span>
+        </div>
+      </div>
+
+      <div class="achv done-cream">
+        <div class="achv-ico">♥</div>
+        <div class="achv-title">Amistad 100</div>
+        <div class="achv-desc">100 amigos conectados. Ya eres parte de la red Conniku.</div>
+        <div class="achv-meta">
+          <span>Desbloqueado 8 abr</span>
+          <span class="pts">+150 pts</span>
+        </div>
+      </div>
+
+      <div class="achv done-violet">
+        <div class="achv-ico">✎</div>
+        <div class="achv-title">Escritor activo</div>
+        <div class="achv-desc">100 posts publicados en la comunidad. Tu voz se nota.</div>
+        <div class="achv-meta">
+          <span>Desbloqueado 2 abr</span>
+          <span class="pts">+200 pts</span>
+        </div>
+      </div>
+
+      <div class="achv progress progress-80">
+        <div class="achv-ico">◎</div>
+        <div class="achv-title">Mes entero</div>
+        <div class="achv-desc">30 días seguidos estudiando. Te faltan 3 días. Estás cerquita.</div>
+        <div class="achv-meta">
+          <span>24/30 días</span>
+          <span class="pts">+500 pts</span>
+        </div>
+      </div>
+
+      <div class="achv progress progress-35">
+        <div class="achv-ico">◆</div>
+        <div class="achv-title">Diploma Conniku</div>
+        <div class="achv-desc">Completa 6 cursos de tu especialización para obtenerlo.</div>
+        <div class="achv-meta">
+          <span>4/6 cursos</span>
+          <span class="pts">+1.000 pts</span>
+        </div>
+      </div>
+
+      <div class="achv locked">
+        <div class="achv-ico">♛</div>
+        <div class="achv-title">Top 10 U</div>
+        <div class="achv-desc">Alcanza el rank 10 o menor entre estudiantes de tu universidad.</div>
+        <div class="achv-meta">
+          <span>Actual: #12</span>
+          <span class="pts">+800 pts</span>
+        </div>
+      </div>
+
+      <div class="achv locked">
+        <div class="achv-ico">☀</div>
+        <div class="achv-title">3 meses intensivos</div>
+        <div class="achv-desc">90 días seguidos estudiando. Reservado para los que no paran.</div>
+        <div class="achv-meta">
+          <span>Bloqueado</span>
+          <span class="pts">+2.000 pts</span>
+        </div>
+      </div>
+
+    </div>
+
+    <div class="sec-label">Ranking · tu universidad</div>
+    <section class="leaderboard">
+      <div class="lb-head">
+        <h3>Top 10 <span class="hl">UChile</span> del semestre</h3>
+        <p>Ranking por puntos Conniku</p>
+        <div class="your-pos">
+          <div class="yp-l">Tu posición actual</div>
+          <div class="yp-v">#12</div>
+          <div class="yp-sub">4.820 pts · te faltan <strong style="color: var(--lime);">230 pts</strong> para llegar al Top 10</div>
+        </div>
+      </div>
+
+      <div class="lb-list">
+        <div class="lb-row">
+          <div class="lb-rank gold">1</div>
+          <div class="lb-person">
+            <div class="av"><img src="../assets/people/pia-cisternas.jpg" alt="Pía Cisternas"></div>
+            <div>
+              <div class="nm">Pía Cisternas</div>
+              <div class="sub">Ing. Comercial · 2º · U. del Alba</div>
+            </div>
+          </div>
+          <div style="text-align: right;">
+            <div class="lb-points">8.420</div>
+            <div class="lb-points-label">Puntos</div>
+          </div>
+          <div class="lb-streak">★ 42d</div>
+        </div>
+
+        <div class="lb-row">
+          <div class="lb-rank silver">2</div>
+          <div class="lb-person">
+            <div class="av"><img src="../assets/people/felipe-gatica.png" alt="Felipe Gatica"></div>
+            <div>
+              <div class="nm">Felipe Gatica</div>
+              <div class="sub">Ing. Comercial · 5º · U. del Alba</div>
+            </div>
+          </div>
+          <div style="text-align: right;">
+            <div class="lb-points">7.610</div>
+            <div class="lb-points-label">Puntos</div>
+          </div>
+          <div class="lb-streak">★ 38d</div>
+        </div>
+
+        <div class="lb-row">
+          <div class="lb-rank bronze">3</div>
+          <div class="lb-person">
+            <div class="av" style="width:36px;height:36px;"><img src="../assets/people/barbara-escalona.jpg" alt="Barbara Escalona"></div>
+            <div>
+              <div class="nm">Barbara Escalona</div>
+              <div class="sub">Ing. Comercial · 4º · U. del Alba</div>
+            </div>
+          </div>
+          <div style="text-align: right;">
+            <div class="lb-points">7.240</div>
+            <div class="lb-points-label">Puntos</div>
+          </div>
+          <div class="lb-streak">★ 28d</div>
+        </div>
+
+        <div class="lb-row">
+          <div class="lb-rank">4</div>
+          <div class="lb-person">
+            <div class="av" style="width:36px;height:36px;"><img src="../assets/people/jennifer-ruiz-babin.png" alt="Jennifer Ruiz Babin"></div>
+            <div>
+              <div class="nm">Jennifer Ruiz Babin</div>
+              <div class="sub">Ing. Gestión Logística · 3º · USS</div>
+            </div>
+          </div>
+          <div style="text-align: right;">
+            <div class="lb-points">6.880</div>
+            <div class="lb-points-label">Puntos</div>
+          </div>
+          <div class="lb-streak">★ 19d</div>
+        </div>
+
+        <div class="lb-row mine">
+          <div class="lb-rank" style="color: var(--ink);">12</div>
+          <div class="lb-person">
+            <div class="av"><img src="../assets/people/cristian-gutierrez.jpg" alt="Cristian Gutiérrez"></div>
+            <div>
+              <div class="nm">Cristian Gutiérrez <span style="color: var(--ink-3); font-family: var(--font-mono); font-size: 10px; letter-spacing: .08em; font-weight: 600; text-transform: uppercase;">(tú)</span></div>
+              <div class="sub">Ing. Comercial · 4º · U. del Alba</div>
+            </div>
+          </div>
+          <div style="text-align: right;">
+            <div class="lb-points">4.820</div>
+            <div class="lb-points-label">Puntos</div>
+          </div>
+          <div class="lb-streak">★ 12d</div>
+        </div>
+      </div>
+    </section>
+
+    <div class="sec-label">Canjea tus puntos</div>
+    <div class="rewards-grid">
+
+      <div class="reward">
+        <div class="reward-ico ri-pink">♪</div>
+        <h4>1 mes extra Conniku Pro</h4>
+        <p>Alarga tu plan pagado con puntos. Sin cargo adicional en tu método de pago.</p>
+        <div class="reward-cost">
+          <span class="rc-l">Te cuesta</span>
+          <span class="rc-v">3.500 pts</span>
+        </div>
+        <button class="reward-claim-btn">Canjear <div class="ring">→</div></button>
+      </div>
+
+      <div class="reward">
+        <div class="reward-ico ri-cyan">◎</div>
+        <h4>1 clase con tutor top</h4>
+        <p>Hora completa con Margarita Soto, Andrea Vega o Rodrigo Flores pagada.</p>
+        <div class="reward-cost">
+          <span class="rc-l">Te cuesta</span>
+          <span class="rc-v">4.200 pts</span>
+        </div>
+        <button class="reward-claim-btn">Canjear <div class="ring">→</div></button>
+      </div>
+
+      <div class="reward">
+        <div class="reward-ico ri-orange">★</div>
+        <h4>Sticker pack físico Conniku</h4>
+        <p>Pack de 12 stickers editoriales exclusivos. Enviado a tu dirección en Chile.</p>
+        <div class="reward-cost">
+          <span class="rc-l">Te cuesta</span>
+          <span class="rc-v">1.800 pts</span>
+        </div>
+        <button class="reward-claim-btn">Canjear <div class="ring">→</div></button>
+      </div>
+
+    </div>
+
+  </main>
+
+</body>
+</html>

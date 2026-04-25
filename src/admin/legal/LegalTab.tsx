@@ -484,7 +484,7 @@ function generateReglamentoInterno(): string {
 
 <div class="section">
 <h2>Titulo III — Jornada de Trabajo</h2>
-<p><strong>Articulo 5°:</strong> La jornada ordinaria de trabajo sera de 45 horas semanales (Art. 22 CT), distribuidas de lunes a viernes.</p>
+<p><strong>Articulo 5°:</strong> La jornada ordinaria de trabajo sera de 42 horas semanales (Art. 22 CT mod. Ley 21.561, vigente desde el 26/04/2026), distribuidas de lunes a viernes.</p>
 <p><strong>Articulo 6°:</strong> Los trabajadores deberan registrar su asistencia conforme al sistema establecido (Art. 33 CT).</p>
 <p><strong>Articulo 7°:</strong> Las horas extraordinarias solo podran pactarse en situaciones temporales y se pagaran con un recargo del 50% sobre la hora ordinaria (Art. 32 CT).</p>
 </div>

@@ -1,0 +1,111 @@
+/* LegalLayout.module.css
+   Layout de 2 columnas: sidebar izquierdo + contenido derecho.
+   Bloque: legal-viewer-v1
+*/
+
+.root {
+  display: flex;
+  height: 100vh;
+  background: var(--bg-primary);
+  overflow: hidden;
+}
+
+/* Sidebar */
+.sidebar {
+  width: 220px;
+  flex-shrink: 0;
+  border-right: 1px solid var(--border);
+  display: flex;
+  flex-direction: column;
+  padding: 24px 0;
+  background: var(--bg-secondary);
+  overflow-y: auto;
+}
+
+.sidebarTitle {
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--text-secondary);
+  padding: 0 16px 12px;
+}
+
+.navLink {
+  display: block;
+  padding: 10px 16px;
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--text-secondary);
+  text-decoration: none;
+  border-left: 2px solid transparent;
+  transition:
+    background 0.1s,
+    color 0.1s;
+}
+
+.navLink:hover {
+  background: var(--bg-primary);
+  color: var(--text-primary);
+}
+
+.navLink[aria-current='page'] {
+  color: var(--accent);
+  border-left-color: var(--accent);
+  background: var(--bg-primary);
+  font-weight: 600;
+}
+
+/* Área de contenido principal */
+.content {
+  flex: 1;
+  overflow-y: auto;
+  padding: 0;
+}
+
+/* Responsive: móvil — sidebar colapsa a menú horizontal en top */
+@media (max-width: 767px) {
+  .root {
+    flex-direction: column;
+    height: auto;
+    min-height: 100vh;
+  }
+
+  .sidebar {
+    width: 100%;
+    height: auto;
+    border-right: none;
+    border-bottom: 1px solid var(--border);
+    padding: 12px 0 8px;
+    flex-direction: row;
+    overflow-x: auto;
+    overflow-y: hidden;
+  }
+
+  .sidebarTitle {
+    display: none;
+  }
+
+  .navLink {
+    white-space: nowrap;
+    border-left: none;
+    border-bottom: 2px solid transparent;
+    padding: 8px 14px;
+  }
+
+  .navLink[aria-current='page'] {
+    border-left: none;
+    border-bottom-color: var(--accent);
+  }
+
+  .content {
+    overflow-y: visible;
+  }
+}
+
+/* Responsive: tablet — sidebar visible junto al contenido */
+@media (min-width: 768px) and (max-width: 1024px) {
+  .sidebar {
+    width: 180px;
+  }
+}

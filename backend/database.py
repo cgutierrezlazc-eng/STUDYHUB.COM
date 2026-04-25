@@ -1864,6 +1864,151 @@ class UserAgreement(Base):
     __table_args__ = (Index("ix_user_agreements_user_doc", "user_id", "document_type"),)
 
 
+# ─── Cookie Consents (bloque-cookie-consent-banner-v1) ────────────────────────
+# Registro probatorio de consentimiento granular de cookies por visitante.
+# A diferencia de user_agreements, esta tabla:
+# - Usa visitor_uuid (UUID4) para usuarios ANÓNIMOS además de autenticados.
+# - Tiene ON DELETE SET NULL en user_id: el registro SOBREVIVE al borrar el
+#   usuario como evidencia legal bajo GDPR Art. 17(3)(e) (defensa legal).
+# - Almacena categories_accepted como JSON array de categorías.
+# - Registra policy_hash para demostrabilidad (GDPR Art. 7(1)).
+#
+# Referencia legal:
+# - GDPR Art. 7(1): el responsable debe demostrar que el titular otorgó
+#   consentimiento (Orange Romania C-61/19, TJUE 2020-11-11).
+# - GDPR Art. 17(3)(e): retención de datos para ejercicio de defensa legal.
+# - Directiva 2002/58/CE Art. 5(3) (ePrivacy): consentimiento previo para
+#   cookies no esenciales.
+# - Ley 19.628 Art. 4°: información al titular al momento de recolectar.
+
+
+class CookieConsent(Base):
+    """Registro de consentimiento de cookies por visitante (anónimo o autenticado).
+
+    Política de retención (plan §5.2):
+    - retention_expires_at: usado por el frontend para re-pedir consentimiento.
+    - Los registros se preservan 5 años como evidencia legal bajo
+      GDPR Art. 17(3)(e) incluso tras eliminación del usuario.
+    - ON DELETE SET NULL en user_id preserva la fila; solo NULLifica user_id.
+    - IP y UA se NULLifican a los 12 meses por job de pseudonimización (Pieza 5).
+    """
+
+    __tablename__ = "cookie_consents"
+
+    id = Column(Integer, primary_key=True, autoincrement=True)
+    visitor_uuid = Column(String(36), nullable=False, index=True)
+    user_id = Column(
+        String(16),
+        ForeignKey("users.id", ondelete="SET NULL"),
+        nullable=True,
+        index=True,
+    )
+    accepted_at_utc = Column(DateTime, nullable=False, default=datetime.utcnow)
+    user_timezone = Column(String(64), nullable=True)
+    client_ip = Column(String(64), nullable=True)
+    user_agent = Column(Text, nullable=True)
+    policy_version = Column(String(20), nullable=False)
+    policy_hash = Column(String(64), nullable=False, index=True)
+    # JSON array de strings: ["necessary"] | ["necessary","functional"] | etc.
+    categories_accepted = Column(Text, nullable=False)
+    # "banner_initial" | "settings_update" | "dnt_auto" | "iframe_auto"
+    origin = Column(String(40), nullable=False)
+    retention_expires_at = Column(DateTime, nullable=False)
+    # Se setea cuando el usuario actualiza sus preferencias (revoca el consent
+    # anterior creando uno nuevo). La fila vieja queda con este campo seteado.
+    revoked_at_utc = Column(DateTime, nullable=True)
+    revocation_reason = Column(String(80), nullable=True)
+    created_at = Column(DateTime, default=datetime.utcnow)
+    # Fecha en que el job de pseudonimización a 12 meses nullificó client_ip y
+    # user_agent de esta fila. NULL = aún no pseudonimizada.
+    # Referencia legal:
+    # - GDPR Art. 5(1)(e): limitación del plazo de conservación de datos personales.
+    # - Ley 21.719 Art. 14 vigente 2026-12-01 (Diario Oficial CVE 2583630,
+    #   Art. 1° transitorio: día primero del mes vigésimo cuarto posterior
+    #   a la publicación 2024-12-13).
+    # - URL fuente: https://www.bcn.cl/leychile/navegar?idNorma=1212270
+    # - Fecha de verificación: 2026-04-21.
+    # - Verificador: backend-builder (Tori).
+    pseudonymized_at_utc = Column(DateTime, nullable=True)
+
+    # Relación sin cascade para preservar fila al eliminar usuario.
+    user = relationship("User", foreign_keys=[user_id])
+
+    __table_args__ = (Index("ix_cookie_consents_visitor_accepted", "visitor_uuid", "accepted_at_utc"),)
+
+
+# ─── Document Views — Bloque legal-viewer-v1 (D-L5) ──────────────────────────
+#
+# Registra cada apertura de un documento legal por un usuario (autenticado o
+# anónimo). Sirve como evidencia probatoria de que se ofreció la lectura.
+#
+# Referencia legal:
+# - GDPR Art. 7(1) (Reglamento UE 2016/679): el responsable debe demostrar
+#   que el interesado consintió el tratamiento.
+#   URL fuente: https://eur-lex.europa.eu/legal-content/ES/TXT/?uri=CELEX:32016R0679
+#   Fecha de verificación: 2026-04-21. Verificador: backend-builder (Tori).
+# - GDPR Art. 6(1)(f): interés legítimo del responsable como base legal del
+#   tratamiento de IP y UA. Test de ponderación: Conniku tiene interés legítimo
+#   en demostrar que se ofreció la lectura; IP está almacenada cruda (no hasheada)
+#   pero se pseudonimiza a los 12 meses (campo pseudonymized_at_utc).
+# - GDPR Art. 17(3)(e): conservación para ejercicio/defensa de reclamaciones
+#   legales. Retención 5 años post-apertura.
+# - GDPR Art. 5(1)(c): minimización — user_agent truncado a 512 chars.
+# - Art. 2515 Código Civil Chile: prescripción ordinaria 5 años.
+#   URL fuente: https://www.bcn.cl/leychile/navegar?idNorma=172986
+#   Fecha de verificación: 2026-04-21. Verificador: backend-builder (Tori).
+
+
+class DocumentView(Base):
+    """Registro de apertura de documento legal (evidencia probatoria GDPR Art. 7(1)).
+
+    Política de retención (plan D-L5):
+    - retained_until_utc = viewed_at_utc + 1825 días (≈5 años).
+    - ON DELETE SET NULL en user_id preserva la fila tras eliminar el usuario.
+    - IP y UA se NULLifican a los 12 meses por job de pseudonimización
+      (mismo patrón que CookieConsent; campo pseudonymized_at_utc).
+    """
+
+    __tablename__ = "document_views"
+
+    id = Column(String(16), primary_key=True, default=gen_id)
+    # nullable: anónimos pre-registro no tienen user_id
+    user_id = Column(
+        String(16),
+        ForeignKey("users.id", ondelete="SET NULL"),
+        nullable=True,
+        index=True,
+    )
+    # uuid4 generado por el cliente para rastrear sesión anónima
+    session_token = Column(String(36), nullable=True, index=True)
+    # 'terms' | 'privacy' | 'cookies' | 'age-declaration'
+    doc_key = Column(String(40), nullable=False)
+    doc_version = Column(String(20), nullable=False)
+    # SHA-256 del archivo canónico (METADATA.yaml). Inmutable post-aceptación.
+    doc_hash = Column(String(64), nullable=False)
+    viewed_at_utc = Column(DateTime, nullable=False, default=datetime.utcnow)
+    scrolled_to_end = Column(Boolean, nullable=False, default=False)
+    # IP cruda almacenada; se pseudonimiza a 12 meses (pseudonymized_at_utc).
+    # GDPR Art. 5(1)(c): solo se usa para evidencia probatoria, no para perfilamiento.
+    ip_address = Column(String(64), nullable=True)
+    # UA truncado a 512 chars (minimización GDPR Art. 5(1)(c))
+    user_agent = Column(String(512), nullable=True)
+    # viewed_at_utc + 1825 días (Art. 17(3)(e) GDPR + Art. 2515 CC Chile)
+    retained_until_utc = Column(DateTime, nullable=False)
+    # Seteado por el job de pseudonimización a 12 meses (nullifica ip_address y
+    # user_agent). NULL = aún no pseudonimizada.
+    pseudonymized_at_utc = Column(DateTime, nullable=True)
+
+    # Relación sin cascade para preservar fila al eliminar usuario
+    user = relationship("User", foreign_keys=[user_id])
+
+    __table_args__ = (
+        Index("ix_document_views_user_doc", "user_id", "doc_key"),
+        Index("ix_document_views_session_doc", "session_token", "doc_key"),
+        Index("ix_document_views_doc_key_version", "doc_key", "doc_version"),
+    )
+
+
 # ─── Workspaces v2 (Bloque 2a Fundación) ──────────────────────────
 # Creados en bloque 2a. Los modelos AthenaUsage, WorkspaceAthenaChat y
 # WorkspaceAthenaSuggestion son consumidos desde bloque 2c (Athena IA).
@@ -2030,6 +2175,242 @@ class AthenaUsage(Base):
     created_at = Column(DateTime, default=datetime.utcnow, index=True)
 
     __table_args__ = (Index("ix_athena_usage_user_month", "user_id", "created_at"),)
+
+
+# ─── Contact Tickets — bloque-contact-tickets-v1 ──────────────────────────────
+#
+# Registra cada consulta de contacto recibida a través de POST /contact/tickets.
+# Incluye evidencia probatoria de consentimiento y datos de routing por motivo.
+#
+# Referencia legal:
+# - GDPR Art. 6(1)(a) (Reglamento UE 2016/679): consentimiento del interesado
+#   para finalidad específica "responder esta consulta".
+#   URL: https://eur-lex.europa.eu/legal-content/ES/TXT/?uri=CELEX:32016R0679
+#   Fecha de verificación: 2026-04-22. Verificador: backend-builder (Tori).
+# - GDPR Art. 7(1): demostrabilidad del consentimiento (consent_hash, IP, UA).
+# - GDPR Art. 17(3)(e): conservación para ejercicio/defensa de reclamaciones.
+#   Retención: 5 años post-created_at (Art. 2515 CC Chile prescripción ordinaria).
+# - GDPR Art. 5(1)(c): minimización — user_agent truncado a 512 chars.
+# - GDPR Art. 5(1)(e): limitación del plazo de conservación (retained_until_utc).
+# - Ley 19.628 (Chile) Art. 4°: información al titular al momento de recolectar.
+#   URL: https://www.bcn.cl/leychile/navegar?idNorma=141599
+#   Fecha de verificación: 2026-04-22. Verificador: backend-builder (Tori).
+# - Art. 2515 Código Civil Chile: prescripción ordinaria 5 años.
+#   URL: https://www.bcn.cl/leychile/navegar?idNorma=172986
+#   Fecha de verificación: 2026-04-22. Verificador: backend-builder (Tori).
+# - Ley 21.719 (Chile) Art. 14 vigente 2026-12-01: pseudonimización proactiva
+#   (campo pseudonymized_at_utc anticipa el requerimiento).
+#   URL: https://www.bcn.cl/leychile/navegar?idNorma=1212270
+#   Fecha de verificación: 2026-04-22. Verificador: backend-builder (Tori).
+
+
+class ContactTicket(Base):
+    """Ticket de contacto recibido por el formulario público de Conniku.
+
+    Política de retención:
+    - retained_until_utc = created_at + 1825 días (≈5 años, Art. 2515 CC Chile).
+    - ON DELETE SET NULL en assigned_to preserva la fila al eliminar el usuario.
+    - client_ip y user_agent se NULLifican a 12 meses (pseudonymized_at_utc).
+    """
+
+    __tablename__ = "contact_tickets"
+
+    id = Column(String(16), primary_key=True, default=gen_id)
+    # Número legible para el usuario (ej. "CNT-2026-000001").
+    # Generado en el endpoint como CNT-{año}-{seq:06d} usando secuencia atomica.
+    ticket_number = Column(String(20), nullable=False, unique=True, index=True)
+
+    # Datos del remitente
+    name = Column(String(120), nullable=False)
+    email = Column(String(255), nullable=False, index=True)
+    reason = Column(String(20), nullable=False, index=True)
+    # comercial | universidad | prensa | legal | seguridad | otro
+    org = Column(String(120), nullable=True)
+    message = Column(Text, nullable=False)
+
+    # Estado del ticket
+    # open | in_review | replied | closed
+    status = Column(String(20), nullable=False, default="open", index=True)
+
+    # Asignación (admin que lleva el ticket)
+    assigned_to = Column(
+        String(16),
+        ForeignKey("users.id", ondelete="SET NULL"),
+        nullable=True,
+    )
+
+    # Datos de routing (snapshot al momento de creación)
+    routed_to_email = Column(String(255), nullable=False)
+    routed_label = Column(String(80), nullable=False)
+    sla_hours = Column(Integer, nullable=False)
+
+    # Evidencia probatoria de consentimiento (GDPR Art. 7(1))
+    consent_version = Column(String(20), nullable=False)
+    consent_hash = Column(String(64), nullable=False)
+    consent_accepted_at_utc = Column(DateTime, nullable=False)
+
+    # IP y UA capturados del request (no del payload)
+    # GDPR Art. 6(1)(f): interés legítimo del responsable como base legal.
+    # Se pseudonimizan a 12 meses (NULLifican al setearse pseudonymized_at_utc).
+    client_ip = Column(String(64), nullable=True)
+    # UA truncado a 512 chars (minimización GDPR Art. 5(1)(c))
+    user_agent = Column(String(512), nullable=True)
+    user_timezone = Column(String(64), nullable=True)
+
+    # Métricas de SLA y seguimiento
+    first_response_at_utc = Column(DateTime, nullable=True)
+    resolved_at_utc = Column(DateTime, nullable=True)
+    resolution_note = Column(Text, nullable=True)
+
+    # Retención legal y pseudonimización
+    # retained_until_utc = created_at + 1825 días (Art. 17(3)(e) GDPR + Art. 2515 CC Chile)
+    retained_until_utc = Column(DateTime, nullable=False)
+    # Seteado por el job de pseudonimización a 12 meses.
+    # NULL = aún no pseudonimizada.
+    pseudonymized_at_utc = Column(DateTime, nullable=True)
+
+    created_at = Column(DateTime, nullable=False, default=datetime.utcnow, index=True)
+    updated_at = Column(DateTime, nullable=False, default=datetime.utcnow)
+
+    # Relaciones
+    assignee = relationship("User", foreign_keys=[assigned_to])
+    ticket_messages = relationship(
+        "ContactTicketMessage",
+        back_populates="ticket",
+        cascade="all, delete-orphan",
+        order_by="ContactTicketMessage.created_at",
+    )
+
+    __table_args__ = (
+        Index("ix_contact_tickets_email_created", "email", "created_at"),
+        Index("ix_contact_tickets_status_created", "status", "created_at"),
+        Index("ix_contact_tickets_reason_created", "reason", "created_at"),
+        Index("ix_contact_tickets_client_ip_created", "client_ip", "created_at"),
+    )
+
+
+class ContactTicketMessage(Base):
+    """Mensaje de un hilo de ticket de contacto (inbound del usuario o outbound del equipo).
+
+    direction: 'inbound' (usuario → Conniku) | 'outbound' (Conniku → usuario).
+    El mensaje inicial se persiste como fila inbound al crear el ticket.
+    Las respuestas del admin crean filas outbound y disparan _send_email_async.
+    """
+
+    __tablename__ = "contact_ticket_messages"
+
+    id = Column(String(16), primary_key=True, default=gen_id)
+    ticket_id = Column(
+        String(16),
+        ForeignKey("contact_tickets.id", ondelete="CASCADE"),
+        nullable=False,
+        index=True,
+    )
+    # 'inbound' | 'outbound'
+    direction = Column(String(10), nullable=False)
+    # FK al admin que respondió (null si es el usuario anónimo)
+    author_user_id = Column(
+        String(16),
+        ForeignKey("users.id", ondelete="SET NULL"),
+        nullable=True,
+    )
+    # Email del autor (espejo, para legibilidad sin JOIN)
+    author_email = Column(String(255), nullable=False)
+    body = Column(Text, nullable=False)
+    created_at = Column(DateTime, nullable=False, default=datetime.utcnow, index=True)
+    # Message-ID SMTP para trazabilidad (trazabilidad de entrega)
+    email_message_id = Column(String(255), nullable=True)
+
+    ticket = relationship("ContactTicket", back_populates="ticket_messages")
+    author = relationship("User", foreign_keys=[author_user_id])
+
+    __table_args__ = (Index("ix_ctm_ticket_direction", "ticket_id", "direction"),)
+
+
+# ─── Support Feedback ──────────────────────────────────────────────────────────
+#
+# Tabla de feedback por FAQ del módulo de soporte (soporte.html sandbox + Support.tsx).
+# Registra votos útil/no-útil y comentarios opcionales por pregunta frecuente.
+#
+# Referencia legal:
+# - GDPR Art. 6(1)(f): interés legítimo como base legal para procesar IP/UA con
+#   fines de seguridad y mejora iterativa del servicio de soporte.
+#   URL: https://eur-lex.europa.eu/legal-content/ES/TXT/?uri=CELEX:32016R0679
+#   Fecha de verificación: 2026-04-22. Verificador: backend-builder (Tori).
+# - GDPR Art. 5(1)(c): minimización — comment truncado a 2000 chars, UA a 512 chars.
+#   Fecha de verificación: 2026-04-22. Verificador: backend-builder (Tori).
+# - GDPR Art. 5(1)(e): limitación temporal — retención 2 años (D-S6=A del plan).
+#   Fecha de verificación: 2026-04-22. Verificador: backend-builder (Tori).
+# - GDPR Art. 17(3)(e): excepción a derecho de supresión para defensa de reclamaciones.
+#   Fecha de verificación: 2026-04-22. Verificador: backend-builder (Tori).
+# - Ley 19.628 Art. 4° Chile: información al titular al momento de recolectar.
+#   URL: https://www.bcn.cl/leychile/navegar?idNorma=141599
+#   Fecha de verificación: 2026-04-22. Verificador: backend-builder (Tori).
+
+
+class SupportFeedback(Base):
+    """Feedback de utilidad por pregunta frecuente (FAQ) del soporte.
+
+    Política de retención (D-S6=A bloque-sandbox-integrity-v1):
+    - retained_until_utc = created_at + 730 días (≈2 años).
+    - IP y UA se NULLifican a los 12 meses (pseudonymized_at_utc).
+    - ON DELETE SET NULL en user_id preserva la fila al eliminar el usuario.
+
+    El dato de feedback NO es evidencia legal probatoria (no aplica retención
+    de 5 años). 2 años cubren el horizonte de análisis de producto y/o
+    comparación anual de métricas de soporte.
+    """
+
+    __tablename__ = "support_feedback"
+
+    # id como String para compatibilidad SQLite (UUID almacenado como hex string)
+    id = Column(String(16), primary_key=True, default=gen_id)
+
+    # Identificador estable de la pregunta frecuente (slug, ej. "pwd-recovery")
+    # Documentado en docs/support/faq-catalog.md para versionado de slugs.
+    faq_id = Column(String(128), nullable=False, index=True)
+
+    # Voto de utilidad (True = útil, False = no útil)
+    useful = Column(Boolean, nullable=False)
+
+    # Comentario libre opcional (max 2000 chars en validación Pydantic)
+    # GDPR Art. 5(1)(c): puede contener datos personales indirectos.
+    comment = Column(Text, nullable=True)
+
+    # UUID del visitante (desde localStorage['conniku_visitor_uuid'], D-S4=A)
+    # Permite vincular feedback con consent y document_views del mismo visitante.
+    session_token = Column(String(36), nullable=True)
+
+    # FK al usuario autenticado si el feedback proviene del producto React
+    # ON DELETE SET NULL: la fila persiste aunque el usuario se elimine.
+    user_id = Column(
+        String(16),
+        ForeignKey("users.id", ondelete="SET NULL"),
+        nullable=True,
+    )
+
+    # IP real del request (desde X-Forwarded-For o client.host)
+    # GDPR Art. 6(1)(f): interés legítimo para prevención de abuso y seguridad.
+    # NULLificado a 12 meses por job de pseudonimización.
+    ip_address = Column(String(64), nullable=True)
+
+    # User-Agent del request, truncado a 512 chars (GDPR Art. 5(1)(c) minimización)
+    # NULLificado a 12 meses por job de pseudonimización.
+    user_agent = Column(String(512), nullable=True)
+
+    created_at = Column(DateTime, nullable=False, default=datetime.utcnow, index=True)
+
+    # Seteado por el job de pseudonimización a 12 meses.
+    # NULL = aún no pseudonimizada.
+    pseudonymized_at_utc = Column(DateTime, nullable=True)
+
+    # Fecha de expiración de retención: created_at + 730 días (D-S6=A)
+    # GDPR Art. 5(1)(e): limitación del plazo de conservación.
+    retained_until_utc = Column(DateTime, nullable=False)
+
+    __table_args__ = (
+        Index("ix_support_feedback_faq_created", "faq_id", "created_at"),
+    )
 
 
 def init_db():

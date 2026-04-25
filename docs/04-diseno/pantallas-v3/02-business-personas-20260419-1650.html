@@ -1,0 +1,673 @@
+<!DOCTYPE html>
+<html lang="es-CL">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Conniku Personas — Módulo en desarrollo</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Funnel+Display:wght@400;500;600;700;800;900&family=Geist+Mono:wght@400;500;600;700&display=swap" />
+  <style>
+    :root {
+      --ink: #0D0F10; --ink-2: #2B2E30; --ink-3: #696C6F; --ink-4: #A0A3A7;
+      --paper: #F5F4EF; --paper-2: #EBE9E1; --card: #FFFFFF;
+      --lime: #D9FF3A; --lime-ink: #181F08;
+      --pink: #FF4D3A; --cream: #FFE9B8;
+      --violet: #6B4EFF; --cyan: #00C2FF; --orange: #FF4A1C;
+      --module: #D9FF3A; --module-ink: #181F08;
+      --font-display: 'Funnel Display', -apple-system, BlinkMacSystemFont, sans-serif;
+      --font-mono: 'Geist Mono', ui-monospace, monospace;
+      --ease: cubic-bezier(.2,.8,.2,1);
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    html, body { background: var(--ink); color: var(--paper); font-family: var(--font-display); height: 100vh; overflow: hidden; }
+    ::selection { background: var(--module); color: var(--module-ink); }
+    a, button { color: inherit; font-family: inherit; }
+    button { cursor: pointer; border: 0; background: transparent; }
+
+    /* Partículas globales con físicas bouncing (igual al landing) */
+    .panel-fx { position: fixed; inset: 0; pointer-events: none; z-index: 1; overflow: hidden; }
+    .panel-fx .light-far { position: absolute; border-radius: 50%; mix-blend-mode: screen; }
+    .panel-fx .light-mid { position: absolute; border-radius: 50%; mix-blend-mode: screen; }
+    .panel-fx .sp { position: absolute; border-radius: 50%; display: block; }
+    /* Identity particle: icono identitario del módulo, sutil, discreto, mezclado entre las partículas */
+    .panel-fx .identity {
+      position: absolute;
+      width: 26px; height: 26px;
+      color: var(--module);
+      opacity: .35;
+      z-index: 2;
+      filter: drop-shadow(0 0 4px color-mix(in srgb, var(--module) 50%, transparent));
+    }
+    .panel-fx .identity svg { width: 100%; height: 100%; display: block; }
+    .sp-pink { background: var(--pink); } .sp-lime { background: var(--lime); }
+    .sp-cyan { background: var(--cyan); } .sp-cream { background: var(--cream); }
+    .sp-violet { background: var(--violet); } .sp-module { background: var(--module); }
+    .lf-lime { background: var(--lime); } .lf-pink { background: var(--pink); }
+    .lf-violet { background: var(--violet); } .lf-cyan { background: var(--cyan); }
+    .lf-cream { background: var(--cream); } .lf-module { background: var(--module); }
+
+    /* Nav */
+    .nav {
+      position: sticky; top: 0; z-index: 20; height: 64px;
+      padding: 0 40px; display: flex; align-items: center; justify-content: space-between;
+      background: rgba(13, 15, 16, 0.75);
+      backdrop-filter: blur(14px); -webkit-backdrop-filter: blur(14px);
+      border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+    }
+    /* Wordmark integrado oficial · tile lima envuelve u+punto, u siempre en ink */
+    .brand {
+      display: inline-flex; align-items: baseline;
+      font-family: var(--font-display); font-weight: 900;
+      font-size: 24px; letter-spacing: -.055em; line-height: 1;
+      color: var(--paper); text-decoration: none;
+      white-space: nowrap; flex-shrink: 0;
+    }
+    .brand .u-pack {
+      display: inline-flex; align-items: baseline;
+      background: var(--lime);
+      color: var(--ink);
+      padding: .07em .14em .07em .09em;
+      border-radius: .2em;
+      margin-left: .02em;
+    }
+    .brand .u-pack .dot { color: var(--orange); }
+    .brand-suite {
+      margin-left: 14px; padding: 3px 10px;
+      border-radius: 7px;
+      font-family: var(--font-mono); font-size: 10px;
+      letter-spacing: .12em; text-transform: uppercase;
+      color: var(--paper); background: rgba(255,255,255,.06);
+      border: 1px solid rgba(255,255,255,.16);
+      font-weight: 700;
+    }
+    .brand-sep {
+      margin: 0 7px; color: rgba(255,255,255,.3);
+      font-family: var(--font-display); font-weight: 700; font-size: 14px;
+    }
+    .brand-module { padding: 3px 10px; border-radius: 7px; font-family: var(--font-mono); font-size: 10px; letter-spacing: .08em; text-transform: uppercase; color: var(--module-ink); background: var(--module); font-weight: 700; }
+    .nav-actions { display: flex; gap: 10px; align-items: center; }
+    .back-btn {
+      display: inline-flex; align-items: center; gap: 8px;
+      padding: 8px 14px 8px 10px;
+      border-radius: 999px;
+      border: 1px solid rgba(255,255,255,.2);
+      background: rgba(255,255,255,.04);
+      color: var(--paper);
+      font-family: var(--font-display); font-weight: 600; font-size: 13px;
+      text-decoration: none;
+      transition: all 180ms var(--ease);
+    }
+    .back-btn:hover { background: var(--paper); color: var(--ink); border-color: var(--paper); transform: translateX(-2px); }
+    .back-btn .ba {
+      width: 22px; height: 22px; border-radius: 50%;
+      background: var(--module); color: var(--module-ink);
+      display: grid; place-items: center;
+      font-weight: 900; font-size: 12px;
+      transition: all 180ms var(--ease);
+    }
+    .back-btn:hover .ba { background: var(--ink); color: var(--paper); }
+    .btn-primary { padding: 8px 16px; border-radius: 999px; font-size: 13px; font-weight: 700; color: var(--module-ink); background: var(--module); display: inline-flex; align-items: center; gap: 8px; transition: transform 180ms var(--ease); text-decoration: none; }
+    .btn-primary:hover { transform: translateY(-2px); }
+    .btn-primary .ring { width: 20px; height: 20px; background: var(--module-ink); color: var(--module); border-radius: 50%; display: grid; place-items: center; font-weight: 900; font-size: 10px; }
+
+    /* Main — cabe en 100vh sin scroll */
+    main {
+      position: relative; z-index: 3;
+      max-width: 1200px; margin: 0 auto;
+      padding: 24px 48px 16px;
+      display: grid; grid-template-columns: 1.1fr 1fr; gap: 40px;
+      align-items: center;
+      height: calc(100vh - 64px - 54px);
+      overflow: hidden;
+    }
+
+    /* Hero izquierda — compacto */
+    .mod-header { display: flex; flex-direction: column; min-height: 0; overflow: hidden; }
+    .mod-header .kicker { display: inline-flex; align-items: center; gap: 10px; padding: 5px 12px; border-radius: 999px; background: rgba(255,255,255,.06); border: 1px solid rgba(255,255,255,.12); font-family: var(--font-mono); font-size: 10px; letter-spacing: .1em; text-transform: uppercase; color: rgba(255,255,255,.75); margin-bottom: 12px; width: fit-content; }
+    .mod-header .kicker .code { color: var(--module); font-weight: 700; }
+    .mod-header .kicker .sep { color: rgba(255,255,255,.3); }
+    .mod-header h1 { font-family: var(--font-display); font-weight: 900; font-size: clamp(36px, 4.5vw, 60px); line-height: .95; letter-spacing: -.05em; color: var(--paper); margin-bottom: 8px; }
+    .mod-header h1 .module-name { color: var(--module); }
+    .mod-header .tagline { font-family: var(--font-display); font-weight: 700; font-size: clamp(17px, 1.6vw, 22px); letter-spacing: -.03em; color: rgba(255,255,255,.8); margin-bottom: 12px; line-height: 1.15; }
+    .mod-header .description { font-size: 13.5px; line-height: 1.5; color: rgba(255,255,255,.68); max-width: 520px; margin-bottom: 14px; }
+
+    /* Status card — compacto */
+    .status-card {
+      background: rgba(255,255,255,.04); border: 1px solid rgba(255,255,255,.1);
+      border-left: 3px solid var(--module); border-radius: 10px;
+      padding: 10px 14px; margin-bottom: 14px;
+    }
+    .status-row { display: flex; align-items: center; gap: 10px; margin-bottom: 4px; }
+    .status-dot { width: 9px; height: 9px; border-radius: 50%; background: var(--orange); animation: pulse-dot 1.6s var(--ease) infinite; }
+    @keyframes pulse-dot { 0% { box-shadow: 0 0 0 0 rgba(255,74,28,.6); } 70% { box-shadow: 0 0 0 9px rgba(255,74,28,0); } 100% { box-shadow: 0 0 0 0 rgba(255,74,28,0); } }
+    .status-label { font-family: var(--font-mono); font-size: 10px; letter-spacing: .1em; text-transform: uppercase; color: var(--module); font-weight: 700; }
+    .status-phase { font-size: 12.5px; color: rgba(255,255,255,.85); margin-top: 2px; font-weight: 500; line-height: 1.35; }
+    .status-target { font-family: var(--font-mono); font-size: 10px; color: rgba(255,255,255,.5); letter-spacing: .04em; margin-top: 5px; }
+    .status-target strong { color: var(--module); font-weight: 700; }
+
+    /* Features en grid 2 columnas para ahorrar altura */
+    .features-preview { margin-bottom: 14px; }
+    .features-preview .fp-label { font-family: var(--font-mono); font-size: 10px; letter-spacing: .12em; text-transform: uppercase; color: rgba(255,255,255,.5); margin-bottom: 8px; display: block; }
+    .features-preview ul { list-style: none; display: grid; grid-template-columns: 1fr 1fr; gap: 6px 16px; }
+    .features-preview li { font-size: 11.5px; line-height: 1.35; color: rgba(255,255,255,.78); display: flex; gap: 7px; align-items: flex-start; }
+    .features-preview li::before { content: "→"; color: var(--module); font-weight: 900; flex-shrink: 0; margin-top: 1px; font-size: 11px; }
+
+    /* Integration badges: modularidad + legalidad + conexiones */
+    .integration-badges { display: flex; flex-wrap: wrap; gap: 5px; margin-bottom: 14px; }
+    .ib {
+      display: inline-flex; align-items: center; gap: 5px;
+      padding: 3px 8px 3px 6px;
+      border-radius: 999px;
+      border: 1px solid rgba(255,255,255,.14);
+      background: rgba(255,255,255,.03);
+      font-family: var(--font-mono);
+      font-size: 9px; letter-spacing: .04em;
+      color: rgba(255,255,255,.72);
+    }
+    .ib .ib-dot { width: 5px; height: 5px; border-radius: 50%; background: var(--module); }
+    .ib.ib-legal .ib-dot { background: var(--orange); }
+
+    /* CTAs */
+    .mod-ctas { display: flex; gap: 10px; flex-wrap: wrap; }
+    .btn-cta { padding: 10px 18px; border-radius: 999px; font-weight: 700; font-size: 13px; display: inline-flex; align-items: center; gap: 8px; cursor: pointer; font-family: inherit; transition: transform 180ms var(--ease); text-decoration: none; }
+    .btn-cta:hover { transform: translateY(-2px); }
+    .btn-cta.primary { background: var(--module); color: var(--module-ink); }
+    .btn-cta.primary .ring-big { width: 22px; height: 22px; background: var(--module-ink); color: var(--module); border-radius: 50%; display: grid; place-items: center; font-weight: 900; font-size: 12px; }
+    .btn-cta.ghost { background: transparent; border: 1px solid rgba(255,255,255,.2); color: var(--paper); }
+    .btn-cta.ghost:hover { border-color: var(--paper); background: rgba(255,255,255,.04); }
+
+    /* ═══ Lado derecho: app icon v2.0 oficial + nombre del módulo integrado ═══ */
+    .mod-visual { display: flex; align-items: center; justify-content: center; position: relative; min-height: 0; }
+    .mod-app-icon {
+      width: clamp(200px, 22vw, 280px); height: clamp(200px, 22vw, 280px);
+      border-radius: 22%;
+      background: var(--lime);
+      border: 3px solid var(--ink);
+      transform: rotate(-3deg);
+      box-shadow: 14px 14px 0 rgba(13,15,16,0.5), 0 28px 80px color-mix(in srgb, var(--module) 40%, transparent);
+      position: relative;
+      z-index: 2;
+      overflow: hidden;
+    }
+    /* Fallback para browsers sin color-mix: halo con el color del módulo usando pseudo-elemento */
+    .mod-app-icon::after {
+      content: "";
+      position: absolute;
+      inset: -20px;
+      border-radius: inherit;
+      background: var(--module);
+      filter: blur(60px);
+      opacity: .25;
+      z-index: -1;
+      transform: rotate(3deg);
+    }
+    .mod-app-icon svg { width: 100%; height: 100%; display: block; }
+
+    /* Tag editorial con el nombre del módulo, pegada asimétricamente al app icon */
+    .mod-name-tag {
+      position: absolute;
+      bottom: -18px;
+      right: -30px;
+      padding: 12px 22px;
+      background: var(--module);
+      color: var(--module-ink);
+      border: 3px solid var(--ink);
+      border-radius: 14px 22px 12px 18px;
+      font-family: var(--font-display); font-weight: 900;
+      font-size: clamp(26px, 2.8vw, 40px);
+      letter-spacing: -.04em;
+      line-height: 1;
+      transform: rotate(5deg);
+      box-shadow: 7px 7px 0 rgba(13,15,16,0.55);
+      z-index: 3;
+      white-space: nowrap;
+    }
+
+    /* Footer — compacto, 54px */
+    footer {
+      position: relative; z-index: 3;
+      max-width: 1200px; margin: 0 auto;
+      padding: 14px 48px;
+      display: flex; justify-content: space-between; align-items: center; flex-wrap: nowrap; gap: 16px;
+      border-top: 1px solid rgba(255,255,255,.06);
+      font-family: var(--font-mono); font-size: 10px; color: rgba(255,255,255,.4); letter-spacing: .04em;
+      height: 54px;
+    }
+    footer a { color: rgba(255,255,255,.55); text-decoration: none; margin-right: 18px; transition: color 180ms var(--ease); }
+    footer a:hover { color: var(--paper); }
+
+    /* ═══ Modal de contacto flotante ═══ */
+    .modal-backdrop {
+      position: fixed; inset: 0; z-index: 100;
+      background: rgba(13,15,16,.7);
+      backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px);
+      display: grid; place-items: center;
+      opacity: 0; visibility: hidden;
+      transition: opacity 260ms var(--ease), visibility 260ms var(--ease);
+      padding: 24px;
+    }
+    .modal-backdrop.open { opacity: 1; visibility: visible; }
+    .modal-card {
+      background: var(--card); color: var(--ink);
+      border: 3px solid var(--ink);
+      border-radius: 28px 38px 24px 32px;
+      padding: 32px 36px 28px;
+      max-width: 460px; width: 100%;
+      position: relative;
+      transform: rotate(-0.8deg) scale(.92);
+      opacity: 0;
+      transition: transform 360ms var(--ease), opacity 260ms var(--ease);
+      box-shadow: 14px 14px 0 rgba(13,15,16,0.4), 0 40px 90px rgba(13,15,16,.55);
+      max-height: 90vh;
+      overflow-y: auto;
+    }
+    .modal-backdrop.open .modal-card { transform: rotate(-0.8deg) scale(1); opacity: 1; }
+    .modal-close {
+      position: absolute; top: 14px; right: 18px;
+      width: 32px; height: 32px;
+      border-radius: 50%; border: 2px solid var(--ink);
+      background: var(--paper); color: var(--ink);
+      font-size: 18px; line-height: 1;
+      cursor: pointer; font-family: inherit;
+      display: grid; place-items: center;
+      transition: all 180ms var(--ease);
+    }
+    .modal-close:hover { background: var(--module); color: var(--module-ink); transform: rotate(90deg); }
+
+    .modal-header { margin-bottom: 20px; padding-right: 40px; }
+    .modal-kicker { font-family: var(--font-mono); font-size: 10px; letter-spacing: .12em; text-transform: uppercase; color: var(--ink-3); margin-bottom: 10px; }
+    .modal-kicker .kc-module { color: var(--ink); font-weight: 700; }
+    .modal-header h3 { font-family: var(--font-display); font-weight: 900; font-size: 26px; letter-spacing: -.03em; line-height: 1.05; color: var(--ink); margin-bottom: 8px; }
+    .modal-header h3 .mod-name-hl { background: var(--module); color: var(--module-ink); padding: 0 8px; border-radius: 8px; display: inline-block; transform: rotate(-1deg); border: 2px solid var(--ink); }
+    .modal-header p { font-size: 14px; line-height: 1.45; color: var(--ink-2); }
+
+    .modal-form { display: flex; flex-direction: column; gap: 10px; }
+    .modal-field { display: flex; flex-direction: column; }
+    .modal-field label { font-family: var(--font-mono); font-size: 10px; letter-spacing: .08em; text-transform: uppercase; color: var(--ink-2); font-weight: 600; margin-bottom: 4px; }
+    .modal-field input, .modal-field textarea {
+      width: 100%; padding: 10px 14px;
+      border: 2px solid var(--ink); border-radius: 10px;
+      background: var(--card); color: var(--ink);
+      font-family: var(--font-display); font-weight: 500; font-size: 14px;
+      outline: none;
+      transition: box-shadow 180ms var(--ease);
+    }
+    .modal-field input:focus, .modal-field textarea:focus { box-shadow: 4px 4px 0 var(--module); }
+    .modal-field textarea { resize: vertical; min-height: 60px; font-family: var(--font-display); }
+
+    .modal-submit {
+      margin-top: 12px;
+      padding: 12px 18px 12px 20px; border-radius: 999px;
+      background: var(--ink); color: var(--paper);
+      font-family: var(--font-display); font-weight: 700; font-size: 15px;
+      border: 0; cursor: pointer;
+      display: flex; align-items: center; justify-content: space-between;
+      transition: transform 180ms var(--ease);
+    }
+    .modal-submit:hover { transform: translateY(-2px); }
+    .modal-submit .ring-m { width: 26px; height: 26px; background: var(--module); color: var(--module-ink); border-radius: 50%; display: grid; place-items: center; font-weight: 900; font-size: 13px; }
+    .modal-legal { margin-top: 14px; font-family: var(--font-mono); font-size: 10px; color: var(--ink-3); line-height: 1.5; letter-spacing: .02em; text-align: center; }
+    .modal-success {
+      display: none;
+      padding: 20px; background: var(--module); color: var(--module-ink);
+      border: 2px solid var(--ink); border-radius: 12px;
+      font-family: var(--font-display); font-weight: 700; font-size: 15px;
+      text-align: center;
+    }
+    .modal-success.show { display: block; }
+    .modal-form.hidden { display: none; }
+
+    @media (max-width: 1080px) {
+      .nav { padding: 0 20px; }
+      main { grid-template-columns: 1fr; padding: 48px 24px; gap: 60px; }
+      .mod-visual { order: -1; min-height: 300px; }
+      .mod-app-icon { width: 220px; height: 220px; }
+      .mod-name-tag { right: -20px; bottom: -14px; }
+      footer { padding: 24px 20px; }
+      .modal-card { padding: 28px 24px; }
+    }
+  
+    /* ═══ Transición editorial entre páginas ═══ */
+    .page-transition {
+      position: fixed; inset: 0; z-index: 999;
+      background: #0D0F10;
+      display: grid; place-items: center;
+      opacity: 0; pointer-events: none;
+      transition: opacity 1260ms cubic-bezier(.2,.8,.2,1);
+    }
+    .page-transition.leaving { opacity: 1; pointer-events: auto; }
+    .pt-wrap { display: flex; flex-direction: column; align-items: center; gap: 18px; transform: scale(.8) rotate(-6deg); opacity: 0; transition: transform 1860ms cubic-bezier(.2,.8,.2,1), opacity 1260ms cubic-bezier(.2,.8,.2,1); }
+    .page-transition.leaving .pt-wrap { transform: scale(1) rotate(0); opacity: 1; }
+    .pt-icon {
+      width: 110px; height: 110px;
+      border-radius: 22%;
+      background: #D9FF3A;
+      border: 3px solid #0D0F10;
+      box-shadow: 10px 10px 0 rgba(13,15,16,.5), 0 24px 60px rgba(217,255,58,.22);
+      transform: rotate(-3deg);
+      display: block;
+    }
+    .pt-icon svg { width: 100%; height: 100%; display: block; }
+    .pt-label { font-family: 'Geist Mono', ui-monospace, monospace; font-size: 11px; letter-spacing: .14em; text-transform: uppercase; color: rgba(245,244,239,.7); display: inline-flex; align-items: center; gap: 8px; }
+    .pt-label .pt-dot { width: 7px; height: 7px; border-radius: 50%; background: #FF4A1C; animation: pt-pulse 1.2s cubic-bezier(.2,.8,.2,1) infinite; }
+    @keyframes pt-pulse {
+      0%, 100% { transform: scale(1); opacity: 1; }
+      50% { transform: scale(1.6); opacity: .4; }
+    }
+    /* Splatters del overlay que entran rápido */
+    .pt-sp { position: absolute; border-radius: 50%; opacity: 0; transform: scale(.3); transition: opacity 1800ms cubic-bezier(.2,.8,.2,1), transform 1920ms cubic-bezier(.2,.8,.2,1); }
+    .page-transition.leaving .pt-sp { opacity: .8; transform: scale(1); }
+    @media (prefers-reduced-motion: reduce) {
+      .page-transition, .pt-wrap, .pt-icon, .pt-label .pt-dot { transition: none !important; animation: none !important; }
+    }
+  </style>
+</head>
+<body>
+
+<!-- Partículas bouncing globales -->
+<div class="panel-fx" aria-hidden="true">
+  <span class="light-far lf-module" style="top:-50px; right:-60px; width:380px; height:380px"></span>
+  <span class="light-far lf-pink" style="top:35%; left:-100px; width:320px; height:320px"></span>
+  <span class="light-far lf-violet" style="top:60%; right:-80px; width:260px; height:260px"></span>
+  <span class="light-far lf-cream" style="bottom:-60px; left:30%; width:240px; height:240px"></span>
+  <span class="light-far lf-cyan" style="top:18%; left:40%; width:180px; height:180px"></span>
+  <span class="light-mid lf-module" style="top:10%; left:8%; width:100px; height:100px"></span>
+  <span class="light-mid lf-pink" style="top:55%; left:48%; width:90px; height:90px"></span>
+  <span class="light-mid lf-violet" style="bottom:14%; right:12%; width:110px; height:110px"></span>
+  <span class="sp sp-module" style="top:8%;  left:22%; width:8px;  height:8px"></span>
+  <span class="sp sp-lime"   style="top:14%; left:58%; width:11px; height:11px"></span>
+  <span class="sp sp-cyan"   style="top:22%; left:82%; width:6px;  height:6px"></span>
+  <span class="sp sp-violet" style="top:30%; left:14%; width:9px;  height:9px"></span>
+  <span class="sp sp-cream"  style="top:38%; left:68%; width:12px; height:12px"></span>
+  <span class="sp sp-pink"   style="top:46%; left:32%; width:7px;  height:7px"></span>
+  <span class="sp sp-module" style="top:52%; left:88%; width:8px;  height:8px"></span>
+  <span class="sp sp-violet" style="top:58%; left:6%;  width:6px;  height:6px"></span>
+  <span class="sp sp-cyan"   style="top:64%; left:50%; width:5px;  height:5px"></span>
+  <span class="sp sp-lime"   style="top:72%; left:74%; width:9px;  height:9px"></span>
+  <span class="sp sp-pink"   style="top:80%; left:20%; width:13px; height:13px"></span>
+  <span class="sp sp-cream"  style="top:86%; left:54%; width:6px;  height:6px"></span>
+  <span class="sp sp-module" style="top:92%; left:80%; width:8px;  height:8px"></span>
+  <span class="sp sp-violet" style="top:45%; left:92%; width:7px;  height:7px"></span>
+  <span class="sp sp-lime"   style="top:18%; left:40%; width:5px;  height:5px"></span>
+  <span class="sp sp-cyan"   style="top:76%; left:38%; width:10px; height:10px"></span>
+  <!-- Partícula identitaria del módulo: icono sutil que representa el módulo -->
+  <span class="identity" style="top:38%; left:68%" aria-hidden="true"><svg viewBox="0 0 24 24" fill="currentColor"><circle cx="12" cy="7" r="4"/><path d="M4 21 Q4 13 12 13 Q20 13 20 21 Z"/></svg></span>
+</div>
+
+<nav class="nav">
+  <div style="display:flex; align-items:baseline; gap:0">
+    <a href="02-landing-20260419-1650.html" class="brand">conn<span>i</span>k<span class="u-pack">u<span class="dot">.</span></span></a>
+    <span class="brand-suite">Business</span>
+    <span class="brand-sep">›</span>
+    <span class="brand-module">Personas</span>
+  </div>
+  <div class="nav-actions">
+    <a href="02-landing-20260419-1650.html" class="back-btn"><span class="ba">←</span> Volver al inicio</a>
+    <button class="btn-primary" data-modal-open type="button">Avísame cuando esté listo <span class="ring">→</span></button>
+  </div>
+</nav>
+
+<main>
+  <div class="mod-header">
+    <div class="kicker">
+      <span class="code">MÓDULO 01</span>
+      <span class="sep">·</span>
+      <span>CONNIKU BUSINESS</span>
+    </div>
+    <h1>Conniku <span class="module-name">Personas</span>.</h1>
+    <div class="tagline">Tu equipo, legal y al día.</div>
+    <p class="description">Gestión integral de personas con cumplimiento legal chileno completo. Contratos validados automáticamente contra el Código del Trabajo, formularios inteligentes que actualizan toda la carpeta digital con un click, cálculo de remuneración instantáneo al firmar y envío directo a Payroll. RRHH sin planillas paralelas.</p>
+
+    <div class="status-card">
+      <div class="status-row">
+        <span class="status-dot"></span>
+        <span class="status-label">MÓDULO EN DESARROLLO</span>
+      </div>
+      <div class="status-phase">Diseño completo · Desarrollo en curso · Validación legal en curso</div>
+      <div class="status-target">Disponibilidad estimada: <strong>Junio 2026</strong></div>
+    </div>
+
+    <div class="features-preview">
+      <span class="fp-label">Lo que incluirá</span>
+      <ul>
+        <li>Contratos con validación legal automática (Código del Trabajo · DFL 1 · DL 3500 · Ley 19.728)</li>
+        <li>Formularios inteligentes: un ingreso actualiza contrato, AFP, salud y carpeta digital</li>
+        <li>Cálculo de remuneración inmediato al firmar: gratificación, descuentos legales, anticipos</li>
+        <li>Envío directo a Payroll sin re-digitación para liquidaciones mensuales</li>
+        <li>Carpeta digital completa: contrato, anexos, licencias, evaluaciones, certificados</li>
+        <li>Vacaciones, licencias y permisos según Art. 67 Código del Trabajo</li>
+      </ul>
+    </div>
+
+    <!-- Integración + legalidad: badges que refuerzan la propuesta Conniku Business -->
+    <div class="integration-badges" aria-label="Integración y legalidad">
+      <span class="ib"><span class="ib-dot"></span>Módulo independiente</span>
+      <span class="ib"><span class="ib-dot"></span>Se integra con los otros módulos Conniku</span>
+      <span class="ib ib-legal"><span class="ib-dot"></span>Conectado a legislación chilena vigente</span>
+      <span class="ib ib-legal"><span class="ib-dot"></span>Alertas ante cambios normativos</span>
+    </div>
+
+    <div class="mod-ctas">
+      <button class="btn-cta primary" data-modal-open type="button">Avísame cuando esté listo <span class="ring-big">→</span></button>
+      <a href="02-landing-20260419-1650.html" class="btn-cta ghost">← Volver al inicio</a>
+    </div>
+  </div>
+
+  <!-- App icon v2.0 oficial (u+punto centrados ópticamente) + tag del módulo -->
+  <div class="mod-visual">
+    <div class="mod-app-icon" aria-label="Logo Conniku + módulo Personas">
+      <svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+        <rect width="100" height="100" rx="22" fill="#D9FF3A"/>
+        <text x="50" y="71" text-anchor="middle" font-family="Funnel Display, -apple-system, sans-serif" font-weight="900" font-size="84" fill="#0D0F10" letter-spacing="-4">u</text>
+        <circle cx="77" cy="68" r="6" fill="#FF4A1C"/>
+      </svg>
+    </div>
+    <div class="mod-name-tag">Personas</div>
+  </div>
+</main>
+
+<footer>
+  <div>
+    <a href="#terminos">Términos</a>
+    <a href="#privacidad">Privacidad</a>
+    <a href="#contacto">Contacto</a>
+    <a href="#trabaja">Trabaja con nosotros</a>
+  </div>
+  <div>© 2026 Conniku SpA · RUT 78.395.702-7 · Santiago, Chile</div>
+</footer>
+
+<!-- Modal de contacto flotante -->
+<div class="modal-backdrop" role="dialog" aria-modal="true" aria-labelledby="modal-title" aria-hidden="true">
+  <div class="modal-card">
+    <button class="modal-close" aria-label="Cerrar" type="button">×</button>
+    <div class="modal-header">
+      <div class="modal-kicker">MÓDULO 01 · <span class="kc-module">CONNIKU PERSONAS</span></div>
+      <h3 id="modal-title">Te avisamos cuando <span class="mod-name-hl">Personas</span> esté listo.</h3>
+      <p>Déjanos tus datos y serás de los primeros en probar este módulo en tu empresa. Te contactaremos antes del lanzamiento oficial.</p>
+    </div>
+    <form class="modal-form" id="notify-form">
+      <div class="modal-field">
+        <label for="nf-name">Nombre</label>
+        <input id="nf-name" type="text" name="name" required placeholder="Tu nombre completo" autocomplete="name">
+      </div>
+      <div class="modal-field">
+        <label for="nf-email">Correo corporativo</label>
+        <input id="nf-email" type="email" name="email" required placeholder="tu@empresa.cl" autocomplete="email">
+      </div>
+      <div class="modal-field">
+        <label for="nf-company">Empresa</label>
+        <input id="nf-company" type="text" name="company" placeholder="Nombre de tu empresa" autocomplete="organization">
+      </div>
+      <div class="modal-field">
+        <label for="nf-msg">Mensaje (opcional)</label>
+        <textarea id="nf-msg" name="message" placeholder="¿Qué esperas del módulo? ¿Cuántas personas lo usarían?"></textarea>
+      </div>
+      <button type="submit" class="modal-submit">Enviar <span class="ring-m">→</span></button>
+      <div class="modal-legal">
+        Al enviar aceptas que Conniku te contacte sobre este módulo. No compartimos tu correo con terceros.
+      </div>
+    </form>
+    <div class="modal-success" role="status" aria-live="polite">
+      ✓ Gracias. Te contactaremos apenas Personas esté listo.
+    </div>
+  </div>
+</div>
+
+<script>
+// Sistema de partículas con físicas bouncing (idéntico al landing)
+(function () {
+  const container = document.querySelector('.panel-fx');
+  if (!container) return;
+  if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+  const elements = Array.from(container.querySelectorAll('.sp, .light-far, .light-mid, .identity'));
+  let containerW = container.clientWidth;
+  let containerH = container.clientHeight;
+  const state = elements.map((el) => {
+    const isFar = el.classList.contains('light-far');
+    const isMid = el.classList.contains('light-mid');
+    const isIdentity = el.classList.contains('identity');
+    const rect = el.getBoundingClientRect();
+    const crInit = container.getBoundingClientRect();
+    const initLeft = rect.left - crInit.left;
+    const initTop = rect.top - crInit.top;
+    const w = rect.width, h = rect.height;
+    let base;
+    if (isFar) base = 0.15 + Math.random() * 0.30;
+    else if (isMid) base = 0.25 + Math.random() * 0.45;
+    else if (isIdentity) base = 0.35 + Math.random() * 0.35;  // más lento que splatters
+    else base = 0.6 + Math.random() * 1.6;
+    const angle = Math.random() * Math.PI * 2;
+    // La identity mantiene opacity y filter definidos en CSS (sutil, sin blur), solo se mueve
+    if (!isIdentity) {
+      let opacity;
+      if (isFar) opacity = 0.22 + Math.random() * 0.38;
+      else if (isMid) opacity = 0.28 + Math.random() * 0.42;
+      else opacity = 0.70 + Math.random() * 0.30;
+      let blur;
+      if (isFar) blur = 40 + Math.random() * 60;
+      else if (isMid) blur = 14 + Math.random() * 34;
+      else blur = Math.random() * 5;
+      el.style.opacity = opacity.toFixed(3);
+      el.style.filter = 'blur(' + blur.toFixed(2) + 'px)';
+    }
+    return { el, initLeft, initTop, w, h, tx: 0, ty: 0, vx: Math.cos(angle)*base, vy: Math.sin(angle)*base, minSpeed: isFar ? 0.12 : (isMid ? 0.22 : (isIdentity ? 0.30 : 0.5)) };
+  });
+  function onResize() { containerW = container.clientWidth; containerH = container.clientHeight; }
+  window.addEventListener('resize', onResize);
+  function step() {
+    for (let i = 0; i < state.length; i++) {
+      const s = state[i];
+      s.tx += s.vx; s.ty += s.vy;
+      const left = s.initLeft + s.tx, top = s.initTop + s.ty;
+      const right = left + s.w, bottom = top + s.h;
+      if (left < 0 && s.vx < 0) { s.vx = -s.vx * (0.92 + Math.random()*0.16); s.vy += (Math.random()-0.5)*0.4; }
+      else if (right > containerW && s.vx > 0) { s.vx = -s.vx * (0.92 + Math.random()*0.16); s.vy += (Math.random()-0.5)*0.4; }
+      if (top < 0 && s.vy < 0) { s.vy = -s.vy * (0.92 + Math.random()*0.16); s.vx += (Math.random()-0.5)*0.4; }
+      else if (bottom > containerH && s.vy > 0) { s.vy = -s.vy * (0.92 + Math.random()*0.16); s.vx += (Math.random()-0.5)*0.4; }
+      const sp = Math.hypot(s.vx, s.vy);
+      if (sp < s.minSpeed) {
+        const ang = Math.atan2(s.vy, s.vx) || Math.random()*Math.PI*2;
+        s.vx = Math.cos(ang)*s.minSpeed; s.vy = Math.sin(ang)*s.minSpeed;
+      }
+      s.el.style.transform = 'translate3d(' + s.tx + 'px,' + s.ty + 'px,0)';
+    }
+    raf = requestAnimationFrame(step);
+  }
+  let raf = requestAnimationFrame(step);
+  document.addEventListener('visibilitychange', () => {
+    if (document.hidden) cancelAnimationFrame(raf);
+    else raf = requestAnimationFrame(step);
+  });
+})();
+
+// ═══ Modal de contacto ═══
+(function () {
+  const openers = document.querySelectorAll('[data-modal-open]');
+  const modal = document.querySelector('.modal-backdrop');
+  const closer = document.querySelector('.modal-close');
+  const form = document.querySelector('#notify-form');
+  const success = document.querySelector('.modal-success');
+  if (!modal || !closer) return;
+
+  function open() {
+    modal.classList.add('open');
+    modal.setAttribute('aria-hidden', 'false');
+    // Reset si estaba en success
+    if (form) form.classList.remove('hidden');
+    if (success) success.classList.remove('show');
+    document.body.style.overflow = 'hidden';
+  }
+  function close() {
+    modal.classList.remove('open');
+    modal.setAttribute('aria-hidden', 'true');
+    document.body.style.overflow = '';
+  }
+
+  openers.forEach(b => b.addEventListener('click', open));
+  closer.addEventListener('click', close);
+  modal.addEventListener('click', (e) => { if (e.target === modal) close(); });
+  document.addEventListener('keydown', (e) => { if (e.key === 'Escape') close(); });
+
+  if (form) {
+    form.addEventListener('submit', (e) => {
+      e.preventDefault();
+      // TODO_CRISTIAN: enviar a endpoint real /api/v2/leads/notify-module
+      // Placeholder: mostrar estado de éxito
+      form.classList.add('hidden');
+      if (success) success.classList.add('show');
+      setTimeout(close, 2200);
+    });
+  }
+})();
+
+// ═══ Transiciones entre páginas ═══
+(function () {
+  const overlay = document.querySelector('.page-transition');
+  if (!overlay) return;
+  if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+  function shouldTransition(a) {
+    const href = a.getAttribute('href');
+    if (!href) return false;
+    if (href.startsWith('#')) return false;
+    if (/^(https?:|mailto:|tel:)/.test(href)) return false;
+    if (a.target === '_blank') return false;
+    if (a.hasAttribute('download')) return false;
+    if (a.hasAttribute('data-no-transition')) return false;
+    return true;
+  }
+  document.addEventListener('click', (e) => {
+    const a = e.target.closest('a[href]');
+    if (!a || !shouldTransition(a)) return;
+    e.preventDefault();
+    overlay.classList.add('leaving');
+    setTimeout(() => { window.location.href = a.href; }, 2850);
+  });
+  // Cuando regresa con back button, ocultar overlay
+  window.addEventListener('pageshow', () => { overlay.classList.remove('leaving'); });
+})();
+</script>
+
+
+<!-- Transición editorial entre páginas -->
+<div class="page-transition" aria-hidden="true">
+  <span class="pt-sp" style="top:14%;left:22%;width:10px;height:10px;background:#FF4D3A"></span>
+  <span class="pt-sp" style="top:22%;left:72%;width:8px;height:8px;background:#D9FF3A"></span>
+  <span class="pt-sp" style="top:68%;left:18%;width:12px;height:12px;background:#00C2FF"></span>
+  <span class="pt-sp" style="top:78%;left:78%;width:9px;height:9px;background:#6B4EFF"></span>
+  <span class="pt-sp" style="top:42%;left:88%;width:7px;height:7px;background:#FFE9B8"></span>
+  <span class="pt-sp" style="top:52%;left:10%;width:6px;height:6px;background:#FF4A1C"></span>
+  <div class="pt-wrap">
+    <div class="pt-icon">
+      <svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+        <rect width="100" height="100" rx="22" fill="#D9FF3A"/>
+        <text x="50" y="71" text-anchor="middle" font-family="Funnel Display, -apple-system, sans-serif" font-weight="900" font-size="84" fill="#0D0F10" letter-spacing="-4">u</text>
+        <circle cx="77" cy="68" r="6" fill="#FF4A1C"/>
+      </svg>
+    </div>
+    <div class="pt-label"><span class="pt-dot"></span>conniku. cargando</div>
+  </div>
+</div>
+
+</body>
+</html>

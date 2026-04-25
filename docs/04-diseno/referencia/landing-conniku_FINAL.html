@@ -1,0 +1,1301 @@
+<!DOCTYPE html>
+<html lang="es-CL">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Conniku — Tu universidad entera. En una sola app.</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Funnel+Display:wght@400;500;600;700;800;900&family=Geist+Mono:wght@400;500;600;700&display=swap" />
+  <style>
+    :root {
+      --ink: #0D0F10; --ink-2: #2B2E30; --ink-3: #696C6F; --ink-4: #A0A3A7;
+      --paper: #F5F4EF; --paper-2: #EBE9E1; --card: #FFFFFF;
+      --lime: #D9FF3A; --lime-ink: #181F08;
+      --pink: #FF4D3A; --cream: #FFE9B8;
+      --violet: #6B4EFF; --cyan: #00C2FF; --orange: #FF4A1C;
+      --font-display: 'Funnel Display', -apple-system, BlinkMacSystemFont, sans-serif;
+      --font-mono: 'Geist Mono', ui-monospace, monospace;
+      --ease: cubic-bezier(.2,.8,.2,1);
+      --nav-h: 72px;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    html, body { background: var(--ink); color: var(--paper); font-family: var(--font-display); }
+    html, body { height: 100vh; overflow: hidden; }
+    ::selection { background: var(--lime); color: var(--lime-ink); }
+    a, button { color: inherit; font-family: inherit; }
+    button { cursor: pointer; border: 0; background: transparent; }
+
+    /* ═══════════════════════════════ PARTICLES (globales, detrás de TODO) ═══ */
+    .panel-fx { position: fixed; inset: 0; pointer-events: none; z-index: 1; overflow: hidden; }
+    .panel-fx .light-far { position: absolute; border-radius: 50%; mix-blend-mode: screen; }
+    .panel-fx .light-mid { position: absolute; border-radius: 50%; mix-blend-mode: screen; }
+    .panel-fx .sp { position: absolute; border-radius: 50%; display: block; }
+    .sp-pink { background: var(--pink); } .sp-lime { background: var(--lime); }
+    .sp-cyan { background: var(--cyan); } .sp-cream { background: var(--cream); }
+    .sp-violet { background: var(--violet); }
+    .lf-lime { background: var(--lime); } .lf-pink { background: var(--pink); }
+    .lf-violet { background: var(--violet); } .lf-cyan { background: var(--cyan); }
+    .lf-cream { background: var(--cream); }
+
+    /* ═══════════════════════════════ NAV con TABS ═══ */
+    .nav {
+      position: fixed; top: 0; left: 0; right: 0; z-index: 20; height: var(--nav-h);
+      padding: 0 40px; display: flex; align-items: center; gap: 32px;
+      background: rgba(13, 15, 16, 0.72);
+      backdrop-filter: blur(14px); -webkit-backdrop-filter: blur(14px);
+      border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+    }
+    .brand { display: flex; align-items: baseline; font-family: var(--font-display); font-weight: 900; font-size: 24px; letter-spacing: -.045em; color: var(--paper); flex-shrink: 0; }
+    .brand .dot { color: var(--orange); }
+
+    /* Tabs editoriales: numeración mono + label display, chip rotado al activar,
+       indicador orange pulsante, micro-transiciones */
+    .tabs { display: flex; gap: 4px; flex: 1; margin-left: 14px; align-items: center; padding: 6px 0; }
+    .tab-btn {
+      position: relative;
+      display: inline-flex; align-items: baseline; gap: 7px;
+      padding: 8px 14px;
+      border-radius: 10px;
+      color: rgba(255,255,255,.55);
+      transition: all 240ms var(--ease);
+      white-space: nowrap; font-family: inherit;
+      border: 1px solid transparent;
+      background: transparent;
+    }
+    .tab-btn .tab-num {
+      font-family: var(--font-mono); font-size: 9px; font-weight: 600;
+      letter-spacing: .08em; opacity: .55;
+      transition: opacity 240ms var(--ease);
+    }
+    .tab-btn .tab-label {
+      font-family: var(--font-display); font-weight: 700; font-size: 13px;
+      letter-spacing: -.01em;
+    }
+    .tab-btn::after {
+      content: "";
+      position: absolute;
+      bottom: -6px; left: 50%;
+      width: 4px; height: 4px;
+      border-radius: 50%;
+      background: var(--orange);
+      opacity: 0;
+      transform: translateX(-50%) scale(0);
+      transition: all 280ms var(--ease);
+      pointer-events: none;
+    }
+    .tab-btn:hover {
+      color: var(--paper);
+      background: rgba(255,255,255,.05);
+      border-color: rgba(255,255,255,.12);
+    }
+    .tab-btn:hover .tab-num { opacity: .85; }
+    .tab-btn.active {
+      background: var(--lime);
+      color: var(--lime-ink);
+      border-color: var(--ink);
+      transform: rotate(-1.2deg);
+      box-shadow: 3px 3px 0 rgba(13,15,16,0.35), 0 4px 14px rgba(217,255,58,0.22);
+    }
+    .tab-btn.active .tab-num { opacity: .7; }
+    .tab-btn.active::after {
+      opacity: 1;
+      transform: translateX(-50%) scale(1);
+      bottom: -9px;
+      animation: tab-dot-pulse 1.6s var(--ease) infinite;
+    }
+    @keyframes tab-dot-pulse {
+      0%   { box-shadow: 0 0 0 0 rgba(255,74,28,.7); }
+      70%  { box-shadow: 0 0 0 6px rgba(255,74,28,0); }
+      100% { box-shadow: 0 0 0 0 rgba(255,74,28,0); }
+    }
+
+    /* Separador sutil entre tabs (salvo el último) — pequeños puntos · estilo editorial */
+    .tab-btn:not(:last-of-type)::before {
+      content: "·";
+      position: absolute;
+      right: -7px;
+      top: 50%;
+      transform: translateY(-50%);
+      font-family: var(--font-display);
+      color: rgba(255,255,255,.2);
+      font-weight: 900;
+      font-size: 14px;
+      pointer-events: none;
+      transition: opacity 240ms var(--ease);
+    }
+    .tab-btn.active:not(:last-of-type)::before,
+    .tab-btn:hover:not(:last-of-type)::before { opacity: 0; }
+
+    /* ═══ Botón "Conniku Business" + panel editorial desplegable ═══ */
+    .business-wrap {
+      position: relative;
+      padding: 0 12px; margin: 0 4px;
+      border-left: 1px solid rgba(255,255,255,.12);
+      border-right: 1px solid rgba(255,255,255,.12);
+      height: 44px;
+      display: flex; align-items: center;
+    }
+    .business-btn {
+      display: inline-flex; align-items: center; gap: 9px;
+      padding: 7px 12px 7px 11px;
+      border-radius: 10px;
+      background: rgba(255,255,255,.05);
+      border: 1px solid rgba(255,255,255,.14);
+      color: var(--paper);
+      font-family: var(--font-display); font-weight: 700; font-size: 13px;
+      letter-spacing: -.005em;
+      cursor: pointer;
+      transition: all 200ms var(--ease);
+    }
+    .business-btn:hover, .business-btn.open {
+      background: rgba(255,255,255,.1);
+      border-color: rgba(255,255,255,.3);
+    }
+    .business-btn .bb-dot {
+      width: 8px; height: 8px; border-radius: 50%;
+      background: var(--lime);
+      box-shadow: 0 0 10px var(--lime);
+    }
+    .business-btn .bb-count {
+      font-family: var(--font-mono); font-size: 10px; font-weight: 700;
+      padding: 2px 7px; border-radius: 999px;
+      background: rgba(255,255,255,.1); color: rgba(255,255,255,.85);
+      letter-spacing: .04em;
+    }
+    .business-btn .bb-caret {
+      font-size: 9px; opacity: .6;
+      transition: transform 220ms var(--ease);
+    }
+    .business-btn.open .bb-caret { transform: rotate(180deg); }
+
+    /* Panel editorial desplegable */
+    .business-panel {
+      position: absolute;
+      top: calc(100% + 14px);
+      right: -16px;
+      width: 640px;
+      background: var(--ink);
+      border: 2px solid var(--paper);
+      border-radius: 22px 32px 20px 26px;
+      padding: 22px;
+      box-shadow: 16px 16px 0 rgba(13,15,16,0.45), 0 32px 90px rgba(13,15,16,0.7);
+      opacity: 0;
+      transform: translateY(-10px) rotate(-0.4deg) scale(.98);
+      pointer-events: none;
+      transition: opacity 260ms var(--ease), transform 260ms var(--ease);
+      z-index: 30;
+    }
+    .business-panel.open {
+      opacity: 1;
+      transform: translateY(0) rotate(-0.4deg) scale(1);
+      pointer-events: auto;
+    }
+    .business-panel::before {
+      content: "";
+      position: absolute;
+      top: -9px; right: 80px;
+      width: 14px; height: 14px;
+      background: var(--ink);
+      border-left: 2px solid var(--paper);
+      border-top: 2px solid var(--paper);
+      transform: rotate(45deg);
+    }
+
+    .bp-header {
+      display: flex; align-items: baseline; justify-content: space-between;
+      padding-bottom: 14px; margin-bottom: 14px;
+      border-bottom: 1px solid rgba(255,255,255,.08);
+    }
+    .bp-header .bp-title-wrap .bp-kicker {
+      font-family: var(--font-mono); font-size: 10px; letter-spacing: .14em;
+      text-transform: uppercase; color: rgba(255,255,255,.5);
+      margin-bottom: 4px; display: block;
+    }
+    .bp-header .bp-title {
+      font-family: var(--font-display); font-weight: 900;
+      font-size: 24px; letter-spacing: -.035em; color: var(--paper); line-height: 1;
+    }
+    .bp-header .bp-title .bp-title-dot {
+      display: inline-block; width: 8px; height: 8px;
+      border-radius: 50%; background: var(--lime);
+      margin-right: 10px; vertical-align: middle;
+      box-shadow: 0 0 12px var(--lime);
+    }
+    .bp-header .bp-meta {
+      font-family: var(--font-mono); font-size: 11px;
+      color: var(--lime); font-weight: 700;
+      letter-spacing: .08em;
+      padding: 4px 10px;
+      background: rgba(217,255,58,.1); border: 1px solid rgba(217,255,58,.3);
+      border-radius: 999px;
+    }
+
+    .bp-grid {
+      display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px;
+    }
+    .bp-item {
+      display: flex; align-items: center; gap: 10px;
+      padding: 10px 12px 10px 10px;
+      border: 1px solid rgba(255,255,255,.1);
+      border-radius: 11px 8px 13px 9px;
+      background: rgba(255,255,255,.02);
+      color: var(--paper);
+      text-decoration: none;
+      transition: all 220ms var(--ease);
+      font-family: var(--font-display);
+      position: relative;
+    }
+    .bp-item:hover {
+      background: var(--bp-color, rgba(255,255,255,.1));
+      border-color: var(--bp-color, var(--paper));
+      color: var(--bp-ink, var(--paper));
+      transform: translateY(-2px);
+      box-shadow: 4px 4px 0 rgba(13,15,16,.55);
+    }
+    .bp-item .bp-icon {
+      width: 32px; height: 32px;
+      border-radius: 9px 6px 11px 8px;
+      border: 1.5px solid var(--ink);
+      background: var(--bp-color);
+      color: var(--bp-ink);
+      display: grid; place-items: center;
+      flex-shrink: 0;
+    }
+    .bp-item .bp-icon svg { width: 20px; height: 20px; display: block; overflow: visible; }
+    .bp-item .bp-info { min-width: 0; }
+    .bp-item .bp-num {
+      font-family: var(--font-mono); font-size: 9px; opacity: .55;
+      letter-spacing: .08em; line-height: 1;
+      color: currentColor;
+    }
+    .bp-item .bp-name {
+      font-size: 13px; font-weight: 800; letter-spacing: -.01em;
+      line-height: 1.15; margin-top: 3px;
+    }
+
+    .bp-footer {
+      margin-top: 12px; padding-top: 10px;
+      border-top: 1px solid rgba(255,255,255,.06);
+      display: flex; justify-content: space-between; align-items: center;
+      font-family: var(--font-mono); font-size: 10px; letter-spacing: .04em;
+      color: rgba(255,255,255,.5);
+    }
+    .bp-footer strong { color: var(--paper); font-weight: 700; }
+
+
+    .cta-row { display: flex; gap: 8px; align-items: center; flex-shrink: 0; }
+    .btn-ghost { padding: 8px 16px; border-radius: 999px; font-size: 13px; font-weight: 600; color: var(--paper); border: 1px solid rgba(255,255,255,.15); transition: all 180ms var(--ease); }
+    .btn-ghost:hover { background: rgba(255,255,255,.06); border-color: rgba(255,255,255,.3); }
+    .btn-primary { padding: 8px 16px; border-radius: 999px; font-size: 13px; font-weight: 700; color: var(--lime-ink); background: var(--lime); display: inline-flex; align-items: center; gap: 8px; transition: transform 180ms var(--ease); }
+    .btn-primary:hover { transform: translateY(-2px); }
+    .btn-primary .ring { width: 20px; height: 20px; background: var(--lime-ink); color: var(--lime); border-radius: 50%; display: grid; place-items: center; font-weight: 900; font-size: 10px; }
+
+    /* ═══════════════════════════════ TAB CONTAINER ═══ */
+    .tab-container { position: relative; z-index: 3; height: calc(100vh - var(--nav-h)); margin-top: var(--nav-h); overflow: hidden; }
+    .tab-panel { display: none; height: 100%; padding: 0; overflow: hidden; position: relative; }
+    .tab-panel.active { display: block; animation: tab-fade-in 280ms var(--ease); }
+    @keyframes tab-fade-in { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
+
+    .panel-inner { max-width: 1280px; margin: 0 auto; padding: 40px 48px; height: 100%; display: flex; flex-direction: column; justify-content: center; }
+
+    /* ═══ TAB 1 · INICIO (Hero) ═══════════════════════════════════════════ */
+    .hero-inner { display: grid; grid-template-columns: 1.3fr 1fr; gap: 48px; align-items: center; height: 100%; padding: 40px 48px; }
+    .label-pill { display: inline-flex; align-items: center; gap: 10px; padding: 7px 14px; border-radius: 999px; background: rgba(255,255,255,.06); border: 1px solid rgba(255,255,255,.12); font-family: var(--font-mono); font-size: 10px; letter-spacing: .1em; text-transform: uppercase; color: rgba(255,255,255,.75); margin-bottom: 20px; width: fit-content; }
+    .label-pill .dot { width: 6px; height: 6px; border-radius: 50%; background: var(--orange); animation: pulse 1.6s var(--ease) infinite; }
+    .label-pill .count { background: var(--lime); color: var(--lime-ink); padding: 2px 8px; border-radius: 999px; font-weight: 700; letter-spacing: 0; }
+    @keyframes pulse { 0% { box-shadow: 0 0 0 0 rgba(255,74,28,.7); } 70% { box-shadow: 0 0 0 8px rgba(255,74,28,0); } 100% { box-shadow: 0 0 0 0 rgba(255,74,28,0); } }
+
+    .hero-h1 {
+      font-family: var(--font-display); font-weight: 900;
+      font-size: clamp(40px, 6vw, 84px);
+      line-height: .92; letter-spacing: -.055em;
+      color: var(--paper); margin-bottom: 18px;
+    }
+    /* "U" de Universidad destacada: texto normal + más grande + underline lima asimétrico */
+    .hero-h1 .u-big {
+      display: inline-block;
+      font-size: 1.15em;
+      line-height: 1;
+      position: relative;
+      padding: 0 .04em .05em;
+      color: var(--paper);
+    }
+    .hero-h1 .u-big::after {
+      content: "";
+      position: absolute;
+      left: .02em; right: .02em;
+      bottom: -.02em;
+      height: .14em;
+      background: var(--lime);
+      border-radius: .04em;
+      transform: rotate(-1.8deg);
+      z-index: -1;
+    }
+    .chip-accent { background: var(--pink); color: #fff; padding: 0 12px; border-radius: 12px; display: inline-block; transform: rotate(-1.2deg); position: relative; }
+    .chip-accent::after { content: ""; position: absolute; right: -10px; top: -6px; width: 7px; height: 7px; border-radius: 50%; background: var(--orange); box-shadow: -14px 22px 0 var(--cream), 6px 18px 0 var(--cyan); }
+    .hero-h1 .outline { color: transparent; -webkit-text-stroke: 2.5px var(--paper); display: inline-block; }
+    .dot-final { color: var(--orange); }
+
+    .lead { font-size: clamp(15px, 1.2vw, 17px); line-height: 1.45; color: rgba(255,255,255,.72); max-width: 500px; font-weight: 500; margin-bottom: 18px; }
+    .lead strong { background: var(--lime); color: var(--lime-ink); padding: 2px 8px; border-radius: 6px; font-weight: 700; }
+    .hero-meta { display: flex; gap: 12px; flex-wrap: wrap; margin-bottom: 20px; }
+    .hero-meta .item { display: inline-flex; align-items: center; gap: 7px; font-family: var(--font-mono); font-size: 11px; color: rgba(255,255,255,.5); letter-spacing: .04em; }
+    .hero-meta .item .d { width: 5px; height: 5px; border-radius: 50%; background: var(--lime); }
+    .hero-ctas { display: flex; gap: 12px; }
+    .btn-hero { padding: 14px 22px; border-radius: 999px; font-size: 15px; font-weight: 700; display: inline-flex; align-items: center; gap: 10px; transition: transform 180ms var(--ease); }
+    .btn-hero:hover { transform: translateY(-2px); }
+    .btn-hero-primary { background: var(--lime); color: var(--lime-ink); }
+    .btn-hero-primary .ring-big { width: 26px; height: 26px; background: var(--lime-ink); color: var(--lime); border-radius: 50%; display: grid; place-items: center; font-weight: 900; font-size: 13px; }
+    .btn-hero-secondary { background: transparent; color: var(--paper); border: 1px solid rgba(255,255,255,.2); }
+    .btn-hero-secondary:hover { border-color: var(--paper); background: rgba(255,255,255,.04); }
+
+    .hero-visual { display: flex; align-items: center; justify-content: center; position: relative; }
+    .hero-visual .big-icon {
+      width: clamp(180px, 24vw, 260px); height: clamp(180px, 24vw, 260px);
+      border-radius: 22%; background: var(--lime); position: relative;
+      display: grid; place-items: center;
+      border: 2px solid var(--ink);
+      box-shadow: 14px 14px 0 rgba(13,15,16,0.35), 0 24px 60px rgba(217,255,58,0.15);
+      transform: rotate(-3deg);
+    }
+
+    /* Accesos modulares: icono arriba, label abajo */
+    .access-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; align-items: stretch; }
+    .access-card {
+      display: flex; flex-direction: column; gap: 10px;
+      padding: 12px 14px 14px;
+      border: 2px solid var(--ink); border-radius: 20px 30px 18px 24px;
+      box-shadow: 7px 7px 0 rgba(13,15,16,0.32), 0 12px 26px rgba(13,15,16,0.26);
+      cursor: pointer; transition: transform 240ms var(--ease), box-shadow 240ms var(--ease);
+      text-decoration: none;
+    }
+    .access-card:nth-child(1) { transform: rotate(-.8deg); }
+    .access-card:nth-child(2) { transform: rotate(.5deg); }
+    .access-card:nth-child(3) { transform: rotate(-.3deg); }
+    .access-card:nth-child(4) { transform: rotate(.7deg); }
+    .access-card:hover { transform: rotate(0) translateY(-4px); box-shadow: 11px 11px 0 rgba(13,15,16,0.4), 0 18px 40px rgba(13,15,16,0.32); }
+    .access-card.ac-lime { background: var(--lime); color: var(--lime-ink); }
+    .access-card.ac-cream { background: var(--cream); color: var(--ink); }
+    .access-card.ac-pink { background: var(--pink); color: #fff; }
+    .access-card.ac-violet { background: var(--violet); color: #fff; }
+
+    /* Top row: icono + arrow */
+    .access-card .ac-top { display: flex; align-items: center; justify-content: space-between; }
+    .access-card .ac-icon {
+      width: 34px; height: 34px;
+      border: 2px solid var(--ink); border-radius: 10px 7px 11px 8px;
+      display: grid; place-items: center;
+      background: rgba(255,255,255,.55);
+      overflow: visible;
+      position: relative;
+    }
+    .access-card.ac-pink .ac-icon,
+    .access-card.ac-violet .ac-icon { background: rgba(255,255,255,.18); }
+    .access-card .ac-icon svg { width: 22px; height: 22px; display: block; overflow: visible; }
+    .access-card .ac-arrow { width: 22px; height: 22px; border-radius: 50%; background: var(--ink); color: var(--lime); display: grid; place-items: center; font-weight: 900; font-size: 11px; flex-shrink: 0; transition: transform 180ms var(--ease); }
+    .access-card:hover .ac-arrow { transform: translateX(3px); }
+    .access-card.ac-pink .ac-arrow { background: #fff; color: var(--pink); }
+    .access-card.ac-violet .ac-arrow { background: #fff; color: var(--violet); }
+
+    /* Label abajo */
+    .access-card .ac-label { min-width: 0; }
+    .access-card .ac-brand { font-family: var(--font-mono); font-size: 9px; letter-spacing: .08em; text-transform: uppercase; opacity: .65; line-height: 1; }
+    .access-card .ac-module { font-family: var(--font-display); font-weight: 900; font-size: 18px; letter-spacing: -.03em; line-height: 1.05; margin-top: 4px; }
+
+    /* ═══ TAB 2 · PRODUCTO (7 capacidades) ═══════════════════════════════════ */
+    .product-head { margin-bottom: 32px; }
+    .kicker { font-family: var(--font-mono); font-size: 11px; letter-spacing: .12em; text-transform: uppercase; color: rgba(255,255,255,.5); margin-bottom: 10px; display: inline-block; }
+    .section-h2 { font-family: var(--font-display); font-weight: 900; font-size: clamp(32px, 4.5vw, 56px); letter-spacing: -.045em; line-height: .95; color: var(--paper); }
+    .section-h2 .hl { background: var(--lime); color: var(--lime-ink); padding: 0 10px; border-radius: 10px; display: inline-block; transform: rotate(-.8deg); }
+
+    .stickers-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 14px; }
+    .stickers-grid .stk { border: 2px solid var(--ink); border-radius: 20px 28px 18px 24px; padding: 16px 18px; box-shadow: 6px 6px 0 rgba(13,15,16,0.4); transition: transform 240ms var(--ease); min-height: 180px; display: flex; flex-direction: column; }
+    .stickers-grid .stk:hover { transform: translateY(-4px) rotate(0) !important; }
+    .stickers-grid .stk:nth-child(1) { transform: rotate(-1deg); }
+    .stickers-grid .stk:nth-child(2) { transform: rotate(.6deg); }
+    .stickers-grid .stk:nth-child(3) { transform: rotate(-.3deg); }
+    .stickers-grid .stk:nth-child(4) { transform: rotate(1deg); }
+    .stickers-grid .stk:nth-child(5) { transform: rotate(-.8deg); }
+    .stickers-grid .stk:nth-child(6) { transform: rotate(.4deg); }
+    .stickers-grid .stk:nth-child(7) { transform: rotate(-.5deg); }
+    .stk-lime { background: var(--lime); color: var(--lime-ink); }
+    .stk-pink { background: var(--pink); color: #fff; }
+    .stk-cream { background: var(--cream); color: var(--ink); }
+    .stk-ink { background: var(--ink); color: var(--paper); border-color: var(--paper); }
+    .stk-violet { background: var(--violet); color: #fff; }
+    .stk-cyan { background: var(--cyan); color: var(--ink); }
+    .stk-white { background: var(--card); color: var(--ink); }
+    .stk-num { font-family: var(--font-mono); font-size: 10px; letter-spacing: .1em; opacity: .7; margin-bottom: 10px; }
+    .stk h3 { font-family: var(--font-display); font-weight: 900; font-size: 17px; letter-spacing: -.025em; line-height: 1.1; margin-bottom: 8px; }
+    .stk p { font-size: 12px; line-height: 1.4; opacity: .85; }
+
+    /* Item 8: CTA card (para balancear grid 4x2) */
+    .cta-inline-card {
+      grid-column: span 1;
+      background: transparent; border: 2px dashed rgba(255,255,255,.2);
+      color: var(--paper); border-radius: 20px 28px 18px 24px;
+      padding: 16px 18px; min-height: 180px;
+      display: flex; flex-direction: column; justify-content: center; align-items: flex-start; gap: 8px;
+    }
+    .cta-inline-card .cic-label { font-family: var(--font-mono); font-size: 10px; letter-spacing: .1em; color: rgba(255,255,255,.4); text-transform: uppercase; }
+    .cta-inline-card h4 { font-family: var(--font-display); font-weight: 900; font-size: 17px; letter-spacing: -.025em; line-height: 1.1; }
+    .cta-inline-card .ci-btn { margin-top: auto; padding: 9px 14px; background: var(--lime); color: var(--lime-ink); border-radius: 999px; font-weight: 700; font-size: 12px; display: inline-flex; align-items: center; gap: 8px; }
+    .cta-inline-card .ci-btn .ring-mini { width: 18px; height: 18px; background: var(--lime-ink); color: var(--lime); border-radius: 50%; display: grid; place-items: center; font-weight: 900; font-size: 10px; }
+
+    /* ═══ TAB 3 · CÓMO FUNCIONA ═══════════════════════════════════════════ */
+    .how-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 48px; align-items: center; }
+    .how-h1 { font-family: var(--font-display); font-weight: 900; font-size: clamp(42px, 6vw, 84px); letter-spacing: -.05em; line-height: .95; color: var(--paper); margin-bottom: 20px; }
+    .how-h1 .hl { background: var(--lime); color: var(--lime-ink); padding: 0 10px; border-radius: 10px; display: inline-block; transform: rotate(-.8deg); }
+    .how-subtitle { font-size: 18px; color: rgba(255,255,255,.68); line-height: 1.5; max-width: 440px; }
+    .steps-list { display: flex; flex-direction: column; gap: 14px; }
+    .step-card { background: var(--card); color: var(--ink); border: 2px solid var(--ink); border-radius: 24px 32px 22px 28px; padding: 22px 26px; display: grid; grid-template-columns: 60px 1fr; gap: 20px; align-items: center; box-shadow: 8px 8px 0 rgba(13,15,16,0.3), 0 14px 32px rgba(13,15,16,0.24); transition: transform 240ms var(--ease); }
+    .step-card:nth-child(1) { transform: rotate(-.5deg); }
+    .step-card:nth-child(2) { transform: rotate(.3deg); }
+    .step-card:nth-child(3) { transform: rotate(-.2deg); }
+    .step-card:hover { transform: rotate(0) translateY(-3px); }
+    .step-num { width: 56px; height: 56px; border-radius: 50%; background: var(--ink); color: var(--lime); font-family: var(--font-display); font-weight: 900; font-size: 22px; display: grid; place-items: center; flex-shrink: 0; }
+    .step-num.n2 { background: var(--lime); color: var(--lime-ink); }
+    .step-num.n3 { background: var(--pink); color: #fff; }
+    .step-card h4 { font-family: var(--font-display); font-weight: 900; font-size: 22px; letter-spacing: -.03em; line-height: 1.05; margin-bottom: 6px; }
+    .step-card p { font-size: 13px; line-height: 1.5; color: var(--ink-2); }
+
+    /* ═══ TAB 4 · PLANES ═══════════════════════════════════════════════════ */
+    .plans-head { text-align: center; margin-bottom: 28px; }
+    .plans-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+    .plan-card { background: var(--card); color: var(--ink); border: 2px solid var(--ink); border-radius: 32px 24px 36px 28px; padding: 26px 28px; box-shadow: 10px 10px 0 rgba(13,15,16,0.18), 0 16px 40px rgba(13,15,16,0.24); }
+    .plan-card.plan-free { transform: rotate(-.5deg); }
+    .plan-card.plan-pro { transform: rotate(.5deg); background: var(--ink); color: var(--paper); border-color: var(--lime); }
+    .plan-badge { display: inline-block; font-family: var(--font-mono); font-size: 9px; letter-spacing: .1em; text-transform: uppercase; padding: 3px 9px; border-radius: 6px; margin-bottom: 14px; font-weight: 700; }
+    .plan-free .plan-badge { background: var(--cream); color: var(--ink); }
+    .plan-pro .plan-badge { background: var(--lime); color: var(--lime-ink); }
+    .plan-title { font-family: var(--font-display); font-weight: 900; font-size: 30px; letter-spacing: -.04em; line-height: 1; margin-bottom: 6px; }
+    .plan-subtitle { font-size: 13px; line-height: 1.4; margin-bottom: 18px; opacity: .7; }
+    .plan-features { list-style: none; display: flex; flex-direction: column; gap: 8px; margin-bottom: 18px; }
+    .pf-item { display: flex; gap: 9px; align-items: flex-start; font-size: 12px; line-height: 1.35; }
+    .pf-check { width: 16px; height: 16px; border-radius: 50%; flex-shrink: 0; display: grid; place-items: center; font-weight: 900; font-size: 9px; margin-top: 1px; background: var(--lime); color: var(--lime-ink); }
+    .plan-cta-btn { width: 100%; padding: 11px 16px; border-radius: 999px; font-weight: 700; font-size: 13px; display: flex; align-items: center; justify-content: space-between; transition: transform 180ms var(--ease); }
+    .plan-cta-btn:hover { transform: translateY(-2px); }
+    .plan-free .plan-cta-btn { background: var(--ink); color: var(--paper); }
+    .plan-free .plan-cta-btn .ring-pc { width: 22px; height: 22px; background: var(--lime); color: var(--ink); border-radius: 50%; display: grid; place-items: center; font-weight: 900; font-size: 11px; }
+    .plan-pro .plan-cta-btn { background: var(--lime); color: var(--lime-ink); }
+    .plan-pro .plan-cta-btn .ring-pc { width: 22px; height: 22px; background: var(--lime-ink); color: var(--lime); border-radius: 50%; display: grid; place-items: center; font-weight: 900; font-size: 11px; }
+    .plan-foot-hint { font-family: var(--font-mono); font-size: 10px; opacity: .6; margin-top: 8px; letter-spacing: .02em; }
+
+    .unlock-strip { margin-top: 20px; display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; }
+    .unlock-mini { background: rgba(255,255,255,.04); border: 1px solid rgba(255,255,255,.1); border-radius: 14px; padding: 12px 14px; display: flex; gap: 10px; align-items: center; }
+    .um-num { width: 26px; height: 26px; border-radius: 50%; background: var(--lime); color: var(--lime-ink); font-weight: 900; font-size: 12px; display: grid; place-items: center; flex-shrink: 0; }
+    .um-title { font-size: 12px; font-weight: 700; color: var(--paper); line-height: 1.2; }
+    .um-desc { font-size: 10px; color: rgba(255,255,255,.55); margin-top: 2px; line-height: 1.3; }
+
+    /* ═══ TAB 5 · APP (llévatelo en el bolsillo) ═══════════════════════════ */
+    .app-grid { display: grid; grid-template-columns: 1.2fr 1fr; gap: 48px; align-items: center; }
+    .app-h1 { font-family: var(--font-display); font-weight: 900; font-size: clamp(44px, 6vw, 84px); letter-spacing: -.05em; line-height: .95; color: var(--paper); margin-bottom: 20px; }
+    .app-h1 .hl { background: var(--lime); color: var(--lime-ink); padding: 0 10px; border-radius: 10px; display: inline-block; transform: rotate(-.8deg); }
+    .app-desc { font-size: 18px; color: rgba(255,255,255,.68); line-height: 1.5; max-width: 440px; margin-bottom: 30px; }
+    .app-badges { display: flex; gap: 12px; flex-wrap: wrap; margin-bottom: 28px; }
+    .app-badge { display: inline-flex; align-items: center; gap: 10px; background: var(--card); color: var(--ink); border-radius: 12px; padding: 11px 18px 11px 14px; border: 2px solid var(--ink); transition: transform 180ms var(--ease); }
+    .app-badge:hover { transform: translateY(-2px); }
+    .app-badge svg { width: 24px; height: 24px; flex-shrink: 0; }
+    .app-badge .lines { display: flex; flex-direction: column; line-height: 1; }
+    .app-badge .small { font-size: 9px; font-weight: 500; opacity: .7; letter-spacing: .04em; }
+    .app-badge .big { font-size: 15px; font-weight: 700; margin-top: 2px; }
+
+    .app-platforms { display: flex; gap: 20px; flex-wrap: wrap; font-family: var(--font-mono); font-size: 11px; color: rgba(255,255,255,.55); letter-spacing: .04em; }
+    .app-platforms .pl { display: inline-flex; align-items: center; gap: 6px; }
+    .app-platforms .pl::before { content: "✓"; color: var(--lime); font-weight: 900; }
+
+    /* ═══ Phone mock con perfil real (Pía Ramírez, Medicina · UChile) ═══ */
+    .phone-mock {
+      width: clamp(220px, 28vw, 320px); aspect-ratio: 9/18;
+      background: var(--ink); border: 3px solid var(--ink);
+      border-radius: 40px; margin: 0 auto; position: relative; overflow: hidden;
+      box-shadow: 16px 16px 0 rgba(13,15,16,0.35), 0 30px 70px rgba(13,15,16,0.5);
+      transform: rotate(-3deg);
+    }
+    .phone-mock::before { content: ""; position: absolute; top: 10px; left: 50%; transform: translateX(-50%); width: 84px; height: 20px; background: var(--ink); border-radius: 0 0 14px 14px; z-index: 3; }
+    .phone-screen { position: absolute; inset: 36px 8px 8px; background: var(--paper); border-radius: 30px; overflow: hidden; display: flex; flex-direction: column; }
+
+    /* Top bar del perfil */
+    .ph-topbar { display: flex; align-items: center; justify-content: space-between; padding: 10px 14px; background: var(--paper); border-bottom: 1px solid var(--paper-2); }
+    .ph-topbar .ph-back { font-size: 16px; color: var(--ink); font-weight: 900; }
+    .ph-topbar .ph-title-sm { font-size: 11px; font-weight: 700; color: var(--ink); }
+    .ph-topbar .ph-action { font-size: 13px; color: var(--ink); }
+
+    /* Cover con splatters */
+    .ph-cover { height: 60px; position: relative; background: var(--lime); overflow: hidden; }
+    .ph-cover::before { content: ""; position: absolute; top: 10px; left: 20%; width: 8px; height: 8px; border-radius: 50%; background: var(--pink); }
+    .ph-cover::after { content: ""; position: absolute; top: 30px; right: 15%; width: 6px; height: 6px; border-radius: 50%; background: var(--violet); box-shadow: -30px 8px 0 var(--cyan), 20px -15px 0 var(--orange); }
+
+    /* Avatar sobrepuesto */
+    .ph-avatar-wrap { margin: -28px auto 0; width: 64px; height: 64px; border-radius: 50%; background: var(--pink); border: 3px solid var(--ink); display: grid; place-items: center; color: #fff; font-family: var(--font-display); font-weight: 900; font-size: 22px; letter-spacing: -.02em; z-index: 2; position: relative; }
+
+    /* Info del usuario */
+    .ph-profile-info { padding: 8px 14px 0; text-align: center; }
+    .ph-name-row { display: flex; align-items: center; justify-content: center; gap: 6px; }
+    .ph-name { font-family: var(--font-display); font-weight: 900; font-size: 16px; letter-spacing: -.03em; color: var(--ink); }
+    .ph-pro-badge { background: var(--lime); color: var(--lime-ink); font-family: var(--font-mono); font-size: 8px; font-weight: 700; padding: 2px 6px; border-radius: 6px; letter-spacing: .04em; }
+    .ph-u-career { font-family: var(--font-mono); font-size: 9px; color: var(--ink-3); margin-top: 3px; letter-spacing: .02em; }
+
+    /* Stats row */
+    .ph-stats { display: grid; grid-template-columns: repeat(3, 1fr); gap: 6px; padding: 10px 12px; border-bottom: 1px solid var(--paper-2); }
+    .ph-stat { text-align: center; }
+    .ph-stat .v { font-family: var(--font-display); font-weight: 900; font-size: 15px; letter-spacing: -.02em; color: var(--ink); line-height: 1; }
+    .ph-stat .l { font-family: var(--font-mono); font-size: 7px; color: var(--ink-3); letter-spacing: .06em; text-transform: uppercase; margin-top: 3px; }
+
+    /* CTA buttons */
+    .ph-cta-row { display: grid; grid-template-columns: 1.4fr 1fr; gap: 5px; padding: 10px 12px; }
+    .ph-btn { padding: 8px 10px; border-radius: 999px; font-size: 11px; font-weight: 700; font-family: var(--font-display); text-align: center; }
+    .ph-btn-primary { background: var(--ink); color: var(--paper); }
+    .ph-btn-ghost { background: transparent; border: 1.5px solid var(--ink); color: var(--ink); }
+
+    /* Section label */
+    .ph-section-label { padding: 8px 14px 4px; font-family: var(--font-mono); font-size: 8px; color: var(--ink-3); letter-spacing: .1em; text-transform: uppercase; }
+
+    /* Workspaces cards */
+    .ph-ws-list { padding: 0 12px; display: flex; flex-direction: column; gap: 6px; flex: 1; overflow: hidden; }
+    .ph-ws { background: var(--card); border: 1.5px solid var(--ink); border-radius: 10px; padding: 7px 9px; display: flex; align-items: center; gap: 8px; }
+    .ph-ws-thumb { width: 26px; height: 26px; border-radius: 6px; flex-shrink: 0; display: grid; place-items: center; font-family: var(--font-display); font-weight: 900; font-size: 10px; border: 1.5px solid var(--ink); }
+    .ph-ws-thumb.c1 { background: var(--cream); color: var(--ink); }
+    .ph-ws-thumb.c2 { background: var(--cyan); color: var(--ink); }
+    .ph-ws-thumb.c3 { background: var(--violet); color: #fff; }
+    .ph-ws-body { flex: 1; min-width: 0; }
+    .ph-ws-title { font-size: 10px; font-weight: 800; color: var(--ink); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .ph-ws-sub { font-family: var(--font-mono); font-size: 7px; color: var(--ink-3); margin-top: 1px; letter-spacing: .02em; }
+    .ph-ws-status { font-family: var(--font-mono); font-size: 7px; background: var(--lime); color: var(--lime-ink); padding: 2px 5px; border-radius: 4px; font-weight: 700; flex-shrink: 0; }
+
+    /* Bottom tab bar */
+    .ph-tabbar { display: flex; justify-content: space-around; padding: 8px 14px 10px; border-top: 1px solid var(--paper-2); background: var(--paper); }
+    .ph-tab { width: 24px; height: 24px; display: grid; place-items: center; font-size: 12px; color: var(--ink-3); }
+    .ph-tab.active { color: var(--ink); position: relative; }
+    .ph-tab.active::after { content: ""; position: absolute; bottom: -8px; left: 50%; transform: translateX(-50%); width: 3px; height: 3px; border-radius: 50%; background: var(--orange); }
+
+    /* ═══════════════════════════════ TAB FOOTER pequeño ═══ */
+    .panel-foot {
+      position: absolute; bottom: 12px; left: 50%; transform: translateX(-50%);
+      display: flex; gap: 18px; font-family: var(--font-mono); font-size: 10px;
+      color: rgba(255,255,255,.35); letter-spacing: .04em;
+      padding: 6px 16px; background: rgba(13,15,16,.5); border-radius: 999px;
+      border: 1px solid rgba(255,255,255,.04);
+      z-index: 5;
+    }
+    .panel-foot a { transition: color 180ms var(--ease); }
+    .panel-foot a:hover { color: rgba(255,255,255,.8); }
+
+    @media (max-width: 1080px) {
+      .nav { padding: 0 16px; gap: 12px; }
+      .tabs { overflow-x: auto; -webkit-overflow-scrolling: touch; }
+      .panel-inner { padding: 24px 20px; }
+      .hero-inner, .how-grid, .app-grid { grid-template-columns: 1fr; }
+      .hero-visual { display: none; }
+      .stickers-grid { grid-template-columns: repeat(2, 1fr); }
+      .plans-grid { grid-template-columns: 1fr; }
+      .unlock-strip { grid-template-columns: 1fr; }
+    }
+  
+    /* ═══ Transición editorial entre páginas ═══ */
+    .page-transition {
+      position: fixed; inset: 0; z-index: 999;
+      background: #0D0F10;
+      display: grid; place-items: center;
+      opacity: 0; pointer-events: none;
+      transition: opacity 1260ms cubic-bezier(.2,.8,.2,1);
+    }
+    .page-transition.leaving { opacity: 1; pointer-events: auto; }
+    .pt-wrap { display: flex; flex-direction: column; align-items: center; gap: 18px; transform: scale(.8) rotate(-6deg); opacity: 0; transition: transform 1860ms cubic-bezier(.2,.8,.2,1), opacity 1260ms cubic-bezier(.2,.8,.2,1); }
+    .page-transition.leaving .pt-wrap { transform: scale(1) rotate(0); opacity: 1; }
+    .pt-icon {
+      width: 110px; height: 110px;
+      border-radius: 22%;
+      background: #D9FF3A;
+      border: 3px solid #0D0F10;
+      box-shadow: 10px 10px 0 rgba(13,15,16,.5), 0 24px 60px rgba(217,255,58,.22);
+      transform: rotate(-3deg);
+      display: block;
+    }
+    .pt-icon svg { width: 100%; height: 100%; display: block; }
+    .pt-label { font-family: 'Geist Mono', ui-monospace, monospace; font-size: 11px; letter-spacing: .14em; text-transform: uppercase; color: rgba(245,244,239,.7); display: inline-flex; align-items: center; gap: 8px; }
+    .pt-label .pt-dot { width: 7px; height: 7px; border-radius: 50%; background: #FF4A1C; animation: pt-pulse 1.2s cubic-bezier(.2,.8,.2,1) infinite; }
+    @keyframes pt-pulse {
+      0%, 100% { transform: scale(1); opacity: 1; }
+      50% { transform: scale(1.6); opacity: .4; }
+    }
+    /* Splatters del overlay que entran rápido */
+    .pt-sp { position: absolute; border-radius: 50%; opacity: 0; transform: scale(.3); transition: opacity 1800ms cubic-bezier(.2,.8,.2,1), transform 1920ms cubic-bezier(.2,.8,.2,1); }
+    .page-transition.leaving .pt-sp { opacity: .8; transform: scale(1); }
+    @media (prefers-reduced-motion: reduce) {
+      .page-transition, .pt-wrap, .pt-icon, .pt-label .pt-dot { transition: none !important; animation: none !important; }
+    }
+  </style>
+</head>
+<body>
+
+<!-- Sprite del app icon v2.0 -->
+<svg width="0" height="0" style="position:absolute" aria-hidden="true">
+  <defs>
+    <symbol id="app-icon" viewBox="0 0 100 100">
+      <rect width="100" height="100" rx="22" fill="#D9FF3A"/>
+      <text x="50" y="71" text-anchor="middle" font-family="Funnel Display, -apple-system, sans-serif" font-weight="900" font-size="84" fill="#0D0F10" letter-spacing="-4">u</text><circle cx="77" cy="68" r="6" fill="#FF4A1C"/>
+    </symbol>
+  </defs>
+</svg>
+
+<!-- Partículas globales -->
+<div class="panel-fx" aria-hidden="true">
+  <span class="light-far lf-lime"   style="top:-80px; right:-60px; width:420px; height:420px"></span>
+  <span class="light-far lf-pink"   style="top:40%; left:-100px; width:360px; height:360px"></span>
+  <span class="light-far lf-violet" style="top:30%; right:-120px; width:300px; height:300px"></span>
+  <span class="light-far lf-cyan"   style="bottom:-80px; left:40%; width:280px; height:280px"></span>
+  <span class="light-far lf-cream"  style="top:60%; right:20%; width:240px; height:240px"></span>
+  <span class="light-mid lf-pink"   style="top:8%; left:6%; width:100px; height:100px"></span>
+  <span class="light-mid lf-lime"   style="top:50%; left:42%; width:90px; height:90px"></span>
+  <span class="light-mid lf-cyan"   style="top:72%; right:8%; width:100px; height:100px"></span>
+  <span class="light-mid lf-violet" style="bottom:18%; left:14%; width:110px; height:110px"></span>
+  <span class="sp sp-pink"   style="top:5%;  left:18%; width:8px;  height:8px"></span>
+  <span class="sp sp-lime"   style="top:8%;  left:52%; width:12px; height:12px"></span>
+  <span class="sp sp-cyan"   style="top:3%;  left:74%; width:5px;  height:5px"></span>
+  <span class="sp sp-violet" style="top:12%; left:28%; width:6px;  height:6px"></span>
+  <span class="sp sp-cream"  style="top:14%; left:86%; width:14px; height:14px"></span>
+  <span class="sp sp-pink"   style="top:22%; left:8%;  width:18px; height:18px"></span>
+  <span class="sp sp-cyan"   style="top:28%; left:62%; width:10px; height:10px"></span>
+  <span class="sp sp-violet" style="top:32%; left:90%; width:8px;  height:8px"></span>
+  <span class="sp sp-lime"   style="top:38%; left:24%; width:7px;  height:7px"></span>
+  <span class="sp sp-pink"   style="top:42%; left:48%; width:6px;  height:6px"></span>
+  <span class="sp sp-cream"  style="top:48%; left:72%; width:12px; height:12px"></span>
+  <span class="sp sp-cyan"   style="top:52%; left:12%; width:4px;  height:4px"></span>
+  <span class="sp sp-lime"   style="top:56%; left:38%; width:9px;  height:9px"></span>
+  <span class="sp sp-violet" style="top:60%; left:82%; width:11px; height:11px"></span>
+  <span class="sp sp-pink"   style="top:66%; left:22%; width:5px;  height:5px"></span>
+  <span class="sp sp-cream"  style="top:70%; left:54%; width:7px;  height:7px"></span>
+  <span class="sp sp-cyan"   style="top:74%; left:14%; width:14px; height:14px"></span>
+  <span class="sp sp-violet" style="top:78%; left:66%; width:6px;  height:6px"></span>
+  <span class="sp sp-lime"   style="top:82%; left:40%; width:8px;  height:8px"></span>
+  <span class="sp sp-pink"   style="top:86%; left:8%;  width:10px; height:10px"></span>
+  <span class="sp sp-cream"  style="top:90%; left:78%; width:6px;  height:6px"></span>
+  <span class="sp sp-cyan"   style="top:94%; left:32%; width:9px;  height:9px"></span>
+  <span class="sp sp-violet" style="top:16%; left:44%; width:5px;  height:5px"></span>
+  <span class="sp sp-pink"   style="top:45%; left:92%; width:7px;  height:7px"></span>
+</div>
+
+<!-- ═══ NAV + TABS ═══ -->
+<nav class="nav" aria-label="Navegación principal">
+  <div class="brand">conniku<span class="dot">.</span></div>
+  <div class="tabs" role="tablist">
+    <button class="tab-btn active" data-tab="inicio" role="tab">
+      <span class="tab-num">01</span>
+      <span class="tab-label">Inicio</span>
+    </button>
+    <button class="tab-btn" data-tab="producto" role="tab">
+      <span class="tab-num">02</span>
+      <span class="tab-label">Producto</span>
+    </button>
+    <button class="tab-btn" data-tab="como" role="tab">
+      <span class="tab-num">03</span>
+      <span class="tab-label">Cómo funciona</span>
+    </button>
+    <button class="tab-btn" data-tab="planes" role="tab">
+      <span class="tab-num">04</span>
+      <span class="tab-label">Planes</span>
+    </button>
+    <button class="tab-btn" data-tab="app" role="tab">
+      <span class="tab-num">05</span>
+      <span class="tab-label">Descarga</span>
+    </button>
+  </div>
+
+  <!-- Conniku Business: botón + panel editorial desplegable -->
+  <div class="business-wrap">
+    <button class="business-btn" id="business-btn" type="button" aria-expanded="false" aria-controls="business-panel">
+      <span class="bb-dot"></span>
+      <span>Conniku Business</span>
+      <span class="bb-count">9</span>
+      <span class="bb-caret">▼</span>
+    </button>
+
+    <div class="business-panel" id="business-panel" role="menu" aria-labelledby="business-btn">
+      <div class="bp-header">
+        <div class="bp-title-wrap">
+          <span class="bp-kicker">Suite modular para empresas</span>
+          <div class="bp-title"><span class="bp-title-dot"></span>Conniku Business</div>
+        </div>
+        <span class="bp-meta">9 módulos</span>
+      </div>
+      <div class="bp-grid">
+        <a class="bp-item" href="modulo-personas.html" style="--bp-color:#D9FF3A;--bp-ink:#181F08">
+          <span class="bp-icon"><svg viewBox="0 0 40 40" fill="none">
+            <circle cx="24" cy="16" r="5.5" fill="currentColor"/>
+            <path d="M14 32 Q14 24 24 24 Q34 24 34 32 L34 36 L14 36 Z" fill="currentColor"/>
+            <circle cx="9" cy="13" r="3.2" fill="currentColor"/>
+            <path d="M3 23 Q3 19 9 19 Q14 19 14 23 L14 28 L3 28 Z" fill="currentColor"/>
+            <circle cx="32" cy="7" r="2.5" fill="#FF4A1C"/>
+          </svg></span>
+          <div class="bp-info"><div class="bp-num">01</div><div class="bp-name">Personas</div></div>
+        </a>
+        <a class="bp-item" href="modulo-contabilidad.html" style="--bp-color:#FFE9B8;--bp-ink:#0D0F10">
+          <span class="bp-icon"><svg viewBox="0 0 40 40" fill="none">
+            <circle cx="11" cy="26" r="8" fill="currentColor"/>
+            <text x="11" y="31" text-anchor="middle" font-family="Funnel Display,sans-serif" font-weight="900" font-size="13" fill="#FFE9B8">$</text>
+            <rect x="22" y="24" width="4" height="10" rx="1" fill="currentColor"/>
+            <rect x="28" y="18" width="4" height="16" rx="1" fill="currentColor" transform="rotate(2 30 26)"/>
+            <rect x="34" y="12" width="4" height="22" rx="1" fill="currentColor" transform="rotate(-2 36 23)"/>
+            <circle cx="5" cy="8" r="2.5" fill="#FF4A1C"/>
+          </svg></span>
+          <div class="bp-info"><div class="bp-num">02</div><div class="bp-name">Contabilidad</div></div>
+        </a>
+        <a class="bp-item" href="modulo-trabajo.html" style="--bp-color:#FF4D3A;--bp-ink:#FFFFFF">
+          <span class="bp-icon"><svg viewBox="0 0 40 40" fill="none">
+            <g transform="rotate(-5 20 22)">
+              <rect x="5" y="16" width="22" height="16" rx="2.2" fill="currentColor"/>
+              <path d="M11 16 L11 12 Q11 9.5 13.5 9.5 L18.5 9.5 Q21 9.5 21 12 L21 16" stroke="currentColor" stroke-width="2" fill="none"/>
+              <line x1="5" y1="21" x2="27" y2="21" stroke="#0D0F10" stroke-width="1.2"/>
+              <rect x="13" y="19" width="5" height="4" rx=".8" fill="#0D0F10"/>
+            </g>
+            <circle cx="32" cy="10" r="5" fill="#0D0F10" stroke="#fff" stroke-width="1.5"/>
+            <path d="M29.5 10 L31 11.5 L34 8.5" stroke="#D9FF3A" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
+            <circle cx="6" cy="8" r="2" fill="#FF4A1C"/>
+          </svg></span>
+          <div class="bp-info"><div class="bp-num">03</div><div class="bp-name">Trabajo</div></div>
+        </a>
+        <a class="bp-item" href="modulo-reclutamiento.html" style="--bp-color:#6B4EFF;--bp-ink:#FFFFFF">
+          <span class="bp-icon"><svg viewBox="0 0 40 40" fill="none">
+            <circle cx="15" cy="15" r="8.5" fill="none" stroke="currentColor" stroke-width="2.8"/>
+            <line x1="21.5" y1="21.5" x2="32" y2="32" stroke="currentColor" stroke-width="2.8" stroke-linecap="round"/>
+            <circle cx="15" cy="12" r="2.2" fill="currentColor"/>
+            <path d="M11 19 Q11 15 15 15 Q19 15 19 19 L19 20 L11 20 Z" fill="currentColor"/>
+            <circle cx="28" cy="9" r="4.5" fill="#D9FF3A" stroke="#0D0F10" stroke-width="1.5"/>
+            <path d="M28 6 L28.8 8.2 L31 8.2 L29.2 9.5 L30 11.8 L28 10.5 L26 11.8 L26.8 9.5 L25 8.2 L27.2 8.2 Z" fill="#0D0F10"/>
+            <circle cx="6" cy="30" r="2" fill="#FF4A1C"/>
+          </svg></span>
+          <div class="bp-info"><div class="bp-num">04</div><div class="bp-name">Talento</div></div>
+        </a>
+        <a class="bp-item" href="modulo-payroll.html" style="--bp-color:#00C2FF;--bp-ink:#0D0F10">
+          <span class="bp-icon"><svg viewBox="0 0 40 40" fill="none">
+            <g transform="rotate(-3 18 20)">
+              <rect x="4" y="12" width="26" height="18" rx="2" fill="currentColor" stroke="#0D0F10" stroke-width="1.5"/>
+              <line x1="7" y1="19" x2="18" y2="19" stroke="#0D0F10" stroke-width="1.3"/>
+              <line x1="7" y1="23" x2="22" y2="23" stroke="#0D0F10" stroke-width="1.3"/>
+              <circle cx="24" cy="23" r="5" fill="#0D0F10"/>
+              <text x="24" y="26" text-anchor="middle" font-family="Funnel Display,sans-serif" font-weight="900" font-size="7" fill="#D9FF3A">$</text>
+            </g>
+            <circle cx="33" cy="9" r="5" fill="#FF4A1C" stroke="#0D0F10" stroke-width="1.5"/>
+            <path d="M31 9 L32.5 10.5 L35.5 7.5" stroke="#fff" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
+            <circle cx="6" cy="34" r="2" fill="#FF4A1C"/>
+          </svg></span>
+          <div class="bp-info"><div class="bp-num">05</div><div class="bp-name">Payroll</div></div>
+        </a>
+        <a class="bp-item" href="modulo-crm.html" style="--bp-color:#4F3AB8;--bp-ink:#FFFFFF">
+          <span class="bp-icon"><svg viewBox="0 0 40 40" fill="none">
+            <circle cx="18" cy="14" r="5" fill="currentColor"/>
+            <path d="M10 28 Q10 22 18 22 Q26 22 26 28 L26 32 L10 32 Z" fill="currentColor"/>
+            <path d="M24 8 L33 8 Q36 8 36 11 L36 17 Q36 20 33 20 L30 20 L28 23 L28 20 L24 20 Q21 20 21 17 L21 11 Q21 8 24 8 Z" fill="currentColor" opacity=".85"/>
+            <circle cx="26" cy="14" r="1.4" fill="#0D0F10"/>
+            <circle cx="30" cy="14" r="1.4" fill="#0D0F10"/>
+            <circle cx="34" cy="14" r="1.4" fill="#0D0F10"/>
+            <circle cx="6" cy="34" r="2" fill="#FF4A1C"/>
+          </svg></span>
+          <div class="bp-info"><div class="bp-num">06</div><div class="bp-name">CRM</div></div>
+        </a>
+        <a class="bp-item" href="modulo-operaciones.html" style="--bp-color:#4A6FA5;--bp-ink:#FFFFFF">
+          <span class="bp-icon"><svg viewBox="0 0 40 40" fill="none">
+            <rect x="5" y="10" width="10" height="24" rx="2" fill="currentColor"/>
+            <rect x="7" y="12" width="6" height="5" rx="1" fill="#D9FF3A"/>
+            <rect x="7" y="19" width="6" height="3" rx="1" fill="#fff" opacity=".6"/>
+            <rect x="18" y="10" width="10" height="16" rx="2" fill="currentColor"/>
+            <rect x="20" y="12" width="6" height="3" rx="1" fill="#FF4D3A"/>
+            <rect x="20" y="17" width="6" height="4" rx="1" fill="#fff" opacity=".6"/>
+            <rect x="31" y="10" width="6" height="10" rx="2" fill="currentColor"/>
+            <rect x="32" y="12" width="4" height="2" rx="1" fill="#00C2FF"/>
+            <circle cx="6" cy="36" r="2" fill="#FF4A1C"/>
+          </svg></span>
+          <div class="bp-info"><div class="bp-num">07</div><div class="bp-name">Operaciones</div></div>
+        </a>
+        <a class="bp-item" href="modulo-ventas.html" style="--bp-color:#FF7A6F;--bp-ink:#0D0F10">
+          <span class="bp-icon"><svg viewBox="0 0 40 40" fill="none">
+            <path d="M6 32 L14 22 L22 26 L34 10" stroke="currentColor" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
+            <path d="M28 10 L34 10 L34 16" stroke="currentColor" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
+            <circle cx="14" cy="22" r="3" fill="currentColor"/>
+            <circle cx="22" cy="26" r="3" fill="currentColor"/>
+            <circle cx="30" cy="30" r="5" fill="#0D0F10" stroke="#fff" stroke-width="1.5"/>
+            <text x="30" y="33" text-anchor="middle" font-family="Funnel Display,sans-serif" font-weight="900" font-size="7" fill="#D9FF3A">$</text>
+          </svg></span>
+          <div class="bp-info"><div class="bp-num">08</div><div class="bp-name">Ventas</div></div>
+        </a>
+        <a class="bp-item" href="modulo-inventario.html" style="--bp-color:#C9B581;--bp-ink:#0D0F10">
+          <span class="bp-icon"><svg viewBox="0 0 40 40" fill="none">
+            <rect x="6" y="18" width="13" height="13" rx="1.5" fill="currentColor" stroke="#0D0F10" stroke-width="1.5"/>
+            <line x1="6" y1="24" x2="19" y2="24" stroke="#0D0F10" stroke-width="1.3"/>
+            <line x1="12.5" y1="18" x2="12.5" y2="31" stroke="#0D0F10" stroke-width="1.3"/>
+            <rect x="21" y="12" width="13" height="13" rx="1.5" fill="currentColor" stroke="#0D0F10" stroke-width="1.5" transform="rotate(3 27.5 18.5)"/>
+            <line x1="21" y1="18" x2="34" y2="18" stroke="#0D0F10" stroke-width="1.3" transform="rotate(3 27.5 18.5)"/>
+            <circle cx="32" cy="30" r="4.5" fill="#0D0F10"/>
+            <path d="M30 30 L31.5 31.5 L34 28.5" stroke="#D9FF3A" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
+            <circle cx="6" cy="6" r="2" fill="#FF4A1C"/>
+          </svg></span>
+          <div class="bp-info"><div class="bp-num">09</div><div class="bp-name">Inventario</div></div>
+        </a>
+      </div>
+      <div class="bp-footer">
+        <span>Independientes · Integrados · <strong>Todos bajo una cuenta</strong></span>
+        <span>Cumplimiento <strong>chile</strong></span>
+      </div>
+    </div>
+  </div>
+
+  <div class="cta-row">
+    <a class="btn-ghost" href="05-auth-editorial.html">Entrar</a>
+    <a class="btn-primary" href="05-auth-editorial.html">Crear cuenta <span class="ring">→</span></a>
+  </div>
+</nav>
+
+<!-- ═══ CONTENEDOR DE TABS ═══ -->
+<main class="tab-container">
+
+  <!-- ════════════════════════ TAB 1: INICIO (Hero) ════════════════════════ -->
+  <section class="tab-panel active" data-panel="inicio" role="tabpanel">
+    <div class="panel-inner hero-inner">
+      <div>
+        <div class="label-pill">
+          <span class="dot"></span>
+          <span>estudiando ahora mismo</span>
+          <span class="count">127</span>
+        </div>
+        <h1 class="hero-h1">
+          Tu <span class="u-big">U</span>niversidad
+          <span class="chip-accent">entera</span>.<br>
+          <span class="outline">En una sola app</span><span class="dot-final">.</span>
+        </h1>
+        <p class="lead">Calendario sincronizado, documentos con conversación, tutores verificados, biblioteca, empleo asistido y diploma propio. <strong>Todo en un lugar.</strong></p>
+        <div class="hero-meta">
+          <span class="item"><span class="d"></span>Gratis para empezar</span>
+          <span class="item"><span class="d"></span>Sin tarjeta</span>
+          <span class="item"><span class="d"></span>+18 años</span>
+        </div>
+        <div class="hero-ctas">
+          <a class="btn-hero btn-hero-primary" href="05-auth-editorial.html">Entrar gratis <span class="ring-big">→</span></a>
+          <button class="btn-hero btn-hero-secondary">Ver demo</button>
+        </div>
+      </div>
+      <div class="hero-visual">
+        <div class="big-icon">
+          <svg viewBox="0 0 100 100" style="width:100%;height:100%;"><use href="#app-icon"/></svg>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ════════════════════════ TAB 2: QUÉ HACE CONNIKU ════════════════════════ -->
+  <section class="tab-panel" data-panel="producto" role="tabpanel">
+    <div class="panel-inner">
+      <div class="product-head">
+        <span class="kicker">lo que hace Conniku</span>
+        <h2 class="section-h2">Todo lo que necesitas, <span class="hl">en un solo lugar</span>.</h2>
+      </div>
+      <div class="stickers-grid">
+        <div class="stk stk-lime">
+          <span class="stk-num">01</span>
+          <h3>Calendario sincronizado</h3>
+          <p>Tu semestre al día. Asignaturas, entregas, clases en tiempo real.</p>
+        </div>
+        <div class="stk stk-pink">
+          <span class="stk-num">02</span>
+          <h3>Documentos con conversación</h3>
+          <p>Chatea con tu material y con cada libro de la biblioteca.</p>
+        </div>
+        <div class="stk stk-cream">
+          <span class="stk-num">03</span>
+          <h3>Escritura académica asistida</h3>
+          <p>Athena revisa tus informes con sugerencias concretas. Citas, fuentes, coherencia.</p>
+        </div>
+        <div class="stk stk-ink">
+          <span class="stk-num">04</span>
+          <h3>Biblioteca +70k</h3>
+          <p>Académicos y generales. Por tu carrera. Offline disponible.</p>
+        </div>
+        <div class="stk stk-violet">
+          <span class="stk-num">05</span>
+          <h3>Tutorías verificadas</h3>
+          <p>Titulados verificados. Pago protegido. Garantía antifraude real.</p>
+        </div>
+        <div class="stk stk-cyan">
+          <span class="stk-num">06</span>
+          <h3>CV asistido + empleo</h3>
+          <p>Editor de CV y ofertas filtradas por carrera con porcentaje de match.</p>
+        </div>
+        <div class="stk stk-white">
+          <span class="stk-num">07</span>
+          <h3>Cursos + Diploma Conniku</h3>
+          <p>Formación certificable con hash verificable. Suma a tu perfil profesional.</p>
+        </div>
+        <div class="cta-inline-card">
+          <span class="cic-label">+ próximamente</span>
+          <h4>Comunidades por carrera, quizzes colaborativos y más.</h4>
+          <button class="ci-btn">Explorar <span class="ring-mini">→</span></button>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ════════════════════════ TAB 3: CÓMO FUNCIONA ════════════════════════ -->
+  <section class="tab-panel" data-panel="como" role="tabpanel">
+    <div class="panel-inner">
+      <div class="how-grid">
+        <div>
+          <span class="kicker">cómo funciona</span>
+          <h2 class="how-h1">Tres pasos.<br><span class="hl">Dos minutos</span>.</h2>
+          <p class="how-subtitle">Sin instalación compleja. Sin papeleo. Tu cuenta queda lista antes de que termines el café.</p>
+          <a class="btn-hero btn-hero-primary" href="05-auth-editorial.html" style="margin-top:24px;">Empezar ahora <span class="ring-big">→</span></a>
+        </div>
+        <div class="steps-list">
+          <div class="step-card">
+            <div class="step-num">1</div>
+            <div>
+              <h4>Crea tu cuenta</h4>
+              <p>Regístrate con tu correo o Google. Datos esenciales únicamente.</p>
+            </div>
+          </div>
+          <div class="step-card">
+            <div class="step-num n2">2</div>
+            <div>
+              <h4>Verifica tu universidad</h4>
+              <p>Vinculamos tu cuenta a tu institución para sincronizar carrera, asignaturas y calendario.</p>
+            </div>
+          </div>
+          <div class="step-card">
+            <div class="step-num n3">3</div>
+            <div>
+              <h4>Entra a tu nuevo hogar académico</h4>
+              <p>Dashboard personalizado, workspaces listos, tutores a un clic. Estás dentro.</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ════════════════════════ TAB 4: PLANES ════════════════════════ -->
+  <section class="tab-panel" data-panel="planes" role="tabpanel">
+    <div class="panel-inner">
+      <div class="plans-head">
+        <span class="kicker">planes</span>
+        <h2 class="section-h2">Empieza gratis. <span class="hl">Crece</span> cuando quieras.</h2>
+      </div>
+      <div class="plans-grid">
+        <div class="plan-card plan-free">
+          <span class="plan-badge">★ Free · siempre gratis</span>
+          <h3 class="plan-title">Conniku Free</h3>
+          <p class="plan-subtitle">Todo lo esencial. Sin tarjeta, sin límite de tiempo.</p>
+          <ul class="plan-features">
+            <li class="pf-item"><div class="pf-check">✓</div><div><strong>Calendario</strong> sincronizado</div></li>
+            <li class="pf-item"><div class="pf-check">✓</div><div><strong>3 workspaces</strong> grupales activos</div></li>
+            <li class="pf-item"><div class="pf-check">✓</div><div><strong>100 consultas</strong> mensuales a biblioteca</div></li>
+            <li class="pf-item"><div class="pf-check">✓</div><div><strong>CV y perfil</strong> editable</div></li>
+            <li class="pf-item"><div class="pf-check">✓</div><div><strong>3 postulaciones</strong> mensuales a ofertas</div></li>
+            <li class="pf-item"><div class="pf-check">✓</div><div><strong>Quizzes</strong> ilimitados</div></li>
+          </ul>
+          <a class="plan-cta-btn" href="05-auth-editorial.html">Entrar gratis <span class="ring-pc">→</span></a>
+        </div>
+
+        <div class="plan-card plan-pro">
+          <span class="plan-badge">★ Pro · experiencia completa</span>
+          <h3 class="plan-title">Conniku Pro</h3>
+          <p class="plan-subtitle">Todo sin límites. Para estudiar en serio.</p>
+          <ul class="plan-features">
+            <li class="pf-item"><div class="pf-check">✓</div><div>Todo lo del Free, <strong>sin topes</strong></div></li>
+            <li class="pf-item"><div class="pf-check">✓</div><div><strong>Biblioteca +70k</strong> con chat por libro</div></li>
+            <li class="pf-item"><div class="pf-check">✓</div><div><strong>Workspaces ilimitados</strong> + Athena</div></li>
+            <li class="pf-item"><div class="pf-check">✓</div><div><strong>Ofertas ilimitadas</strong> + CV asistido</div></li>
+            <li class="pf-item"><div class="pf-check">✓</div><div><strong>Cursos + Diploma</strong> Conniku</div></li>
+            <li class="pf-item"><div class="pf-check">✓</div><div><strong>Descuento</strong> en tutores + prioridad</div></li>
+          </ul>
+          <a class="plan-cta-btn" href="05-auth-editorial.html">Probar Pro <span class="ring-pc">→</span></a>
+        </div>
+      </div>
+
+      <div class="unlock-strip">
+        <div class="unlock-mini">
+          <div class="um-num">1</div>
+          <div>
+            <div class="um-title">Completa 6 cursos</div>
+            <div class="um-desc">→ 30 días Pro gratis</div>
+          </div>
+        </div>
+        <div class="unlock-mini">
+          <div class="um-num">2</div>
+          <div>
+            <div class="um-title">Acumula puntos estudiando</div>
+            <div class="um-desc">Canjéalos por Pro o tutorías</div>
+          </div>
+        </div>
+        <div class="unlock-mini">
+          <div class="um-num">3</div>
+          <div>
+            <div class="um-title">Refiere compañeros</div>
+            <div class="um-desc">Días Pro sin tope</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ════════════════════════ TAB 5: DESCARGA LA APP ════════════════════════ -->
+  <section class="tab-panel" data-panel="app" role="tabpanel">
+    <div class="panel-inner">
+      <div class="app-grid">
+        <div>
+          <span class="kicker">descarga la app</span>
+          <h2 class="app-h1">Llévatelo <span class="hl">en el bolsillo</span>.</h2>
+          <p class="app-desc">Conniku en iOS, Android, web y escritorio. Todo sincronizado. Todo offline-first. Tu universidad, siempre contigo.</p>
+          <div class="app-badges">
+            <a class="app-badge" aria-label="Descargar en App Store">
+              <svg viewBox="0 0 24 24" fill="currentColor"><path d="M17.05 20.28c-.98.95-2.05.8-3.08.35-1.09-.46-2.09-.48-3.24 0-1.44.62-2.2.44-3.06-.35C2.79 15.25 3.51 7.59 9.05 7.31c1.35.07 2.29.74 3.08.8 1.18-.24 2.31-.93 3.57-.84 1.51.12 2.65.72 3.4 1.8-3.12 1.87-2.38 5.98.48 7.13-.57 1.5-1.31 2.99-2.54 4.08zM12.03 7.25c-.15-2.23 1.66-4.07 3.74-4.25.29 2.58-2.34 4.5-3.74 4.25z"/></svg>
+              <span class="lines"><span class="small">Descárgalo en</span><span class="big">App Store</span></span>
+            </a>
+            <a class="app-badge" aria-label="Descargar en Google Play">
+              <svg viewBox="0 0 24 24"><path d="M3.6 2.3c-.3.3-.5.7-.5 1.3v16.8c0 .6.2 1 .5 1.3l.1.1L13.2 12v-.1L3.6 2.3z" fill="#00D9FF"/><path d="M16.2 15.1l-3-3v-.1l3-3 .1.1 3.6 2c1 .6 1 1.5 0 2.1l-3.6 2-.1-.1z" fill="#FFCE00"/><path d="M16.3 15l-3.1-3L3.6 21.7c.3.4.9.4 1.6.1L16.3 15" fill="#FF3B3B"/><path d="M16.3 9L4.9 2.3c-.7-.4-1.3-.3-1.6.1l9.6 9.5 3.4-3z" fill="#00D25B"/></svg>
+              <span class="lines"><span class="small">Consíguelo en</span><span class="big">Google Play</span></span>
+            </a>
+          </div>
+          <div class="app-platforms">
+            <span class="pl">iOS</span>
+            <span class="pl">Android</span>
+            <span class="pl">Web</span>
+            <span class="pl">macOS</span>
+            <span class="pl">Windows</span>
+            <span class="pl">Extensión Chrome</span>
+          </div>
+        </div>
+        <div>
+          <div class="phone-mock">
+            <div class="phone-screen">
+              <!-- Top bar -->
+              <div class="ph-topbar">
+                <span class="ph-back">←</span>
+                <span class="ph-title-sm">Perfil</span>
+                <span class="ph-action">⋯</span>
+              </div>
+
+              <!-- Cover + avatar -->
+              <div class="ph-cover"></div>
+              <div class="ph-avatar-wrap">PR</div>
+
+              <!-- Info usuario -->
+              <div class="ph-profile-info">
+                <div class="ph-name-row">
+                  <span class="ph-name">Pía Ramírez</span>
+                  <span class="ph-pro-badge">★ PRO</span>
+                </div>
+                <div class="ph-u-career">Medicina · UChile · 2º año</div>
+              </div>
+
+              <!-- Stats -->
+              <div class="ph-stats">
+                <div class="ph-stat">
+                  <div class="v">12</div>
+                  <div class="l">Workspaces</div>
+                </div>
+                <div class="ph-stat">
+                  <div class="v">47</div>
+                  <div class="l">Logros</div>
+                </div>
+                <div class="ph-stat">
+                  <div class="v">+30</div>
+                  <div class="l">Días Pro</div>
+                </div>
+              </div>
+
+              <!-- CTAs -->
+              <div class="ph-cta-row">
+                <div class="ph-btn ph-btn-primary">Seguir</div>
+                <div class="ph-btn ph-btn-ghost">Mensaje</div>
+              </div>
+
+              <!-- Workspaces recientes -->
+              <div class="ph-section-label">Workspaces recientes</div>
+              <div class="ph-ws-list">
+                <div class="ph-ws">
+                  <div class="ph-ws-thumb c1">Aᴬ</div>
+                  <div class="ph-ws-body">
+                    <div class="ph-ws-title">Anatomía · Sist. nervioso</div>
+                    <div class="ph-ws-sub">5 miembros · hace 2h</div>
+                  </div>
+                  <div class="ph-ws-status">LIVE</div>
+                </div>
+                <div class="ph-ws">
+                  <div class="ph-ws-thumb c2">Fᴾ</div>
+                  <div class="ph-ws-body">
+                    <div class="ph-ws-title">Farmacología clínica I</div>
+                    <div class="ph-ws-sub">Individual · hoy</div>
+                  </div>
+                </div>
+                <div class="ph-ws">
+                  <div class="ph-ws-thumb c3">Pᴾ</div>
+                  <div class="ph-ws-body">
+                    <div class="ph-ws-title">Patología informe</div>
+                    <div class="ph-ws-sub">3 miembros · ayer</div>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Tab bar inferior -->
+              <div class="ph-tabbar">
+                <span class="ph-tab">⌂</span>
+                <span class="ph-tab">⌕</span>
+                <span class="ph-tab">✉</span>
+                <span class="ph-tab active">◉</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+</main>
+
+<script>
+// ═══ Tabs ═══
+(function () {
+  const tabs = document.querySelectorAll('.tab-btn');
+  const panels = document.querySelectorAll('.tab-panel');
+  tabs.forEach((t) => {
+    t.addEventListener('click', () => {
+      const key = t.dataset.tab;
+      tabs.forEach((x) => x.classList.toggle('active', x === t));
+      panels.forEach((p) => p.classList.toggle('active', p.dataset.panel === key));
+    });
+  });
+})();
+
+// ═══ Conniku Business panel ═══
+(function () {
+  const btn = document.querySelector('.business-btn');
+  const panel = document.querySelector('.business-panel');
+  if (!btn || !panel) return;
+  function close() {
+    btn.classList.remove('open');
+    panel.classList.remove('open');
+    btn.setAttribute('aria-expanded', 'false');
+  }
+  btn.addEventListener('click', (e) => {
+    e.stopPropagation();
+    const isOpen = btn.classList.toggle('open');
+    panel.classList.toggle('open', isOpen);
+    btn.setAttribute('aria-expanded', String(isOpen));
+  });
+  document.addEventListener('click', (e) => {
+    if (!panel.contains(e.target) && !btn.contains(e.target)) close();
+  });
+  document.addEventListener('keydown', (e) => { if (e.key === 'Escape') close(); });
+})();
+
+// ═══ Partículas bouncing ═══
+(function () {
+  const container = document.querySelector('.panel-fx');
+  if (!container) return;
+  if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+  const elements = Array.from(container.querySelectorAll('.sp, .light-far, .light-mid'));
+  let containerW = container.clientWidth;
+  let containerH = container.clientHeight;
+  const state = elements.map((el) => {
+    const isFar = el.classList.contains('light-far');
+    const isMid = el.classList.contains('light-mid');
+    const rect = el.getBoundingClientRect();
+    const crInit = container.getBoundingClientRect();
+    const initLeft = rect.left - crInit.left;
+    const initTop = rect.top - crInit.top;
+    const w = rect.width, h = rect.height;
+    let base;
+    if (isFar) base = 0.15 + Math.random() * 0.30;
+    else if (isMid) base = 0.25 + Math.random() * 0.45;
+    else base = 0.6 + Math.random() * 1.6;
+    const angle = Math.random() * Math.PI * 2;
+    let opacity;
+    if (isFar) opacity = 0.22 + Math.random() * 0.38;
+    else if (isMid) opacity = 0.28 + Math.random() * 0.42;
+    else opacity = 0.70 + Math.random() * 0.30;
+    let blur;
+    if (isFar) blur = 40 + Math.random() * 60;
+    else if (isMid) blur = 14 + Math.random() * 34;
+    else blur = Math.random() * 5;
+    el.style.opacity = opacity.toFixed(3);
+    el.style.filter = 'blur(' + blur.toFixed(2) + 'px)';
+    return { el, initLeft, initTop, w, h, tx: 0, ty: 0, vx: Math.cos(angle)*base, vy: Math.sin(angle)*base, minSpeed: isFar ? 0.12 : (isMid ? 0.22 : 0.5) };
+  });
+  function onResize() { containerW = container.clientWidth; containerH = container.clientHeight; }
+  window.addEventListener('resize', onResize);
+  function step() {
+    for (let i = 0; i < state.length; i++) {
+      const s = state[i];
+      s.tx += s.vx; s.ty += s.vy;
+      const left = s.initLeft + s.tx, top = s.initTop + s.ty;
+      const right = left + s.w, bottom = top + s.h;
+      if (left < 0 && s.vx < 0) { s.vx = -s.vx * (0.92 + Math.random()*0.16); s.vy += (Math.random()-0.5)*0.4; }
+      else if (right > containerW && s.vx > 0) { s.vx = -s.vx * (0.92 + Math.random()*0.16); s.vy += (Math.random()-0.5)*0.4; }
+      if (top < 0 && s.vy < 0) { s.vy = -s.vy * (0.92 + Math.random()*0.16); s.vx += (Math.random()-0.5)*0.4; }
+      else if (bottom > containerH && s.vy > 0) { s.vy = -s.vy * (0.92 + Math.random()*0.16); s.vx += (Math.random()-0.5)*0.4; }
+      const sp = Math.hypot(s.vx, s.vy);
+      if (sp < s.minSpeed) {
+        const ang = Math.atan2(s.vy, s.vx) || Math.random()*Math.PI*2;
+        s.vx = Math.cos(ang)*s.minSpeed; s.vy = Math.sin(ang)*s.minSpeed;
+      }
+      s.el.style.transform = 'translate3d(' + s.tx + 'px,' + s.ty + 'px,0)';
+    }
+    raf = requestAnimationFrame(step);
+  }
+  let raf = requestAnimationFrame(step);
+  document.addEventListener('visibilitychange', () => {
+    if (document.hidden) cancelAnimationFrame(raf);
+    else raf = requestAnimationFrame(step);
+  });
+})();
+
+// ═══ Transiciones entre páginas ═══
+(function () {
+  const overlay = document.querySelector('.page-transition');
+  if (!overlay) return;
+  if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+  function shouldTransition(a) {
+    const href = a.getAttribute('href');
+    if (!href) return false;
+    if (href.startsWith('#')) return false;
+    if (/^(https?:|mailto:|tel:)/.test(href)) return false;
+    if (a.target === '_blank') return false;
+    if (a.hasAttribute('download')) return false;
+    if (a.hasAttribute('data-no-transition')) return false;
+    return true;
+  }
+  document.addEventListener('click', (e) => {
+    const a = e.target.closest('a[href]');
+    if (!a || !shouldTransition(a)) return;
+    e.preventDefault();
+    overlay.classList.add('leaving');
+    setTimeout(() => { window.location.href = a.href; }, 2850);
+  });
+  // Cuando regresa con back button, ocultar overlay
+  window.addEventListener('pageshow', () => { overlay.classList.remove('leaving'); });
+})();
+</script>
+
+
+<!-- Transición editorial entre páginas -->
+<div class="page-transition" aria-hidden="true">
+  <span class="pt-sp" style="top:14%;left:22%;width:10px;height:10px;background:#FF4D3A"></span>
+  <span class="pt-sp" style="top:22%;left:72%;width:8px;height:8px;background:#D9FF3A"></span>
+  <span class="pt-sp" style="top:68%;left:18%;width:12px;height:12px;background:#00C2FF"></span>
+  <span class="pt-sp" style="top:78%;left:78%;width:9px;height:9px;background:#6B4EFF"></span>
+  <span class="pt-sp" style="top:42%;left:88%;width:7px;height:7px;background:#FFE9B8"></span>
+  <span class="pt-sp" style="top:52%;left:10%;width:6px;height:6px;background:#FF4A1C"></span>
+  <div class="pt-wrap">
+    <div class="pt-icon">
+      <svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+        <rect width="100" height="100" rx="22" fill="#D9FF3A"/>
+        <text x="50" y="71" text-anchor="middle" font-family="Funnel Display, -apple-system, sans-serif" font-weight="900" font-size="84" fill="#0D0F10" letter-spacing="-4">u</text>
+        <circle cx="77" cy="68" r="6" fill="#FF4A1C"/>
+      </svg>
+    </div>
+    <div class="pt-label"><span class="pt-dot"></span>conniku. cargando</div>
+  </div>
+</div>
+
+</body>
+</html>

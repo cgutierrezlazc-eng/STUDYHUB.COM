@@ -1,0 +1,376 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Conniku — Calendario personal</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Funnel+Display:wght@400;500;600;700;800;900&family=Geist+Mono:wght@400;500;600;700&display=swap" />
+  <style>
+    :root {
+      --ink: #0D0F10; --ink-2: #2B2E30; --ink-3: #696C6F; --ink-4: #A0A3A7;
+      --paper: #F5F4EF; --paper-2: #EBE9E1; --line: #D2CFC3; --card: #FFFFFF;
+      --lime: #D9FF3A; --lime-ink: #181F08;
+      --pink: #FF4D3A; --cream: #FFE9B8;
+      --violet: #6B4EFF; --cyan: #00C2FF; --orange: #FF4A1C;
+      --font-display: 'Funnel Display', -apple-system, sans-serif;
+      --font-mono: 'Geist Mono', ui-monospace, monospace;
+      --ease: cubic-bezier(.2,.8,.2,1);
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    html, body { background: var(--paper); color: var(--ink); font-family: var(--font-display); }
+    body { min-height: 100vh; overflow-x: hidden; }
+    ::selection { background: var(--lime); color: var(--lime-ink); }
+
+    .top-progress { background: var(--ink); color: #fff; padding: 8px 28px; display: flex; align-items: center; justify-content: space-between; font-family: var(--font-mono); font-size: 11px; letter-spacing: .08em; text-transform: uppercase; }
+    .top-progress .left { display: flex; align-items: center; gap: 12px; }
+    .pulse { width: 8px; height: 8px; border-radius: 50%; background: var(--lime); animation: pulse 1.6s var(--ease) infinite; }
+    @keyframes pulse { 0% { box-shadow: 0 0 0 0 rgba(217,255,58,.7); } 70% { box-shadow: 0 0 0 10px rgba(217,255,58,0); } 100% { box-shadow: 0 0 0 0 rgba(217,255,58,0); } }
+
+    .nav-wrap { padding: 18px 28px 0; display: flex; justify-content: center; }
+    .nav { max-width: 1320px; width: 100%; background: var(--card); border: 1px solid var(--line); border-radius: 999px; padding: 10px 14px 10px 18px; display: flex; align-items: center; gap: 28px; }
+    .logo-tile { width: 28px; height: 28px; display: block; flex-shrink: 0; }
+    .logo-text { font-weight: 700; font-size: 20px; letter-spacing: -.02em; }
+    .nav-links { display: flex; gap: 22px; flex: 1; }
+    .nav-link { font-size: 15px; font-weight: 600; color: var(--ink-2); cursor: pointer; }
+    .nav-link.active { color: var(--ink); border-bottom: 2px solid var(--lime); padding-bottom: 4px; }
+
+    .main { max-width: 1320px; margin: 0 auto; padding: 32px 28px 120px; }
+
+    /* Calendar header */
+    .cal-top-row {
+      display: grid; grid-template-columns: 1fr auto; gap: 24px; align-items: center;
+      margin-bottom: 28px;
+    }
+    .cal-title-area h1 { font-weight: 900; font-size: clamp(48px, 5.5vw, 76px); letter-spacing: -.04em; line-height: .95; }
+    .cal-title-area h1 .mo { background: var(--lime); color: var(--lime-ink); padding: 0 10px; border-radius: 12px; transform: rotate(-.8deg); display: inline-block; }
+    .cal-title-area .sub { font-family: var(--font-mono); font-size: 12px; color: var(--ink-3); letter-spacing: .06em; text-transform: uppercase; margin-top: 10px; font-weight: 600; }
+    .cal-title-area .sub strong { color: var(--ink); font-weight: 800; }
+
+    .cal-controls { display: flex; align-items: center; gap: 8px; }
+    .cal-btn { background: var(--card); border: 1.5px solid var(--ink); padding: 8px 14px; border-radius: 999px; font-family: var(--font-display); font-weight: 700; font-size: 13px; cursor: pointer; }
+    .cal-btn.hl { background: var(--ink); color: #fff; }
+    .cal-btn.arrow { width: 38px; padding: 0; display: grid; place-items: center; font-size: 15px; }
+    .view-switcher { display: flex; background: var(--paper-2); border-radius: 999px; padding: 4px; gap: 2px; }
+    .vs-btn { padding: 7px 14px; border-radius: 999px; border: 0; background: transparent; font-family: var(--font-display); font-weight: 600; font-size: 12px; cursor: pointer; color: var(--ink-3); }
+    .vs-btn.active { background: var(--ink); color: #fff; font-weight: 700; }
+
+    /* Calendar grid */
+    .cal-layout { display: grid; grid-template-columns: 1fr 340px; gap: 24px; }
+
+    .cal-main {
+      background: var(--card); border: 2px solid var(--ink); border-radius: 24px;
+      overflow: hidden;
+    }
+    .weekdays {
+      display: grid; grid-template-columns: repeat(7, 1fr);
+      background: var(--ink); color: #fff;
+      padding: 10px 0;
+    }
+    .wd {
+      text-align: center; font-family: var(--font-mono); font-size: 10px;
+      letter-spacing: .14em; text-transform: uppercase; font-weight: 700;
+      color: rgba(255,255,255,.5);
+    }
+    .wd.today { color: var(--lime); }
+
+    .days-grid {
+      display: grid; grid-template-columns: repeat(7, 1fr);
+      border-top: 1px solid var(--line-soft);
+    }
+    .day-cell {
+      border-right: 1px solid var(--line-soft); border-bottom: 1px solid var(--line-soft);
+      padding: 10px 8px; min-height: 110px; position: relative;
+      font-size: 13px; cursor: pointer; transition: background 120ms var(--ease);
+    }
+    .day-cell:hover { background: var(--paper); }
+    .day-cell:nth-child(7n) { border-right: 0; }
+    .day-cell.prev-mo, .day-cell.next-mo { background: var(--paper); color: var(--ink-4); }
+    .day-num { font-family: var(--font-display); font-weight: 800; font-size: 15px; letter-spacing: -.01em; }
+    .day-cell.today .day-num {
+      background: var(--ink); color: var(--lime); border-radius: 50%;
+      width: 30px; height: 30px; display: grid; place-items: center;
+      font-weight: 900;
+    }
+
+    .day-events { margin-top: 6px; display: flex; flex-direction: column; gap: 3px; }
+    .event {
+      font-family: var(--font-mono); font-size: 10px; font-weight: 700;
+      padding: 3px 7px; border-radius: 5px; letter-spacing: .02em;
+      white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+    }
+    .ev-class { background: var(--cyan); color: var(--ink); }
+    .ev-exam { background: var(--pink); color: #fff; }
+    .ev-tutor { background: var(--violet); color: #fff; }
+    .ev-entrega { background: var(--orange); color: #fff; }
+    .ev-social { background: var(--cream); color: var(--ink); }
+    .ev-study { background: var(--lime); color: var(--lime-ink); }
+
+    .event-more { font-family: var(--font-mono); font-size: 9.5px; color: var(--ink-3); letter-spacing: .04em; margin-top: 2px; font-weight: 600; }
+
+    /* Side */
+    .cal-side { display: flex; flex-direction: column; gap: 20px; }
+    .side-card { background: var(--card); border: 2px solid var(--ink); border-radius: 24px; padding: 24px; }
+    .side-card h3 { font-weight: 900; font-size: 20px; letter-spacing: -.015em; line-height: 1.1; margin-bottom: 4px; }
+    .side-card .sub { font-family: var(--font-mono); font-size: 11px; color: var(--ink-3); letter-spacing: .06em; text-transform: uppercase; margin-bottom: 16px; font-weight: 600; }
+
+    .today-events { display: flex; flex-direction: column; gap: 10px; }
+    .te-row { display: flex; gap: 14px; padding-bottom: 12px; border-bottom: 1px solid var(--line-soft); }
+    .te-row:last-child { border-bottom: 0; padding-bottom: 0; }
+    .te-time { font-family: var(--font-mono); font-weight: 800; font-size: 12px; color: var(--ink); letter-spacing: .04em; width: 60px; flex-shrink: 0; padding-top: 2px; }
+    .te-bar { width: 4px; border-radius: 2px; flex-shrink: 0; }
+    .te-bar.cyan { background: var(--cyan); }
+    .te-bar.pink { background: var(--pink); }
+    .te-bar.violet { background: var(--violet); }
+    .te-bar.orange { background: var(--orange); }
+    .te-body .te-title { font-weight: 800; font-size: 13.5px; letter-spacing: -.01em; }
+    .te-body .te-sub { font-family: var(--font-mono); font-size: 10px; color: var(--ink-3); letter-spacing: .04em; margin-top: 3px; }
+    .te-body .te-loc { font-size: 12px; color: var(--ink-2); margin-top: 4px; }
+
+    .legend-box .legend-item { display: flex; align-items: center; gap: 10px; padding: 7px 0; }
+    .legend-dot { width: 10px; height: 10px; border-radius: 3px; flex-shrink: 0; }
+    .ld-cyan { background: var(--cyan); }
+    .ld-pink { background: var(--pink); }
+    .ld-violet { background: var(--violet); }
+    .ld-orange { background: var(--orange); }
+    .ld-cream { background: var(--cream); border: 1px solid var(--ink); }
+    .ld-lime { background: var(--lime); border: 1px solid var(--ink); }
+    .legend-text { font-size: 13px; font-weight: 600; flex: 1; }
+    .legend-count { font-family: var(--font-mono); font-size: 10px; color: var(--ink-3); letter-spacing: .04em; }
+
+    .reminder-box {
+      background: var(--cream); border: 2px solid var(--ink); border-radius: 20px;
+      padding: 20px; transform: rotate(.5deg); box-shadow: 4px 4px 0 var(--ink);
+    }
+    .reminder-box .r-label { font-family: var(--font-mono); font-size: 10px; letter-spacing: .12em; text-transform: uppercase; color: var(--ink); font-weight: 700; margin-bottom: 10px; display: flex; align-items: center; gap: 8px; }
+    .reminder-box .r-label::before { content: "★"; }
+    .reminder-box h4 { font-weight: 900; font-size: 20px; letter-spacing: -.015em; line-height: 1.1; }
+    .reminder-box p { font-size: 13px; color: var(--ink-2); margin-top: 8px; line-height: 1.4; }
+
+    @media (max-width: 1080px) {
+      .cal-layout { grid-template-columns: 1fr; }
+      .cal-top-row { grid-template-columns: 1fr; }
+      .day-cell { min-height: 80px; }
+    }
+  </style>
+</head>
+<body>
+
+  <div class="top-progress">
+    <div class="left">
+      <div class="pulse"></div>
+      <span>Tu calendario</span>
+    </div>
+    <span>Sync UChile · Google Calendar · iOS · todo en uno</span>
+  </div>
+
+  <div class="nav-wrap">
+    <div class="nav">
+      <div class="logo-tile"><svg viewBox="0 0 100 100" aria-label="Conniku" style="width:100%;height:100%;display:block"><rect width="100" height="100" rx="22" fill="#0D0F10"/><mask id="ckL_23_calendar" maskUnits="userSpaceOnUse"><rect width="100" height="100" fill="#fff"/><circle cx="58" cy="50" r="24" fill="#000"/></mask><rect x="12" y="12" width="76" height="76" rx="14" fill="#D9FF3A" mask="url(#ckL_23_calendar)"/><circle cx="58" cy="50" r="5" fill="#FF4A1C"/></svg></div>
+      <div class="logo-text">conniku.</div>
+      <div class="nav-links">
+        <div class="nav-link">Estudio</div>
+        <div class="nav-link">Biblioteca</div>
+        <div class="nav-link">Tutores</div>
+        <div class="nav-link">Empleo</div>
+        <div class="nav-link active">Calendario</div>
+      </div>
+    </div>
+  </div>
+
+  <main class="main">
+
+    <div class="cal-top-row">
+      <div class="cal-title-area">
+        <h1><span class="mo">Abril</span> 2026</h1>
+        <div class="sub">Semana 16 · día <strong>41 de 120</strong> del semestre · <strong>8 eventos</strong> esta semana</div>
+      </div>
+      <div class="cal-controls">
+        <button class="cal-btn hl">Hoy</button>
+        <button class="cal-btn arrow">‹</button>
+        <button class="cal-btn arrow">›</button>
+        <div class="view-switcher">
+          <button class="vs-btn">Día</button>
+          <button class="vs-btn">Semana</button>
+          <button class="vs-btn active">Mes</button>
+          <button class="vs-btn">Año</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="cal-layout">
+
+      <div class="cal-main">
+        <div class="weekdays">
+          <div class="wd">Lun</div>
+          <div class="wd">Mar</div>
+          <div class="wd">Mié</div>
+          <div class="wd">Jue</div>
+          <div class="wd today">Vie ·</div>
+          <div class="wd">Sáb</div>
+          <div class="wd">Dom</div>
+        </div>
+        <div class="days-grid">
+          <!-- Semana 1 -->
+          <div class="day-cell prev-mo"><div class="day-num">31</div></div>
+          <div class="day-cell"><div class="day-num">1</div><div class="day-events"><div class="event ev-class">10:30 Cálc. II</div></div></div>
+          <div class="day-cell"><div class="day-num">2</div><div class="day-events"><div class="event ev-class">14:00 Termo</div></div></div>
+          <div class="day-cell"><div class="day-num">3</div><div class="day-events"><div class="event ev-class">10:30 Cálc. II</div><div class="event ev-entrega">Tarea 5</div></div></div>
+          <div class="day-cell"><div class="day-num">4</div><div class="day-events"><div class="event ev-class">14:00 Termo</div></div></div>
+          <div class="day-cell"><div class="day-num">5</div></div>
+          <div class="day-cell"><div class="day-num">6</div><div class="day-events"><div class="event ev-study">Estudio grupal</div></div></div>
+
+          <!-- Semana 2 -->
+          <div class="day-cell"><div class="day-num">7</div><div class="day-events"><div class="event ev-class">09:00 Taller escr.</div><div class="event ev-class">10:30 Cálc.</div></div></div>
+          <div class="day-cell"><div class="day-num">8</div><div class="day-events"><div class="event ev-class">14:00 Termo</div><div class="event ev-tutor">20:00 Tutor Rodrigo</div></div></div>
+          <div class="day-cell"><div class="day-num">9</div><div class="day-events"><div class="event ev-class">10:30 Cálc.</div></div></div>
+          <div class="day-cell"><div class="day-num">10</div><div class="day-events"><div class="event ev-class">14:00 Termo</div><div class="event ev-social">18:00 Semillero</div></div></div>
+          <div class="day-cell"><div class="day-num">11</div><div class="day-events"><div class="event ev-class">10:30 Cálc.</div></div></div>
+          <div class="day-cell"><div class="day-num">12</div></div>
+          <div class="day-cell"><div class="day-num">13</div><div class="day-events"><div class="event ev-study">Estudio grupal</div></div></div>
+
+          <!-- Semana 3 (actual) -->
+          <div class="day-cell"><div class="day-num">14</div><div class="day-events"><div class="event ev-class">10:30 Cálc.</div></div></div>
+          <div class="day-cell"><div class="day-num">15</div><div class="day-events"><div class="event ev-class">14:00 Termo</div><div class="event ev-tutor">19:00 Clase Pía</div></div></div>
+          <div class="day-cell"><div class="day-num">16</div><div class="day-events"><div class="event ev-class">10:30 Cálc.</div></div></div>
+          <div class="day-cell"><div class="day-num">17</div><div class="day-events"><div class="event ev-class">14:00 Termo</div></div></div>
+          <div class="day-cell today">
+            <div class="day-num">18</div>
+            <div class="day-events">
+              <div class="event ev-class">10:30 Cálc.</div>
+              <div class="event ev-tutor">17:00 Margarita</div>
+              <div class="event ev-study">20:00 Foco sala</div>
+            </div>
+          </div>
+          <div class="day-cell"><div class="day-num">19</div></div>
+          <div class="day-cell"><div class="day-num">20</div><div class="day-events"><div class="event ev-study">Estudio grupal</div></div></div>
+
+          <!-- Semana 4 -->
+          <div class="day-cell"><div class="day-num">21</div><div class="day-events"><div class="event ev-class">10:30 Cálc.</div><div class="event ev-class">16:00 Const.</div></div></div>
+          <div class="day-cell"><div class="day-num">22</div><div class="day-events"><div class="event ev-class">14:00 Termo</div><div class="event ev-tutor">20:00 Tutor</div></div></div>
+          <div class="day-cell"><div class="day-num">23</div><div class="day-events"><div class="event ev-class">10:30 Cálc.</div></div></div>
+          <div class="day-cell">
+            <div class="day-num">24</div>
+            <div class="day-events">
+              <div class="event ev-class">14:00 Termo</div>
+              <div class="event ev-social">18:00 Feria emp.</div>
+            </div>
+          </div>
+          <div class="day-cell">
+            <div class="day-num">25</div>
+            <div class="day-events">
+              <div class="event ev-entrega">★ Entrega Termo</div>
+              <div class="event ev-class">10:30 Cálc.</div>
+            </div>
+          </div>
+          <div class="day-cell">
+            <div class="day-num">26</div>
+            <div class="day-events">
+              <div class="event ev-study">Sala M-301 día 1</div>
+            </div>
+          </div>
+          <div class="day-cell">
+            <div class="day-num">27</div>
+            <div class="day-events">
+              <div class="event ev-exam">★ Certamen Cálc</div>
+              <div class="event ev-study">Sala M-301 día 2</div>
+            </div>
+          </div>
+
+          <!-- Semana 5 -->
+          <div class="day-cell"><div class="day-num">28</div><div class="day-events"><div class="event ev-class">10:30 Cálc.</div><div class="event ev-entrega">Trab Const.</div></div></div>
+          <div class="day-cell"><div class="day-num">29</div><div class="day-events"><div class="event ev-class">14:00 Termo</div><div class="event ev-social">Charla UChile</div></div></div>
+          <div class="day-cell"><div class="day-num">30</div><div class="day-events"><div class="event ev-class">10:30 Cálc.</div></div></div>
+          <div class="day-cell next-mo"><div class="day-num">1</div><div class="day-events"><div class="event ev-class" style="opacity: .6;">Termo</div></div></div>
+          <div class="day-cell next-mo"><div class="day-num">2</div></div>
+          <div class="day-cell next-mo"><div class="day-num">3</div><div class="day-events"><div class="event ev-social" style="opacity: .6;">Feria emp.</div></div></div>
+          <div class="day-cell next-mo"><div class="day-num">4</div></div>
+        </div>
+      </div>
+
+      <aside class="cal-side">
+
+        <div class="side-card">
+          <h3>Hoy · vie 18 abril</h3>
+          <div class="sub">3 eventos programados</div>
+          <div class="today-events">
+            <div class="te-row">
+              <div class="te-time">10:30</div>
+              <div class="te-bar cyan"></div>
+              <div class="te-body">
+                <div class="te-title">Cálculo Diferencial II</div>
+                <div class="te-sub">Prof. Margarita Soto · 90 min</div>
+                <div class="te-loc">Sala C-304 · UChile</div>
+              </div>
+            </div>
+            <div class="te-row">
+              <div class="te-time">17:00</div>
+              <div class="te-bar violet"></div>
+              <div class="te-body">
+                <div class="te-title">Clase privada Cálculo</div>
+                <div class="te-sub">con Margarita Soto · 60 min</div>
+                <div class="te-loc">Online Conniku · $18.900 pagado</div>
+              </div>
+            </div>
+            <div class="te-row">
+              <div class="te-time">20:00</div>
+              <div class="te-bar orange"></div>
+              <div class="te-body">
+                <div class="te-title">Foco: Sala Ing. UChile</div>
+                <div class="te-sub">Pomodoro 25/5 · 2 horas</div>
+                <div class="te-loc">Sala compartida online · Pía R. host</div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="reminder-box">
+          <div class="r-label">Recuerda</div>
+          <h4>Certamen Cálculo II en 9 días.</h4>
+          <p>Ya estás con 68% de la materia. A este ritmo llegas listo. Te bloqué el lunes 21 para repaso final.</p>
+        </div>
+
+        <div class="side-card legend-box">
+          <h3>Tus calendarios · abril</h3>
+          <div class="sub">Colores por tipo de evento</div>
+          <div class="legend-item">
+            <div class="legend-dot ld-cyan"></div>
+            <div class="legend-text">Clases</div>
+            <div class="legend-count">· 22</div>
+          </div>
+          <div class="legend-item">
+            <div class="legend-dot ld-pink"></div>
+            <div class="legend-text">Certámenes</div>
+            <div class="legend-count">· 1</div>
+          </div>
+          <div class="legend-item">
+            <div class="legend-dot ld-violet"></div>
+            <div class="legend-text">Tutorías</div>
+            <div class="legend-count">· 3</div>
+          </div>
+          <div class="legend-item">
+            <div class="legend-dot ld-orange"></div>
+            <div class="legend-text">Entregas</div>
+            <div class="legend-count">· 3</div>
+          </div>
+          <div class="legend-item">
+            <div class="legend-dot ld-cream"></div>
+            <div class="legend-text">Social / Comunidad</div>
+            <div class="legend-count">· 4</div>
+          </div>
+          <div class="legend-item">
+            <div class="legend-dot ld-lime"></div>
+            <div class="legend-text">Sesiones de estudio</div>
+            <div class="legend-count">· 5</div>
+          </div>
+        </div>
+
+      </aside>
+
+    </div>
+
+  </main>
+
+</body>
+</html>

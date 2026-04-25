@@ -1,0 +1,159 @@
+# METADATA.yaml — Directorio de versionado formal docs/legal/v3.2/
+#
+# Generado: 2026-04-20
+# Bloque: bloque-legal-v3.2-post-audit (Pieza 1)
+# Supersede: docs/legal/v3.1/ (archivado en docs/legal/archive/2026-04-20-v3.1-superseded/)
+#
+# Cada entrada corresponde a un archivo de este directorio.
+# El campo sha256 es el hash SHA-256 del archivo binario tal como existe en disco.
+# Si el archivo se modifica, se debe recalcular el hash y actualizar esta entrada.
+#
+# IMPORTANTE: El hash se calcula sobre el archivo completo (incluyendo frontmatter YAML).
+# Para recalcular: shasum -a 256 docs/legal/v3.2/<archivo>
+# O con Python: python3 -c "import hashlib; print(hashlib.sha256(open('<archivo>','rb').read()).hexdigest())"
+
+documents:
+  privacy:
+    version: "2.4.2"
+    sha256: "cc9332741bea7ad4539fd6a8a049946e44521b9ae8ed97833dd112412b8c746e"
+    vigencia_desde: "2026-04-23"
+    vigencia_hasta: "actual"
+    archivo: "v3.2/privacy.md"
+    autor_aprobacion: "pendiente revisión abogado"
+    aprobacion_fecha: "pendiente"
+    nota: >
+      Bump v2.4.1 → v2.4.2 por bloque bloque-sandbox-integrity-v1
+      (decisión Cristian 2026-04-22 "1A 2A" aprobando publicación
+      atómica + regla permanente §feedback_soluciones_permanentes).
+      Cambios: nueva Sección 2ter "Canal de sandbox de vista previa"
+      declarando que sandbox público genera filas reales en
+      cookie_consents con origin='sandbox' y document_views con
+      visitor_uuid compartido (D-S3=A, D-S4=A); base legal GDPR
+      Art. 6(1)(a) para consent + Art. 6(1)(f) para document_views;
+      retención 5 años alineada con canales principales. Nueva
+      Sección 2quater "Sistema de feedback de ayuda
+      (support_feedback)" con 11 campos, base legal Art. 6(1)(f)
+      interés legítimo + Ley 19.628 Art. 4°, retención 2 años con
+      pseudonimización a 12 meses (D-S6=A, Art. 2515 CC no aplica
+      por no tratarse de evidencia de acto jurídico según análisis
+      legal-docs-keeper 2026-04-22), rate-limit 60/h/IP.
+      §2.1 agrega bullet Feedback de soporte. §2.2 agrega bullet
+      Registro de lectura de documentos legales. §9 agrega dos
+      líneas de retención (document_views 5 años, support_feedback
+      2 años). §11.1 historial actualizado. Hash anterior v2.4.1
+      b5b9fed8fd5e4e600c7fa33fbd8dddaec5c627be189b5382e8b7cf81dbcfa288
+      conservado en entrada privacy-v2_4_1 para trazabilidad.
+
+  privacy-v2_4_1:
+    version: "2.4.1"
+    sha256: "b5b9fed8fd5e4e600c7fa33fbd8dddaec5c627be189b5382e8b7cf81dbcfa288"
+    vigencia_desde: "2026-04-22"
+    vigencia_hasta: "2026-04-23"
+    archivo: "v3.2/privacy.md (superseded in-place por v2.4.2; hash histórico conservado para trazabilidad de user_agreements)"
+    autor_aprobacion: "Cristian Gutiérrez Lazcano (CEO Conniku SpA)"
+    aprobacion_fecha: "2026-04-22"
+    nota: >
+      Bump v2.4.0 → v2.4.1 por bloque bloque-contact-tickets-v1.
+      Agregó Sección 2bis sistema de tickets de contacto con
+      routing por motivo, retención 5 años, bidireccionalidad
+      noreply@/contacto@. Zoho Mail como encargado Art. 28 GDPR.
+      Superseded por v2.4.2 el 2026-04-23 (bloque
+      bloque-sandbox-integrity-v1).
+
+  privacy-v2_4_0:
+    version: "2.4.0"
+    sha256: "7a8ba81d0be22cc1deee7d92764baaac1a598a662b84d9ba90043b2a25f63f6c"
+    vigencia_desde: "2026-04-20"
+    vigencia_hasta: "2026-04-22"
+    archivo: "v3.2/privacy.md (superseded in-place por v2.4.1; hash histórico conservado para trazabilidad de user_agreements)"
+    autor_aprobacion: "abogado externo + Cristian"
+    aprobacion_fecha: "2026-04-21"
+    nota: >
+      Documento canónico autocontenido derivado de src/pages/PrivacyPolicy.tsx
+      con edits H-01 (domicilio Antofagasta), §5.3 (procesamiento al exportar
+      documentos), §2.1 bullet "Documentos exportados" y H-12 opción B
+      (Anthropic, redacción condicional). Supersede v3.1/privacy.md que era
+      un borrador marcado "NO publicar". Superseded por v2.4.1 el 2026-04-22
+      (bloque bloque-contact-tickets-v1).
+
+  terms:
+    version: "3.2.2"
+    sha256: "b2b834b61e19db6b2f7aa8176e8958f4e001d49a02606097c462811f6e008d73"
+    vigencia_desde: "2026-04-22"
+    vigencia_hasta: "actual"
+    archivo: "02-legal/vigentes/terms.md"
+    autor_aprobacion: "abogado externo + Cristian (pendiente)"
+    aprobacion_fecha: "2026-04-22"
+    nota: >
+      v3.2.2: agrega Ley Karin (21.643) Arts. 33.4, 33.5 y 33bis (Política
+      de Ambiente Seguro). Corrección IMM ref Ley 21.751. Frontmatter
+      actualizado con versión y hash real. Supersede v3.2.0/v3.2.1.
+      Documento canónico autocontenido de 49 artículos en 14 títulos,
+      derivado de src/components/TermsOfService.tsx con edits H-01 (domicilio
+      Antofagasta, CAM Santiago preservado como institución arbitral), H-02
+      (Versión 3.2), H-08 (jurisdicción Antofagasta no exclusiva con salvedad
+      Arts. 16 g y 50 A Ley 19.496), H-09 (salvedad acciones colectivas
+      Arts. 51 y ss. Ley 19.496), H-10 (salvedad derechos irrenunciables +
+      dolo/culpa grave Art. 1465 CC), H-11 (IVA DL 825 de 1974, no Ley
+      21.713), H-16 (acotar modificaciones de clarificación), H-17 (cláusula
+      1.5 prevalencia del modal). Supersede v3.1/terms.md que era un
+      borrador marcado "NO publicar".
+
+  cookies:
+    version: "1.0.0"
+    sha256: "80d41f71f075ae954a4e5f1763266b9830d38849bbe79a7bb931c2a4ee30e38c"
+    vigencia_desde: "2026-04-21"
+    vigencia_hasta: "actual"
+    archivo: "v3.2/cookies.md"
+    autor_aprobacion: "Cristian Gutiérrez Lazcano (CEO Conniku SpA)"
+    aprobacion_fecha: "2026-04-21"
+    nota: >
+      Primera versión pública y canónica de la Política de Cookies
+      (Pieza 5 del bloque bloque-legal-consolidation-v2). Supersede al
+      stub anterior que compartía hash con v3.1/cookies.md y violaba
+      GDPR Art. 7(1) al tener usuarios aceptando implícitamente un
+      documento marcado "NO PUBLICAR". Documenta inventario real de
+      cookies y localStorage; clasifica cc_visitor_uuid como esencial
+      (Capa 0 D-01 Opción A) con las 4 condiciones: plazo 13 meses,
+      uso restringido, regeneración al retirar consentimiento,
+      declaración explícita; base legal Art. 6(1)(b) GDPR para
+      funcionales post-login; retención 5 años post-delete
+      (Art. 17(3)(e) GDPR + Art. 2515 Código Civil chileno);
+      pseudonimización de IP y User-Agent a 12 meses; vigencia
+      Ley 21.719 desde 2026-12-01 (CVE-2583630, Art. 1° transitorio).
+
+  age-declaration:
+    version: "1.0.0"
+    sha256: "61dab2ecf1b27e3fb212efcf5a066784943c689de11611bb6d2b919e39441a9b"
+    vigencia_desde: "2026-04-18"
+    vigencia_hasta: "actual"
+    archivo: "v3.2/age-declaration.md"
+    autor_aprobacion: "Cristian Gutiérrez Lazcano (cgutierrezlazc-eng)"
+    aprobacion_fecha: "2026-04-18"
+    nota: >
+      Snapshot del texto AGE_DECLARATION_TEXT_V1 de shared/legal_texts.{ts,py}.
+      El texto canónico (entre separadores ---) NO cambió respecto de v3.1.
+      Solo se actualizó la sección "Notas de cumplimiento" para cerrar H-37
+      (Art. 210 CP no aplica al checkbox privado). Por esta razón el hash
+      del archivo .md cambió, pero el hash del TEXTO canónico permanece:
+      ca527535a0f3f938b51d9a2e896e140233ecdd2286e13fdeecb7a32783d43706
+      Ese es el hash que se almacena en user_agreements.text_version_hash
+      y es INMUTABLE para no invalidar consentimientos históricos.
+
+  age-declaration-public:
+    version: "1.0.0"
+    sha256: "d08689443d6a804fb86cdb65922d7a2fee82322ec40920cac4a0a8df64392f93"
+    vigencia_desde: "2026-04-21"
+    vigencia_hasta: "actual"
+    archivo: "v3.2/age-declaration-public.md"
+    autor_aprobacion: "Cristian Gutiérrez Lazcano (CEO Conniku SpA)"
+    aprobacion_fecha: "2026-04-21"
+    nota: >
+      Vista pública navegable en /legal/age-declaration (Bloque 5 legal-viewer-v1,
+      decisión D-L8=A aprobada por Cristian). Expande el canónico interno
+      age-declaration.md con secciones educativas (§§1, 3, 4, 5, 6, 7) para
+      cumplir Ley 19.496 Art. 12 letra b (información comprensible) y GDPR
+      Art. 12 (lenguaje claro y sencillo). El texto literal del compromiso
+      (5 cláusulas entre separadores ---) es BYTE-A-BYTE IDÉNTICO al texto
+      firmado AGE_DECLARATION_TEXT_V1 (hash ca527535...). El canónico
+      interno age-declaration.md permanece intocado (hash 61dab2ec...).

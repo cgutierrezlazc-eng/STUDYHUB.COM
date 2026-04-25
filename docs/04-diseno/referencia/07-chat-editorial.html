@@ -1,0 +1,671 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Conniku — Mensajes (editorial)</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Funnel+Display:wght@400;500;600;700;800;900&family=Geist+Mono:wght@400;500;600;700&display=swap" />
+  <style>
+    :root {
+      --ink: #0D0F10; --ink-2: #2B2E30; --ink-3: #696C6F; --ink-4: #A0A3A7;
+      --paper: #F5F4EF; --paper-2: #EBE9E1; --paper-3: #DBD9CF;
+      --line: #D2CFC3; --line-soft: #E2DFD4; --card: #FFFFFF;
+      --lime: #D9FF3A; --lime-ink: #181F08;
+      --pink: #FF4D3A; --cream: #FFE9B8;
+      --violet: #6B4EFF; --cyan: #00C2FF; --orange: #FF4A1C;
+      --font-display: 'Funnel Display', -apple-system, sans-serif;
+      --font-mono: 'Geist Mono', ui-monospace, monospace;
+      --ease: cubic-bezier(.2,.8,.2,1);
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    html, body { background: var(--paper); color: var(--ink); font-family: var(--font-display); height: 100vh; overflow: hidden; }
+    body { display: flex; flex-direction: column; }
+    ::selection { background: var(--lime); color: var(--lime-ink); }
+
+    .top-progress {
+      background: var(--ink); color: #fff; padding: 8px 28px;
+      display: flex; align-items: center; justify-content: space-between;
+      font-family: var(--font-mono); font-size: 11px;
+      letter-spacing: .08em; text-transform: uppercase; flex-shrink: 0;
+    }
+    .top-progress .left { display: flex; align-items: center; gap: 12px; }
+    .pulse { width: 8px; height: 8px; border-radius: 50%; background: var(--lime); animation: pulse 1.6s var(--ease) infinite; }
+    @keyframes pulse { 0% { box-shadow: 0 0 0 0 rgba(217,255,58,.7); } 70% { box-shadow: 0 0 0 10px rgba(217,255,58,0); } 100% { box-shadow: 0 0 0 0 rgba(217,255,58,0); } }
+
+    .nav-wrap { padding: 14px 28px; display: flex; justify-content: center; flex-shrink: 0; }
+    .nav {
+      max-width: 1240px; width: 100%;
+      background: var(--card); border: 1px solid var(--line);
+      border-radius: 999px; padding: 10px 14px 10px 18px;
+      display: flex; align-items: center; gap: 28px;
+    }
+    .logo-wrap { display: flex; align-items: center; gap: 10px; }
+    .logo-tile { width: 28px; height: 28px; display: block; flex-shrink: 0; }
+    .logo-text { font-weight: 700; font-size: 20px; letter-spacing: -.02em; }
+    .nav-links { display: flex; gap: 22px; flex: 1; }
+    .nav-link { font-size: 15px; font-weight: 600; color: var(--ink-2); cursor: pointer; }
+    .nav-link.active { color: var(--ink); border-bottom: 2px solid var(--lime); padding-bottom: 4px; }
+    .nav-link .badge-nav { background: var(--pink); color: #fff; font-family: var(--font-mono); font-size: 10px; padding: 1px 6px; border-radius: 999px; margin-left: 4px; letter-spacing: 0; font-weight: 700; vertical-align: middle; }
+    .search-slot { font-family: var(--font-mono); font-size: 13px; color: var(--ink-3); border: 1px solid var(--line-soft); border-radius: 999px; padding: 6px 14px; display: flex; align-items: center; gap: 8px; }
+    .kbd { background: var(--paper-2); padding: 2px 7px; border-radius: 6px; font-size: 11px; }
+    .btn-primary { background: var(--ink); color: #fff; border: 0; padding: 10px 14px 10px 20px; display: flex; align-items: center; gap: 10px; font-weight: 700; font-size: 14px; border-radius: 999px; cursor: pointer; font-family: var(--font-display); }
+    .btn-primary .ring { width: 26px; height: 26px; border-radius: 50%; background: var(--lime); display: grid; place-items: center; color: var(--ink); font-weight: 900; font-size: 14px; }
+
+    /* Chat layout */
+    .chat-layout {
+      max-width: 1240px; margin: 0 auto; width: 100%; flex: 1;
+      display: grid; grid-template-columns: 340px 1fr 320px;
+      gap: 16px; padding: 0 28px 28px; min-height: 0;
+    }
+
+    /* Left: conversation list */
+    .convo-list {
+      background: var(--card); border: 2px solid var(--ink); border-radius: 24px;
+      display: flex; flex-direction: column; overflow: hidden;
+    }
+    .convo-head { padding: 20px 22px 14px; border-bottom: 1px solid var(--line-soft); }
+    .convo-head h2 { font-weight: 900; font-size: 28px; letter-spacing: -.03em; margin-bottom: 4px; }
+    .convo-head h2 .hl { background: var(--lime); padding: 0 6px; border-radius: 6px; transform: rotate(-1deg); display: inline-block; }
+    .convo-head .sub { font-family: var(--font-mono); font-size: 11px; color: var(--ink-3); letter-spacing: .08em; text-transform: uppercase; }
+
+    .convo-search { padding: 12px 22px; border-bottom: 1px solid var(--line-soft); }
+    .convo-search input {
+      width: 100%; background: var(--paper-2); border: 1px solid var(--line);
+      border-radius: 999px; padding: 9px 14px; font-family: var(--font-display);
+      font-size: 13px; color: var(--ink); outline: none;
+    }
+    .convo-search input::placeholder { color: var(--ink-3); }
+
+    .convo-filters { padding: 10px 22px 12px; display: flex; gap: 8px; border-bottom: 1px solid var(--line-soft); }
+    .filter-chip { font-family: var(--font-mono); font-size: 10px; letter-spacing: .08em; text-transform: uppercase; padding: 5px 11px; border-radius: 999px; border: 1px solid var(--line); cursor: pointer; font-weight: 600; color: var(--ink-2); }
+    .filter-chip.active { background: var(--ink); color: #fff; border-color: var(--ink); }
+
+    .convos { overflow-y: auto; flex: 1; }
+    .convos::-webkit-scrollbar { width: 4px; }
+    .convos::-webkit-scrollbar-thumb { background: var(--line); border-radius: 4px; }
+
+    .convo-item {
+      padding: 14px 22px; display: flex; gap: 12px;
+      cursor: pointer; border-bottom: 1px solid var(--line-soft);
+      transition: background 150ms var(--ease);
+    }
+    .convo-item:hover { background: var(--paper-2); }
+    .convo-item.active { background: var(--cream); }
+    .convo-avatar { width: 44px; height: 44px; border-radius: 50%; flex-shrink: 0; display: grid; place-items: center; font-weight: 800; font-size: 15px; font-family: var(--font-display); position: relative; }
+    .convo-avatar .online-indicator { position: absolute; bottom: 0; right: 0; width: 12px; height: 12px; background: var(--orange); border-radius: 50%; border: 2px solid var(--card); }
+    .a-lime { background: var(--lime); color: var(--lime-ink); }
+    .a-pink { background: var(--pink); color: #fff; }
+    .a-cyan { background: var(--cyan); color: var(--ink); }
+    .a-violet { background: var(--violet); color: #fff; }
+    .a-cream { background: var(--cream); color: var(--ink); }
+    .a-ink { background: var(--ink); color: var(--lime); }
+    .a-orange { background: var(--orange); color: #fff; }
+    .a-group { background: var(--paper-3); color: var(--ink); font-size: 12px; }
+
+    .convo-body { flex: 1; min-width: 0; }
+    .convo-top { display: flex; justify-content: space-between; align-items: baseline; }
+    .convo-name { font-weight: 700; font-size: 14px; letter-spacing: -.01em; }
+    .convo-time { font-family: var(--font-mono); font-size: 10px; color: var(--ink-3); letter-spacing: .04em; text-transform: uppercase; flex-shrink: 0; margin-left: 8px; }
+    .convo-preview { font-size: 13px; color: var(--ink-2); margin-top: 3px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 220px; }
+    .convo-preview.unread { font-weight: 700; color: var(--ink); }
+    .convo-meta-right { display: flex; flex-direction: column; align-items: flex-end; gap: 4px; flex-shrink: 0; }
+    .unread-badge { background: var(--pink); color: #fff; font-family: var(--font-mono); font-size: 10px; font-weight: 700; padding: 2px 8px; border-radius: 999px; min-width: 22px; text-align: center; letter-spacing: 0; }
+
+    /* Center: conversation */
+    .conversation {
+      background: var(--card); border: 2px solid var(--ink); border-radius: 24px;
+      display: flex; flex-direction: column; overflow: hidden;
+    }
+    .convo-header {
+      padding: 16px 24px; border-bottom: 1px solid var(--line-soft);
+      display: flex; align-items: center; gap: 14px;
+    }
+    .convo-header .avatar { width: 44px; height: 44px; border-radius: 50%; background: var(--pink); color: #fff; display: grid; place-items: center; font-weight: 800; font-size: 16px; position: relative; }
+    .convo-header .avatar .online-indicator { position: absolute; bottom: 0; right: 0; width: 12px; height: 12px; background: var(--orange); border-radius: 50%; border: 2px solid var(--card); }
+    .convo-header .info { flex: 1; }
+    .convo-header .info .name { font-weight: 800; font-size: 18px; letter-spacing: -.02em; }
+    .convo-header .info .status { font-family: var(--font-mono); font-size: 11px; color: var(--orange); letter-spacing: .08em; text-transform: uppercase; margin-top: 2px; font-weight: 600; display: flex; align-items: center; gap: 6px; }
+    .convo-header .info .status .dot { width: 6px; height: 6px; border-radius: 50%; background: var(--orange); }
+    .convo-header .actions { display: flex; gap: 6px; }
+    .icon-btn { width: 36px; height: 36px; border-radius: 10px; border: 1px solid var(--line); background: var(--card); display: grid; place-items: center; cursor: pointer; color: var(--ink-2); font-weight: 700; font-size: 14px; transition: all 150ms var(--ease); }
+    .icon-btn:hover { background: var(--paper-2); color: var(--ink); }
+
+    .messages {
+      flex: 1; overflow-y: auto; padding: 24px;
+      display: flex; flex-direction: column; gap: 14px;
+    }
+    .messages::-webkit-scrollbar { width: 4px; }
+    .messages::-webkit-scrollbar-thumb { background: var(--line); border-radius: 4px; }
+
+    .date-divider {
+      text-align: center; font-family: var(--font-mono); font-size: 10px;
+      letter-spacing: .14em; text-transform: uppercase; color: var(--ink-3);
+      margin: 8px 0; position: relative;
+    }
+    .date-divider::before, .date-divider::after {
+      content: ""; display: inline-block; width: 60px; height: 1px;
+      background: var(--line); vertical-align: middle; margin: 0 12px;
+    }
+
+    .msg-row { display: flex; gap: 10px; max-width: 75%; }
+    .msg-row.sent { align-self: flex-end; flex-direction: row-reverse; }
+
+    .msg-avatar { width: 32px; height: 32px; border-radius: 50%; background: var(--pink); color: #fff; display: grid; place-items: center; font-weight: 700; font-size: 12px; flex-shrink: 0; align-self: flex-end; font-family: var(--font-display); }
+    .msg-row.sent .msg-avatar { display: none; }
+
+    .msg-content { display: flex; flex-direction: column; gap: 4px; min-width: 0; }
+    .msg-bubble {
+      padding: 12px 16px; border-radius: 18px; font-size: 14.5px; line-height: 1.45;
+      word-wrap: break-word; font-weight: 500;
+    }
+    .msg-row.received .msg-bubble { background: var(--paper-2); color: var(--ink); border-bottom-left-radius: 6px; }
+    .msg-row.sent .msg-bubble { background: var(--ink); color: #fff; border-bottom-right-radius: 6px; }
+    .msg-row.sent .msg-bubble.highlight { background: var(--lime); color: var(--lime-ink); }
+
+    .msg-bubble strong { background: var(--cream); color: var(--ink); padding: 1px 5px; border-radius: 4px; font-weight: 700; }
+    .msg-row.sent .msg-bubble strong { background: var(--lime); color: var(--lime-ink); }
+    .msg-row.sent .msg-bubble.highlight strong { background: var(--ink); color: var(--lime); }
+
+    .msg-time {
+      font-family: var(--font-mono); font-size: 10px; color: var(--ink-3);
+      letter-spacing: .04em; padding: 0 6px; text-transform: uppercase;
+    }
+    .msg-row.sent .msg-time { text-align: right; }
+    .msg-time .read-mark { color: var(--orange); font-weight: 700; }
+
+    .msg-attachment {
+      padding: 14px; border-radius: 16px; background: var(--card); border: 1.5px solid var(--ink);
+      display: flex; gap: 12px; align-items: center; min-width: 280px;
+    }
+    .msg-row.sent .msg-attachment { background: rgba(255,255,255,.12); border-color: rgba(255,255,255,.25); color: #fff; }
+    .att-icon-sq {
+      width: 42px; height: 42px; border-radius: 10px; background: var(--pink); color: #fff;
+      display: grid; place-items: center; font-weight: 900; flex-shrink: 0;
+    }
+    .msg-row.sent .att-icon-sq { background: var(--lime); color: var(--lime-ink); }
+    .att-info .att-name { font-weight: 700; font-size: 13px; }
+    .att-info .att-sub { font-family: var(--font-mono); font-size: 10px; color: var(--ink-3); letter-spacing: .08em; text-transform: uppercase; margin-top: 2px; }
+    .msg-row.sent .att-info .att-sub { color: rgba(255,255,255,.6); }
+
+    .reactions-row { display: flex; gap: 6px; margin-top: 4px; padding: 0 6px; }
+    .reaction-chip {
+      background: var(--card); border: 1px solid var(--line); border-radius: 999px;
+      padding: 3px 10px; font-family: var(--font-mono); font-size: 11px; font-weight: 600;
+      color: var(--ink); letter-spacing: 0; display: flex; align-items: center; gap: 5px;
+    }
+    .reaction-chip.mine { background: var(--cream); border-color: var(--ink); }
+
+    .typing-indicator { display: flex; gap: 10px; max-width: 75%; align-items: center; }
+    .typing-bubble {
+      background: var(--paper-2); padding: 12px 16px; border-radius: 18px; border-bottom-left-radius: 6px;
+      display: flex; gap: 4px;
+    }
+    .typing-bubble .dot-t { width: 6px; height: 6px; border-radius: 50%; background: var(--ink-3); animation: typing 1.4s infinite ease-in-out; }
+    .typing-bubble .dot-t:nth-child(2) { animation-delay: .2s; }
+    .typing-bubble .dot-t:nth-child(3) { animation-delay: .4s; }
+    @keyframes typing { 0%, 60%, 100% { transform: translateY(0); opacity: .4; } 30% { transform: translateY(-4px); opacity: 1; } }
+
+    /* Composer */
+    .composer {
+      padding: 16px 22px; border-top: 1px solid var(--line-soft);
+      display: flex; gap: 12px; align-items: flex-end;
+    }
+    .composer-actions { display: flex; gap: 6px; }
+    .composer-input {
+      flex: 1; background: var(--paper-2); border-radius: 22px;
+      padding: 12px 18px; font-family: var(--font-display); font-size: 15px;
+      color: var(--ink); font-weight: 500; min-height: 44px; line-height: 1.3;
+    }
+    .composer-input[contenteditable]:empty::before { content: attr(data-placeholder); color: var(--ink-3); }
+    .send-btn {
+      width: 44px; height: 44px; border-radius: 50%; background: var(--ink); color: var(--lime);
+      border: 0; display: grid; place-items: center; cursor: pointer; font-size: 18px; font-weight: 900;
+      transition: all 180ms var(--ease);
+    }
+    .send-btn:hover { transform: translateY(-2px); }
+
+    /* Right: contact info */
+    .contact-info {
+      background: var(--card); border: 2px solid var(--ink); border-radius: 24px;
+      overflow-y: auto;
+    }
+    .contact-info::-webkit-scrollbar { width: 4px; }
+    .contact-info::-webkit-scrollbar-thumb { background: var(--line); border-radius: 4px; }
+
+    .ci-head {
+      padding: 32px 24px 24px; text-align: center; border-bottom: 1px solid var(--line-soft);
+      background: linear-gradient(180deg, var(--cream) 0%, var(--card) 100%);
+    }
+    .ci-avatar-big { width: 96px; height: 96px; border-radius: 50%; background: var(--pink); color: #fff; display: grid; place-items: center; font-weight: 900; font-size: 36px; margin: 0 auto 14px; font-family: var(--font-display); letter-spacing: -.03em; box-shadow: 0 4px 20px rgba(13,15,16,.1); }
+    .ci-name { font-weight: 900; font-size: 24px; letter-spacing: -.02em; }
+    .ci-username { font-family: var(--font-mono); font-size: 11px; color: var(--ink-3); letter-spacing: .1em; margin-top: 4px; text-transform: lowercase; }
+    .ci-u { font-size: 13px; color: var(--ink-2); margin-top: 10px; }
+    .ci-quick-actions { display: flex; gap: 8px; margin-top: 18px; justify-content: center; }
+    .qa-btn { padding: 7px 12px; background: var(--card); border: 1.5px solid var(--ink); border-radius: 999px; font-family: var(--font-mono); font-size: 11px; font-weight: 700; letter-spacing: .08em; text-transform: uppercase; color: var(--ink); cursor: pointer; }
+
+    .ci-section { padding: 18px 22px; border-bottom: 1px solid var(--line-soft); }
+    .ci-section-title { font-family: var(--font-mono); font-size: 10px; letter-spacing: .14em; text-transform: uppercase; color: var(--ink-3); margin-bottom: 12px; display: flex; justify-content: space-between; }
+    .ci-section-title .count-s { color: var(--ink-2); font-weight: 700; }
+
+    .shared-files { display: flex; flex-direction: column; gap: 8px; }
+    .sf-item { display: flex; align-items: center; gap: 10px; padding: 8px; border-radius: 10px; cursor: pointer; }
+    .sf-item:hover { background: var(--paper-2); }
+    .sf-ico { width: 32px; height: 32px; border-radius: 8px; display: grid; place-items: center; font-weight: 800; font-size: 12px; flex-shrink: 0; }
+    .sf-ico.pdf { background: var(--pink); color: #fff; }
+    .sf-ico.img { background: var(--violet); color: #fff; }
+    .sf-ico.link { background: var(--cyan); color: var(--ink); }
+    .sf-item .name { font-weight: 600; font-size: 13px; }
+    .sf-item .meta { font-family: var(--font-mono); font-size: 10px; color: var(--ink-3); letter-spacing: .04em; margin-top: 1px; }
+
+    .ci-badge { display: inline-flex; align-items: center; gap: 6px; font-family: var(--font-mono); font-size: 10px; padding: 4px 10px; border-radius: 999px; font-weight: 700; letter-spacing: .08em; text-transform: uppercase; margin-right: 4px; margin-bottom: 4px; }
+    .ci-badge.v { background: var(--ink); color: var(--lime); }
+    .ci-badge.u { background: var(--lime); color: var(--lime-ink); }
+
+    @media (max-width: 1200px) {
+      .chat-layout { grid-template-columns: 280px 1fr; }
+      .contact-info { display: none; }
+    }
+    @media (max-width: 768px) {
+      .chat-layout { grid-template-columns: 1fr; }
+      .convo-list { display: none; }
+    }
+  </style>
+</head>
+<body>
+
+  <div class="top-progress">
+    <div class="left">
+      <div class="pulse"></div>
+      <span>Mensajes</span>
+    </div>
+    <span>3 conversaciones activas · 1 no leído</span>
+  </div>
+
+  <div class="nav-wrap">
+    <div class="nav">
+      <div class="logo-wrap">
+        <div class="logo-tile"><svg viewBox="0 0 100 100" aria-label="Conniku" style="width:100%;height:100%;display:block"><rect width="100" height="100" rx="22" fill="#0D0F10"/><mask id="ckL_07_chat_editorial" maskUnits="userSpaceOnUse"><rect width="100" height="100" fill="#fff"/><circle cx="58" cy="50" r="24" fill="#000"/></mask><rect x="12" y="12" width="76" height="76" rx="14" fill="#D9FF3A" mask="url(#ckL_07_chat_editorial)"/><circle cx="58" cy="50" r="5" fill="#FF4A1C"/></svg></div>
+        <div class="logo-text">conniku.</div>
+      </div>
+      <div class="nav-links">
+        <div class="nav-link">Estudio</div>
+        <div class="nav-link">Biblioteca</div>
+        <div class="nav-link">Tutores</div>
+        <div class="nav-link">Empleo</div>
+        <div class="nav-link active">Comunidad <span class="badge-nav">3</span></div>
+      </div>
+      <div class="search-slot">
+        <span>Buscar</span>
+        <span class="kbd">⌘K</span>
+      </div>
+      <button class="btn-primary">
+        Crear
+        <span class="ring">+</span>
+      </button>
+    </div>
+  </div>
+
+  <div class="chat-layout">
+
+    <aside class="convo-list">
+      <div class="convo-head">
+        <h2>Mensajes <span class="hl">vivos</span></h2>
+        <div class="sub">3 activos · 1 no leído</div>
+      </div>
+      <div class="convo-search">
+        <input type="text" placeholder="Buscar conversación..." />
+      </div>
+      <div class="convo-filters">
+        <div class="filter-chip active">Todo</div>
+        <div class="filter-chip">Directos</div>
+        <div class="filter-chip">Grupos</div>
+        <div class="filter-chip">No leídos</div>
+      </div>
+      <div class="convos">
+
+        <div class="convo-item active">
+          <div class="convo-avatar a-pink">
+            JS
+            <div class="online-indicator"></div>
+          </div>
+          <div class="convo-body">
+            <div class="convo-top">
+              <span class="convo-name">Javiera Soto</span>
+              <span class="convo-time">ahora</span>
+            </div>
+            <div class="convo-preview">escribiendo...</div>
+          </div>
+        </div>
+
+        <div class="convo-item">
+          <div class="convo-avatar a-group">G4</div>
+          <div class="convo-body">
+            <div class="convo-top">
+              <span class="convo-name">Grupo 4 · Termodinámica</span>
+              <span class="convo-time">12min</span>
+            </div>
+            <div class="convo-preview unread">Diego: ¿nos vemos a las 4?</div>
+          </div>
+          <div class="convo-meta-right">
+            <span class="unread-badge">2</span>
+          </div>
+        </div>
+
+        <div class="convo-item">
+          <div class="convo-avatar a-violet">
+            MA
+          </div>
+          <div class="convo-body">
+            <div class="convo-top">
+              <span class="convo-name">Martina Araya</span>
+              <span class="convo-time">1h</span>
+            </div>
+            <div class="convo-preview">Perfecto, te lo envío mañana</div>
+          </div>
+        </div>
+
+        <div class="convo-item">
+          <div class="convo-avatar a-cyan">
+            DR
+            <div class="online-indicator"></div>
+          </div>
+          <div class="convo-body">
+            <div class="convo-top">
+              <span class="convo-name">Diego Rojas</span>
+              <span class="convo-time">3h</span>
+            </div>
+            <div class="convo-preview">Listo, firmé el doc</div>
+          </div>
+        </div>
+
+        <div class="convo-item">
+          <div class="convo-avatar a-lime">PM</div>
+          <div class="convo-body">
+            <div class="convo-top">
+              <span class="convo-name">Paula Muñoz</span>
+              <span class="convo-time">ayer</span>
+            </div>
+            <div class="convo-preview">Dale, nos vemos el sábado en la</div>
+          </div>
+        </div>
+
+        <div class="convo-item">
+          <div class="convo-avatar a-group">SE</div>
+          <div class="convo-body">
+            <div class="convo-top">
+              <span class="convo-name">Semillero Emprendimiento</span>
+              <span class="convo-time">ayer</span>
+            </div>
+            <div class="convo-preview">Ana: Reunión confirmada viernes</div>
+          </div>
+        </div>
+
+        <div class="convo-item">
+          <div class="convo-avatar a-orange">LP</div>
+          <div class="convo-body">
+            <div class="convo-top">
+              <span class="convo-name">Lucas Pérez</span>
+              <span class="convo-time">2d</span>
+            </div>
+            <div class="convo-preview">Gracias por el apunte bro</div>
+          </div>
+        </div>
+
+        <div class="convo-item">
+          <div class="convo-avatar a-cream">MR</div>
+          <div class="convo-body">
+            <div class="convo-top">
+              <span class="convo-name">Margarita Rodríguez</span>
+              <span class="convo-time">3d</span>
+            </div>
+            <div class="convo-preview">Profesora: Recuerda la evaluación</div>
+          </div>
+        </div>
+
+        <div class="convo-item">
+          <div class="convo-avatar a-ink">CK</div>
+          <div class="convo-body">
+            <div class="convo-top">
+              <span class="convo-name">Carolina Kahn</span>
+              <span class="convo-time">1sem</span>
+            </div>
+            <div class="convo-preview">¿Compartimos el apunte?</div>
+          </div>
+        </div>
+
+      </div>
+    </aside>
+
+    <section class="conversation">
+
+      <div class="convo-header">
+        <div class="avatar">
+          JS
+          <div class="online-indicator"></div>
+        </div>
+        <div class="info">
+          <div class="name">Javiera Soto</div>
+          <div class="status">
+            <span class="dot"></span>
+            en línea · escribiendo
+          </div>
+        </div>
+        <div class="actions">
+          <div class="icon-btn">⌕</div>
+          <div class="icon-btn">◎</div>
+          <div class="icon-btn">⋯</div>
+        </div>
+      </div>
+
+      <div class="messages">
+
+        <div class="date-divider">hoy</div>
+
+        <div class="msg-row received">
+          <div class="msg-avatar">JS</div>
+          <div class="msg-content">
+            <div class="msg-bubble">Hola Cristian! ¿cómo vas con el informe de termodinámica?</div>
+            <div class="msg-time">10:42</div>
+          </div>
+        </div>
+
+        <div class="msg-row sent">
+          <div class="msg-content">
+            <div class="msg-bubble">Avanzando. Me trabé con el ejercicio 4, <strong>me ayudó chatear con el libro</strong> de Cengel pero quiero verificar</div>
+            <div class="msg-time">10:43 <span class="read-mark">✓✓</span></div>
+          </div>
+        </div>
+
+        <div class="msg-row received">
+          <div class="msg-avatar">JS</div>
+          <div class="msg-content">
+            <div class="msg-bubble">Ah buenísimo. Te mando mi versión a ver qué opinas</div>
+            <div class="msg-time">10:44</div>
+          </div>
+        </div>
+
+        <div class="msg-row received">
+          <div class="msg-avatar">JS</div>
+          <div class="msg-content">
+            <div class="msg-attachment">
+              <div class="att-icon-sq">▸</div>
+              <div class="att-info">
+                <div class="att-name">Informe Termo · borrador v3</div>
+                <div class="att-sub">Workspace Termodinámica · 14 pp.</div>
+              </div>
+            </div>
+            <div class="msg-time">10:44</div>
+            <div class="reactions-row">
+              <div class="reaction-chip mine">♥ 1</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="msg-row sent">
+          <div class="msg-content">
+            <div class="msg-bubble">Gracias, lo abro al tiro</div>
+            <div class="msg-time">10:45 <span class="read-mark">✓✓</span></div>
+          </div>
+        </div>
+
+        <div class="msg-row sent">
+          <div class="msg-content">
+            <div class="msg-bubble highlight">Oye, <strong>¿nos juntamos mañana</strong> a revisarlo en persona? Tengo sala libre</div>
+            <div class="msg-time">10:45 <span class="read-mark">✓✓</span></div>
+          </div>
+        </div>
+
+        <div class="msg-row received">
+          <div class="msg-avatar">JS</div>
+          <div class="msg-content">
+            <div class="msg-bubble">¡Dale! ¿a qué hora te queda bien?</div>
+            <div class="msg-time">10:46</div>
+          </div>
+        </div>
+
+        <div class="msg-row sent">
+          <div class="msg-content">
+            <div class="msg-bubble">14:00 después de almuerzo? Sala B-102</div>
+            <div class="msg-time">10:46 <span class="read-mark">✓✓</span></div>
+          </div>
+        </div>
+
+        <div class="msg-row received">
+          <div class="msg-avatar">JS</div>
+          <div class="msg-content">
+            <div class="msg-bubble">Perfecto. Te caigo con un café ☕</div>
+            <div class="msg-time">10:47</div>
+            <div class="reactions-row">
+              <div class="reaction-chip mine">☕ 1</div>
+              <div class="reaction-chip">♥ 1</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="typing-indicator">
+          <div class="msg-avatar" style="align-self: center;">JS</div>
+          <div class="typing-bubble">
+            <div class="dot-t"></div>
+            <div class="dot-t"></div>
+            <div class="dot-t"></div>
+          </div>
+        </div>
+
+      </div>
+
+      <div class="composer">
+        <div class="composer-actions">
+          <div class="icon-btn">+</div>
+          <div class="icon-btn">◇</div>
+        </div>
+        <div class="composer-input" contenteditable data-placeholder="Escribe a Javiera..."></div>
+        <button class="send-btn">→</button>
+      </div>
+
+    </section>
+
+    <aside class="contact-info">
+
+      <div class="ci-head">
+        <div class="ci-avatar-big">JS</div>
+        <div class="ci-name">Javiera Soto</div>
+        <div class="ci-username">@javisoto</div>
+        <div class="ci-u">Ing. Civil Industrial · 4º año<br>Universidad de Chile</div>
+        <div class="ci-quick-actions">
+          <div class="qa-btn">Ver perfil</div>
+          <div class="qa-btn">Silenciar</div>
+        </div>
+      </div>
+
+      <div class="ci-section">
+        <div class="ci-section-title">Acreditaciones</div>
+        <div>
+          <span class="ci-badge v">★ Verificada U</span>
+          <span class="ci-badge u">Diploma 2025</span>
+        </div>
+      </div>
+
+      <div class="ci-section">
+        <div class="ci-section-title">
+          <span>Espacios en común</span>
+          <span class="count-s">3</span>
+        </div>
+        <div class="shared-files">
+          <div class="sf-item">
+            <div class="sf-ico link" style="background: var(--lime); color: var(--lime-ink);">W</div>
+            <div>
+              <div class="name">Informe final Termo</div>
+              <div class="meta">Grupo 4 · editando</div>
+            </div>
+          </div>
+          <div class="sf-item">
+            <div class="sf-ico link" style="background: var(--violet); color: #fff;">◆</div>
+            <div>
+              <div class="name">Ing. Civil UChile</div>
+              <div class="meta">2.1k miembros</div>
+            </div>
+          </div>
+          <div class="sf-item">
+            <div class="sf-ico link" style="background: var(--pink); color: #fff;">♥</div>
+            <div>
+              <div class="name">Caso Derecho</div>
+              <div class="meta">Grupo 2 · 6 personas</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="ci-section">
+        <div class="ci-section-title">
+          <span>Archivos compartidos</span>
+          <span class="count-s">12</span>
+        </div>
+        <div class="shared-files">
+          <div class="sf-item">
+            <div class="sf-ico pdf">▸</div>
+            <div>
+              <div class="name">Informe Termo v3.pdf</div>
+              <div class="meta">hoy 10:44 · 1.2 MB</div>
+            </div>
+          </div>
+          <div class="sf-item">
+            <div class="sf-ico img">◆</div>
+            <div>
+              <div class="name">pizarra_sabado.jpg</div>
+              <div class="meta">ayer · 2.8 MB</div>
+            </div>
+          </div>
+          <div class="sf-item">
+            <div class="sf-ico link">↗</div>
+            <div>
+              <div class="name">Libro Cengel · cap 7</div>
+              <div class="meta">15 abr · Biblioteca</div>
+            </div>
+          </div>
+          <div class="sf-item">
+            <div class="sf-ico pdf">▸</div>
+            <div>
+              <div class="name">Ejercicios_resueltos.pdf</div>
+              <div class="meta">12 abr · 640 KB</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="ci-section" style="border-bottom: 0;">
+        <div class="ci-section-title">Privacidad</div>
+        <div style="font-size: 12px; color: var(--ink-3); line-height: 1.5;">
+          Mensajes cifrados entre dispositivos. Conniku no puede leer conversaciones privadas.
+          <br><br>
+          <span style="font-family: var(--font-mono); font-size: 10px; letter-spacing: .05em;">Ley 19.628 · Art. 2</span>
+        </div>
+      </div>
+
+    </aside>
+
+  </div>
+
+</body>
+</html>

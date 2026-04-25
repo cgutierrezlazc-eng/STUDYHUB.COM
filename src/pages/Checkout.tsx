@@ -1,44 +1,90 @@
+/**
+ * Checkout.tsx — Conniku
+ *
+ * PCI-DSS compliance: este componente NO recolecta datos de tarjeta.
+ * Todo el procesamiento de pagos ocurre en plataformas certificadas:
+ *   - MercadoPago Checkout Pro (CLP, Chile) — redirige al usuario a MP
+ *   - PayPal (USD, internacional) — redirige al usuario a PayPal
+ *
+ * Flujo:
+ *   1. Usuario selecciona método de pago
+ *   2. Frontend llama al backend (POST /api/mercadopago/create-subscription
+ *      o POST /api/paypal/create-subscription)
+ *   3. Backend retorna init_point (MP) o approve_link (PayPal)
+ *   4. Frontend redirige con window.location.href al procesador externo
+ *   5. El procesador redirige de vuelta a /suscripcion?{status} al terminar
+ */
 import React, { useState } from 'react';
 import { useAuth } from '../services/auth';
-import { Star, Lock } from '../components/Icons';
+import { Star, Lock, Shield } from '../components/Icons';
 import ckStyles from './Checkout.module.css';
 
 interface Props {
   onNavigate: (path: string) => void;
 }
 
+type PaymentMethod = 'mercadopago' | 'paypal';
+type CheckoutState = 'idle' | 'loading' | 'error';
+
 export default function Checkout({ onNavigate }: Props) {
   const { user } = useAuth();
-  const [paymentTab, setPaymentTab] = useState<'card' | 'paypal'>('card');
-  const [cardNumber, setCardNumber] = useState('');
-  const [expiration, setExpiration] = useState('');
-  const [cvc, setCvc] = useState('');
-  const [cardName, setCardName] = useState('');
+  const [method, setMethod] = useState<PaymentMethod>('mercadopago');
   const [acceptTerms, setAcceptTerms] = useState(false);
-  const [isLoading, setIsLoading] = useState(false);
+  const [state, setState] = useState<CheckoutState>('idle');
+  const [errorMsg, setErrorMsg] = useState('');
 
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
+  const handlePay = async () => {
     if (!acceptTerms) {
-      alert('Debes aceptar los términos de servicio para continuar.');
+      setErrorMsg('Debes aceptar los términos de servicio para continuar.');
       return;
     }
-    setIsLoading(true);
-    setTimeout(() => {
-      setIsLoading(false);
-      alert('Procesador de pagos en configuración. Contacta soporte@conniku.com');
-    }, 600);
-  };
+    if (!user) {
+      onNavigate('/login');
+      return;
+    }
 
-  const formatCardNumber = (value: string) => {
-    const digits = value.replace(/\D/g, '').slice(0, 16);
-    return digits.replace(/(.{4})/g, '$1 ').trim();
-  };
+    setState('loading');
+    setErrorMsg('');
 
-  const formatExpiration = (value: string) => {
-    const digits = value.replace(/\D/g, '').slice(0, 4);
-    if (digits.length >= 3) return digits.slice(0, 2) + '/' + digits.slice(2);
-    return digits;
+    try {
+      const endpoint =
+        method === 'mercadopago'
+          ? '/api/mercadopago/create-subscription'
+          : '/api/paypal/create-subscription';
+
+      const token = localStorage.getItem('token') ?? '';
+      const res = await fetch(endpoint, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({ plan: 'pro_monthly' }),
+      });
+
+      if (!res.ok) {
+        const data = await res.json().catch(() => ({}));
+        throw new Error(data?.detail ?? `Error ${res.status}`);
+      }
+
+      const data = await res.json();
+
+      // MercadoPago devuelve init_point o url
+      // PayPal devuelve approve_link o url
+      const redirectUrl: string =
+        data.initPoint ?? data.init_point ?? data.approve_link ?? data.url ?? '';
+
+      if (!redirectUrl) {
+        throw new Error('El procesador de pagos no retornó una URL válida.');
+      }
+
+      // Redirigir al procesador externo — NUNCA manejamos datos de tarjeta aquí
+      window.location.href = redirectUrl;
+    } catch (err: unknown) {
+      setState('error');
+      const msg = err instanceof Error ? err.message : 'Error inesperado.';
+      setErrorMsg(msg);
+    }
   };
 
   const styles: Record<string, React.CSSProperties> = {
@@ -73,7 +119,6 @@ export default function Checkout({ onNavigate }: Props) {
       background: 'none',
       border: 'none',
     },
-    // LEFT: Order summary
     summaryCard: {
       flex: '1 1 320px',
       background: 'var(--bg-card)',
@@ -149,7 +194,6 @@ export default function Checkout({ onNavigate }: Props) {
       borderRadius: '8px',
       marginTop: '16px',
     },
-    // RIGHT: Payment form
     paymentCard: {
       flex: '1 1 420px',
       background: 'var(--bg-card)',
@@ -161,77 +205,55 @@ export default function Checkout({ onNavigate }: Props) {
       fontSize: '20px',
       fontWeight: 700,
       color: 'var(--text-primary)',
+      margin: '0 0 8px 0',
+    },
+    paymentSubtitle: {
+      fontSize: '13px',
+      color: 'var(--text-muted)',
       margin: '0 0 24px 0',
     },
-    tabs: {
-      display: 'flex',
-      gap: '0',
-      marginBottom: '24px',
-      borderRadius: '10px',
-      overflow: 'hidden',
-      border: '1px solid var(--border)',
-    },
-    tab: {
-      flex: 1,
-      padding: '12px 16px',
-      fontSize: '14px',
-      fontWeight: 600,
-      cursor: 'pointer',
-      border: 'none',
-      background: 'var(--bg-primary)',
-      color: 'var(--text-muted)',
-      transition: 'all 0.2s',
-      display: 'flex',
-      alignItems: 'center',
-      justifyContent: 'center',
-      gap: '8px',
-    },
-    tabActive: {
-      flex: 1,
-      padding: '12px 16px',
-      fontSize: '14px',
-      fontWeight: 600,
-      cursor: 'pointer',
-      border: 'none',
-      background: '#6366f1',
-      color: '#fff',
-      transition: 'all 0.2s',
-      display: 'flex',
-      alignItems: 'center',
-      justifyContent: 'center',
-      gap: '8px',
-    },
-    fieldGroup: {
-      marginBottom: '16px',
-    },
-    label: {
-      display: 'block',
-      fontSize: '13px',
-      fontWeight: 600,
-      color: 'var(--text-secondary)',
-      marginBottom: '6px',
-    },
-    input: {
-      width: '100%',
-      padding: '12px 14px',
-      fontSize: '15px',
-      border: '1.5px solid var(--border)',
-      borderRadius: '10px',
-      outline: 'none',
-      transition: 'border-color 0.2s',
-      boxSizing: 'border-box' as const,
-      color: 'var(--text-primary)',
-      background: 'var(--bg-primary)',
-    },
-    row: {
-      display: 'flex',
+    methodGrid: {
+      display: 'grid',
+      gridTemplateColumns: '1fr 1fr',
       gap: '12px',
+      marginBottom: '28px',
+    },
+    methodCard: {
+      borderRadius: '12px',
+      padding: '16px 12px',
+      cursor: 'pointer',
+      display: 'flex',
+      flexDirection: 'column' as const,
+      alignItems: 'center',
+      gap: '8px',
+      transition: 'all 0.2s',
+    },
+    methodLabel: {
+      fontSize: '13px',
+      fontWeight: 700,
+    },
+    methodSub: {
+      fontSize: '11px',
+      color: 'var(--text-muted)',
+      textAlign: 'center' as const,
+    },
+    redirectNotice: {
+      background: '#f0f9ff',
+      border: '1px solid #bae6fd',
+      borderRadius: '10px',
+      padding: '14px 16px',
+      fontSize: '13px',
+      color: '#0369a1',
+      marginBottom: '20px',
+      display: 'flex',
+      gap: '10px',
+      alignItems: 'flex-start',
+      lineHeight: '1.5',
     },
     termsRow: {
       display: 'flex',
       alignItems: 'flex-start',
       gap: '10px',
-      marginTop: '20px',
       marginBottom: '20px',
     },
     checkbox: {
@@ -258,24 +280,21 @@ export default function Checkout({ onNavigate }: Props) {
       fontSize: '16px',
       fontWeight: 700,
       color: '#fff',
-      background: 'linear-gradient(135deg, #6366f1, #8b5cf6)',
       border: 'none',
       borderRadius: '12px',
-      cursor: 'pointer',
-      transition: 'opacity 0.2s, transform 0.1s',
-      opacity: isLoading ? 0.7 : 1,
+      transition: 'all 0.2s',
+      display: 'flex',
+      alignItems: 'center',
+      justifyContent: 'center',
+      gap: '8px',
     },
-    paypalBtn: {
-      width: '100%',
-      padding: '14px',
-      fontSize: '16px',
-      fontWeight: 700,
-      color: '#003087',
-      background: '#ffc439',
-      border: 'none',
-      borderRadius: '12px',
-      cursor: 'pointer',
-      transition: 'opacity 0.2s',
+    errorBox: {
+      background: '#fef2f2',
+      border: '1px solid #fecaca',
+      borderRadius: '10px',
+      padding: '12px 14px',
+      fontSize: '13px',
+      color: '#dc2626',
       marginBottom: '16px',
     },
     badges: {
@@ -293,16 +312,19 @@ export default function Checkout({ onNavigate }: Props) {
       color: 'var(--text-muted)',
       fontWeight: 500,
     },
-    paypalContainer: {
+    pciNote: {
       textAlign: 'center' as const,
-      padding: '20px 0',
-    },
-    paypalInfo: {
-      fontSize: '14px',
+      fontSize: '11px',
       color: 'var(--text-muted)',
       marginTop: '12px',
+      display: 'flex',
+      alignItems: 'center',
+      justifyContent: 'center',
+      gap: '4px',
     },
   };
+
+  const isDisabled = state === 'loading' || !acceptTerms;
 
   return (
     <div style={styles.page}>
@@ -313,6 +335,7 @@ export default function Checkout({ onNavigate }: Props) {
         </div>
         <span>Pago intermediado · SSL</span>
       </div>
+
       <button style={styles.backLink} onClick={() => onNavigate('/dashboard')}>
         ← Volver
       </button>
@@ -362,7 +385,7 @@ export default function Checkout({ onNavigate }: Props) {
           >
             <p style={{ margin: '0 0 6px 0' }}>Incluye:</p>
             <p style={{ margin: '0 0 4px 0' }}>✦ Consultas ilimitadas sobre tu material</p>
-            <p style={{ margin: '0 0 4px 0' }}>✦ Resúmenes y flashcards</p>
+            <p style={{ margin: '0 0 4px 0' }}>✦ Resumenes y flashcards</p>
             <p style={{ margin: '0 0 4px 0' }}>✦ Proyectos colaborativos</p>
             <p style={{ margin: '0 0 4px 0' }}>✦ Soporte prioritario</p>
           </div>
@@ -371,122 +394,134 @@ export default function Checkout({ onNavigate }: Props) {
         {/* PAYMENT FORM */}
         <div style={styles.paymentCard}>
           <p style={styles.paymentTitle}>Metodo de pago</p>
+          <p style={styles.paymentSubtitle}>
+            Seras redirigido a la plataforma de pago para completar tu suscripcion de forma segura.
+          </p>
 
-          {/* Tabs */}
-          <div style={styles.tabs}>
+          {/* Method selector */}
+          <div style={styles.methodGrid}>
             <button
-              style={paymentTab === 'card' ? styles.tabActive : styles.tab}
-              onClick={() => setPaymentTab('card')}
+              id="checkout-method-mercadopago"
+              style={{
+                ...styles.methodCard,
+                border: method === 'mercadopago' ? '2px solid #6366f1' : '2px solid var(--border)',
+                background: method === 'mercadopago' ? '#f5f3ff' : 'var(--bg-primary)',
+              }}
+              onClick={() => setMethod('mercadopago')}
+              type="button"
             >
-              Tarjeta
+              <span style={{ fontSize: '28px' }}>💳</span>
+              <span
+                style={{
+                  ...styles.methodLabel,
+                  color: method === 'mercadopago' ? '#6366f1' : 'var(--text-secondary)',
+                }}
+              >
+                MercadoPago
+              </span>
+              <span style={styles.methodSub}>Tarjeta, débito, efectivo · Chile</span>
             </button>
+
             <button
-              style={paymentTab === 'paypal' ? styles.tabActive : styles.tab}
-              onClick={() => setPaymentTab('paypal')}
+              id="checkout-method-paypal"
+              style={{
+                ...styles.methodCard,
+                border: method === 'paypal' ? '2px solid #6366f1' : '2px solid var(--border)',
+                background: method === 'paypal' ? '#f5f3ff' : 'var(--bg-primary)',
+              }}
+              onClick={() => setMethod('paypal')}
+              type="button"
             >
-              Ⓟ PayPal
+              <span style={{ fontSize: '28px' }}>🅿️</span>
+              <span
+                style={{
+                  ...styles.methodLabel,
+                  color: method === 'paypal' ? '#6366f1' : 'var(--text-secondary)',
+                }}
+              >
+                PayPal
+              </span>
+              <span style={styles.methodSub}>Tarjeta o saldo PayPal · Internacional</span>
             </button>
           </div>
 
-          <form onSubmit={handleSubmit}>
-            {paymentTab === 'card' && (
+          {/* Redirect notice */}
+          <div style={styles.redirectNotice}>
+            <span style={{ flexShrink: 0, fontSize: '16px' }}>🔒</span>
+            <span>
+              Al confirmar, seras redirigido a{' '}
+              <strong>{method === 'mercadopago' ? 'MercadoPago' : 'PayPal'}</strong> para ingresar
+              tus datos de pago. Conniku no almacena ni procesa datos de tarjeta.
+            </span>
+          </div>
+
+          {/* Error */}
+          {state === 'error' && errorMsg && <div style={styles.errorBox}>⚠ {errorMsg}</div>}
+
+          {/* Terms */}
+          <div style={styles.termsRow}>
+            <input
+              type="checkbox"
+              style={styles.checkbox}
+              checked={acceptTerms}
+              onChange={(e) => {
+                setAcceptTerms(e.target.checked);
+                setErrorMsg('');
+              }}
+              id="checkout-terms-checkbox"
+            />
+            <label htmlFor="checkout-terms-checkbox" style={styles.termsText}>
+              Acepto los{' '}
+              <span style={styles.termsLink} onClick={() => onNavigate('/terms')}>
+                terminos de servicio
+              </span>{' '}
+              y la{' '}
+              <span style={styles.termsLink} onClick={() => onNavigate('/privacy')}>
+                politica de privacidad
+              </span>
+            </label>
+          </div>
+
+          {/* CTA */}
+          <button
+            id="checkout-pay-btn"
+            style={{
+              ...styles.submitBtn,
+              background: isDisabled
+                ? 'var(--border)'
+                : method === 'mercadopago'
+                  ? 'linear-gradient(135deg, #009ee3, #00b1ea)'
+                  : 'linear-gradient(135deg, #003087, #0050b3)',
+              cursor: isDisabled ? 'not-allowed' : 'pointer',
+            }}
+            onClick={handlePay}
+            disabled={isDisabled}
+            type="button"
+          >
+            {state === 'loading' ? (
+              <>⏳ Iniciando pago seguro...</>
+            ) : (
               <>
-                <div style={styles.fieldGroup}>
-                  <label style={styles.label}>Numero de tarjeta</label>
-                  <input
-                    style={styles.input}
-                    type="text"
-                    placeholder="1234 5678 9012 3456"
-                    value={cardNumber}
-                    onChange={(e) => setCardNumber(formatCardNumber(e.target.value))}
-                    maxLength={19}
-                  />
-                </div>
-
-                <div style={{ ...styles.row, marginBottom: '16px' }}>
-                  <div style={{ flex: 1 }}>
-                    <label style={styles.label}>Vencimiento</label>
-                    <input
-                      style={styles.input}
-                      type="text"
-                      placeholder="MM/AA"
-                      value={expiration}
-                      onChange={(e) => setExpiration(formatExpiration(e.target.value))}
-                      maxLength={5}
-                    />
-                  </div>
-                  <div style={{ flex: 1 }}>
-                    <label style={styles.label}>CVC</label>
-                    <input
-                      style={styles.input}
-                      type="text"
-                      placeholder="123"
-                      value={cvc}
-                      onChange={(e) => setCvc(e.target.value.replace(/\D/g, '').slice(0, 4))}
-                      maxLength={4}
-                    />
-                  </div>
-                </div>
-
-                <div style={styles.fieldGroup}>
-                  <label style={styles.label}>Nombre del titular</label>
-                  <input
-                    style={styles.input}
-                    type="text"
-                    placeholder="Como aparece en la tarjeta"
-                    value={cardName}
-                    onChange={(e) => setCardName(e.target.value)}
-                  />
-                </div>
+                {Lock({ size: 16, color: '#fff' })}
+                {method === 'mercadopago' ? 'Continuar con MercadoPago' : 'Continuar con PayPal'}
               </>
             )}
+          </button>
 
-            {paymentTab === 'paypal' && (
-              <div style={styles.paypalContainer}>
-                <button type="button" style={styles.paypalBtn} onClick={handleSubmit as any}>
-                  Pagar con PayPal
-                </button>
-                <p style={styles.paypalInfo}>
-                  Seras redirigido a PayPal para completar el pago de forma segura.
-                </p>
-              </div>
-            )}
-
-            {/* Terms */}
-            <div style={styles.termsRow}>
-              <input
-                type="checkbox"
-                style={styles.checkbox}
-                checked={acceptTerms}
-                onChange={(e) => setAcceptTerms(e.target.checked)}
-                id="terms-checkbox"
-              />
-              <label htmlFor="terms-checkbox" style={styles.termsText}>
-                Acepto los <span style={styles.termsLink}>terminos de servicio</span> y la{' '}
-                <span style={styles.termsLink}>politica de privacidad</span>
-              </label>
+          {/* Security badges */}
+          <div style={styles.badges}>
+            <div style={styles.badge}>{Shield({ size: 14 })} Pago 100% seguro</div>
+            <div style={styles.badge}>
+              <span>↩</span> Cancelar en cualquier momento
             </div>
-
-            {/* Submit */}
-            {paymentTab === 'card' && (
-              <button type="submit" style={styles.submitBtn} disabled={isLoading}>
-                {isLoading ? 'Procesando...' : 'Comenzar prueba gratis'}
-              </button>
-            )}
-
-            {/* Security badges */}
-            <div style={styles.badges}>
-              <div style={styles.badge}>
-                <span>{Lock({ size: 14 })}</span> Pago seguro
-              </div>
-              <div style={styles.badge}>
-                <span>↩</span> Cancelar en cualquier momento
-              </div>
-              <div style={styles.badge}>
-                <span>@</span> Factura por email
-              </div>
+            <div style={styles.badge}>
+              <span>@</span> Factura por email
             </div>
-          </form>
+          </div>
+
+          <div style={styles.pciNote}>
+            🔐 Cumplimiento PCI-DSS · Conniku no almacena datos de tarjeta
+          </div>
         </div>
       </div>
     </div>

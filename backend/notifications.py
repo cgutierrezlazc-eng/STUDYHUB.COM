@@ -48,7 +48,7 @@ REPLY_TO = os.environ.get("SMTP_REPLY_TO", CONTACT_EMAIL)
 FRONTEND_URL = os.environ.get("FRONTEND_URL", "https://conniku.com")
 
 # Account registry: maps account key → (email, password, display name)
-def _get_account_config(from_account: str = None):
+def _get_account_config(from_account: str | None = None):
     """Return (email, password, sender_name) for the given account."""
     if from_account == "ceo":
         return CEO_EMAIL, SMTP_PASS_CEO, "Conniku CEO"
@@ -58,7 +58,7 @@ def _get_account_config(from_account: str = None):
         return NOREPLY_EMAIL, SMTP_PASS_NOREPLY, "Conniku"
 
 
-def _send_email_async(to_email: str, subject: str, html_body: str, reply_to: str = None, email_type: str = "notification", from_account: str = None):
+def _send_email_async(to_email: str, subject: str, html_body: str, reply_to: str | None = None, email_type: str = "notification", from_account: str | None = None):
     """Send email in background thread and log it.
     from_account: 'noreply' (default), 'contacto', or 'ceo'
 
@@ -119,9 +119,9 @@ def _send_email_with_attachment_async(
     attachment_content: bytes,
     attachment_name: str,
     attachment_mime: str = "application/pdf",
-    reply_to: str = None,
+    reply_to: str | None = None,
     email_type: str = "notification",
-    from_account: str = None,
+    from_account: str | None = None,
 ):
     """Send email with binary attachment in background thread.
     attachment_content: raw bytes of the file.
@@ -435,7 +435,7 @@ def check_and_send_fiscal_alerts():
     return alerts_sent
 
 
-def _get_next_deadline_date(dl: dict, today: date) -> date:
+def _get_next_deadline_date(dl: dict, today: date) -> date | None:
     """Calculate the next occurrence of a fiscal deadline."""
     try:
         if dl["frequency"] == "mensual":
@@ -1036,7 +1036,7 @@ def check_renewal_reminders():
                     f"automáticamente el <strong>{target_date.strftime('%d/%m/%Y')}</strong>.</p>"
                     f"<p>Si deseas cancelar antes de la renovación, puedes hacerlo desde tu panel de suscripción.</p>"
                     f"<p style=\"font-size:13px;color:#6B7280\">Recuerda que tienes derecho a retracto dentro de los "
-                    f"10 días hábiles siguientes a cada cobro (Ley 19.496, Art. 3 bis).</p>"
+                    f"10 días corridos siguientes a cada cobro (Ley 19.496, Art. 3 bis).</p>"
                 )
                 html = _email_template(subject, body, "Ver mi Suscripción", f"{FRONTEND_URL}/subscription")
                 _send_email_async(u.email, f"Conniku — {subject}", html, email_type="renewal_reminder")

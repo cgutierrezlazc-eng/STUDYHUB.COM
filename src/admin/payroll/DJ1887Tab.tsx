@@ -297,7 +297,7 @@ export default function DJ1887Tab() {
   <div class="subtitle">Rentas del Art. 42 N°1 del D.L. 824 (Sueldos) — Año Tributario ${selectedYear + 1}</div>
 </div>
 <div class="info-section">
-  <div><strong>RUT Declarante:</strong> 77.XXX.XXX-X</div>
+  <div><strong>RUT Declarante:</strong> 78.395.702-7</div>
   <div><strong>Razón Social:</strong> Conniku SpA</div>
   <div><strong>Año Informado:</strong> ${selectedYear}</div>
 </div>

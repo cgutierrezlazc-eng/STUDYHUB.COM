@@ -1,0 +1,1166 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Conniku — App móvil · iOS + Android</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Funnel+Display:wght@400;500;600;700;800;900&family=Geist+Mono:wght@400;500;600;700&family=Roboto:wght@400;500;700;900&display=swap" />
+  <style>
+    :root {
+      --ink: #0D0F10; --ink-2: #2B2E30; --ink-3: #696C6F; --ink-4: #A0A3A7;
+      --paper: #F5F4EF; --paper-2: #EBE9E1; --paper-3: #DBD9CF;
+      --line: #D2CFC3; --line-soft: #E2DFD4; --card: #FFFFFF;
+      --lime: #D9FF3A; --lime-ink: #181F08;
+      --pink: #FF4D3A; --cream: #FFE9B8;
+      --violet: #6B4EFF; --cyan: #00C2FF; --orange: #FF4A1C;
+      --font-display: 'Funnel Display', -apple-system, sans-serif;
+      --font-mono: 'Geist Mono', ui-monospace, monospace;
+      --font-sf: -apple-system, BlinkMacSystemFont, 'SF Pro Display', system-ui, sans-serif;
+      --font-roboto: 'Roboto', system-ui, sans-serif;
+      --ease: cubic-bezier(.2,.8,.2,1);
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    html, body { background: linear-gradient(135deg, var(--paper) 0%, var(--paper-2) 100%); color: var(--ink); font-family: var(--font-display); min-height: 100vh; }
+    ::selection { background: var(--lime); color: var(--lime-ink); }
+
+    /* Avatar helpers */
+    .av { display: grid; place-items: center; font-weight: 800; font-family: var(--font-display); position: relative; overflow: hidden; flex-shrink: 0; }
+    .av-cristian { background: linear-gradient(135deg, #0D0F10, #6B4EFF); color: #D9FF3A; }
+    .av-felipe { background: linear-gradient(135deg, #D9FF3A, #FFE9B8); color: #181F08; }
+    .av-victoria { background: linear-gradient(135deg, #FF4D3A, #FF4A1C); color: #fff; }
+    .av-daniela { background: linear-gradient(135deg, #6B4EFF, #2F55F0); color: #fff; }
+    .av-luis { background: linear-gradient(135deg, #00C2FF, #2F55F0); color: #0D0F10; }
+    .av-pia { background: linear-gradient(135deg, #FFE9B8, #D9FF3A); color: #181F08; }
+    .av-barbara { background: linear-gradient(135deg, #FF4D3A, #6B4EFF); color: #fff; }
+
+    /* Header página */
+    .page-header {
+      padding: 40px 32px 20px; text-align: center;
+      max-width: 1200px; margin: 0 auto;
+    }
+    .logo-row { display: inline-flex; align-items: center; gap: 10px; margin-bottom: 18px; }
+    .logo-tile { width: 30px; height: 30px; display: block; flex-shrink: 0; }
+    .logo-text { font-weight: 700; font-size: 20px; letter-spacing: -.02em; }
+    .page-label { display: inline-flex; align-items: center; gap: 10px; font-family: var(--font-mono); font-size: 11px; letter-spacing: .14em; text-transform: uppercase; color: var(--ink-3); font-weight: 700; margin-bottom: 14px; }
+    .page-label::before, .page-label::after { content: ""; width: 28px; height: 2px; background: var(--ink); }
+    .page-h1 { font-weight: 900; font-size: clamp(44px, 6vw, 72px); line-height: .95; letter-spacing: -.04em; max-width: 900px; margin: 0 auto; }
+    .page-h1 .hl { background: var(--lime); color: var(--lime-ink); padding: 0 10px; border-radius: 12px; transform: rotate(-.8deg); display: inline-block; }
+    .page-desc { margin-top: 22px; max-width: 620px; margin-left: auto; margin-right: auto; font-size: 16px; color: var(--ink-2); line-height: 1.5; font-weight: 500; }
+
+    /* Screen layout grid */
+    .screens-section { padding: 60px 32px; max-width: 1280px; margin: 0 auto; }
+
+    .screen-block { margin-bottom: 100px; }
+
+    .sb-head { margin-bottom: 40px; }
+    .sb-label { font-family: var(--font-mono); font-size: 11px; letter-spacing: .14em; text-transform: uppercase; color: var(--ink-3); font-weight: 700; margin-bottom: 12px; display: flex; align-items: center; gap: 10px; }
+    .sb-label::before { content: ""; width: 28px; height: 2px; background: var(--ink); }
+    .sb-title { font-weight: 900; font-size: clamp(36px, 5vw, 56px); line-height: .95; letter-spacing: -.035em; margin-bottom: 12px; }
+    .sb-title .hl { background: var(--lime); color: var(--lime-ink); padding: 0 8px; border-radius: 8px; transform: rotate(-.6deg); display: inline-block; }
+    .sb-title .hl-pink { background: var(--pink); color: #fff; padding: 0 8px; border-radius: 8px; transform: rotate(.6deg); display: inline-block; }
+    .sb-desc { font-size: 15px; color: var(--ink-2); line-height: 1.5; max-width: 620px; font-weight: 500; }
+
+    /* Phones container */
+    .phones-row {
+      display: flex; gap: 60px; justify-content: center; align-items: flex-start;
+      flex-wrap: wrap; margin-top: 40px;
+    }
+
+    /* iPhone mockup */
+    .phone-wrap { display: flex; flex-direction: column; align-items: center; }
+    .phone-label {
+      font-family: var(--font-mono); font-size: 11px;
+      letter-spacing: .14em; text-transform: uppercase;
+      color: var(--ink-2); font-weight: 800; margin-bottom: 16px;
+      padding: 6px 14px; background: var(--card); border: 1.5px solid var(--ink); border-radius: 999px;
+    }
+
+    .iphone {
+      width: 340px; height: 720px;
+      background: #0D0F10; border-radius: 52px;
+      padding: 14px; position: relative;
+      box-shadow: 0 20px 60px rgba(13,15,16,.3);
+    }
+    .iphone-notch {
+      position: absolute; top: 12px; left: 50%; transform: translateX(-50%);
+      width: 124px; height: 36px; background: #0D0F10;
+      border-radius: 22px; z-index: 10;
+      display: flex; align-items: center; justify-content: center; gap: 8px;
+    }
+    .iphone-notch .nc-cam { width: 8px; height: 8px; border-radius: 50%; background: #1a1d24; }
+    .iphone-notch .nc-speaker { width: 40px; height: 6px; border-radius: 3px; background: #1a1d24; }
+
+    .iphone-screen {
+      width: 100%; height: 100%; border-radius: 40px;
+      background: #fff; overflow: hidden; position: relative;
+    }
+
+    /* Android mockup */
+    .android {
+      width: 340px; height: 720px;
+      background: #202124; border-radius: 36px;
+      padding: 10px; position: relative;
+      box-shadow: 0 20px 60px rgba(13,15,16,.3);
+    }
+    .android-camera {
+      position: absolute; top: 16px; left: 50%; transform: translateX(-50%);
+      width: 10px; height: 10px; border-radius: 50%; background: #0D0F10;
+      z-index: 10;
+    }
+    .android-screen {
+      width: 100%; height: 100%; border-radius: 28px;
+      background: #fff; overflow: hidden; position: relative;
+    }
+
+    /* Status bars */
+    .ios-status {
+      height: 44px; background: transparent; display: flex;
+      align-items: center; justify-content: space-between;
+      padding: 16px 28px 0; font-family: var(--font-sf); font-weight: 700;
+      font-size: 14px; color: var(--ink); position: relative; z-index: 5;
+    }
+    .ios-status-right { display: flex; align-items: center; gap: 5px; }
+    .ios-sig { width: 16px; height: 10px; display: flex; gap: 1.5px; align-items: flex-end; }
+    .ios-sig span { width: 2.5px; background: var(--ink); border-radius: 1px; }
+    .ios-sig span:nth-child(1) { height: 3px; }
+    .ios-sig span:nth-child(2) { height: 5px; }
+    .ios-sig span:nth-child(3) { height: 7px; }
+    .ios-sig span:nth-child(4) { height: 9px; }
+    .ios-batt { width: 24px; height: 11px; border: 1px solid var(--ink); border-radius: 3px; position: relative; padding: 1px; }
+    .ios-batt::after { content: ""; position: absolute; right: -3px; top: 50%; transform: translateY(-50%); width: 2px; height: 5px; background: var(--ink); border-radius: 0 2px 2px 0; }
+    .ios-batt-fill { height: 100%; background: var(--ink); border-radius: 1px; width: 78%; }
+
+    .android-status {
+      height: 28px; background: transparent; display: flex;
+      align-items: center; justify-content: space-between;
+      padding: 8px 16px; font-family: var(--font-roboto); font-weight: 500;
+      font-size: 13px; color: var(--ink); position: relative; z-index: 5;
+    }
+
+    /* Phone header de app (dentro del teléfono) */
+    .app-header {
+      padding: 12px 18px 14px; background: var(--card);
+      border-bottom: 1px solid var(--line-soft);
+      display: flex; align-items: center; gap: 12px;
+    }
+    .app-header .app-back { width: 30px; height: 30px; background: transparent; border: 0; color: var(--ink); font-size: 18px; cursor: pointer; }
+    .app-title { font-weight: 800; font-size: 17px; letter-spacing: -.01em; flex: 1; }
+    .app-header-action { width: 34px; height: 34px; background: var(--paper-2); border-radius: 10px; display: grid; place-items: center; color: var(--ink-2); font-weight: 700; }
+
+    /* ═════════ CHAT SCREEN CONTENT ═════════ */
+    .chat-app-header { background: var(--card); padding: 10px 16px; border-bottom: 1px solid var(--line-soft); display: flex; align-items: center; gap: 12px; }
+    .chat-back { width: 28px; height: 28px; color: var(--ink); font-size: 20px; font-weight: 800; display: grid; place-items: center; cursor: pointer; }
+    .chat-user-av { width: 38px; height: 38px; border-radius: 50%; font-size: 13px; position: relative; }
+    .chat-user-av::after { content: ""; position: absolute; bottom: 0; right: 0; width: 10px; height: 10px; background: var(--orange); border-radius: 50%; border: 2px solid var(--card); }
+    .chat-user-info { flex: 1; }
+    .chat-user-name { font-weight: 800; font-size: 15px; letter-spacing: -.01em; }
+    .chat-user-status { font-family: var(--font-mono); font-size: 10px; color: var(--orange); letter-spacing: .06em; text-transform: uppercase; margin-top: 2px; font-weight: 700; }
+    .chat-header-icons { display: flex; gap: 8px; }
+    .chat-header-icon { width: 30px; height: 30px; color: var(--ink-2); display: grid; place-items: center; font-size: 14px; font-weight: 800; }
+
+    .chat-messages { padding: 16px 14px; display: flex; flex-direction: column; gap: 10px; height: calc(100% - 180px); overflow-y: auto; background: var(--paper); }
+
+    .chat-date-sep { text-align: center; font-family: var(--font-mono); font-size: 9px; color: var(--ink-3); letter-spacing: .12em; text-transform: uppercase; margin: 8px 0; font-weight: 700; }
+
+    .cm-row { display: flex; gap: 8px; max-width: 85%; }
+    .cm-row.mine { align-self: flex-end; flex-direction: row-reverse; }
+    .cm-av-s { width: 26px; height: 26px; border-radius: 50%; font-size: 10px; align-self: flex-end; }
+    .cm-row.mine .cm-av-s { display: none; }
+    .cm-content { display: flex; flex-direction: column; gap: 3px; min-width: 0; }
+    .cm-row.mine .cm-content { align-items: flex-end; }
+    .cm-bubble { padding: 9px 13px; border-radius: 16px; font-size: 13.5px; line-height: 1.4; font-weight: 500; }
+    .cm-row.received .cm-bubble { background: var(--card); color: var(--ink); border-bottom-left-radius: 5px; box-shadow: 0 1px 2px rgba(13,15,16,.06); }
+    .cm-row.mine .cm-bubble { background: var(--ink); color: #fff; border-bottom-right-radius: 5px; }
+    .cm-row.mine .cm-bubble.hl { background: var(--lime); color: var(--lime-ink); }
+    .cm-time { font-family: var(--font-mono); font-size: 9px; color: var(--ink-3); letter-spacing: .04em; padding: 0 4px; }
+    .cm-row.mine .cm-time { text-align: right; }
+
+    .chat-input-bar { background: var(--card); padding: 10px 12px 14px; border-top: 1px solid var(--line-soft); display: flex; gap: 8px; align-items: center; position: absolute; bottom: 0; left: 0; right: 0; }
+    .chat-input-plus { width: 32px; height: 32px; border-radius: 50%; background: var(--paper-2); color: var(--ink-2); display: grid; place-items: center; font-weight: 900; font-size: 14px; }
+    .chat-input { flex: 1; background: var(--paper-2); border: 0; border-radius: 999px; padding: 8px 14px; font-family: var(--font-display); font-size: 13px; color: var(--ink); outline: none; font-weight: 500; }
+    .chat-input-send { width: 36px; height: 36px; border-radius: 50%; background: var(--ink); color: var(--lime); display: grid; place-items: center; font-size: 15px; font-weight: 900; }
+
+    /* ═════════ SOCIAL (perfil/comunidad) SCREEN ═════════ */
+    .soc-banner {
+      height: 130px; position: relative;
+      background: linear-gradient(135deg, var(--pink) 0%, var(--orange) 50%, var(--cream) 100%);
+    }
+    .soc-banner::before { content: ""; position: absolute; top: 30px; left: 24px; width: 8px; height: 8px; border-radius: 50%; background: var(--lime); box-shadow: 60px 20px 0 var(--cyan), 140px 60px 0 var(--ink), 200px 15px 0 var(--violet); }
+
+    .soc-profile { padding: 0 16px; margin-top: -50px; position: relative; z-index: 2; }
+    .soc-av-big { width: 90px; height: 90px; border-radius: 50%; font-size: 32px; border: 4px solid #fff; }
+    .soc-name { font-weight: 900; font-size: 24px; letter-spacing: -.025em; margin-top: 12px; line-height: 1.05; }
+    .soc-username { font-family: var(--font-mono); font-size: 11px; color: var(--ink-3); letter-spacing: .06em; margin-top: 4px; font-weight: 700; }
+    .soc-bio { font-size: 13.5px; color: var(--ink-2); line-height: 1.4; margin-top: 10px; font-weight: 500; }
+    .soc-badges-row { display: flex; gap: 5px; margin-top: 10px; flex-wrap: wrap; }
+    .soc-badge { font-family: var(--font-mono); font-size: 9px; padding: 3px 8px; border-radius: 999px; letter-spacing: .06em; text-transform: uppercase; font-weight: 700; }
+    .soc-badge.verif { background: var(--ink); color: var(--lime); }
+    .soc-badge.pro { background: var(--pink); color: #fff; }
+    .soc-badge.cream { background: var(--cream); color: var(--ink); }
+
+    .soc-stats { display: flex; gap: 10px; margin: 16px 0 12px; }
+    .soc-stat { flex: 1; padding: 12px 10px; background: var(--paper); border: 1.5px solid var(--ink); border-radius: 12px; text-align: center; }
+    .soc-stat.hl { background: var(--lime); color: var(--lime-ink); }
+    .soc-stat-v { font-family: var(--font-display); font-weight: 900; font-size: 20px; letter-spacing: -.02em; line-height: 1; }
+    .soc-stat-l { font-family: var(--font-mono); font-size: 8px; color: var(--ink-3); letter-spacing: .1em; text-transform: uppercase; margin-top: 4px; font-weight: 700; }
+    .soc-stat.hl .soc-stat-l { color: var(--lime-ink); opacity: .65; }
+
+    .soc-cta-row { display: flex; gap: 6px; }
+    .soc-cta { flex: 1; padding: 9px; border-radius: 999px; border: 0; font-family: var(--font-display); font-weight: 700; font-size: 12.5px; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 6px; }
+    .soc-cta.primary { background: var(--ink); color: #fff; }
+    .soc-cta.primary .arrow { width: 18px; height: 18px; background: var(--lime); color: var(--ink); border-radius: 50%; display: grid; place-items: center; font-weight: 900; font-size: 10px; }
+    .soc-cta.ghost { background: var(--card); border: 1.5px solid var(--ink); color: var(--ink); }
+
+    .soc-tabs { display: flex; margin-top: 18px; padding: 0 16px; border-bottom: 2px solid var(--ink); gap: 4px; }
+    .soc-tab { padding: 10px 12px; font-weight: 700; font-size: 12px; color: var(--ink-3); position: relative; letter-spacing: -.01em; }
+    .soc-tab.active { color: var(--ink); }
+    .soc-tab.active::after { content: ""; position: absolute; bottom: -2px; left: 0; right: 0; height: 3px; background: var(--lime); }
+
+    .soc-post-list { padding: 14px 16px; }
+    .soc-post { background: var(--card); border: 1.5px solid var(--ink); border-radius: 16px; padding: 14px; margin-bottom: 10px; }
+    .soc-post-head { display: flex; align-items: center; gap: 8px; margin-bottom: 10px; }
+    .soc-pp-av { width: 30px; height: 30px; border-radius: 50%; font-size: 10px; }
+    .soc-pp-name { font-weight: 700; font-size: 12.5px; }
+    .soc-pp-sub { font-family: var(--font-mono); font-size: 9px; color: var(--ink-3); letter-spacing: .04em; font-weight: 600; margin-top: 1px; }
+    .soc-pp-type { margin-left: auto; font-family: var(--font-mono); font-size: 8.5px; padding: 3px 7px; border-radius: 999px; letter-spacing: .08em; text-transform: uppercase; font-weight: 800; background: var(--lime); color: var(--lime-ink); }
+    .soc-post-body { font-size: 13px; line-height: 1.4; color: var(--ink); font-weight: 450; }
+    .soc-post-body strong { background: var(--lime); padding: 1px 4px; border-radius: 3px; font-weight: 700; }
+    .soc-post-foot { display: flex; gap: 14px; margin-top: 10px; padding-top: 10px; border-top: 1px solid var(--line-soft); font-family: var(--font-mono); font-size: 10px; color: var(--ink-3); font-weight: 600; letter-spacing: .02em; }
+
+    /* ═════════ UNIVERSIDAD SCREEN ═════════ */
+    .u-head-mob {
+      background: linear-gradient(120deg, #8B1538, #B12D40); color: #fff;
+      padding: 18px 16px 22px; position: relative; overflow: hidden;
+    }
+    .u-head-mob::before { content: ""; position: absolute; top: 20px; right: 20px; width: 100px; height: 100px; background: var(--lime); border-radius: 50%; opacity: .2; filter: blur(40px); }
+
+    .u-sync-chip-mob {
+      display: inline-flex; align-items: center; gap: 6px;
+      background: rgba(255,255,255,.15); padding: 4px 10px; border-radius: 999px;
+      font-family: var(--font-mono); font-size: 9px; letter-spacing: .08em;
+      text-transform: uppercase; font-weight: 700; margin-bottom: 12px;
+    }
+    .u-sync-chip-mob .d { width: 5px; height: 5px; background: var(--lime); border-radius: 50%; }
+
+    .u-head-logo-row { display: flex; align-items: center; gap: 10px; margin-bottom: 12px; }
+    .u-head-logo { width: 42px; height: 42px; background: #fff; color: #8B1538; border-radius: 10px; display: grid; place-items: center; font-weight: 900; font-size: 18px; }
+    .u-head-name-block .u-nm { font-weight: 900; font-size: 15px; line-height: 1.1; letter-spacing: -.01em; }
+    .u-head-name-block .u-fac { font-family: var(--font-mono); font-size: 8.5px; color: rgba(255,255,255,.7); letter-spacing: .08em; text-transform: uppercase; font-weight: 600; margin-top: 2px; }
+
+    .u-semestre { font-weight: 900; font-size: 30px; letter-spacing: -.03em; line-height: 1; margin-top: 8px; }
+    .u-semestre .hl { background: var(--lime); color: var(--lime-ink); padding: 0 6px; border-radius: 6px; display: inline-block; transform: rotate(-1deg); }
+
+    .u-prog-inline { margin-top: 14px; display: flex; align-items: center; gap: 10px; font-family: var(--font-mono); font-size: 10px; letter-spacing: .06em; text-transform: uppercase; font-weight: 700; }
+    .u-prog-inline .bar { flex: 1; height: 3px; background: rgba(255,255,255,.2); border-radius: 3px; overflow: hidden; }
+    .u-prog-inline .fill { width: 34%; height: 100%; background: linear-gradient(90deg, var(--lime), var(--cream)); }
+
+    .u-stats-mob { padding: 16px; display: grid; grid-template-columns: 1fr 1fr; gap: 8px; background: var(--paper); border-bottom: 1px solid var(--line); }
+    .u-stat-mob { background: var(--card); border: 1.5px solid var(--ink); border-radius: 12px; padding: 12px; }
+    .u-stat-mob.hl { background: var(--ink); color: #fff; }
+    .u-stat-mob.hl .usmv { color: var(--lime); }
+    .u-stat-mob.hl .usml { color: rgba(255,255,255,.55); }
+    .usml { font-family: var(--font-mono); font-size: 8.5px; color: var(--ink-3); letter-spacing: .1em; text-transform: uppercase; font-weight: 700; }
+    .usmv { font-family: var(--font-display); font-weight: 900; font-size: 24px; letter-spacing: -.025em; margin-top: 5px; line-height: 1; font-feature-settings: 'tnum'; }
+    .usmv-desc { font-size: 10px; color: var(--ink-3); margin-top: 3px; font-weight: 500; }
+
+    .u-subjects-mob { padding: 14px 16px; }
+    .u-subj-row {
+      background: var(--card); border: 1.5px solid var(--ink); border-radius: 14px;
+      padding: 14px; margin-bottom: 10px; display: flex; flex-direction: column; gap: 8px;
+    }
+    .u-subj-row.hl { background: var(--lime); color: var(--lime-ink); }
+    .u-subj-top { display: flex; justify-content: space-between; align-items: center; }
+    .u-subj-code { font-family: var(--font-mono); font-size: 9.5px; letter-spacing: .08em; text-transform: uppercase; font-weight: 700; opacity: .7; }
+    .u-subj-status { font-family: var(--font-mono); font-size: 8.5px; padding: 3px 8px; border-radius: 999px; letter-spacing: .08em; text-transform: uppercase; font-weight: 800; }
+    .uss-ok { background: var(--ink); color: var(--lime); }
+    .uss-warn { background: var(--cream); color: var(--ink); }
+    .u-subj-name { font-weight: 800; font-size: 16px; letter-spacing: -.015em; line-height: 1.15; }
+    .u-subj-meta { font-family: var(--font-mono); font-size: 10px; letter-spacing: .04em; opacity: .75; font-weight: 600; }
+    .u-subj-next { display: flex; align-items: center; gap: 8px; padding: 8px 10px; background: rgba(13,15,16,.08); border-radius: 8px; margin-top: 4px; }
+    .u-subj-row.hl .u-subj-next { background: rgba(13,15,16,.12); }
+    .u-subj-next .nxt-date { font-family: var(--font-mono); font-size: 10px; font-weight: 800; letter-spacing: .04em; }
+    .u-subj-next .nxt-title { font-size: 12px; font-weight: 600; flex: 1; }
+
+    /* ═════════ CALENDARIO SCREEN ═════════ */
+    .cal-mob-head { padding: 16px; background: var(--card); border-bottom: 1px solid var(--line); display: flex; justify-content: space-between; align-items: center; }
+    .cal-mob-title { font-weight: 900; font-size: 26px; letter-spacing: -.025em; }
+    .cal-mob-title .mo { background: var(--lime); color: var(--lime-ink); padding: 0 6px; border-radius: 6px; transform: rotate(-.8deg); display: inline-block; }
+    .cal-mob-switcher { display: flex; gap: 4px; background: var(--paper-2); padding: 3px; border-radius: 999px; }
+    .cal-mob-sw { padding: 5px 10px; font-family: var(--font-display); font-weight: 600; font-size: 11px; border-radius: 999px; color: var(--ink-3); }
+    .cal-mob-sw.active { background: var(--ink); color: #fff; font-weight: 800; }
+
+    .cal-mob-weekday { display: grid; grid-template-columns: repeat(7, 1fr); background: var(--ink); color: rgba(255,255,255,.55); padding: 8px 0; }
+    .cal-mob-wd { text-align: center; font-family: var(--font-mono); font-size: 9px; letter-spacing: .1em; text-transform: uppercase; font-weight: 700; }
+    .cal-mob-wd.today { color: var(--lime); }
+
+    .cal-mob-days { display: grid; grid-template-columns: repeat(7, 1fr); padding: 6px; gap: 2px; background: var(--card); border-bottom: 1px solid var(--line); }
+    .cal-mob-day {
+      aspect-ratio: 1; border-radius: 8px; display: flex; flex-direction: column;
+      align-items: center; justify-content: flex-start; padding: 3px;
+      font-family: var(--font-display); font-weight: 700; font-size: 12px;
+      color: var(--ink); cursor: pointer; position: relative;
+    }
+    .cal-mob-day.prev, .cal-mob-day.next { color: var(--ink-4); }
+    .cal-mob-day.today { background: var(--ink); color: var(--lime); font-weight: 900; }
+    .cal-mob-day.has-events::after { content: ""; position: absolute; bottom: 4px; left: 50%; transform: translateX(-50%); width: 4px; height: 4px; border-radius: 50%; background: var(--pink); }
+    .cal-mob-day.today.has-events::after { background: var(--lime); }
+    .cal-mob-day.exam { background: rgba(255,77,58,.12); color: var(--pink); border: 1px solid var(--pink); }
+    .cal-mob-day.entrega { background: rgba(255,74,28,.15); color: var(--orange); border: 1px solid var(--orange); }
+
+    .cal-mob-today-events { padding: 14px 16px; }
+    .cme-title { font-family: var(--font-mono); font-size: 10px; letter-spacing: .14em; text-transform: uppercase; color: var(--ink-3); font-weight: 700; margin-bottom: 12px; display: flex; align-items: center; gap: 8px; }
+    .cme-title::before { content: ""; width: 18px; height: 2px; background: var(--ink); }
+
+    .cal-mob-event {
+      background: var(--card); border-left: 4px solid var(--cyan);
+      border-radius: 8px 14px 14px 8px; padding: 10px 12px 10px 14px;
+      margin-bottom: 8px; display: flex; gap: 12px; align-items: center;
+      border-top: 1px solid var(--line); border-right: 1px solid var(--line); border-bottom: 1px solid var(--line);
+    }
+    .cal-mob-event.evt-tutor { border-left-color: var(--violet); }
+    .cal-mob-event.evt-study { border-left-color: var(--lime); }
+    .cal-mob-event.evt-entrega { border-left-color: var(--orange); }
+    .cme-time { font-family: var(--font-mono); font-weight: 800; font-size: 11px; color: var(--ink); letter-spacing: .04em; width: 48px; flex-shrink: 0; }
+    .cme-info { flex: 1; }
+    .cme-evt-title { font-weight: 700; font-size: 13px; letter-spacing: -.01em; }
+    .cme-evt-sub { font-family: var(--font-mono); font-size: 9.5px; color: var(--ink-3); letter-spacing: .04em; margin-top: 2px; font-weight: 600; }
+
+    /* Android specific — nav bottom */
+    .android-nav {
+      position: absolute; bottom: 0; left: 0; right: 0;
+      height: 56px; background: var(--card);
+      border-top: 1px solid var(--line); display: flex;
+      padding: 0 8px; align-items: center; justify-content: space-around;
+    }
+    .a-nav-item { display: flex; flex-direction: column; align-items: center; gap: 2px; padding: 6px 10px; color: var(--ink-3); font-family: var(--font-roboto); font-size: 10px; font-weight: 500; }
+    .a-nav-item.active { color: var(--ink); font-weight: 800; }
+    .a-nav-item .nav-ico { font-size: 18px; font-weight: 900; }
+    .a-nav-item.active .nav-ico { color: var(--lime-ink); background: var(--lime); padding: 3px 14px; border-radius: 999px; }
+
+    .ios-home-ind {
+      position: absolute; bottom: 8px; left: 50%; transform: translateX(-50%);
+      width: 134px; height: 5px; background: var(--ink); border-radius: 3px;
+    }
+
+    /* iOS bottom nav */
+    .ios-bottom-nav {
+      position: absolute; bottom: 22px; left: 0; right: 0;
+      background: rgba(255,255,255,.85); backdrop-filter: blur(16px);
+      border-top: 1px solid rgba(13,15,16,.08); padding: 8px 0 24px;
+      display: flex; justify-content: space-around;
+    }
+    .ios-nav-item { display: flex; flex-direction: column; align-items: center; gap: 2px; color: var(--ink-3); font-family: var(--font-sf); font-size: 10px; font-weight: 500; }
+    .ios-nav-item.active { color: var(--ink); }
+    .ios-nav-item .ios-ico { font-size: 22px; }
+    .ios-nav-item.active .ios-ico { color: var(--lime-ink); background: var(--lime); padding: 4px 12px; border-radius: 16px; }
+
+    /* Container scroll area */
+    .screen-content { overflow: hidden; position: relative; height: 100%; }
+
+    @media (max-width: 900px) {
+      .phones-row { gap: 30px; }
+      .iphone, .android { transform: scale(.85); }
+    }
+  </style>
+</head>
+<body>
+
+  <header class="page-header">
+    <div class="logo-row">
+      <div class="logo-tile"><svg viewBox="0 0 100 100" aria-label="Conniku" style="width:100%;height:100%;display:block"><rect width="100" height="100" rx="22" fill="#0D0F10"/><mask id="ckL_30_movil_ios_android" maskUnits="userSpaceOnUse"><rect width="100" height="100" fill="#fff"/><circle cx="58" cy="50" r="24" fill="#000"/></mask><rect x="12" y="12" width="76" height="76" rx="14" fill="#D9FF3A" mask="url(#ckL_30_movil_ios_android)"/><circle cx="58" cy="50" r="5" fill="#FF4A1C"/></svg></div>
+      <div class="logo-text">conniku.</div>
+    </div>
+    <div class="page-label">★ Versiones móvil</div>
+    <h1 class="page-h1">En tu <span class="hl">bolsillo</span>.<br>iOS + Android.</h1>
+    <p class="page-desc">Toda Conniku adaptada a móvil. La identidad editorial se mantiene con ajustes para cada sistema: iOS con tipografía SF y home indicator, Android con Roboto y bottom navigation nativa. Mismos datos, misma experiencia.</p>
+  </header>
+
+  <div class="screens-section">
+
+    <!-- ══════════ CHAT ══════════ -->
+    <section class="screen-block">
+      <div class="sb-head">
+        <div class="sb-label">01 · mensajería</div>
+        <h2 class="sb-title"><span class="hl">Chat</span> con tus compañeros.</h2>
+        <p class="sb-desc">Conversación 1 a 1 con Javiera sobre el informe grupal. Mensajes con burbujas editoriales, adjuntos del workspace, reacciones rápidas, typing indicator.</p>
+      </div>
+
+      <div class="phones-row">
+
+        <!-- iPhone Chat -->
+        <div class="phone-wrap">
+          <div class="phone-label">iOS · iPhone</div>
+          <div class="iphone">
+            <div class="iphone-notch">
+              <div class="nc-cam"></div>
+              <div class="nc-speaker"></div>
+              <div class="nc-cam"></div>
+            </div>
+            <div class="iphone-screen">
+              <div class="ios-status">
+                <span>9:41</span>
+                <div class="ios-status-right">
+                  <div class="ios-sig"><span></span><span></span><span></span><span></span></div>
+                  <span style="font-weight: 700; font-size: 12px;">5G</span>
+                  <div class="ios-batt"><div class="ios-batt-fill"></div></div>
+                </div>
+              </div>
+
+              <div class="chat-app-header">
+                <div class="chat-back">‹</div>
+                <div class="av av-pia chat-user-av">JS</div>
+                <div class="chat-user-info">
+                  <div class="chat-user-name">Javiera Soto</div>
+                  <div class="chat-user-status">en línea · escribiendo</div>
+                </div>
+                <div class="chat-header-icons">
+                  <div class="chat-header-icon">☎</div>
+                  <div class="chat-header-icon">⋯</div>
+                </div>
+              </div>
+
+              <div class="chat-messages" style="height: calc(720px - 44px - 68px - 58px - 34px);">
+                <div class="chat-date-sep">hoy</div>
+
+                <div class="cm-row received">
+                  <div class="av av-pia cm-av-s">JS</div>
+                  <div class="cm-content">
+                    <div class="cm-bubble">Hola! ¿Cómo vas con el informe?</div>
+                    <div class="cm-time">10:42</div>
+                  </div>
+                </div>
+
+                <div class="cm-row mine">
+                  <div class="cm-content">
+                    <div class="cm-bubble">Avanzando. Me trabé con el ej 4, me ayudé con el libro de Cengel pero quiero revisar contigo</div>
+                    <div class="cm-time">10:43 ✓✓</div>
+                  </div>
+                </div>
+
+                <div class="cm-row received">
+                  <div class="av av-pia cm-av-s">JS</div>
+                  <div class="cm-content">
+                    <div class="cm-bubble">Te mando mi borrador ahora</div>
+                    <div class="cm-time">10:44</div>
+                  </div>
+                </div>
+
+                <div class="cm-row mine">
+                  <div class="cm-content">
+                    <div class="cm-bubble hl">Nos vemos <strong>mañana 14:00</strong>?</div>
+                    <div class="cm-time">10:46 ✓✓</div>
+                  </div>
+                </div>
+
+                <div class="cm-row received">
+                  <div class="av av-pia cm-av-s">JS</div>
+                  <div class="cm-content">
+                    <div class="cm-bubble">Dale! Caigo con café ☕</div>
+                    <div class="cm-time">10:47</div>
+                  </div>
+                </div>
+              </div>
+
+              <div class="chat-input-bar">
+                <div class="chat-input-plus">+</div>
+                <input class="chat-input" type="text" placeholder="Mensaje" />
+                <div class="chat-input-send">→</div>
+              </div>
+
+              <div class="ios-home-ind"></div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Android Chat -->
+        <div class="phone-wrap">
+          <div class="phone-label">Android · Material</div>
+          <div class="android">
+            <div class="android-camera"></div>
+            <div class="android-screen">
+              <div class="android-status">
+                <span>9:41</span>
+                <div style="display: flex; gap: 6px; align-items: center;">
+                  <span style="font-family: var(--font-mono); font-size: 11px;">5G</span>
+                  <span>◓ 78%</span>
+                </div>
+              </div>
+
+              <div class="chat-app-header">
+                <div class="chat-back">←</div>
+                <div class="av av-pia chat-user-av">JS</div>
+                <div class="chat-user-info">
+                  <div class="chat-user-name">Javiera Soto</div>
+                  <div class="chat-user-status">en línea · escribiendo</div>
+                </div>
+                <div class="chat-header-icons">
+                  <div class="chat-header-icon">☎</div>
+                  <div class="chat-header-icon">⋮</div>
+                </div>
+              </div>
+
+              <div class="chat-messages" style="height: calc(720px - 28px - 68px - 58px - 56px);">
+                <div class="chat-date-sep">hoy</div>
+
+                <div class="cm-row received">
+                  <div class="av av-pia cm-av-s">JS</div>
+                  <div class="cm-content">
+                    <div class="cm-bubble">Hola! ¿Cómo vas con el informe?</div>
+                    <div class="cm-time">10:42</div>
+                  </div>
+                </div>
+
+                <div class="cm-row mine">
+                  <div class="cm-content">
+                    <div class="cm-bubble">Avanzando. Me trabé con el ej 4, me ayudé con Cengel pero quiero revisar contigo</div>
+                    <div class="cm-time">10:43 ✓✓</div>
+                  </div>
+                </div>
+
+                <div class="cm-row received">
+                  <div class="av av-pia cm-av-s">JS</div>
+                  <div class="cm-content">
+                    <div class="cm-bubble">Te mando mi borrador ahora</div>
+                    <div class="cm-time">10:44</div>
+                  </div>
+                </div>
+
+                <div class="cm-row mine">
+                  <div class="cm-content">
+                    <div class="cm-bubble hl">Nos vemos <strong>mañana 14:00</strong>?</div>
+                    <div class="cm-time">10:46 ✓✓</div>
+                  </div>
+                </div>
+
+                <div class="cm-row received">
+                  <div class="av av-pia cm-av-s">JS</div>
+                  <div class="cm-content">
+                    <div class="cm-bubble">Dale! Caigo con café ☕</div>
+                    <div class="cm-time">10:47</div>
+                  </div>
+                </div>
+              </div>
+
+              <div class="android-nav">
+                <div class="a-nav-item"><span class="nav-ico">⌂</span><span>Home</span></div>
+                <div class="a-nav-item"><span class="nav-ico">U</span><span>Mi U</span></div>
+                <div class="a-nav-item active"><span class="nav-ico">◎</span><span>Chat</span></div>
+                <div class="a-nav-item"><span class="nav-ico">♥</span><span>Social</span></div>
+                <div class="a-nav-item"><span class="nav-ico">▤</span><span>Calendario</span></div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </section>
+
+    <!-- ══════════ SOCIAL ══════════ -->
+    <section class="screen-block">
+      <div class="sb-head">
+        <div class="sb-label">02 · red social</div>
+        <h2 class="sb-title">Tu <span class="hl-pink">perfil social</span>.</h2>
+        <p class="sb-desc">El perfil del estudiante con cover, foto, bio, badges verificados, stats y feed. Visible para compañeros que entren. Posts propios, interacciones, logros.</p>
+      </div>
+
+      <div class="phones-row">
+
+        <!-- iPhone Social -->
+        <div class="phone-wrap">
+          <div class="phone-label">iOS · iPhone</div>
+          <div class="iphone">
+            <div class="iphone-notch">
+              <div class="nc-cam"></div>
+              <div class="nc-speaker"></div>
+              <div class="nc-cam"></div>
+            </div>
+            <div class="iphone-screen" style="overflow-y: auto;">
+              <div class="ios-status">
+                <span>9:41</span>
+                <div class="ios-status-right">
+                  <div class="ios-sig"><span></span><span></span><span></span><span></span></div>
+                  <span style="font-weight: 700; font-size: 12px;">5G</span>
+                  <div class="ios-batt"><div class="ios-batt-fill"></div></div>
+                </div>
+              </div>
+
+              <div class="soc-banner"></div>
+
+              <div class="soc-profile">
+                <div class="av av-cristian soc-av-big">CG</div>
+                <div class="soc-name">Cristian G.</div>
+                <div class="soc-username">@cristian-gl</div>
+                <div class="soc-bio">Ing. Civil Industrial · 4º año. Pasión por procesos y buen café.</div>
+
+                <div class="soc-badges-row">
+                  <span class="soc-badge verif">★ Verificado</span>
+                  <span class="soc-badge pro">Pro</span>
+                  <span class="soc-badge cream">Racha 12d</span>
+                </div>
+
+                <div class="soc-stats">
+                  <div class="soc-stat"><div class="soc-stat-v">127</div><div class="soc-stat-l">Amigos</div></div>
+                  <div class="soc-stat hl"><div class="soc-stat-v">42</div><div class="soc-stat-l">Posts</div></div>
+                  <div class="soc-stat"><div class="soc-stat-v">8.4</div><div class="soc-stat-l">Promedio</div></div>
+                </div>
+
+                <div class="soc-cta-row">
+                  <button class="soc-cta primary">Mensaje<div class="arrow">→</div></button>
+                  <button class="soc-cta ghost">+ Agregar</button>
+                </div>
+              </div>
+
+              <div class="soc-tabs">
+                <div class="soc-tab active">Posts</div>
+                <div class="soc-tab">Sobre</div>
+                <div class="soc-tab">CV</div>
+                <div class="soc-tab">Logros</div>
+              </div>
+
+              <div class="soc-post-list" style="padding-bottom: 80px;">
+                <div class="soc-post">
+                  <div class="soc-post-head">
+                    <div class="av av-cristian soc-pp-av">CG</div>
+                    <div>
+                      <div class="soc-pp-name">Cristian G.</div>
+                      <div class="soc-pp-sub">hace 3h · público</div>
+                    </div>
+                    <span class="soc-pp-type">★ Logro</span>
+                  </div>
+                  <div class="soc-post-body">Completé <strong>12 días seguidos</strong> estudiando. Vamos por los 30!</div>
+                  <div class="soc-post-foot">
+                    <span>♥ 24</span>
+                    <span>✎ 8</span>
+                    <span>↗</span>
+                  </div>
+                </div>
+
+                <div class="soc-post">
+                  <div class="soc-post-head">
+                    <div class="av av-cristian soc-pp-av">CG</div>
+                    <div>
+                      <div class="soc-pp-name">Cristian G.</div>
+                      <div class="soc-pp-sub">ayer · Termodinámica</div>
+                    </div>
+                    <span class="soc-pp-type" style="background: var(--pink); color: #fff;">Pregunta</span>
+                  </div>
+                  <div class="soc-post-body">Alguien entendió el ejercicio 4 del cap 7 de Cengel? Trabado con entropía...</div>
+                  <div class="soc-post-foot">
+                    <span>♥ 8</span>
+                    <span>✎ 14</span>
+                    <span>↗</span>
+                  </div>
+                </div>
+              </div>
+
+              <div class="ios-bottom-nav">
+                <div class="ios-nav-item"><span class="ios-ico">⌂</span><span>Home</span></div>
+                <div class="ios-nav-item"><span class="ios-ico">U</span><span>Mi U</span></div>
+                <div class="ios-nav-item"><span class="ios-ico">◎</span><span>Chat</span></div>
+                <div class="ios-nav-item active"><span class="ios-ico">♥</span><span>Social</span></div>
+                <div class="ios-nav-item"><span class="ios-ico">▤</span><span>Cal</span></div>
+              </div>
+
+              <div class="ios-home-ind"></div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Android Social -->
+        <div class="phone-wrap">
+          <div class="phone-label">Android · Material</div>
+          <div class="android">
+            <div class="android-camera"></div>
+            <div class="android-screen" style="overflow-y: auto;">
+              <div class="android-status">
+                <span>9:41</span>
+                <div style="display: flex; gap: 6px;"><span style="font-family: var(--font-mono); font-size: 11px;">5G</span><span>◓ 78%</span></div>
+              </div>
+
+              <div class="soc-banner"></div>
+
+              <div class="soc-profile">
+                <div class="av av-cristian soc-av-big">CG</div>
+                <div class="soc-name">Cristian G.</div>
+                <div class="soc-username">@cristian-gl</div>
+                <div class="soc-bio">Ing. Civil Industrial · 4º año. Pasión por procesos y buen café.</div>
+
+                <div class="soc-badges-row">
+                  <span class="soc-badge verif">★ Verificado</span>
+                  <span class="soc-badge pro">Pro</span>
+                  <span class="soc-badge cream">Racha 12d</span>
+                </div>
+
+                <div class="soc-stats">
+                  <div class="soc-stat"><div class="soc-stat-v">127</div><div class="soc-stat-l">Amigos</div></div>
+                  <div class="soc-stat hl"><div class="soc-stat-v">42</div><div class="soc-stat-l">Posts</div></div>
+                  <div class="soc-stat"><div class="soc-stat-v">8.4</div><div class="soc-stat-l">Promedio</div></div>
+                </div>
+
+                <div class="soc-cta-row">
+                  <button class="soc-cta primary">Mensaje<div class="arrow">→</div></button>
+                  <button class="soc-cta ghost">+ Agregar</button>
+                </div>
+              </div>
+
+              <div class="soc-tabs">
+                <div class="soc-tab active">Posts</div>
+                <div class="soc-tab">Sobre</div>
+                <div class="soc-tab">CV</div>
+                <div class="soc-tab">Logros</div>
+              </div>
+
+              <div class="soc-post-list" style="padding-bottom: 70px;">
+                <div class="soc-post">
+                  <div class="soc-post-head">
+                    <div class="av av-cristian soc-pp-av">CG</div>
+                    <div>
+                      <div class="soc-pp-name">Cristian G.</div>
+                      <div class="soc-pp-sub">hace 3h</div>
+                    </div>
+                    <span class="soc-pp-type">★ Logro</span>
+                  </div>
+                  <div class="soc-post-body">Completé <strong>12 días seguidos</strong> estudiando. Vamos por los 30!</div>
+                  <div class="soc-post-foot"><span>♥ 24</span><span>✎ 8</span><span>↗</span></div>
+                </div>
+
+                <div class="soc-post">
+                  <div class="soc-post-head">
+                    <div class="av av-cristian soc-pp-av">CG</div>
+                    <div>
+                      <div class="soc-pp-name">Cristian G.</div>
+                      <div class="soc-pp-sub">ayer</div>
+                    </div>
+                    <span class="soc-pp-type" style="background: var(--pink); color: #fff;">Pregunta</span>
+                  </div>
+                  <div class="soc-post-body">Alguien entendió el ej 4 del cap 7 de Cengel?</div>
+                  <div class="soc-post-foot"><span>♥ 8</span><span>✎ 14</span><span>↗</span></div>
+                </div>
+              </div>
+
+              <div class="android-nav">
+                <div class="a-nav-item"><span class="nav-ico">⌂</span><span>Home</span></div>
+                <div class="a-nav-item"><span class="nav-ico">U</span><span>Mi U</span></div>
+                <div class="a-nav-item"><span class="nav-ico">◎</span><span>Chat</span></div>
+                <div class="a-nav-item active"><span class="nav-ico">♥</span><span>Social</span></div>
+                <div class="a-nav-item"><span class="nav-ico">▤</span><span>Cal</span></div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </section>
+
+    <!-- ══════════ UNIVERSIDAD ══════════ -->
+    <section class="screen-block">
+      <div class="sb-head">
+        <div class="sb-label">03 · mi universidad</div>
+        <h2 class="sb-title">Tu <span class="hl">U sincronizada</span> en el bolsillo.</h2>
+        <p class="sb-desc">Resumen del semestre, 6 asignaturas con notas y asistencia, próximas clases y entregas, progreso del semestre. Todo lo que necesitas revisar entre clases.</p>
+      </div>
+
+      <div class="phones-row">
+
+        <!-- iPhone U -->
+        <div class="phone-wrap">
+          <div class="phone-label">iOS · iPhone</div>
+          <div class="iphone">
+            <div class="iphone-notch"><div class="nc-cam"></div><div class="nc-speaker"></div><div class="nc-cam"></div></div>
+            <div class="iphone-screen" style="overflow-y: auto;">
+              <div class="ios-status">
+                <span>9:41</span>
+                <div class="ios-status-right">
+                  <div class="ios-sig"><span></span><span></span><span></span><span></span></div>
+                  <span style="font-weight: 700; font-size: 12px;">5G</span>
+                  <div class="ios-batt"><div class="ios-batt-fill"></div></div>
+                </div>
+              </div>
+
+              <div class="u-head-mob">
+                <div class="u-sync-chip-mob"><div class="d"></div>sync con tu U</div>
+                <div class="u-head-logo-row">
+                  <div class="u-head-logo">U</div>
+                  <div class="u-head-name-block">
+                    <div class="u-nm">Universidad de Chile</div>
+                    <div class="u-fac">Fac. CFM · Ing. Civil Industrial</div>
+                  </div>
+                </div>
+                <div class="u-semestre">Semestre <span class="hl">2026-1</span></div>
+                <div class="u-prog-inline">
+                  <span>34%</span>
+                  <div class="bar"><div class="fill"></div></div>
+                  <span>día 41/120</span>
+                </div>
+              </div>
+
+              <div class="u-stats-mob">
+                <div class="u-stat-mob hl">
+                  <div class="usml">Ramos</div>
+                  <div class="usmv">6</div>
+                  <div class="usmv-desc">5 obligatorios + 1 electivo</div>
+                </div>
+                <div class="u-stat-mob">
+                  <div class="usml">Promedio</div>
+                  <div class="usmv">6.4</div>
+                  <div class="usmv-desc">Sobre 7.0</div>
+                </div>
+                <div class="u-stat-mob">
+                  <div class="usml">Créditos</div>
+                  <div class="usmv">30</div>
+                  <div class="usmv-desc">De 36</div>
+                </div>
+                <div class="u-stat-mob">
+                  <div class="usml">Asistencia</div>
+                  <div class="usmv">92%</div>
+                  <div class="usmv-desc">Sobre min 75%</div>
+                </div>
+              </div>
+
+              <div class="u-subjects-mob" style="padding-bottom: 80px;">
+                <div class="u-subj-row hl">
+                  <div class="u-subj-top">
+                    <span class="u-subj-code">MA2002-1 · 6 cr</span>
+                    <span class="u-subj-status uss-ok">Al día</span>
+                  </div>
+                  <div class="u-subj-name">Cálculo Diferencial II</div>
+                  <div class="u-subj-meta">Prof. Margarita Soto · Lun-Mié-Vie 10:30 · Sala C-304</div>
+                  <div class="u-subj-next">
+                    <span class="nxt-date">27 abr</span>
+                    <span class="nxt-title">Certamen 2 · Derivadas</span>
+                  </div>
+                </div>
+
+                <div class="u-subj-row">
+                  <div class="u-subj-top">
+                    <span class="u-subj-code">IN3401-2 · 10 cr</span>
+                    <span class="u-subj-status uss-warn">Entrega</span>
+                  </div>
+                  <div class="u-subj-name">Termodinámica aplicada</div>
+                  <div class="u-subj-meta">Prof. Rodrigo Flores · Mar-Jue 14:00 · Sala K-202</div>
+                  <div class="u-subj-next">
+                    <span class="nxt-date">25 abr</span>
+                    <span class="nxt-title">Informe grupal ciclos</span>
+                  </div>
+                </div>
+
+                <div class="u-subj-row">
+                  <div class="u-subj-top">
+                    <span class="u-subj-code">IN3900-1 · 6 cr</span>
+                    <span class="u-subj-status uss-ok">Al día</span>
+                  </div>
+                  <div class="u-subj-name">Investigación Operativa II</div>
+                  <div class="u-subj-meta">Prof. Alejandro Castro · Mar-Jue 10:30</div>
+                </div>
+              </div>
+
+              <div class="ios-bottom-nav">
+                <div class="ios-nav-item"><span class="ios-ico">⌂</span><span>Home</span></div>
+                <div class="ios-nav-item active"><span class="ios-ico">U</span><span>Mi U</span></div>
+                <div class="ios-nav-item"><span class="ios-ico">◎</span><span>Chat</span></div>
+                <div class="ios-nav-item"><span class="ios-ico">♥</span><span>Social</span></div>
+                <div class="ios-nav-item"><span class="ios-ico">▤</span><span>Cal</span></div>
+              </div>
+              <div class="ios-home-ind"></div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Android U -->
+        <div class="phone-wrap">
+          <div class="phone-label">Android · Material</div>
+          <div class="android">
+            <div class="android-camera"></div>
+            <div class="android-screen" style="overflow-y: auto;">
+              <div class="android-status">
+                <span>9:41</span>
+                <div style="display: flex; gap: 6px;"><span style="font-family: var(--font-mono); font-size: 11px;">5G</span><span>◓ 78%</span></div>
+              </div>
+
+              <div class="u-head-mob">
+                <div class="u-sync-chip-mob"><div class="d"></div>sync con tu U</div>
+                <div class="u-head-logo-row">
+                  <div class="u-head-logo">U</div>
+                  <div class="u-head-name-block">
+                    <div class="u-nm">Universidad de Chile</div>
+                    <div class="u-fac">Fac. CFM · Ing. Civil Industrial</div>
+                  </div>
+                </div>
+                <div class="u-semestre">Semestre <span class="hl">2026-1</span></div>
+                <div class="u-prog-inline"><span>34%</span><div class="bar"><div class="fill"></div></div><span>día 41/120</span></div>
+              </div>
+
+              <div class="u-stats-mob">
+                <div class="u-stat-mob hl"><div class="usml">Ramos</div><div class="usmv">6</div><div class="usmv-desc">5 obl + 1 elec</div></div>
+                <div class="u-stat-mob"><div class="usml">Promedio</div><div class="usmv">6.4</div><div class="usmv-desc">Sobre 7.0</div></div>
+                <div class="u-stat-mob"><div class="usml">Créditos</div><div class="usmv">30</div><div class="usmv-desc">De 36</div></div>
+                <div class="u-stat-mob"><div class="usml">Asistencia</div><div class="usmv">92%</div><div class="usmv-desc">Sobre 75%</div></div>
+              </div>
+
+              <div class="u-subjects-mob" style="padding-bottom: 70px;">
+                <div class="u-subj-row hl">
+                  <div class="u-subj-top"><span class="u-subj-code">MA2002-1</span><span class="u-subj-status uss-ok">Al día</span></div>
+                  <div class="u-subj-name">Cálculo Dif. II</div>
+                  <div class="u-subj-meta">Prof. Margarita Soto · Sala C-304</div>
+                  <div class="u-subj-next"><span class="nxt-date">27 abr</span><span class="nxt-title">Certamen 2</span></div>
+                </div>
+
+                <div class="u-subj-row">
+                  <div class="u-subj-top"><span class="u-subj-code">IN3401-2</span><span class="u-subj-status uss-warn">Entrega</span></div>
+                  <div class="u-subj-name">Termodinámica aplicada</div>
+                  <div class="u-subj-meta">Prof. Rodrigo Flores · Sala K-202</div>
+                  <div class="u-subj-next"><span class="nxt-date">25 abr</span><span class="nxt-title">Informe grupal</span></div>
+                </div>
+
+                <div class="u-subj-row">
+                  <div class="u-subj-top"><span class="u-subj-code">IN3900-1</span><span class="u-subj-status uss-ok">Al día</span></div>
+                  <div class="u-subj-name">Inv. Operativa II</div>
+                  <div class="u-subj-meta">Prof. Alejandro Castro</div>
+                </div>
+              </div>
+
+              <div class="android-nav">
+                <div class="a-nav-item"><span class="nav-ico">⌂</span><span>Home</span></div>
+                <div class="a-nav-item active"><span class="nav-ico">U</span><span>Mi U</span></div>
+                <div class="a-nav-item"><span class="nav-ico">◎</span><span>Chat</span></div>
+                <div class="a-nav-item"><span class="nav-ico">♥</span><span>Social</span></div>
+                <div class="a-nav-item"><span class="nav-ico">▤</span><span>Cal</span></div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </section>
+
+    <!-- ══════════ CALENDARIO ══════════ -->
+    <section class="screen-block">
+      <div class="sb-head">
+        <div class="sb-label">04 · calendario</div>
+        <h2 class="sb-title">Tu <span class="hl-pink">agenda</span> del semestre.</h2>
+        <p class="sb-desc">Vista mensual con clases, tutorías, entregas y certámenes. Día de hoy destacado, eventos del día en detalle debajo del calendario.</p>
+      </div>
+
+      <div class="phones-row">
+
+        <!-- iPhone Cal -->
+        <div class="phone-wrap">
+          <div class="phone-label">iOS · iPhone</div>
+          <div class="iphone">
+            <div class="iphone-notch"><div class="nc-cam"></div><div class="nc-speaker"></div><div class="nc-cam"></div></div>
+            <div class="iphone-screen" style="overflow-y: auto;">
+              <div class="ios-status">
+                <span>9:41</span>
+                <div class="ios-status-right">
+                  <div class="ios-sig"><span></span><span></span><span></span><span></span></div>
+                  <span style="font-weight: 700; font-size: 12px;">5G</span>
+                  <div class="ios-batt"><div class="ios-batt-fill"></div></div>
+                </div>
+              </div>
+
+              <div class="cal-mob-head">
+                <div class="cal-mob-title"><span class="mo">Abril</span> 2026</div>
+                <div class="cal-mob-switcher">
+                  <span class="cal-mob-sw">Día</span>
+                  <span class="cal-mob-sw">Sem</span>
+                  <span class="cal-mob-sw active">Mes</span>
+                </div>
+              </div>
+
+              <div class="cal-mob-weekday">
+                <div class="cal-mob-wd">L</div>
+                <div class="cal-mob-wd">M</div>
+                <div class="cal-mob-wd">M</div>
+                <div class="cal-mob-wd">J</div>
+                <div class="cal-mob-wd today">V</div>
+                <div class="cal-mob-wd">S</div>
+                <div class="cal-mob-wd">D</div>
+              </div>
+
+              <div class="cal-mob-days">
+                <div class="cal-mob-day prev">31</div>
+                <div class="cal-mob-day has-events">1</div>
+                <div class="cal-mob-day has-events">2</div>
+                <div class="cal-mob-day has-events">3</div>
+                <div class="cal-mob-day has-events">4</div>
+                <div class="cal-mob-day">5</div>
+                <div class="cal-mob-day">6</div>
+
+                <div class="cal-mob-day has-events">7</div>
+                <div class="cal-mob-day has-events">8</div>
+                <div class="cal-mob-day has-events">9</div>
+                <div class="cal-mob-day has-events">10</div>
+                <div class="cal-mob-day has-events">11</div>
+                <div class="cal-mob-day">12</div>
+                <div class="cal-mob-day">13</div>
+
+                <div class="cal-mob-day">14</div>
+                <div class="cal-mob-day has-events">15</div>
+                <div class="cal-mob-day">16</div>
+                <div class="cal-mob-day has-events">17</div>
+                <div class="cal-mob-day today has-events">18</div>
+                <div class="cal-mob-day">19</div>
+                <div class="cal-mob-day">20</div>
+
+                <div class="cal-mob-day has-events">21</div>
+                <div class="cal-mob-day has-events">22</div>
+                <div class="cal-mob-day">23</div>
+                <div class="cal-mob-day">24</div>
+                <div class="cal-mob-day entrega">25</div>
+                <div class="cal-mob-day">26</div>
+                <div class="cal-mob-day exam">27</div>
+
+                <div class="cal-mob-day">28</div>
+                <div class="cal-mob-day">29</div>
+                <div class="cal-mob-day">30</div>
+                <div class="cal-mob-day next">1</div>
+                <div class="cal-mob-day next">2</div>
+                <div class="cal-mob-day next">3</div>
+                <div class="cal-mob-day next">4</div>
+              </div>
+
+              <div class="cal-mob-today-events" style="padding-bottom: 80px;">
+                <div class="cme-title">Hoy · vie 18 abril</div>
+
+                <div class="cal-mob-event">
+                  <div class="cme-time">10:30</div>
+                  <div class="cme-info">
+                    <div class="cme-evt-title">Cálculo Dif. II</div>
+                    <div class="cme-evt-sub">Sala C-304 · Margarita Soto</div>
+                  </div>
+                </div>
+
+                <div class="cal-mob-event evt-tutor">
+                  <div class="cme-time">17:00</div>
+                  <div class="cme-info">
+                    <div class="cme-evt-title">Tutoría con Margarita</div>
+                    <div class="cme-evt-sub">Online · 60 min · $18.900</div>
+                  </div>
+                </div>
+
+                <div class="cal-mob-event evt-study">
+                  <div class="cme-time">20:00</div>
+                  <div class="cme-info">
+                    <div class="cme-evt-title">Sala focus estudio</div>
+                    <div class="cme-evt-sub">Pía R. host · 2 horas</div>
+                  </div>
+                </div>
+              </div>
+
+              <div class="ios-bottom-nav">
+                <div class="ios-nav-item"><span class="ios-ico">⌂</span><span>Home</span></div>
+                <div class="ios-nav-item"><span class="ios-ico">U</span><span>Mi U</span></div>
+                <div class="ios-nav-item"><span class="ios-ico">◎</span><span>Chat</span></div>
+                <div class="ios-nav-item"><span class="ios-ico">♥</span><span>Social</span></div>
+                <div class="ios-nav-item active"><span class="ios-ico">▤</span><span>Cal</span></div>
+              </div>
+              <div class="ios-home-ind"></div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Android Cal -->
+        <div class="phone-wrap">
+          <div class="phone-label">Android · Material</div>
+          <div class="android">
+            <div class="android-camera"></div>
+            <div class="android-screen" style="overflow-y: auto;">
+              <div class="android-status">
+                <span>9:41</span>
+                <div style="display: flex; gap: 6px;"><span style="font-family: var(--font-mono); font-size: 11px;">5G</span><span>◓ 78%</span></div>
+              </div>
+
+              <div class="cal-mob-head">
+                <div class="cal-mob-title"><span class="mo">Abril</span> 2026</div>
+                <div class="cal-mob-switcher">
+                  <span class="cal-mob-sw">Día</span>
+                  <span class="cal-mob-sw">Sem</span>
+                  <span class="cal-mob-sw active">Mes</span>
+                </div>
+              </div>
+
+              <div class="cal-mob-weekday">
+                <div class="cal-mob-wd">L</div><div class="cal-mob-wd">M</div><div class="cal-mob-wd">M</div><div class="cal-mob-wd">J</div><div class="cal-mob-wd today">V</div><div class="cal-mob-wd">S</div><div class="cal-mob-wd">D</div>
+              </div>
+
+              <div class="cal-mob-days">
+                <div class="cal-mob-day prev">31</div>
+                <div class="cal-mob-day has-events">1</div>
+                <div class="cal-mob-day has-events">2</div>
+                <div class="cal-mob-day has-events">3</div>
+                <div class="cal-mob-day has-events">4</div>
+                <div class="cal-mob-day">5</div>
+                <div class="cal-mob-day">6</div>
+
+                <div class="cal-mob-day has-events">7</div>
+                <div class="cal-mob-day has-events">8</div>
+                <div class="cal-mob-day has-events">9</div>
+                <div class="cal-mob-day has-events">10</div>
+                <div class="cal-mob-day has-events">11</div>
+                <div class="cal-mob-day">12</div>
+                <div class="cal-mob-day">13</div>
+
+                <div class="cal-mob-day">14</div>
+                <div class="cal-mob-day has-events">15</div>
+                <div class="cal-mob-day">16</div>
+                <div class="cal-mob-day has-events">17</div>
+                <div class="cal-mob-day today has-events">18</div>
+                <div class="cal-mob-day">19</div>
+                <div class="cal-mob-day">20</div>
+
+                <div class="cal-mob-day has-events">21</div>
+                <div class="cal-mob-day has-events">22</div>
+                <div class="cal-mob-day">23</div>
+                <div class="cal-mob-day">24</div>
+                <div class="cal-mob-day entrega">25</div>
+                <div class="cal-mob-day">26</div>
+                <div class="cal-mob-day exam">27</div>
+
+                <div class="cal-mob-day">28</div>
+                <div class="cal-mob-day">29</div>
+                <div class="cal-mob-day">30</div>
+                <div class="cal-mob-day next">1</div>
+                <div class="cal-mob-day next">2</div>
+                <div class="cal-mob-day next">3</div>
+                <div class="cal-mob-day next">4</div>
+              </div>
+
+              <div class="cal-mob-today-events" style="padding-bottom: 70px;">
+                <div class="cme-title">Hoy · vie 18 abril</div>
+
+                <div class="cal-mob-event">
+                  <div class="cme-time">10:30</div>
+                  <div class="cme-info"><div class="cme-evt-title">Cálculo Dif. II</div><div class="cme-evt-sub">Sala C-304 · Margarita Soto</div></div>
+                </div>
+
+                <div class="cal-mob-event evt-tutor">
+                  <div class="cme-time">17:00</div>
+                  <div class="cme-info"><div class="cme-evt-title">Tutoría con Margarita</div><div class="cme-evt-sub">Online · 60 min</div></div>
+                </div>
+
+                <div class="cal-mob-event evt-study">
+                  <div class="cme-time">20:00</div>
+                  <div class="cme-info"><div class="cme-evt-title">Sala focus estudio</div><div class="cme-evt-sub">Pía R. host</div></div>
+                </div>
+              </div>
+
+              <div class="android-nav">
+                <div class="a-nav-item"><span class="nav-ico">⌂</span><span>Home</span></div>
+                <div class="a-nav-item"><span class="nav-ico">U</span><span>Mi U</span></div>
+                <div class="a-nav-item"><span class="nav-ico">◎</span><span>Chat</span></div>
+                <div class="a-nav-item"><span class="nav-ico">♥</span><span>Social</span></div>
+                <div class="a-nav-item active"><span class="nav-ico">▤</span><span>Cal</span></div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </section>
+
+  </div>
+
+</body>
+</html>

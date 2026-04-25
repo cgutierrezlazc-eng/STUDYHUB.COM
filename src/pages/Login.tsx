@@ -69,8 +69,8 @@ export default function Login({ onSwitchToRegister, onForgotPassword, onBack }: 
         </div>
 
         <div className={lgStyles.footerLinks}>
-          <a href="/terminos">Términos</a>
-          <a href="/privacidad">Privacidad</a>
+          <a href="/terms">Términos</a>
+          <a href="/privacy">Privacidad</a>
           <a href="/cookies">Cookies</a>
           <a href="mailto:contacto@conniku.com">Contacto</a>
           <span className={lgStyles.mini}>Hecho en Chile · 2026</span>

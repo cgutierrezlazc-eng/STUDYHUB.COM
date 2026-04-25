@@ -155,46 +155,58 @@ interface PreviredData {
 }
 
 // ─── Chilean Labor Law Constants (Auto-updatable) ──────────────
-// Fuente: Ministerio del Trabajo, SII, Superintendencia de Pensiones
-// IMPORTANTE: Actualizar estos valores cada vez que cambien por ley
+// Valores 2026 verificados el 2026-04-21 contra fuentes oficiales
+// (sii.cl, bcentral.cl, mintrab.gob.cl, spensiones.cl). Los valores
+// canónicos viven en shared/chile_constants.ts y backend/constants/
+// labor_chile.py con citas 4-líneas. Este bloque es la vista local
+// del HR Dashboard y debe mantenerse sincronizado byte-a-byte.
 const CHILE_LABOR = {
   // ─── Ingreso Minimo Mensual (IMM) — Art. 44 Codigo del Trabajo ───
-  // Ley 21.578: Reajuste escalonado del salario minimo
+  // Ley 21.751: $539.000 desde 2026-01-01.
+  // Fuente: https://www.mintrab.gob.cl/ya-es-una-realidad-diario-oficial-publica-ley-21-751
   IMM: {
-    current: 500000, // $500.000 desde 01-Jul-2024
-    effectiveDate: '2024-07-01',
+    current: 539000, // $539.000 desde 2026-01-01 (Ley 21.751)
+    effectiveDate: '2026-01-01',
     history: [
+      { from: '2026-01-01', amount: 539000 },
+      { from: '2025-05-01', amount: 529000 },
+      { from: '2025-01-01', amount: 510000 },
       { from: '2024-07-01', amount: 500000 },
       { from: '2024-01-01', amount: 460000 },
       { from: '2023-09-01', amount: 440000 },
       { from: '2023-05-01', amount: 410000 },
       { from: '2022-08-01', amount: 400000 },
     ],
-    // Minimo para jornada parcial (Art. 40 bis): proporcional a horas
-    partialRate: (weeklyHours: number) => Math.round((500000 * weeklyHours) / 40),
-    // Minimo para menores de 18 y mayores de 65
-    reduced: 372989,
+    // Jornada parcial (Art. 40 bis): proporcional a horas; base 42h desde 2026-04-26 (Ley 21.561 escalón 2).
+    partialRate: (weeklyHours: number) => Math.round((539000 * weeklyHours) / 42),
+    // Minimo para menores de 18 y mayores de 65 (reducido proporcional)
+    reduced: 402238,
     // Para fines no remuneracionales
-    nonRemunerational: 296514,
+    nonRemunerational: 319756,
   },
 
-  // ─── UF (Unidad de Fomento) — Actualizar mensualmente ───
+  // ─── UF (Unidad de Fomento) — Abril 2026 ───
+  // Fuente: https://www.sii.cl/valores_y_fechas/uf/uf2026.htm + bcentral.cl
   UF: {
-    value: 38700, // Valor aproximado Abril 2026 — ACTUALIZAR
+    value: 39842, // $39.841,72 (abril 2026)
     lastUpdate: '2026-04-01',
   },
 
-  // ─── UTM (Unidad Tributaria Mensual) ───
+  // ─── UTM (Unidad Tributaria Mensual) — Abril 2026 ───
+  // Fuente: https://www.sii.cl/valores_y_fechas/utm/utm2026.htm
   UTM: {
-    value: 67294, // Valor aproximado Abril 2026 — ACTUALIZAR
+    value: 69889, // $69.889 (abril 2026)
     lastUpdate: '2026-04-01',
   },
 
-  // ─── Topes Imponibles (Art. 16 DL 3.500) ───
+  // ─── Topes Imponibles ───
+  // AFP 81,6 UF (Art. 16 DL 3.500).
+  // AFC 135,2 UF desde 2026-02 (Ley 19.728 Art. 6°).
+  // Fuente: https://www.spensiones.cl/portal/institucional/594/w3-article-16921.html
   TOPES: {
-    afpUF: 81.6, // Tope AFP: 81,6 UF
-    afcUF: 122.6, // Tope AFC: 122,6 UF (Ley 19.728)
-    saludUF: 81.6, // Tope Salud: 81,6 UF
+    afpUF: 81.6,
+    afcUF: 135.2, // Actualizado 2026-02: 131,9 → 135,2 UF
+    saludUF: 81.6,
     get afpCLP() {
       return Math.round(CHILE_LABOR.UF.value * this.afpUF);
     },
@@ -223,8 +235,9 @@ const CHILE_LABOR = {
   },
 
   // ─── SIS — Seguro de Invalidez y Sobrevivencia (Art. 59 DL 3.500) ───
+  // Fuente: https://www.spensiones.cl/portal/institucional/594/w3-propertyvalue-9917.html
   SIS: {
-    rate: 0.0141, // 1,41% cargo empleador
+    rate: 0.0154, // 1,54% cargo empleador (Superintendencia Pensiones enero 2026)
   },
 
   // ─── Mutual de Seguridad (Ley 16.744) ───
@@ -242,7 +255,13 @@ const CHILE_LABOR = {
   },
 
   // ─── Impuesto Unico de Segunda Categoria (Art. 43 N°1 LIR) ───
-  // Tramos 2024 — en UTM. Actualizar anualmente.
+  // Tramos 2026 en UTM. Coherente con backend/constants/tax_chile.py
+  // IMPUESTO_2A_CATEGORIA_TRAMOS_2026_UTM y shared/chile_constants.ts
+  // IMPUESTO_2A_CATEGORIA_TRAMOS_2026_UTM.
+  // Fuente: https://www.sii.cl/valores_y_fechas/impuesto_2da_categoria/impuesto2026.htm
+  // Verificado: 2026-04-21 (PR #22 bloque-nomina-chile-v1)
+  // Ultimo tramo corregido de 150 UTM a 310 UTM (resolucion ALERTA-VIEWER-2
+  // del gap-finder 2026-04-21).
   TAX_BRACKETS: [
     { from: 0, to: 13.5, rate: 0, deduction: 0 },
     { from: 13.5, to: 30, rate: 0.04, deduction: 0.54 },
@@ -250,8 +269,8 @@ const CHILE_LABOR = {
     { from: 50, to: 70, rate: 0.135, deduction: 4.49 },
     { from: 70, to: 90, rate: 0.23, deduction: 11.14 },
     { from: 90, to: 120, rate: 0.304, deduction: 17.8 },
-    { from: 120, to: 150, rate: 0.35, deduction: 23.32 },
-    { from: 150, to: Infinity, rate: 0.4, deduction: 30.82 },
+    { from: 120, to: 310, rate: 0.35, deduction: 23.32 },
+    { from: 310, to: Infinity, rate: 0.4, deduction: 38.82 },
   ],
 
   // ─── APV — Ahorro Previsional Voluntario (Art. 20-20L DL 3.500) ───
@@ -1557,9 +1576,13 @@ function PersonalTab({
                   {
                     label: 'Ingreso Mínimo Mensual',
                     value: `$${CHILE_LABOR.IMM.current.toLocaleString('es-CL')}`,
-                    ref: 'Ley 21.578 · Art. 44 CT',
+                    ref: 'Ley 21.751 · Art. 44 CT',
                   },
-                  { label: 'Jornada máxima semanal', value: '45 horas', ref: 'Art. 22 CT' },
+                  {
+                    label: 'Jornada máxima semanal',
+                    value: '42 horas',
+                    ref: 'Ley 21.561 (actualiz. 26/04/2026)',
+                  },
                   { label: 'Horas extras máx. diarias', value: '2 hrs (+50%)', ref: 'Art. 30 CT' },
                   { label: 'Feriado legal anual', value: '15 días hábiles', ref: 'Art. 67 CT' },
                   {
@@ -1571,8 +1594,8 @@ function PersonalTab({
                   { label: 'AFC — Seguro Cesantía', value: '0,6% trabajador', ref: 'Ley 19.728' },
                   {
                     label: 'SIS — Inv. y Sobrev.',
-                    value: '1,41% empleador',
-                    ref: 'Art. 59 DL 3.500',
+                    value: '1,54% empleador',
+                    ref: 'Art. 59 DL 3.500 · Sup. Pensiones 2026',
                   },
                 ].map((m, i) => (
                   <div
@@ -1824,7 +1847,7 @@ function PersonalTab({
                 value={form.workSchedule}
                 onChange={(v) => setForm({ ...form, workSchedule: v })}
                 options={[
-                  { value: 'full_time', label: 'Completa (45 hrs/sem)' },
+                  { value: 'full_time', label: 'Completa (42 hrs/sem · Ley 21.561)' },
                   { value: 'part_time', label: 'Parcial' },
                 ]}
               />
@@ -2967,7 +2990,7 @@ function ContractModal({ employee, onClose }: { employee: Employee; onClose: () 
                     style={inputStyle}
                     value={form.companyRut}
                     onChange={(e) => u('companyRut', e.target.value)}
-                    placeholder="77.XXX.XXX-X"
+                    placeholder="78.395.702-7"
                   />
                 </div>
                 <div style={fieldStyle}>
@@ -5971,13 +5994,13 @@ function generateFiniquitoHTML(
 <title>Finiquito - ${emp.firstName} ${emp.lastName}</title>
 <style>${DOC_STYLES}</style>
 </head><body>
-<div class="header-info">CONNIKU SpA<br/>RUT: 77.XXX.XXX-X<br/>Santiago, Chile</div>
+<div class="header-info">CONNIKU SpA<br/>RUT: 78.395.702-7<br/>Santiago, Chile</div>
 <h1>Finiquito de Contrato de Trabajo</h1>
 <p class="legal-ref" style="text-align: center; margin-bottom: 24pt;">Conforme al Articulo 177 del Codigo del Trabajo</p>
 
 <div class="clause">
 <h2>PRIMERO: Partes</h2>
-<p>En Santiago, a ${dateStr}, entre <strong>CONNIKU SpA</strong>, RUT 77.XXX.XXX-X, representada legalmente para estos efectos, en adelante "el Empleador"; y don(a) <strong>${emp.firstName} ${emp.lastName}</strong>, RUT ${emp.rut}, de nacionalidad ${emp.nationality}, domiciliado(a) en ${emp.address}, en adelante "el Trabajador", se celebra el presente finiquito de contrato de trabajo.</p>
+<p>En Santiago, a ${dateStr}, entre <strong>CONNIKU SpA</strong>, RUT 78.395.702-7, representada legalmente para estos efectos, en adelante "el Empleador"; y don(a) <strong>${emp.firstName} ${emp.lastName}</strong>, RUT ${emp.rut}, de nacionalidad ${emp.nationality}, domiciliado(a) en ${emp.address}, en adelante "el Trabajador", se celebra el presente finiquito de contrato de trabajo.</p>
 </div>
 
 <div class="clause">
@@ -6033,7 +6056,7 @@ ${result.recargo > 0 ? `<tr><td>Recargo legal (${result.recargoPercent}% — Art
     <div class="sig-line">
       <strong>EL EMPLEADOR</strong><br/>
       CONNIKU SpA<br/>
-      RUT: 77.XXX.XXX-X
+      RUT: 78.395.702-7
     </div>
   </div>
   <div class="sig-block">
@@ -6097,7 +6120,7 @@ function generateCartaDespidoHTML(
 <title>Carta de Despido - ${emp.firstName} ${emp.lastName}</title>
 <style>${DOC_STYLES}</style>
 </head><body>
-<div class="header-info">CONNIKU SpA<br/>RUT: 77.XXX.XXX-X<br/>Santiago, Chile</div>
+<div class="header-info">CONNIKU SpA<br/>RUT: 78.395.702-7<br/>Santiago, Chile</div>
 
 <p style="text-align: right;">Santiago, ${dateStr}</p>
 
@@ -6166,7 +6189,7 @@ ${
   <div class="sig-line">
     <strong>CONNIKU SpA</strong><br/>
     Representante Legal<br/>
-    RUT: 77.XXX.XXX-X
+    RUT: 78.395.702-7
   </div>
 </div>
 
@@ -6209,7 +6232,7 @@ function generateCartaAmonestacionHTML(
 <title>Carta de Amonestacion - ${emp.firstName} ${emp.lastName}</title>
 <style>${DOC_STYLES}</style>
 </head><body>
-<div class="header-info">CONNIKU SpA<br/>RUT: 77.XXX.XXX-X<br/>Santiago, Chile</div>
+<div class="header-info">CONNIKU SpA<br/>RUT: 78.395.702-7<br/>Santiago, Chile</div>
 <h1>Carta de Amonestacion</h1>
 
 <p style="text-align: right;">Santiago, ${dateStr}</p>
@@ -6318,7 +6341,7 @@ function generateCertificadoHTML(
     titulo = 'Certificado de Antiguedad Laboral';
     contenido = `
 <div class="clause">
-<p>Por medio del presente, <strong>CONNIKU SpA</strong>, RUT 77.XXX.XXX-X, certifica que don(a) <strong>${emp.firstName} ${emp.lastName}</strong>, RUT ${emp.rut}, presta servicios para esta empresa desde el <strong>${hireDateStr}</strong>, desempenandose actualmente como <strong>${emp.position}</strong> en el departamento de <strong>${emp.department}</strong>.</p>
+<p>Por medio del presente, <strong>CONNIKU SpA</strong>, RUT 78.395.702-7, certifica que don(a) <strong>${emp.firstName} ${emp.lastName}</strong>, RUT ${emp.rut}, presta servicios para esta empresa desde el <strong>${hireDateStr}</strong>, desempenandose actualmente como <strong>${emp.position}</strong> en el departamento de <strong>${emp.department}</strong>.</p>
 <p>A la fecha del presente certificado, el trabajador cuenta con una antiguedad de <strong>${yearsWorked} anos y ${monthsExtra} meses</strong> de servicio continuo.</p>
 <p>Su contrato de trabajo es de tipo <strong>${emp.contractType}</strong>, con una jornada de <strong>${emp.weeklyHours} horas semanales</strong>.</p>
 <p>Se extiende el presente certificado a solicitud del interesado, para los fines que estime convenientes.</p>
@@ -6339,7 +6362,7 @@ function generateCertificadoHTML(
     );
     contenido = `
 <div class="clause">
-<p>Por medio del presente, <strong>CONNIKU SpA</strong>, RUT 77.XXX.XXX-X, certifica que don(a) <strong>${emp.firstName} ${emp.lastName}</strong>, RUT ${emp.rut}, presta servicios para esta empresa como <strong>${emp.position}</strong> y ha percibido las siguientes remuneraciones en los ultimos tres meses:</p>
+<p>Por medio del presente, <strong>CONNIKU SpA</strong>, RUT 78.395.702-7, certifica que don(a) <strong>${emp.firstName} ${emp.lastName}</strong>, RUT ${emp.rut}, presta servicios para esta empresa como <strong>${emp.position}</strong> y ha percibido las siguientes remuneraciones en los ultimos tres meses:</p>
 <table>
 <thead>
 <tr><th>Periodo</th><th style="text-align: right;">Remuneracion Bruta</th><th style="text-align: right;">Colacion</th><th style="text-align: right;">Movilizacion</th></tr>
@@ -6359,7 +6382,7 @@ function generateCertificadoHTML(
     const diasAcumulados = yearsWorked * diasBase;
     contenido = `
 <div class="clause">
-<p>Por medio del presente, <strong>CONNIKU SpA</strong>, RUT 77.XXX.XXX-X, deja constancia del registro de feriado anual (vacaciones) de don(a) <strong>${emp.firstName} ${emp.lastName}</strong>, RUT ${emp.rut}, quien presta servicios desde el <strong>${hireDateStr}</strong>.</p>
+<p>Por medio del presente, <strong>CONNIKU SpA</strong>, RUT 78.395.702-7, deja constancia del registro de feriado anual (vacaciones) de don(a) <strong>${emp.firstName} ${emp.lastName}</strong>, RUT ${emp.rut}, quien presta servicios desde el <strong>${hireDateStr}</strong>.</p>
 
 <h2>Detalle de Feriado Anual</h2>
 <table>
@@ -6380,7 +6403,7 @@ function generateCertificadoHTML(
 <title>${titulo} - ${emp.firstName} ${emp.lastName}</title>
 <style>${DOC_STYLES}</style>
 </head><body>
-<div class="header-info">CONNIKU SpA<br/>RUT: 77.XXX.XXX-X<br/>Santiago, Chile</div>
+<div class="header-info">CONNIKU SpA<br/>RUT: 78.395.702-7<br/>Santiago, Chile</div>
 <h1>${titulo}</h1>
 
 <p style="text-align: right;">Santiago, ${dateStr}</p>
@@ -6391,7 +6414,7 @@ ${contenido}
   <div class="sig-line">
     <strong>CONNIKU SpA</strong><br/>
     Representante Legal<br/>
-    RUT: 77.XXX.XXX-X
+    RUT: 78.395.702-7
   </div>
 </div>
 </body></html>`;
@@ -6803,7 +6826,7 @@ function InspeccionTrabajoTab({ employees }: { employees: Employee[] }) {
                   const vacaciones = dailySalary * 15;
                   const gratificacionMensual = Math.min(
                     emp.grossSalary * 0.25,
-                    (500000 * 4.75) / 12
+                    (CHILE_LABOR.IMM.current * 4.75) / 12
                   );
                   const gratificacionProp = gratificacionMensual * (months / 12);
                   const diasTrabajados = dailySalary * 15;
@@ -7801,7 +7824,9 @@ function OwnerGuideTab() {
                 <strong>Ventajas:</strong>
               </p>
               <ul style={{ paddingLeft: 20, lineHeight: 1.8 }}>
-                <li>Retencion de 13.75% (2025) como PPM (puede recuperarse en renta anual)</li>
+                <li>
+                  Retencion de 15.25% (2026, Ley 21.133) como PPM (puede recuperarse en renta anual)
+                </li>
                 <li>Menor carga administrativa mensual</li>
                 <li>Flexibility en montos y frecuencia</li>
               </ul>
@@ -8196,7 +8221,7 @@ function FiniquitosTab({ employees }: { employees: Employee[] }) {
     const vacaciones = dailySalary * pendingVacationDays;
 
     // Gratificacion proporcional
-    const gratificacionMensual = Math.min(lastSalary * 0.25, (500000 * 4.75) / 12);
+    const gratificacionMensual = Math.min(lastSalary * 0.25, (CHILE_LABOR.IMM.current * 4.75) / 12);
     const gratificacionProp = gratificacionMensual * (monthsExtra / 12);
 
     // Dias trabajados del mes (estimado 15 dias)
@@ -8686,7 +8711,7 @@ function TutoresExternosTab({ month, year }: { month: number; year: number }) {
         </h3>
         <p style={{ fontSize: 13, opacity: 0.9, margin: 0 }}>
           Gestion de tutores con boleta de honorarios. Comision Conniku: 10%. El tutor recibe 90%
-          bruto y es responsable de pagar su retencion al SII (13.75%).
+          bruto y es responsable de pagar su retencion al SII (15.25% desde 2026).
         </p>
       </div>
 
@@ -8880,8 +8905,8 @@ function TutoresExternosTab({ month, year }: { month: number; year: number }) {
                 Conniku SpA.
               </p>
               <p>
-                <strong>Retencion SII:</strong> El tutor paga 13.75% al SII ($2,475). Neto tutor:
-                $15,525.
+                <strong>Retencion SII:</strong> El tutor paga 15.25% al SII ($2,745). Neto tutor:
+                $15,255.
               </p>
               <p>
                 <strong>Frecuencia de pago:</strong> Por clase, quincenal o mensual (a eleccion del

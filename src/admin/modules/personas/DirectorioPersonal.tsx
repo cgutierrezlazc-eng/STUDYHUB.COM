@@ -36,7 +36,7 @@ const DEPARTMENTS = [
   'Soporte',
 ];
 const SCHEDULE_OPTIONS = [
-  { value: 'full_time', label: 'Jornada Completa (45h)' },
+  { value: 'full_time', label: 'Jornada Completa (42h · Ley 21.561)' },
   { value: 'part_time', label: 'Media Jornada' },
   { value: 'flexible', label: 'Horario Flexible' },
   { value: 'remoto', label: 'Teletrabajo' },

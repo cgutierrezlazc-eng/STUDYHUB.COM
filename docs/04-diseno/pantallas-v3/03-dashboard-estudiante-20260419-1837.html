@@ -1,0 +1,367 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Conniku — Dashboard Estudiante (editorial)</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Funnel+Display:wght@400;500;600;700;800;900&family=Geist+Mono:wght@400;500;600;700&display=swap" />
+  <style>
+    :root {
+      --ink: #0D0F10;
+      --ink-2: #2B2E30;
+      --ink-3: #696C6F;
+      --ink-4: #A0A3A7;
+      --paper: #F5F4EF;
+      --paper-2: #EBE9E1;
+      --paper-3: #DBD9CF;
+      --line: #D2CFC3;
+      --line-soft: #E2DFD4;
+      --card: #FFFFFF;
+      --lime: #D9FF3A;
+      --lime-ink: #181F08;
+      --pink: #FF4D3A;
+      --pink-deep: #D9341F;
+      --orange: #FF4A1C;
+      --cream: #FFE9B8;
+      --violet: #6B4EFF;
+      --cyan: #00C2FF;
+      --blue: #2D62C8;
+      --font-display: 'Funnel Display', -apple-system, sans-serif;
+      --font-mono: 'Geist Mono', ui-monospace, monospace;
+      --r-btn: 999px;
+      --r-card: 24px;
+      --r-sm: 10px;
+      --ease: cubic-bezier(.2,.8,.2,1);
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    html, body { background: var(--paper); color: var(--ink); font-family: var(--font-display); }
+    body { min-height: 100vh; overflow-x: hidden; }
+    ::selection { background: var(--lime); color: var(--lime-ink); }
+
+    /* Progress bar top */
+    .top-progress {
+      background: var(--ink); color: #fff; padding: 8px 28px;
+      display: flex; align-items: center; justify-content: space-between;
+      font-family: var(--font-mono); font-size: 11px;
+      letter-spacing: .08em; text-transform: uppercase;
+    }
+    .top-progress .left { display: flex; align-items: center; gap: 12px; }
+    .pulse { width: 8px; height: 8px; border-radius: 50%; background: var(--lime); box-shadow: 0 0 0 0 var(--lime); animation: pulse 1.6s var(--ease) infinite; }
+    @keyframes pulse { 0% { box-shadow: 0 0 0 0 rgba(217,255,58,.7); } 70% { box-shadow: 0 0 0 10px rgba(217,255,58,0); } 100% { box-shadow: 0 0 0 0 rgba(217,255,58,0); } }
+    .top-progress .bar { flex: 1; max-width: 180px; height: 4px; background: rgba(255,255,255,.15); border-radius: 4px; margin: 0 20px; overflow: hidden; }
+    .top-progress .bar-fill { width: 34%; height: 100%; background: linear-gradient(90deg, var(--lime), var(--pink)); border-radius: 4px; }
+
+    /* Nav */
+    .nav-wrap { padding: 18px 28px 0; display: flex; justify-content: center; }
+    .nav {
+      max-width: 1240px; width: 100%;
+      background: var(--card); border: 1px solid var(--line);
+      border-radius: var(--r-btn); padding: 10px 14px 10px 18px;
+      display: flex; align-items: center; gap: 28px;
+    }
+    .logo-wrap { display: flex; align-items: center; gap: 10px; }
+    .logo-tile { width: 28px; height: 28px; display: block; flex-shrink: 0; }
+    .logo-text { font-weight: 700; font-size: 20px; letter-spacing: -.02em; }
+    .nav-links { display: flex; gap: 22px; flex: 1; }
+    .nav-link { font-size: 15px; font-weight: 600; color: var(--ink-2); cursor: pointer; }
+    .nav-link:hover { color: var(--ink); }
+    .nav-link.active { color: var(--ink); }
+    .search-slot { font-family: var(--font-mono); font-size: 13px; color: var(--ink-3); border: 1px solid var(--line-soft); border-radius: var(--r-btn); padding: 6px 14px; display: flex; align-items: center; gap: 8px; }
+    .kbd { background: var(--paper-2); padding: 2px 7px; border-radius: 6px; font-size: 11px; color: var(--ink-2); }
+    .btn { font-family: var(--font-display); border-radius: var(--r-btn); border: 0; cursor: pointer; transition: all 180ms var(--ease); }
+    .btn-primary { background: var(--ink); color: #fff; padding: 10px 14px 10px 20px; display: flex; align-items: center; gap: 10px; font-weight: 700; font-size: 14px; }
+    .btn-primary:hover { background: var(--ink-2); transform: translateY(-1px); }
+    .btn-primary .ring { width: 26px; height: 26px; border-radius: 50%; background: var(--lime); display: grid; place-items: center; color: var(--ink); font-weight: 900; font-size: 14px; }
+
+    /* Layout */
+    .main { max-width: 1240px; margin: 0 auto; padding: 60px 28px 120px; }
+
+    /* Status chip */
+    .status-chip { display: inline-flex; align-items: center; gap: 10px; background: var(--card); border: 1px solid var(--line); border-radius: var(--r-btn); padding: 8px 14px; font-family: var(--font-mono); font-size: 12px; color: var(--ink-2); letter-spacing: .08em; text-transform: uppercase; }
+    .status-chip .dot { width: 8px; height: 8px; border-radius: 50%; background: var(--orange); }
+    .status-chip .count { background: var(--lime); color: var(--lime-ink); padding: 2px 9px; border-radius: var(--r-btn); font-weight: 700; letter-spacing: 0; }
+
+    /* Hero saludo */
+    .hero { margin-top: 24px; margin-bottom: 56px; }
+    .hero h1 { font-family: var(--font-display); font-weight: 900; font-size: clamp(56px, 9vw, 120px); line-height: .9; letter-spacing: -.04em; }
+    .hero h1 .wave { display: inline-block; }
+    .hero h1 .name { background: var(--lime); padding: 2px 18px 6px; border-radius: 14px; display: inline-block; transform: rotate(-1deg); position: relative; }
+    .hero h1 .name::after { content: ""; position: absolute; right: -18px; bottom: 20px; width: 8px; height: 8px; border-radius: 50%; background: var(--pink); box-shadow: 16px 14px 0 var(--cream), 12px -8px 0 var(--cyan), -4px 22px 0 var(--violet); }
+    .hero p { margin-top: 28px; max-width: 600px; font-size: 20px; line-height: 1.45; color: var(--ink-2); font-weight: 500; }
+    .hero p strong { background: var(--cream); padding: 2px 8px; border-radius: 6px; font-weight: 700; }
+
+    /* Section label */
+    .section-label {
+      display: flex; align-items: center; gap: 12px;
+      font-family: var(--font-mono); font-size: 11px; font-weight: 600;
+      letter-spacing: .14em; text-transform: uppercase; color: var(--ink-3);
+      margin-bottom: 18px;
+    }
+    .section-label::before { content: ""; width: 32px; height: 2px; background: var(--ink); }
+
+    /* Hoy grid */
+    .hoy-grid { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 20px; margin-bottom: 72px; }
+    .card { background: var(--card); border: 2px solid var(--ink); border-radius: var(--r-card); padding: 28px; transition: all 200ms var(--ease); }
+    .card:hover { transform: translateY(-3px); box-shadow: 8px 8px 0 var(--ink); }
+
+    .card-clase { transform: rotate(-.8deg); }
+    .card-clase .badge { display: inline-block; background: var(--lime); color: var(--lime-ink); padding: 5px 14px; border-radius: var(--r-btn); font-family: var(--font-mono); font-size: 11px; font-weight: 700; letter-spacing: .08em; text-transform: uppercase; }
+    .card-clase .time { font-family: var(--font-mono); font-size: 13px; color: var(--ink-3); margin: 14px 0 6px; letter-spacing: .08em; }
+    .card-clase .title { font-family: var(--font-display); font-weight: 800; font-size: 28px; letter-spacing: -.02em; line-height: 1.05; }
+    .card-clase .meta { font-size: 14px; color: var(--ink-2); margin-top: 12px; }
+    .card-clase .action { margin-top: 20px; display: inline-flex; align-items: center; gap: 8px; font-weight: 700; font-size: 14px; color: var(--ink); cursor: pointer; border-bottom: 2px solid var(--ink); padding-bottom: 2px; }
+
+    .card-docs { transform: rotate(.5deg); background: var(--cream); }
+    .card-docs .badge { background: var(--ink); color: #fff; }
+    .card-docs .title { font-weight: 800; font-size: 28px; letter-spacing: -.02em; line-height: 1.05; }
+    .card-docs .docs-list { margin-top: 16px; display: flex; flex-direction: column; gap: 8px; }
+    .card-docs .doc-item { display: flex; justify-content: space-between; align-items: center; padding: 8px 0; border-bottom: 1px dashed rgba(13,15,16,.2); }
+    .card-docs .doc-item:last-child { border-bottom: 0; }
+    .card-docs .doc-name { font-size: 14px; font-weight: 600; }
+    .card-docs .doc-time { font-family: var(--font-mono); font-size: 11px; color: var(--ink-3); }
+
+    .card-quiz { transform: rotate(-.3deg); background: var(--ink); color: #fff; }
+    .card-quiz .badge { background: var(--lime); color: var(--lime-ink); }
+    .card-quiz .title { font-weight: 800; font-size: 28px; letter-spacing: -.02em; line-height: 1.05; color: #fff; }
+    .card-quiz .score { font-family: var(--font-display); font-weight: 900; font-size: 80px; line-height: 1; letter-spacing: -.04em; margin: 20px 0 8px; font-feature-settings: 'tnum'; }
+    .card-quiz .score-label { font-family: var(--font-mono); font-size: 11px; color: var(--ink-4); letter-spacing: .14em; text-transform: uppercase; }
+    .card-quiz .progress-mini { margin-top: 16px; height: 4px; background: rgba(255,255,255,.15); border-radius: 4px; overflow: hidden; }
+    .card-quiz .progress-mini .fill { width: 68%; height: 100%; background: var(--lime); }
+
+    /* Day timeline */
+    .day-timeline { display: grid; grid-template-columns: repeat(8, 1fr); gap: 10px; margin-bottom: 72px; }
+    .slot { background: var(--card); border: 2px solid var(--ink); border-radius: 16px; padding: 16px 12px; min-height: 100px; display: flex; flex-direction: column; justify-content: space-between; transition: all 180ms var(--ease); }
+    .slot:hover { transform: translateY(-2px); }
+    .slot .hour { font-family: var(--font-mono); font-size: 10px; color: var(--ink-3); letter-spacing: .1em; text-transform: uppercase; }
+    .slot .event { font-weight: 700; font-size: 13px; line-height: 1.2; }
+    .slot .indicator { width: 16px; height: 16px; border-radius: 4px; }
+    .slot.on-now { background: var(--lime); border-color: var(--ink); transform: rotate(-1deg); }
+    .slot.on-now .indicator { background: var(--ink); }
+    .slot.busy { background: var(--pink); color: #fff; }
+    .slot.busy .hour { color: rgba(255,255,255,.8); }
+    .slot.busy .indicator { background: #fff; }
+    .slot.rest { background: var(--paper-2); }
+    .slot.rest .indicator { background: var(--ink-4); }
+
+    /* Stats */
+    .stats { display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; margin-bottom: 72px; }
+    .stat { padding: 24px; border: 2px solid var(--ink); border-radius: var(--r-card); transition: all 200ms var(--ease); }
+    .stat:hover { transform: translateY(-2px); box-shadow: 4px 4px 0 var(--ink); }
+    .stat .stat-label { font-family: var(--font-mono); font-size: 11px; color: var(--ink-3); letter-spacing: .14em; text-transform: uppercase; margin-bottom: 12px; }
+    .stat .stat-value { font-family: var(--font-display); font-weight: 900; font-size: clamp(40px, 5vw, 64px); line-height: 1; letter-spacing: -.03em; font-feature-settings: 'tnum'; }
+    .stat .stat-note { font-size: 12px; color: var(--ink-3); margin-top: 8px; }
+    .stat.highlight { background: var(--ink); color: #fff; }
+    .stat.highlight .stat-label { color: var(--lime); }
+    .stat.highlight .stat-note { color: rgba(255,255,255,.6); }
+
+    /* Activity feed */
+    .activity { background: var(--card); border: 2px solid var(--ink); border-radius: var(--r-card); padding: 28px; }
+    .activity h3 { font-weight: 800; font-size: 32px; letter-spacing: -.03em; margin-bottom: 20px; }
+    .activity h3 .accent { background: var(--violet); color: #fff; padding: 0 10px; border-radius: 6px; transform: rotate(-.8deg); display: inline-block; }
+    .activity-item { display: flex; gap: 16px; padding: 14px 0; border-bottom: 1px solid var(--line-soft); }
+    .activity-item:last-child { border-bottom: 0; }
+    .activity-icon { width: 40px; height: 40px; border-radius: 12px; display: grid; place-items: center; flex-shrink: 0; font-weight: 900; font-size: 18px; }
+    .activity-icon.chat { background: var(--cyan); color: var(--ink); }
+    .activity-icon.mention { background: var(--pink); color: #fff; }
+    .activity-icon.trophy { background: var(--lime); color: var(--lime-ink); }
+    .activity-icon.edit { background: var(--violet); color: #fff; }
+    .activity-content { flex: 1; }
+    .activity-title { font-weight: 700; font-size: 14px; }
+    .activity-body { font-size: 13px; color: var(--ink-2); margin-top: 2px; }
+    .activity-time { font-family: var(--font-mono); font-size: 11px; color: var(--ink-3); letter-spacing: .08em; text-transform: uppercase; margin-top: 4px; }
+
+    @media (max-width: 1080px) {
+      .hoy-grid { grid-template-columns: 1fr; }
+      .day-timeline { grid-template-columns: repeat(4, 1fr); }
+      .stats { grid-template-columns: repeat(2, 1fr); }
+    }
+
+    /* ═══ Logo oficial wordmark integrado · 00-BRAND-LOGO.md · INVIOLABLE ═══ */
+    .brand {
+      display: inline-flex; align-items: baseline;
+      font-family: var(--font-display, 'Funnel Display'); font-weight: 900;
+      font-size: 24px; letter-spacing: -.055em; line-height: 1;
+      color: var(--ink, #0D0F10); text-decoration: none;
+      white-space: nowrap;
+    }
+    .brand .u-pack {
+      display: inline-flex; align-items: baseline;
+      background: var(--lime, #D9FF3A);
+      color: var(--ink, #0D0F10);
+      padding: .07em .14em .07em .09em;
+      border-radius: .2em;
+      margin-left: .02em;
+    }
+    .brand .u-pack .dot { color: var(--orange, #FF4A1C); }
+  </style>
+</head>
+<body>
+
+  <div class="top-progress">
+    <div class="left">
+      <div class="pulse"></div>
+      <span>Semestre 2026-1</span>
+    </div>
+    <div class="bar"><div class="bar-fill"></div></div>
+    <span>34% · día 41 de 120</span>
+  </div>
+
+  <div class="nav-wrap">
+    <div class="nav">
+      <a class="brand" href="#" aria-label="Conniku">conn<span>i</span>k<span class="u-pack">u<span class="dot">.</span></span></a>
+      </div>
+      <div class="nav-links">
+        <div class="nav-link active">Estudio</div>
+        <div class="nav-link">Biblioteca</div>
+        <div class="nav-link">Tutores</div>
+        <div class="nav-link">Empleo</div>
+        <div class="nav-link">Comunidad</div>
+      </div>
+      <div class="search-slot">
+        <span>Buscar</span>
+        <span class="kbd">⌘K</span>
+      </div>
+      <button class="btn btn-primary">
+        Crear
+        <span class="ring">+</span>
+      </button>
+    </div>
+  </div>
+
+  <main class="main">
+
+    <div class="status-chip">
+      <div class="dot"></div>
+      <span>estudiando ahora mismo</span>
+      <span class="count">118</span>
+    </div>
+
+    <section class="hero">
+      <h1>
+        <span class="wave">Hola,</span><br>
+        <span class="name">Cristian</span>.
+      </h1>
+      <p>
+        Tienes <strong>3 clases hoy</strong>, un informe entregable mañana y un quiz de cálculo pendiente. <strong>Todo en un lugar.</strong>
+      </p>
+    </section>
+
+    <div class="section-label">Hoy · 18 de abril</div>
+
+    <div class="hoy-grid">
+      <div class="card card-clase">
+        <div class="badge">Próxima clase</div>
+        <div class="time">10:30 — 12:00 AM</div>
+        <div class="title">Cálculo Diferencial II</div>
+        <div class="meta">Prof. Daniela Maturana · Sala C-304</div>
+        <div class="action">Entrar a la clase →</div>
+      </div>
+
+      <div class="card card-docs">
+        <div class="badge">Tus documentos</div>
+        <div class="title" style="margin-top: 16px;">Recientes</div>
+        <div class="docs-list">
+          <div class="doc-item">
+            <span class="doc-name">Informe Microeconomía v3</span>
+            <span class="doc-time">hace 2h</span>
+          </div>
+          <div class="doc-item">
+            <span class="doc-name">Resumen Capítulo 7</span>
+            <span class="doc-time">ayer</span>
+          </div>
+          <div class="doc-item">
+            <span class="doc-name">Ensayo Marketing Estratégico</span>
+            <span class="doc-time">hace 3 días</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="card card-quiz">
+        <div class="badge">Último quiz</div>
+        <div class="title" style="margin-top: 16px;">Álgebra Lineal</div>
+        <div class="score">87</div>
+        <div class="score-label">sobre 100</div>
+        <div class="progress-mini"><div class="fill"></div></div>
+      </div>
+    </div>
+
+    <div class="section-label">Tu día</div>
+    <div class="day-timeline">
+      <div class="slot rest"><div class="hour">7:00</div><div class="event">Descanso</div><div class="indicator"></div></div>
+      <div class="slot"><div class="hour">9:00</div><div class="event">Taller escritura</div><div class="indicator" style="background: var(--cream);"></div></div>
+      <div class="slot on-now"><div class="hour">10:30</div><div class="event">Cálculo II</div><div class="indicator"></div></div>
+      <div class="slot"><div class="hour">12:30</div><div class="event">Almuerzo</div><div class="indicator" style="background: var(--cyan);"></div></div>
+      <div class="slot busy"><div class="hour">14:00</div><div class="event">Microeconomía</div><div class="indicator"></div></div>
+      <div class="slot"><div class="hour">16:00</div><div class="event">Estudio libre</div><div class="indicator" style="background: var(--violet);"></div></div>
+      <div class="slot"><div class="hour">18:00</div><div class="event">Tutoría grupal</div><div class="indicator" style="background: var(--pink);"></div></div>
+      <div class="slot rest"><div class="hour">20:00</div><div class="event">Descanso</div><div class="indicator"></div></div>
+    </div>
+
+    <div class="section-label">Esta semana en números</div>
+    <div class="stats">
+      <div class="stat highlight">
+        <div class="stat-label">Horas estudiadas</div>
+        <div class="stat-value">42h</div>
+        <div class="stat-note">+8h vs la semana anterior</div>
+      </div>
+      <div class="stat">
+        <div class="stat-label">Documentos</div>
+        <div class="stat-value">17</div>
+        <div class="stat-note">creados esta semana</div>
+      </div>
+      <div class="stat">
+        <div class="stat-label">Promedio quiz</div>
+        <div class="stat-value">8.4</div>
+        <div class="stat-note">sobre 10</div>
+      </div>
+      <div class="stat">
+        <div class="stat-label">Racha</div>
+        <div class="stat-value">12</div>
+        <div class="stat-note">días estudiando seguido</div>
+      </div>
+    </div>
+
+    <div class="activity">
+      <h3>
+        Actividad <span class="accent">reciente</span>
+      </h3>
+      <div class="activity-item">
+        <div class="activity-icon chat">c</div>
+        <div class="activity-content">
+          <div class="activity-title">Victoria Navarro respondió en Workspace "Microeconomía"</div>
+          <div class="activity-body">"creo que el ejercicio 4b se resuelve derivando primero la función de utilidad"</div>
+          <div class="activity-time">hace 12 min</div>
+        </div>
+      </div>
+      <div class="activity-item">
+        <div class="activity-icon mention">@</div>
+        <div class="activity-content">
+          <div class="activity-title">Felipe Gatica te mencionó en "Informe final grupal"</div>
+          <div class="activity-body">"@cristian podrías revisar la conclusión antes de enviarlo?"</div>
+          <div class="activity-time">hace 1h</div>
+        </div>
+      </div>
+      <div class="activity-item">
+        <div class="activity-icon trophy">★</div>
+        <div class="activity-content">
+          <div class="activity-title">Completaste la racha de 12 días</div>
+          <div class="activity-body">desbloqueaste "Constancia" — seguí así, vas muy bien</div>
+          <div class="activity-time">hoy 9:00 AM</div>
+        </div>
+      </div>
+      <div class="activity-item">
+        <div class="activity-icon edit">✎</div>
+        <div class="activity-content">
+          <div class="activity-title">Nuevo material en "Marketing Estratégico"</div>
+          <div class="activity-body">la Prof. Barbara Escalona subió 3 lecturas nuevas para la próxima semana</div>
+          <div class="activity-time">ayer 16:30</div>
+        </div>
+      </div>
+    </div>
+
+  </main>
+
+</body>
+</html>

@@ -1,0 +1,583 @@
+<!DOCTYPE html>
+<html lang="es-CL">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Conniku — Verifica tu universidad · Paso 2 de 6</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Funnel+Display:wght@400;500;600;700;800;900&family=Geist+Mono:wght@400;500;600;700&display=swap" />
+  <style>
+    :root {
+      --ink: #0D0F10; --ink-2: #2B2E30; --ink-3: #696C6F; --ink-4: #A0A3A7;
+      --paper: #F5F4EF; --paper-2: #EBE9E1; --card: #FFFFFF;
+      --lime: #D9FF3A; --lime-ink: #181F08;
+      --pink: #FF4D3A; --cream: #FFE9B8;
+      --violet: #6B4EFF; --cyan: #00C2FF; --orange: #FF4A1C;
+      --font-display: 'Funnel Display', -apple-system, BlinkMacSystemFont, sans-serif;
+      --font-mono: 'Geist Mono', ui-monospace, monospace;
+      --ease: cubic-bezier(.2,.8,.2,1);
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    html, body { background: var(--ink); color: var(--paper); font-family: var(--font-display); height: 100vh; overflow: hidden; }
+    ::selection { background: var(--lime); color: var(--lime-ink); }
+    a, button { color: inherit; font-family: inherit; }
+    button { cursor: pointer; border: 0; background: transparent; }
+
+    /* ═══ Partículas globales ═══ */
+    .panel-fx { position: fixed; inset: 0; pointer-events: none; z-index: 1; overflow: hidden; }
+    .panel-fx .light-far { position: absolute; border-radius: 50%; mix-blend-mode: screen; }
+    .panel-fx .light-mid { position: absolute; border-radius: 50%; mix-blend-mode: screen; }
+    .panel-fx .sp { position: absolute; border-radius: 50%; display: block; }
+    .sp-pink { background: var(--pink); } .sp-lime { background: var(--lime); }
+    .sp-cyan { background: var(--cyan); } .sp-cream { background: var(--cream); }
+    .sp-violet { background: var(--violet); }
+    .lf-lime { background: var(--lime); } .lf-pink { background: var(--pink); }
+    .lf-violet { background: var(--violet); } .lf-cyan { background: var(--cyan); }
+    .lf-cream { background: var(--cream); }
+
+    /* ═══ Nav superior ═══ */
+    .nav {
+      position: fixed; top: 0; left: 0; right: 0; z-index: 20; height: 64px;
+      padding: 0 40px; display: flex; align-items: center; justify-content: space-between;
+      background: rgba(13, 15, 16, 0.65);
+      backdrop-filter: blur(14px); -webkit-backdrop-filter: blur(14px);
+      border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+    }
+    .brand { display: flex; align-items: baseline; font-family: var(--font-display); font-weight: 900; font-size: 24px; letter-spacing: -.045em; color: var(--paper); text-decoration: none; }
+    .brand .dot { color: var(--orange); }
+    .nav-right { display: flex; gap: 10px; align-items: center; }
+
+    .back-btn {
+      display: inline-flex; align-items: center; gap: 8px;
+      padding: 7px 14px 7px 9px;
+      border-radius: 999px;
+      border: 1px solid rgba(255,255,255,.2);
+      background: rgba(255,255,255,.05);
+      color: var(--paper);
+      font-family: var(--font-display); font-weight: 600; font-size: 13px;
+      text-decoration: none;
+      transition: all 200ms var(--ease);
+    }
+    .back-btn:hover { background: var(--paper); color: var(--ink); border-color: var(--paper); transform: translateX(-2px); }
+    .back-btn .ba {
+      width: 22px; height: 22px; border-radius: 50%;
+      background: var(--lime); color: var(--lime-ink);
+      display: grid; place-items: center;
+      font-weight: 900; font-size: 12px;
+    }
+    .back-btn:hover .ba { background: var(--ink); color: var(--lime); }
+
+    .nav-step {
+      font-family: var(--font-mono); font-size: 11px;
+      letter-spacing: .14em; text-transform: uppercase;
+      color: rgba(255,255,255,.55);
+      padding: 6px 12px;
+      border: 1px solid rgba(255,255,255,.12);
+      border-radius: 999px;
+    }
+    .nav-step strong { color: var(--lime); font-weight: 700; }
+
+    /* ═══ Main ═══ */
+    main {
+      position: relative; z-index: 3;
+      height: 100vh;
+      padding: 64px 40px 24px;
+      display: grid; place-items: center;
+    }
+
+    .verif-wrap { width: 100%; max-width: 560px; display: flex; flex-direction: column; gap: 20px; }
+
+    /* Progress indicator (6 pasos) */
+    .progress {
+      display: grid; grid-template-columns: repeat(6, 1fr); gap: 6px;
+      margin-bottom: 4px;
+    }
+    .progress .step {
+      height: 6px; border-radius: 3px;
+      background: rgba(255,255,255,.1);
+      position: relative;
+      transition: background 300ms var(--ease);
+    }
+    .progress .step.done { background: var(--lime); }
+    .progress .step.active {
+      background: var(--lime);
+      box-shadow: 0 0 12px color-mix(in srgb, var(--lime) 50%, transparent);
+    }
+    .progress .step.active::after {
+      content: ""; position: absolute;
+      top: 50%; right: -3px; transform: translateY(-50%);
+      width: 10px; height: 10px; border-radius: 50%;
+      background: var(--lime);
+      box-shadow: 0 0 10px var(--lime);
+      animation: step-pulse 1.4s var(--ease) infinite;
+    }
+    @keyframes step-pulse {
+      0%, 100% { transform: translateY(-50%) scale(1); }
+      50% { transform: translateY(-50%) scale(1.3); }
+    }
+
+    /* Card flotante central */
+    .verif-card {
+      background: var(--card); color: var(--ink);
+      border: 2px solid var(--ink);
+      border-radius: 32px 44px 28px 40px;
+      padding: 32px 36px 30px;
+      position: relative;
+      transform: rotate(-0.5deg);
+      box-shadow:
+        14px 14px 0 rgba(13,15,16,0.22),
+        0 24px 50px rgba(13,15,16,0.28),
+        0 4px 12px rgba(13,15,16,0.12);
+    }
+
+    .v-kicker {
+      font-family: var(--font-mono); font-size: 10px;
+      letter-spacing: .14em; text-transform: uppercase;
+      color: var(--ink-3);
+      margin-bottom: 8px;
+    }
+    .v-kicker .v-code { color: var(--ink); font-weight: 700; }
+    .v-kicker .sep { color: var(--ink-4); margin: 0 6px; }
+
+    .v-title {
+      font-family: var(--font-display); font-weight: 900;
+      font-size: clamp(28px, 3.4vw, 40px);
+      letter-spacing: -.035em; line-height: 1;
+      color: var(--ink); margin-bottom: 10px;
+    }
+    .v-title .hl {
+      background: var(--lime); color: var(--lime-ink);
+      padding: 0 10px; border-radius: 10px;
+      transform: rotate(-.8deg); display: inline-block;
+    }
+
+    .v-sub {
+      font-size: 14px; line-height: 1.5;
+      color: var(--ink-2); margin-bottom: 22px;
+    }
+
+    /* Método tabs */
+    .method-tabs {
+      display: grid; grid-template-columns: 1fr 1fr; gap: 6px;
+      background: var(--paper); padding: 4px;
+      border-radius: 999px;
+      margin-bottom: 18px;
+    }
+    .method-btn {
+      padding: 9px 14px;
+      border-radius: 999px;
+      font-family: var(--font-display); font-weight: 600; font-size: 12px;
+      color: var(--ink-3); border: 0; cursor: pointer;
+      transition: all 180ms var(--ease);
+    }
+    .method-btn:hover { color: var(--ink); }
+    .method-btn.active { background: var(--ink); color: var(--paper); font-weight: 700; }
+
+    /* Form fields */
+    .field { margin-bottom: 12px; }
+    .field label {
+      display: block; font-family: var(--font-mono);
+      font-size: 10px; font-weight: 600;
+      letter-spacing: .08em; text-transform: uppercase;
+      color: var(--ink-2); margin-bottom: 6px;
+    }
+    .field input, .field select {
+      width: 100%; background: var(--card);
+      border: 2px solid var(--ink); border-radius: 10px;
+      padding: 11px 14px; font-family: var(--font-display);
+      font-size: 14px; font-weight: 500; color: var(--ink);
+      outline: none; transition: box-shadow 180ms var(--ease);
+      -webkit-appearance: none; appearance: none;
+    }
+    .field select {
+      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath d='M1 1.5L6 6.5L11 1.5' stroke='%230D0F10' stroke-width='2' stroke-linecap='round' stroke-linejoin='round' fill='none'/%3E%3C/svg%3E");
+      background-repeat: no-repeat;
+      background-position: right 14px center;
+      padding-right: 36px;
+    }
+    .field input:focus, .field select:focus { box-shadow: 4px 4px 0 var(--lime); }
+    .field .hint {
+      font-family: var(--font-mono); font-size: 10px;
+      color: var(--ink-3); margin-top: 5px;
+      letter-spacing: .02em;
+    }
+
+    /* Upload area (tab 2) */
+    .upload-area {
+      border: 2px dashed var(--ink-4);
+      border-radius: 14px;
+      padding: 28px 20px;
+      text-align: center;
+      background: var(--paper);
+      cursor: pointer;
+      transition: all 180ms var(--ease);
+      margin-bottom: 14px;
+    }
+    .upload-area:hover { border-color: var(--ink); background: var(--paper-2); }
+    .upload-area .up-icon {
+      width: 44px; height: 44px; border-radius: 12px;
+      background: var(--lime); color: var(--lime-ink);
+      border: 2px solid var(--ink);
+      display: grid; place-items: center;
+      font-weight: 900; font-size: 18px;
+      margin: 0 auto 10px;
+      transform: rotate(-3deg);
+    }
+    .upload-area .up-title {
+      font-family: var(--font-display); font-weight: 800;
+      font-size: 14px; color: var(--ink); margin-bottom: 4px;
+    }
+    .upload-area .up-hint {
+      font-size: 12px; color: var(--ink-2);
+    }
+
+    /* Submit + skip */
+    .verif-actions {
+      display: flex; flex-direction: column; gap: 10px;
+      margin-top: 16px;
+    }
+    .btn-verify {
+      width: 100%; background: var(--ink); color: var(--paper);
+      padding: 13px 20px; border-radius: 999px;
+      font-family: var(--font-display); font-weight: 700; font-size: 15px;
+      cursor: pointer; text-decoration: none;
+      display: flex; align-items: center; justify-content: space-between;
+      transition: transform 180ms var(--ease);
+      border: 0;
+    }
+    .btn-verify:hover { transform: translateY(-2px); }
+    .btn-verify .ring {
+      width: 30px; height: 30px; background: var(--lime);
+      color: var(--ink); border-radius: 50%;
+      display: grid; place-items: center;
+      font-weight: 900; font-size: 14px;
+    }
+    .skip-link {
+      text-align: center; margin-top: 4px;
+      font-size: 13px; color: rgba(255,255,255,.55);
+    }
+    .skip-link a {
+      color: rgba(255,255,255,.8); text-decoration: underline;
+      text-decoration-thickness: 1px;
+      text-underline-offset: 3px;
+      font-weight: 500;
+    }
+    .skip-link a:hover { color: var(--paper); }
+
+    /* Panel tab bodies */
+    .method-body { display: none; }
+    .method-body.active { display: block; }
+
+    /* Info pill sobre cumplimiento */
+    .trust-pill {
+      margin-top: 14px; padding: 10px 14px;
+      background: var(--cream); border: 1.5px solid var(--ink);
+      border-radius: 10px;
+      display: flex; align-items: flex-start; gap: 10px;
+      font-size: 12px; line-height: 1.4; color: var(--ink-2);
+    }
+    .trust-pill .t-dot {
+      width: 8px; height: 8px; border-radius: 50%;
+      background: var(--orange); flex-shrink: 0; margin-top: 4px;
+    }
+
+    @media (max-width: 680px) {
+      main { padding: 80px 20px 24px; }
+      .verif-card { padding: 24px 20px; transform: rotate(0); }
+      .v-title { font-size: 26px; }
+    }
+
+    /* ═══ Transición editorial entre páginas ═══ */
+    .page-transition {
+      position: fixed; inset: 0; z-index: 999;
+      background: #0D0F10;
+      display: grid; place-items: center;
+      opacity: 0; pointer-events: none;
+      transition: opacity 1260ms cubic-bezier(.2,.8,.2,1);
+    }
+    .page-transition.leaving { opacity: 1; pointer-events: auto; }
+    .pt-wrap { display: flex; flex-direction: column; align-items: center; gap: 18px; transform: scale(.8) rotate(-6deg); opacity: 0; transition: transform 1860ms cubic-bezier(.2,.8,.2,1), opacity 1260ms cubic-bezier(.2,.8,.2,1); }
+    .page-transition.leaving .pt-wrap { transform: scale(1) rotate(0); opacity: 1; }
+    .pt-icon {
+      width: 110px; height: 110px;
+      border-radius: 22%;
+      background: #D9FF3A;
+      border: 3px solid #0D0F10;
+      box-shadow: 10px 10px 0 rgba(13,15,16,.5), 0 24px 60px rgba(217,255,58,.22);
+      transform: rotate(-3deg);
+      display: block;
+    }
+    .pt-icon svg { width: 100%; height: 100%; display: block; }
+    .pt-label { font-family: 'Geist Mono', ui-monospace, monospace; font-size: 11px; letter-spacing: .14em; text-transform: uppercase; color: rgba(245,244,239,.7); display: inline-flex; align-items: center; gap: 8px; }
+    .pt-label .pt-dot { width: 7px; height: 7px; border-radius: 50%; background: #FF4A1C; animation: pt-pulse 1.2s cubic-bezier(.2,.8,.2,1) infinite; }
+    @keyframes pt-pulse {
+      0%, 100% { transform: scale(1); opacity: 1; }
+      50% { transform: scale(1.6); opacity: .4; }
+    }
+    .pt-sp { position: absolute; border-radius: 50%; opacity: 0; transform: scale(.3); transition: opacity 1800ms cubic-bezier(.2,.8,.2,1), transform 1920ms cubic-bezier(.2,.8,.2,1); }
+    .page-transition.leaving .pt-sp { opacity: .8; transform: scale(1); }
+    @media (prefers-reduced-motion: reduce) {
+      .page-transition, .pt-wrap, .pt-icon, .pt-label .pt-dot { transition: none !important; animation: none !important; }
+    }
+  </style>
+</head>
+<body>
+
+<!-- Partículas bouncing globales · CURVA PASO 2 / 6 — intensidad 80% -->
+<div class="panel-fx" aria-hidden="true">
+  <!-- Luces far reducidas (de 4 → 3, opacidades más bajas) -->
+  <span class="light-far lf-lime" style="top:-50px; right:-60px; width:340px; height:340px"></span>
+  <span class="light-far lf-pink" style="top:45%; left:-80px; width:280px; height:280px"></span>
+  <span class="light-far lf-violet" style="bottom:-60px; right:-40px; width:220px; height:220px"></span>
+  <!-- Luces mid reducidas (de 3 → 2) -->
+  <span class="light-mid lf-pink" style="top:12%; left:8%; width:90px; height:90px"></span>
+  <span class="light-mid lf-cyan" style="bottom:22%; right:14%; width:80px; height:80px"></span>
+  <!-- Splatters reducidos (de 14 → 11, tamaños ligeramente más pequeños) -->
+  <span class="sp sp-pink" style="top:10%; left:24%; width:7px; height:7px"></span>
+  <span class="sp sp-lime" style="top:18%; left:68%; width:9px; height:9px"></span>
+  <span class="sp sp-cyan" style="top:28%; left:12%; width:5px; height:5px"></span>
+  <span class="sp sp-violet" style="top:34%; left:80%; width:6px; height:6px"></span>
+  <span class="sp sp-cream" style="top:46%; left:20%; width:10px; height:10px"></span>
+  <span class="sp sp-lime" style="top:56%; left:40%; width:7px; height:7px"></span>
+  <span class="sp sp-violet" style="top:66%; left:72%; width:5px; height:5px"></span>
+  <span class="sp sp-cyan" style="top:74%; left:10%; width:9px; height:9px"></span>
+  <span class="sp sp-cream" style="top:82%; left:54%; width:6px; height:6px"></span>
+  <span class="sp sp-pink" style="top:88%; left:80%; width:11px; height:11px"></span>
+  <span class="sp sp-violet" style="top:20%; left:44%; width:5px; height:5px"></span>
+</div>
+
+<!-- Nav -->
+<nav class="nav">
+  <a href="landing-conniku.html" class="brand">conniku<span class="dot">.</span></a>
+  <div class="nav-right">
+    <span class="nav-step">Paso <strong>2</strong> de 6</span>
+    <a href="landing-conniku.html" class="back-btn">
+      <span class="ba">←</span>
+      Volver al inicio
+    </a>
+  </div>
+</nav>
+
+<main>
+  <div class="verif-wrap">
+
+    <!-- Progress indicator -->
+    <div class="progress" aria-label="Progreso onboarding">
+      <div class="step done" title="Crear cuenta"></div>
+      <div class="step active" title="Verificar universidad"></div>
+      <div class="step" title="Carrera y año"></div>
+      <div class="step" title="Intereses"></div>
+      <div class="step" title="Comunidades"></div>
+      <div class="step" title="Listo"></div>
+    </div>
+
+    <!-- Card principal -->
+    <div class="verif-card">
+      <div class="v-kicker">
+        <span class="v-code">PASO 02</span>
+        <span class="sep">·</span>
+        <span>VERIFICACIÓN DE UNIVERSIDAD</span>
+      </div>
+      <h1 class="v-title">Verifica tu <span class="hl">universidad</span>.</h1>
+      <p class="v-sub">Sincronizamos tu calendario, asignaturas, compañeros y biblioteca al instante. Es rápido y nunca compartimos tus datos con nadie.</p>
+
+      <!-- Tabs de método -->
+      <div class="method-tabs" role="tablist">
+        <button class="method-btn active" data-method="correo" type="button">Con correo universitario</button>
+        <button class="method-btn" data-method="credencial" type="button">Con credencial estudiantil</button>
+      </div>
+
+      <!-- Método 1: correo U -->
+      <div class="method-body active" data-body="correo">
+        <div class="field">
+          <label>Universidad</label>
+          <select required>
+            <option value="" disabled selected>Selecciona tu universidad</option>
+            <option>Universidad de Chile (UChile)</option>
+            <option>Pontificia Universidad Católica (UC)</option>
+            <option>Universidad Diego Portales (UDP)</option>
+            <option>Universidad de Santiago (USACH)</option>
+            <option>Universidad Alberto Hurtado (UAH)</option>
+            <option>Universidad Andrés Bello (UNAB)</option>
+            <option>Universidad de los Andes (UAndes)</option>
+            <option>Universidad Adolfo Ibáñez (UAI)</option>
+            <option>Universidad Mayor</option>
+            <option>Universidad Finis Terrae</option>
+            <option>DUOC UC</option>
+            <option>Otra universidad</option>
+          </select>
+        </div>
+        <div class="field">
+          <label>Correo universitario</label>
+          <input type="email" placeholder="tu.nombre@uchile.cl" autocomplete="email" />
+          <div class="hint">Te enviamos un link de confirmación. Usamos este correo solo para verificar tu matrícula.</div>
+        </div>
+      </div>
+
+      <!-- Método 2: credencial -->
+      <div class="method-body" data-body="credencial">
+        <div class="field">
+          <label>Universidad</label>
+          <select required>
+            <option value="" disabled selected>Selecciona tu universidad</option>
+            <option>Universidad de Chile (UChile)</option>
+            <option>Pontificia Universidad Católica (UC)</option>
+            <option>Universidad Diego Portales (UDP)</option>
+            <option>Otra universidad</option>
+          </select>
+        </div>
+        <label class="upload-area" for="credencial-file">
+          <div class="up-icon">↑</div>
+          <div class="up-title">Sube foto o PDF de tu credencial</div>
+          <div class="up-hint">Aceptamos JPG, PNG o PDF hasta 5 MB · Tardamos 24 h en verificar</div>
+          <input type="file" id="credencial-file" hidden accept="image/*,.pdf" />
+        </label>
+      </div>
+
+      <!-- Trust pill cumplimiento legal -->
+      <div class="trust-pill">
+        <span class="t-dot"></span>
+        <div>Tus datos personales se tratan bajo la <strong>Ley 19.628</strong> de Protección de Vida Privada. Nunca venden ni comparten con terceros.</div>
+      </div>
+
+      <!-- Actions -->
+      <div class="verif-actions">
+        <a href="20-onboarding.html" class="btn-verify">
+          Verificar y continuar
+          <span class="ring">→</span>
+        </a>
+      </div>
+    </div>
+
+    <!-- Skip link -->
+    <div class="skip-link">
+      <a href="20-onboarding.html">Saltar por ahora · Lo hago después</a>
+    </div>
+
+  </div>
+</main>
+
+<!-- Transición editorial entre páginas -->
+<div class="page-transition" aria-hidden="true">
+  <span class="pt-sp" style="top:14%;left:22%;width:10px;height:10px;background:#FF4D3A"></span>
+  <span class="pt-sp" style="top:22%;left:72%;width:8px;height:8px;background:#D9FF3A"></span>
+  <span class="pt-sp" style="top:68%;left:18%;width:12px;height:12px;background:#00C2FF"></span>
+  <span class="pt-sp" style="top:78%;left:78%;width:9px;height:9px;background:#6B4EFF"></span>
+  <span class="pt-sp" style="top:42%;left:88%;width:7px;height:7px;background:#FFE9B8"></span>
+  <span class="pt-sp" style="top:52%;left:10%;width:6px;height:6px;background:#FF4A1C"></span>
+  <div class="pt-wrap">
+    <div class="pt-icon">
+      <svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+        <rect width="100" height="100" rx="22" fill="#D9FF3A"/>
+        <text x="50" y="71" text-anchor="middle" font-family="Funnel Display, -apple-system, sans-serif" font-weight="900" font-size="84" fill="#0D0F10" letter-spacing="-4">u</text>
+        <circle cx="77" cy="68" r="6" fill="#FF4A1C"/>
+      </svg>
+    </div>
+    <div class="pt-label"><span class="pt-dot"></span>conniku. cargando</div>
+  </div>
+</div>
+
+<script>
+// ═══ Tabs de método ═══
+(function () {
+  const btns = document.querySelectorAll('.method-btn');
+  const bodies = document.querySelectorAll('.method-body');
+  btns.forEach((b) => {
+    b.addEventListener('click', () => {
+      const key = b.dataset.method;
+      btns.forEach((x) => x.classList.toggle('active', x === b));
+      bodies.forEach((body) => body.classList.toggle('active', body.dataset.body === key));
+    });
+  });
+})();
+
+// ═══ Partículas bouncing ═══
+(function () {
+  const container = document.querySelector('.panel-fx');
+  if (!container) return;
+  if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+  const elements = Array.from(container.querySelectorAll('.sp, .light-far, .light-mid'));
+  let containerW = container.clientWidth;
+  let containerH = container.clientHeight;
+  const state = elements.map((el) => {
+    const isFar = el.classList.contains('light-far');
+    const isMid = el.classList.contains('light-mid');
+    const rect = el.getBoundingClientRect();
+    const crInit = container.getBoundingClientRect();
+    const initLeft = rect.left - crInit.left;
+    const initTop = rect.top - crInit.top;
+    const w = rect.width, h = rect.height;
+    // Paso 2/6 — intensidad 80%: velocidades y opacidades atenuadas
+    let base;
+    if (isFar) base = 0.12 + Math.random() * 0.22;      // antes 0.15-0.45 → ahora 0.12-0.34
+    else if (isMid) base = 0.18 + Math.random() * 0.34; // antes 0.25-0.70 → ahora 0.18-0.52
+    else base = 0.45 + Math.random() * 1.2;             // antes 0.60-2.20 → ahora 0.45-1.65
+    const angle = Math.random() * Math.PI * 2;
+    let opacity;
+    if (isFar) opacity = 0.18 + Math.random() * 0.3;    // antes 0.22-0.60 → ahora 0.18-0.48
+    else if (isMid) opacity = 0.22 + Math.random() * 0.34; // antes 0.28-0.70 → 0.22-0.56
+    else opacity = 0.55 + Math.random() * 0.25;         // antes 0.70-1.00 → 0.55-0.80
+    let blur;
+    if (isFar) blur = 45 + Math.random() * 55;
+    else if (isMid) blur = 16 + Math.random() * 32;
+    else blur = Math.random() * 4;
+    el.style.opacity = opacity.toFixed(3);
+    el.style.filter = 'blur(' + blur.toFixed(2) + 'px)';
+    return { el, initLeft, initTop, w, h, tx: 0, ty: 0, vx: Math.cos(angle)*base, vy: Math.sin(angle)*base, minSpeed: isFar ? 0.12 : (isMid ? 0.22 : 0.5) };
+  });
+  window.addEventListener('resize', () => { containerW = container.clientWidth; containerH = container.clientHeight; });
+  function step() {
+    for (let i = 0; i < state.length; i++) {
+      const s = state[i];
+      s.tx += s.vx; s.ty += s.vy;
+      const left = s.initLeft + s.tx, top = s.initTop + s.ty;
+      const right = left + s.w, bottom = top + s.h;
+      if (left < 0 && s.vx < 0) { s.vx = -s.vx * (0.92 + Math.random()*0.16); s.vy += (Math.random()-0.5)*0.4; }
+      else if (right > containerW && s.vx > 0) { s.vx = -s.vx * (0.92 + Math.random()*0.16); s.vy += (Math.random()-0.5)*0.4; }
+      if (top < 0 && s.vy < 0) { s.vy = -s.vy * (0.92 + Math.random()*0.16); s.vx += (Math.random()-0.5)*0.4; }
+      else if (bottom > containerH && s.vy > 0) { s.vy = -s.vy * (0.92 + Math.random()*0.16); s.vx += (Math.random()-0.5)*0.4; }
+      const sp = Math.hypot(s.vx, s.vy);
+      if (sp < s.minSpeed) {
+        const ang = Math.atan2(s.vy, s.vx) || Math.random()*Math.PI*2;
+        s.vx = Math.cos(ang)*s.minSpeed; s.vy = Math.sin(ang)*s.minSpeed;
+      }
+      s.el.style.transform = 'translate3d(' + s.tx + 'px,' + s.ty + 'px,0)';
+    }
+    raf = requestAnimationFrame(step);
+  }
+  let raf = requestAnimationFrame(step);
+  document.addEventListener('visibilitychange', () => {
+    if (document.hidden) cancelAnimationFrame(raf);
+    else raf = requestAnimationFrame(step);
+  });
+})();
+
+// ═══ Transiciones entre páginas ═══
+(function () {
+  const overlay = document.querySelector('.page-transition');
+  if (!overlay) return;
+  if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+  function shouldTransition(a) {
+    const href = a.getAttribute('href');
+    if (!href) return false;
+    if (href.startsWith('#')) return false;
+    if (/^(https?:|mailto:|tel:)/.test(href)) return false;
+    if (a.target === '_blank') return false;
+    if (a.hasAttribute('download')) return false;
+    if (a.hasAttribute('data-no-transition')) return false;
+    return true;
+  }
+  document.addEventListener('click', (e) => {
+    const a = e.target.closest('a[href]');
+    if (!a || !shouldTransition(a)) return;
+    e.preventDefault();
+    overlay.classList.add('leaving');
+    setTimeout(() => { window.location.href = a.href; }, 2850);
+  });
+  window.addEventListener('pageshow', () => { overlay.classList.remove('leaving'); });
+})();
+</script>
+
+</body>
+</html>

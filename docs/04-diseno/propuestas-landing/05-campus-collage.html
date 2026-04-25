@@ -1,0 +1,269 @@
+<!DOCTYPE html>
+<html lang="es-CL">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Conniku · Propuesta 05 · Campus Collage</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Funnel+Display:wght@400;600;700;800;900&family=Geist+Mono:wght@400;500;600;700&display=swap" />
+<style>
+  :root{
+    --ink:#0D0F10; --paper:#F5F4EF; --paper-2:#EBE9E1;
+    --lime:#D9FF3A; --orange:#FF4A1C; --pink:#FF4D3A; --cream:#FFE9B8;
+    --tape:#FFE9B8; --tape-2:rgba(255,74,28,.9);
+    --fd:'Funnel Display',sans-serif; --fm:'Geist Mono',ui-monospace,monospace;
+    --ease:cubic-bezier(.2,.8,.2,1);
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{background:var(--paper);color:var(--ink);font-family:var(--fd);min-height:100vh;overflow-x:hidden;position:relative}
+  /* pared de corcho simulada */
+  body::before{content:"";position:fixed;inset:0;pointer-events:none;z-index:1;opacity:.08;mix-blend-mode:multiply;
+    background-image:radial-gradient(circle at 1px 1px,#8B6F3A 1px,transparent 0),radial-gradient(circle at 5px 8px,#B08850 0.5px,transparent 0);
+    background-size:14px 14px,24px 24px}
+  a,button{color:inherit;text-decoration:none;font-family:inherit;border:0;background:0;cursor:pointer}
+  ::selection{background:var(--lime)}
+
+  .shell{max-width:1280px;margin:0 auto;padding:0 32px;position:relative;z-index:3}
+
+  /* NAV */
+  nav{padding:20px 32px;display:flex;justify-content:space-between;align-items:center;border-bottom:2px solid var(--ink);position:sticky;top:0;background:var(--paper);z-index:20}
+  .brand{font-family:var(--fd);font-weight:900;font-size:26px;letter-spacing:-.055em;display:inline-flex;align-items:baseline;color:var(--ink)}
+  .u-pack{display:inline-flex;align-items:baseline;background:var(--lime);color:var(--ink);padding:.07em .14em .07em .09em;border-radius:.2em;margin-left:.02em}
+  .u-pack .dot{color:var(--orange)}
+  .nav-links{display:flex;gap:26px;align-items:center}
+  .nav-links a{font-family:var(--fd);font-size:14px;font-weight:600}
+  .nav-links a:hover{color:var(--orange)}
+  .nav-cta{padding:10px 20px;background:var(--ink);color:var(--paper);border-radius:999px;font-weight:700;font-size:13px;font-family:var(--fd)}
+
+  /* HERO · pared con polaroids */
+  .hero{padding:80px 32px 100px;position:relative;min-height:700px}
+  .hero-title-wrap{max-width:780px;margin-bottom:40px;position:relative;z-index:5}
+  .kicker{display:inline-flex;align-items:center;gap:10px;font-family:var(--fm);font-size:11px;letter-spacing:.16em;text-transform:uppercase;margin-bottom:20px;color:var(--ink);padding:5px 0;border-top:2px solid var(--ink);border-bottom:2px solid var(--ink)}
+  .kicker::before{content:"";width:8px;height:8px;background:var(--orange);border-radius:50%;animation:pulse 1.6s infinite}
+  @keyframes pulse{0%,100%{transform:scale(1)}50%{transform:scale(1.3);opacity:.6}}
+  h1{font-family:var(--fd);font-weight:900;font-size:clamp(60px,9vw,130px);line-height:.9;letter-spacing:-.055em;margin-bottom:26px}
+  h1 .marker{background:linear-gradient(180deg,transparent 50%,var(--lime) 50%,var(--lime) 92%,transparent 92%);padding:0 4px;display:inline-block;transform:rotate(-.8deg)}
+  h1 .hl{background:var(--orange);color:#fff;padding:2px 14px;display:inline-block;transform:rotate(-1.6deg);box-shadow:5px 5px 0 var(--ink)}
+  h1 .dot{color:var(--orange)}
+  .lead{font-size:18px;line-height:1.5;max-width:520px;margin-bottom:28px;color:#2B2E30}
+  .lead .ink-pen{background:var(--lime);padding:1px 6px;box-shadow:2px 2px 0 var(--ink);font-weight:700}
+  .cta-row{display:flex;gap:14px;flex-wrap:wrap}
+  .btn{padding:16px 24px;font-weight:700;font-size:15px;display:inline-flex;align-items:center;gap:12px;border:2px solid var(--ink);transition:all 180ms var(--ease)}
+  .btn:hover{transform:translate(-2px,-2px);box-shadow:6px 6px 0 var(--ink)}
+  .btn-p{background:var(--ink);color:var(--paper)}
+  .btn-g{background:var(--paper);color:var(--ink)}
+
+  /* polaroids wall */
+  .wall{position:relative;margin-top:60px;height:420px}
+  .polaroid{position:absolute;background:var(--paper);padding:12px 12px 40px;border:2px solid var(--ink);box-shadow:8px 8px 0 rgba(13,15,16,.3),0 18px 40px rgba(13,15,16,.18);width:200px}
+  .polaroid .photo{width:100%;height:180px;background:linear-gradient(135deg,var(--pink) 0%,var(--orange) 100%);display:grid;place-items:center;font-family:var(--fd);font-weight:900;font-size:44px;color:#fff;filter:grayscale(.2) contrast(1.05);letter-spacing:-.04em}
+  .polaroid .cap{margin-top:10px;font-family:var(--fm);font-size:10px;letter-spacing:.08em;color:var(--ink);text-align:center;line-height:1.3}
+  .polaroid .cap b{display:block;font-family:var(--fd);font-weight:900;font-size:13px;letter-spacing:-.02em;margin-bottom:2px;text-transform:none}
+  /* washi tape corner */
+  .polaroid::before{content:"";position:absolute;top:-12px;left:30%;width:60px;height:22px;background:var(--tape);border:1px solid rgba(13,15,16,.2);transform:rotate(-4deg);opacity:.9}
+
+  .p1{top:0;left:0;transform:rotate(-5deg)}
+  .p1 .photo{background:linear-gradient(135deg,#B7C8DB 0%,#7D8DA0 100%)}
+  .p2{top:30px;left:220px;transform:rotate(3deg)}
+  .p2 .photo{background:linear-gradient(135deg,#D9C8B0 0%,#9E8866 100%)}
+  .p3{top:10px;right:240px;transform:rotate(-2deg)}
+  .p3 .photo{background:linear-gradient(135deg,#E8D0B8 0%,#B89580 100%)}
+  .p4{top:50px;right:20px;transform:rotate(4deg)}
+  .p4 .photo{background:linear-gradient(135deg,#C7D4BF 0%,#7D917A 100%)}
+  .p5{bottom:0;left:120px;transform:rotate(-3deg)}
+  .p5 .photo{background:linear-gradient(135deg,#D8BEBE 0%,#A08C8C 100%)}
+
+  /* notas posteadas */
+  .postit{position:absolute;padding:14px 16px;font-family:var(--fd);font-weight:700;font-size:14px;line-height:1.3;box-shadow:5px 5px 0 rgba(13,15,16,.25)}
+  .postit::before{content:"";position:absolute;top:-6px;left:50%;transform:translateX(-50%);width:10px;height:10px;background:var(--ink);border-radius:50%}
+  .n1{top:200px;left:440px;background:var(--lime);width:150px;transform:rotate(-3deg)}
+  .n2{top:180px;right:420px;background:var(--pink);color:#fff;width:140px;transform:rotate(4deg)}
+  .n3{bottom:40px;right:120px;background:var(--cream);width:160px;transform:rotate(-2deg)}
+
+  /* ═══ SECCIÓN MURALES ═══ */
+  .mural{padding:100px 32px;border-top:2px solid var(--ink);position:relative}
+  .sec-head{margin-bottom:60px;max-width:800px}
+  .sec-kick{font-family:var(--fm);font-size:11px;letter-spacing:.18em;text-transform:uppercase;border-top:2px solid var(--ink);padding-top:6px;display:inline-block;margin-bottom:18px}
+  h2{font-family:var(--fd);font-weight:900;font-size:clamp(44px,6vw,72px);letter-spacing:-.045em;line-height:.95}
+  h2 .hl{background:var(--lime);padding:0 10px;display:inline-block;transform:rotate(-1deg);box-shadow:5px 5px 0 var(--ink)}
+  h2 .marker{background:linear-gradient(180deg,transparent 55%,var(--orange) 55%,var(--orange) 90%,transparent 90%);padding:0 4px}
+
+  /* corkboard de capacidades */
+  .board{position:relative;padding:50px;background:var(--paper-2);border:2px solid var(--ink);border-radius:8px;box-shadow:8px 8px 0 rgba(13,15,16,.25);min-height:620px}
+  .board::before{content:"";position:absolute;inset:0;pointer-events:none;opacity:.12;mix-blend-mode:multiply;
+    background-image:radial-gradient(circle at 1px 1px,#8B6F3A 1.5px,transparent 0);background-size:10px 10px}
+  .cap{position:absolute;background:var(--paper);padding:18px 20px 20px;border:2px solid var(--ink);box-shadow:5px 5px 0 rgba(13,15,16,.35);min-width:220px;max-width:260px}
+  .cap::before{content:"";position:absolute;top:-8px;left:50%;transform:translateX(-50%);width:14px;height:14px;background:var(--orange);border-radius:50%;border:2px solid var(--ink);box-shadow:0 2px 4px rgba(13,15,16,.3)}
+  .cap .num{font-family:var(--fm);font-size:10px;letter-spacing:.14em;color:var(--ink);opacity:.6;margin-bottom:6px}
+  .cap h3{font-family:var(--fd);font-weight:900;font-size:18px;letter-spacing:-.025em;line-height:1.1;margin-bottom:8px}
+  .cap h3 .hl{background:var(--lime);padding:0 4px}
+  .cap p{font-size:12px;line-height:1.45;color:#2B2E30}
+  .cap.lime{background:var(--lime)}
+  .cap.pink{background:var(--pink);color:#fff}
+  .cap.pink p{color:rgba(255,255,255,.9)}
+  .cap.cream{background:var(--cream)}
+  .cap.ink{background:var(--ink);color:var(--paper)}
+  .cap.ink p{color:rgba(245,244,239,.85)}
+  .cap.ink h3 .hl{background:var(--lime);color:var(--ink)}
+
+  .cap.c1{top:30px;left:30px;transform:rotate(-3deg)}
+  .cap.c2{top:80px;left:310px;transform:rotate(2deg)}
+  .cap.c3{top:20px;right:40px;transform:rotate(-2deg)}
+  .cap.c4{top:260px;left:20px;transform:rotate(2.5deg)}
+  .cap.c5{top:230px;left:300px;transform:rotate(-1deg)}
+  .cap.c6{top:280px;right:30px;transform:rotate(3deg)}
+  .cap.c7{bottom:40px;left:150px;transform:rotate(-2deg)}
+  .cap.c8{bottom:30px;right:180px;transform:rotate(2deg)}
+
+  /* PLANS · cuaderno */
+  .notebook{padding:100px 32px;background:var(--paper-2);border-top:2px solid var(--ink)}
+  .plans-nb{display:grid;grid-template-columns:1fr 1fr;gap:32px;margin-top:40px}
+  .nb{background:var(--paper);padding:36px 40px;border:2px solid var(--ink);box-shadow:8px 8px 0 var(--ink);position:relative}
+  .nb::before{content:"";position:absolute;top:18px;bottom:18px;left:40px;width:1.5px;background:var(--pink);opacity:.5}
+  .nb.pro{background:var(--ink);color:var(--paper);transform:rotate(.5deg)}
+  .nb.free{transform:rotate(-.5deg)}
+  .nb .bd{display:inline-block;font-family:var(--fm);font-size:10px;letter-spacing:.14em;text-transform:uppercase;padding:4px 10px;margin-bottom:16px;font-weight:700;border:2px solid var(--ink)}
+  .nb.free .bd{background:var(--lime)}
+  .nb.pro .bd{background:var(--orange);color:#fff;border-color:var(--paper)}
+  .nb h3{font-family:var(--fd);font-weight:900;font-size:38px;letter-spacing:-.04em;margin-bottom:8px}
+  .nb .sb{font-size:14px;opacity:.8;margin-bottom:24px}
+  .nb ul{list-style:none;display:flex;flex-direction:column;gap:10px;margin-bottom:26px;padding-left:12px}
+  .nb li{display:flex;gap:10px;align-items:flex-start;font-size:14px;line-height:1.4;padding-left:8px;border-bottom:1px dashed rgba(13,15,16,.15);padding-bottom:8px}
+  .nb.pro li{border-bottom-color:rgba(245,244,239,.15)}
+  .nb li::before{content:"✓";font-family:var(--fd);font-weight:900;color:var(--orange)}
+  .nb .cta{padding:14px 22px;font-weight:700;font-size:14px;border:2px solid var(--ink);display:inline-flex;align-items:center;gap:10px;box-shadow:4px 4px 0 var(--ink)}
+  .nb.free .cta{background:var(--ink);color:var(--paper)}
+  .nb.pro .cta{background:var(--lime);color:var(--ink);border-color:var(--paper);box-shadow:4px 4px 0 var(--paper)}
+
+  /* footer */
+  footer{padding:60px 32px 30px;background:var(--ink);color:var(--paper)}
+  .f-grid{display:grid;grid-template-columns:2fr 1fr 1fr 1fr;gap:40px;margin-bottom:30px}
+  .f-grid h4{font-family:var(--fm);font-size:11px;letter-spacing:.14em;color:var(--lime);margin-bottom:14px;text-transform:uppercase}
+  .f-grid a{display:block;font-size:13px;margin-bottom:6px;color:rgba(245,244,239,.75)}
+  .f-grid a:hover{color:var(--lime)}
+  .f-bottom{border-top:1px dashed rgba(245,244,239,.2);padding-top:20px;display:flex;justify-content:space-between;font-family:var(--fm);font-size:10px;color:rgba(245,244,239,.5);letter-spacing:.1em;text-transform:uppercase}
+
+  @media (max-width:900px){
+    .wall{display:none}
+    .cap{position:relative;top:auto !important;left:auto !important;right:auto !important;bottom:auto !important;transform:rotate(0) !important;max-width:100%;margin-bottom:16px}
+    .board{padding:24px;min-height:auto}
+    .plans-nb,.f-grid{grid-template-columns:1fr}
+    h1{font-size:56px}
+  }
+</style>
+</head>
+<body>
+
+<nav>
+  <a class="brand" href="#">conn<span>i</span>k<span class="u-pack">u<span class="dot">.</span></span></a>
+  <div class="nav-links">
+    <a href="#">Producto</a>
+    <a href="#">Cómo funciona</a>
+    <a href="#">Planes</a>
+    <a href="#">Business</a>
+    <a class="nav-cta" href="#">Crear cuenta</a>
+  </div>
+</nav>
+
+<section class="hero">
+  <div class="shell">
+    <div class="hero-title-wrap">
+      <span class="kicker">Diario de residencia · Conniku 2026</span>
+      <h1>Tu <span class="marker">Universidad</span> entera<span class="dot">.</span><br><span class="hl">En una sola app</span>.</h1>
+      <p class="lead">Así se ve la pared de quienes estudian con Conniku: calendarios, tutores, libros, apuntes, compañeros, diplomas. <span class="ink-pen">Todo en un lugar.</span></p>
+      <div class="cta-row">
+        <a class="btn btn-p" href="#">Entrar gratis →</a>
+        <a class="btn btn-g" href="#">Ver demo</a>
+      </div>
+    </div>
+
+    <div class="wall">
+      <div class="polaroid p1"><div class="photo">JR</div><div class="cap"><b>Jennifer Ruiz</b>USS · Ing. Logística</div></div>
+      <div class="polaroid p2"><div class="photo">VN</div><div class="cap"><b>Victoria Navarro</b>Alba · Ing. Comercial</div></div>
+      <div class="polaroid p3"><div class="photo">DM</div><div class="cap"><b>Daniela Maturana</b>Tutora · Contabilidad</div></div>
+      <div class="polaroid p4"><div class="photo">PC</div><div class="cap"><b>Pía Cisternas</b>Alba · 2º año</div></div>
+      <div class="polaroid p5"><div class="photo">BE</div><div class="cap"><b>Barbara Escalona</b>Alba · Comercial</div></div>
+      <div class="postit n1">+127 online AHORA</div>
+      <div class="postit n2">Prueba de Derecho Comercial → 23 abr</div>
+      <div class="postit n3">Tutoría con Daniela · 19:00</div>
+    </div>
+  </div>
+</section>
+
+<section class="mural">
+  <div class="shell">
+    <div class="sec-head">
+      <span class="sec-kick">★ El mural completo ★</span>
+      <h2>Todo lo que necesitas, <span class="marker">pinchado</span> en la misma pared<span style="color:var(--orange)">.</span></h2>
+    </div>
+    <div class="board">
+      <div class="cap lime c1"><div class="num">01 · AGENDA</div><h3>Calendario sincronizado</h3><p>Tu semestre al día. Asignaturas, entregas, clases en tiempo real.</p></div>
+      <div class="cap pink c2"><div class="num">02 · DOCS</div><h3>Documentos con conversación</h3><p>Chatea con tu material y con cada libro.</p></div>
+      <div class="cap cream c3"><div class="num">03 · IA</div><h3>Escritura <span class="hl">asistida</span></h3><p>Athena revisa informes. Citas, fuentes, coherencia.</p></div>
+      <div class="cap ink c4"><div class="num">04 · LIBROS</div><h3>Biblioteca <span class="hl">+70k</span></h3><p>Académicos y generales. Offline disponible.</p></div>
+      <div class="cap lime c5"><div class="num">05 · TUTORES</div><h3>Tutorías verificadas</h3><p>Titulados. Pago protegido. Garantía antifraude.</p></div>
+      <div class="cap pink c6"><div class="num">06 · EMPLEO</div><h3>CV + empleo</h3><p>Ofertas con porcentaje de match.</p></div>
+      <div class="cap cream c7"><div class="num">07 · DIPLOMA</div><h3>Cursos con diploma</h3><p>Certificación verificable con hash.</p></div>
+      <div class="cap ink c8"><div class="num">+ PRÓXIMO</div><h3>Comunidades por carrera</h3><p>Quizzes colaborativos, salas, eventos.</p></div>
+    </div>
+  </div>
+</section>
+
+<section class="notebook">
+  <div class="shell">
+    <div class="sec-head">
+      <span class="sec-kick">★ Cuaderno de tarifas ★</span>
+      <h2>Empieza gratis. <span class="hl">Crece</span> cuando quieras.</h2>
+    </div>
+    <div class="plans-nb">
+      <div class="nb free">
+        <span class="bd">★ Free · siempre gratis</span>
+        <h3>Conniku Free</h3>
+        <p class="sb">Todo lo esencial. Sin tarjeta.</p>
+        <ul>
+          <li>Calendario sincronizado</li>
+          <li>3 workspaces activos</li>
+          <li>100 consultas / mes a biblioteca</li>
+          <li>CV y perfil editable</li>
+          <li>3 postulaciones / mes</li>
+        </ul>
+        <a class="cta" href="#">Entrar gratis →</a>
+      </div>
+      <div class="nb pro">
+        <span class="bd">★ Pro · completo</span>
+        <h3>Conniku Pro</h3>
+        <p class="sb">Sin límites. Para estudiar en serio.</p>
+        <ul>
+          <li>Todo Free sin topes</li>
+          <li>Biblioteca +70k con chat por libro</li>
+          <li>Workspaces ilimitados + Athena</li>
+          <li>Ofertas ilimitadas + CV asistido</li>
+          <li>Diploma Conniku</li>
+        </ul>
+        <a class="cta" href="#">Probar Pro →</a>
+      </div>
+    </div>
+  </div>
+</section>
+
+<footer>
+  <div class="shell">
+    <div class="f-grid">
+      <div>
+        <a class="brand" href="#" style="color:var(--paper);font-size:42px">conn<span>i</span>k<span class="u-pack">u<span class="dot">.</span></span></a>
+        <p style="margin-top:14px;font-size:13px;opacity:.7;max-width:300px">Tu universidad entera. En una sola app. Hecho a mano en Chile.</p>
+      </div>
+      <div><h4>Producto</h4><a href="#">Biblioteca</a><a href="#">Workspaces</a><a href="#">Tutores</a></div>
+      <div><h4>Empresa</h4><a href="#">Sobre</a><a href="#">Blog</a><a href="#">Prensa</a></div>
+      <div><h4>Legal</h4><a href="#">Términos</a><a href="#">Privacidad</a></div>
+    </div>
+    <div class="f-bottom">
+      <span>© 2026 Conniku · Santiago · Chile</span>
+      <span>Propuesta 05 · Campus Collage</span>
+    </div>
+  </div>
+</footer>
+
+</body>
+</html>

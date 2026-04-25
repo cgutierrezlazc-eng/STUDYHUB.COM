@@ -626,7 +626,7 @@ async def submit_refund_request(request: Request, db: Session = Depends(get_db),
             "service_outage": "Interrupción del servicio",
             "guarantee_7d": "Garantía 7 días (nuevo suscriptor)",
             "eu_withdrawal": "Derecho de desistimiento UE (14 días)",
-            "chile_retracto": "Derecho de retracto Chile (10 días hábiles)",
+            "chile_retracto": "Derecho de retracto Chile (10 días corridos)",
             "tutor_noshow": "Tutor no se presentó a clase",
             "other": "Otro",
         }

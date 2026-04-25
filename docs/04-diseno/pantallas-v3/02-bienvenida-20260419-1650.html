@@ -1,0 +1,502 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Conniku — Bienvenida · primera vez</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Funnel+Display:wght@400;500;600;700;800;900&family=Geist+Mono:wght@400;500;600;700&display=swap" />
+  <style>
+    :root {
+      --ink: #0D0F10; --ink-2: #2B2E30; --ink-3: #696C6F; --ink-4: #A0A3A7;
+      --paper: #F5F4EF; --paper-2: #EBE9E1; --paper-3: #DBD9CF;
+      --line: #D2CFC3; --line-soft: #E2DFD4; --card: #FFFFFF;
+      --lime: #D9FF3A; --lime-ink: #181F08;
+      --pink: #FF4D3A; --cream: #FFE9B8;
+      --violet: #6B4EFF; --cyan: #00C2FF; --orange: #FF4A1C;
+      --font-display: 'Funnel Display', -apple-system, sans-serif;
+      --font-mono: 'Geist Mono', ui-monospace, monospace;
+      --ease: cubic-bezier(.2,.8,.2,1);
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    html, body { background: var(--paper); color: var(--ink); font-family: var(--font-display); min-height: 100vh; overflow-x: hidden; }
+    ::selection { background: var(--lime); color: var(--lime-ink); }
+
+    /* Top minimal */
+    .top-bar { background: var(--card); border-bottom: 1px solid var(--line); padding: 14px 32px; display: flex; align-items: center; gap: 16px; }
+    .logo-tile { width: 30px; height: 30px; display: block; flex-shrink: 0; }
+    .logo-text { font-weight: 700; font-size: 20px; letter-spacing: -.02em; }
+    .step-indicator { margin-left: 18px; font-family: var(--font-mono); font-size: 11px; color: var(--lime-ink); background: var(--lime); padding: 6px 12px; border-radius: 999px; letter-spacing: .08em; text-transform: uppercase; font-weight: 800; }
+    .step-hint { margin-left: auto; font-family: var(--font-mono); font-size: 11px; color: var(--ink-3); letter-spacing: .06em; text-transform: uppercase; font-weight: 600; }
+    .step-hint strong { color: var(--ink); font-weight: 800; }
+
+    /* Hero gigante */
+    .main { max-width: 1280px; margin: 0 auto; padding: 72px 32px 120px; }
+
+    .hero-welcome {
+      position: relative; margin-bottom: 64px; overflow: visible;
+    }
+    .hero-welcome::before { content: ""; position: absolute; top: -40px; right: 40px; width: 420px; height: 420px; background: var(--lime); border-radius: 50%; opacity: .3; filter: blur(100px); z-index: -1; }
+    .hero-welcome::after { content: ""; position: absolute; bottom: -60px; left: 80px; width: 380px; height: 380px; background: var(--pink); border-radius: 50%; opacity: .28; filter: blur(100px); z-index: -1; }
+
+    .hero-label {
+      display: inline-flex; align-items: center; gap: 10px;
+      font-family: var(--font-mono); font-size: 12px;
+      letter-spacing: .12em; text-transform: uppercase; color: var(--ink-3);
+      font-weight: 700; margin-bottom: 26px;
+    }
+    .hero-label::before { content: ""; width: 32px; height: 2px; background: var(--ink); }
+
+    .hero-h1 {
+      font-weight: 900; font-size: clamp(72px, 11vw, 176px);
+      line-height: .88; letter-spacing: -.05em;
+    }
+    .hero-h1 .chip-lime { background: var(--lime); color: var(--lime-ink); padding: 0 18px; border-radius: 18px; display: inline-block; transform: rotate(-1deg); position: relative; }
+    .hero-h1 .chip-lime::after { content: ""; position: absolute; top: 16px; right: -14px; width: 12px; height: 12px; border-radius: 50%; background: var(--pink); box-shadow: 18px 30px 0 var(--cyan), -6px 60px 0 var(--cream), 40px -12px 0 var(--violet), 84px 50px 0 var(--ink); }
+    .hero-h1 .chip-pink { color: var(--pink); display: inline-block; }
+
+    .hero-desc { margin-top: 32px; font-size: 22px; line-height: 1.42; color: var(--ink-2); max-width: 640px; font-weight: 500; }
+    .hero-desc strong { background: var(--lime); padding: 1px 6px; border-radius: 4px; font-weight: 700; }
+
+    /* Detecciones automáticas */
+    .detected-section { margin-top: 80px; }
+    .det-label {
+      display: flex; align-items: center; gap: 12px;
+      font-family: var(--font-mono); font-size: 12px;
+      letter-spacing: .14em; text-transform: uppercase; color: var(--ink-3);
+      font-weight: 700; margin-bottom: 18px;
+    }
+    .det-label::before { content: ""; width: 32px; height: 2px; background: var(--ink); }
+
+    .det-h2 { font-weight: 900; font-size: clamp(40px, 5.5vw, 64px); line-height: .95; letter-spacing: -.035em; margin-bottom: 36px; }
+    .det-h2 .hl { background: var(--cream); padding: 0 10px; border-radius: 10px; transform: rotate(-.6deg); display: inline-block; }
+
+    .det-grid {
+      display: grid; grid-template-columns: repeat(4, 1fr); gap: 14px; margin-bottom: 26px;
+    }
+    .det-card {
+      background: var(--card); border: 2px solid var(--ink); border-radius: 20px;
+      padding: 22px; transition: transform 200ms var(--ease);
+    }
+    .det-card:hover { transform: translateY(-3px); }
+    .det-card:nth-child(2) { transform: rotate(-.5deg); background: var(--lime); color: var(--lime-ink); }
+    .det-card:nth-child(4) { transform: rotate(.4deg); background: var(--pink); color: #fff; }
+
+    .dc-label { font-family: var(--font-mono); font-size: 10px; letter-spacing: .12em; text-transform: uppercase; margin-bottom: 12px; font-weight: 700; opacity: .7; }
+    .det-card:not(.det-card:nth-child(2)):not(.det-card:nth-child(4)) .dc-label { color: var(--ink-3); }
+    .dc-value { font-family: var(--font-display); font-weight: 900; font-size: clamp(36px, 4vw, 52px); letter-spacing: -.035em; line-height: 1; font-feature-settings: 'tnum'; }
+    .dc-desc { font-size: 13px; line-height: 1.4; margin-top: 10px; font-weight: 500; opacity: .85; }
+
+    /* Tu semana */
+    .week-peek {
+      background: var(--ink); color: #fff; border-radius: 28px; padding: 40px;
+      margin-top: 16px; display: grid; grid-template-columns: 1fr 1.5fr; gap: 36px; align-items: center;
+      position: relative; overflow: hidden;
+    }
+    .week-peek::before { content: ""; position: absolute; top: -60px; right: -60px; width: 260px; height: 260px; background: var(--violet); border-radius: 50%; opacity: .25; filter: blur(80px); }
+    .wp-left { position: relative; z-index: 2; }
+    .wp-label { font-family: var(--font-mono); font-size: 11px; letter-spacing: .14em; text-transform: uppercase; color: var(--lime); font-weight: 700; margin-bottom: 14px; }
+    .wp-h3 { font-weight: 900; font-size: 34px; letter-spacing: -.025em; line-height: 1.05; }
+    .wp-h3 .hl { background: var(--lime); color: var(--lime-ink); padding: 0 8px; border-radius: 8px; display: inline-block; transform: rotate(-1deg); }
+    .wp-h3 .hl-cream { background: var(--cream); color: var(--ink); padding: 0 8px; border-radius: 8px; display: inline-block; transform: rotate(.8deg); }
+    .wp-note { margin-top: 14px; font-size: 14px; line-height: 1.5; color: rgba(255,255,255,.75); font-weight: 500; }
+
+    .wp-events { position: relative; z-index: 2; display: flex; flex-direction: column; gap: 10px; }
+    .wp-event { display: flex; gap: 14px; padding: 14px 16px; background: rgba(255,255,255,.06); border: 1px solid rgba(255,255,255,.1); border-radius: 14px; align-items: center; }
+    .wp-time { font-family: var(--font-mono); font-weight: 800; font-size: 13px; color: var(--lime); width: 80px; flex-shrink: 0; letter-spacing: .04em; text-transform: uppercase; }
+    .wp-event .wp-info { flex: 1; }
+    .wp-title { font-weight: 700; font-size: 14px; letter-spacing: -.01em; }
+    .wp-sub { font-family: var(--font-mono); font-size: 10.5px; color: rgba(255,255,255,.55); margin-top: 3px; letter-spacing: .04em; font-weight: 600; }
+    .wp-event .wp-chip { background: var(--lime); color: var(--lime-ink); font-family: var(--font-mono); font-size: 9.5px; padding: 3px 9px; border-radius: 999px; font-weight: 800; letter-spacing: .08em; text-transform: uppercase; }
+    .wp-event .wp-chip.pink { background: var(--pink); color: #fff; }
+    .wp-event .wp-chip.cream { background: var(--cream); color: var(--ink); }
+
+    /* Sugerencias */
+    .sugg-section { margin-top: 80px; }
+    .sugg-h2 { font-weight: 900; font-size: clamp(40px, 5.5vw, 64px); line-height: .95; letter-spacing: -.035em; margin-bottom: 28px; }
+    .sugg-h2 .hl { background: var(--pink); color: #fff; padding: 0 10px; border-radius: 10px; transform: rotate(.6deg); display: inline-block; }
+
+    .sugg-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 18px; }
+    .sugg-card {
+      background: var(--card); border: 2px solid var(--ink); border-radius: 24px;
+      padding: 28px; cursor: pointer; transition: all 200ms var(--ease);
+      display: flex; flex-direction: column; gap: 14px;
+    }
+    .sugg-card:hover { transform: translateY(-3px); box-shadow: 8px 8px 0 var(--ink); }
+    .sugg-card:nth-child(1) { transform: rotate(-.4deg); }
+    .sugg-card:nth-child(3) { transform: rotate(.5deg); }
+
+    .sugg-icon {
+      width: 54px; height: 54px; border-radius: 14px;
+      display: grid; place-items: center; font-weight: 900; font-size: 22px;
+    }
+    .sugg-icon.lime { background: var(--lime); color: var(--lime-ink); }
+    .sugg-icon.cyan { background: var(--cyan); color: var(--ink); }
+    .sugg-icon.orange { background: var(--orange); color: #fff; }
+
+    .sugg-label { font-family: var(--font-mono); font-size: 10px; letter-spacing: .12em; text-transform: uppercase; color: var(--ink-3); font-weight: 700; }
+
+    .sugg-title { font-weight: 800; font-size: 22px; letter-spacing: -.02em; line-height: 1.1; }
+    .sugg-title .hl { background: var(--cream); padding: 0 6px; border-radius: 6px; }
+
+    .sugg-desc { font-size: 13.5px; line-height: 1.45; color: var(--ink-2); font-weight: 500; }
+
+    .sugg-link { margin-top: auto; padding-top: 14px; border-top: 1px solid var(--line-soft); display: flex; align-items: center; justify-content: space-between; }
+    .sugg-link .sl-text { font-family: var(--font-mono); font-size: 11px; letter-spacing: .08em; text-transform: uppercase; font-weight: 800; color: var(--ink); }
+    .sugg-link .sl-arrow { width: 28px; height: 28px; background: var(--ink); color: var(--lime); border-radius: 50%; display: grid; place-items: center; font-weight: 900; font-size: 14px; }
+
+    /* CTA final */
+    .cta-final {
+      margin-top: 80px; background: var(--ink); color: #fff; border-radius: 32px;
+      padding: 56px 50px; text-align: center; position: relative; overflow: hidden;
+    }
+    .cta-final::before { content: ""; position: absolute; top: -60px; left: -60px; width: 280px; height: 280px; background: var(--lime); border-radius: 50%; opacity: .2; filter: blur(80px); }
+    .cta-final::after { content: ""; position: absolute; bottom: -60px; right: -60px; width: 260px; height: 260px; background: var(--pink); border-radius: 50%; opacity: .2; filter: blur(80px); }
+    .cta-label { position: relative; z-index: 2; font-family: var(--font-mono); font-size: 11px; color: var(--lime); letter-spacing: .14em; text-transform: uppercase; font-weight: 700; margin-bottom: 16px; }
+    .cta-h2 { position: relative; z-index: 2; font-weight: 900; font-size: clamp(44px, 6vw, 72px); line-height: .95; letter-spacing: -.045em; }
+    .cta-h2 .hl { background: var(--lime); color: var(--lime-ink); padding: 0 12px; border-radius: 12px; display: inline-block; transform: rotate(-1deg); }
+    .cta-desc { position: relative; z-index: 2; margin-top: 22px; font-size: 17px; color: rgba(255,255,255,.8); max-width: 560px; margin-left: auto; margin-right: auto; line-height: 1.5; font-weight: 500; }
+    .cta-actions { position: relative; z-index: 2; margin-top: 32px; display: flex; justify-content: center; gap: 14px; flex-wrap: wrap; }
+    .btn-primary { background: var(--lime); color: var(--lime-ink); border: 0; padding: 14px 16px 14px 24px; border-radius: 999px; font-family: var(--font-display); font-weight: 800; font-size: 15px; cursor: pointer; display: flex; align-items: center; gap: 12px; transition: transform 180ms var(--ease); }
+    .btn-primary:hover { transform: translateY(-2px); }
+    .btn-primary .ring { width: 32px; height: 32px; background: var(--lime-ink); color: var(--lime); border-radius: 50%; display: grid; place-items: center; font-weight: 900; font-size: 16px; }
+    .btn-ghost { background: transparent; border: 2px solid rgba(255,255,255,.3); color: #fff; padding: 12px 22px; border-radius: 999px; font-family: var(--font-display); font-weight: 700; font-size: 14px; cursor: pointer; }
+    .btn-ghost:hover { background: rgba(255,255,255,.08); }
+
+    @media (max-width: 1080px) {
+      .det-grid { grid-template-columns: 1fr 1fr; }
+      .week-peek { grid-template-columns: 1fr; padding: 32px 28px; }
+      .sugg-grid { grid-template-columns: 1fr; }
+    }
+
+    /* ═══ Sistema de HOJAS verticales ═══ */
+    /* Cada sección cabe en una hoja (100vh) · navegación con botón "Siguiente" */
+    html { scroll-behavior: smooth; }
+    body { min-height: 100vh; }
+
+    .top-bar {
+      position: sticky; top: 0; z-index: 50;
+      backdrop-filter: blur(14px); -webkit-backdrop-filter: blur(14px);
+      background: rgba(255,255,255,.9);
+    }
+
+    .sheets-wrap { display: flex; flex-direction: column; }
+    .sheet {
+      min-height: calc(100vh - 59px);         /* descuenta altura del top-bar */
+      padding: 56px 32px 40px;
+      display: flex; flex-direction: column;
+      justify-content: center;
+      position: relative;
+      scroll-margin-top: 60px;
+    }
+    .sheet .sheet-body {
+      max-width: 1280px; width: 100%; margin: 0 auto;
+      display: flex; flex-direction: column;
+    }
+    .sheet .sheet-footer {
+      max-width: 1280px; width: 100%; margin: 0 auto;
+      padding-top: 48px;
+      display: flex; align-items: center; justify-content: center;
+    }
+
+    /* Botón "Siguiente" entre hojas */
+    .btn-next-sheet {
+      display: inline-flex; align-items: center; gap: 12px;
+      background: var(--lime); color: var(--lime-ink);
+      border: 2px solid var(--lime-ink);
+      padding: 12px 18px 12px 22px;
+      border-radius: 999px;
+      font-family: var(--font-display); font-weight: 800; font-size: 14px;
+      text-decoration: none;
+      transition: transform 180ms var(--ease), box-shadow 180ms var(--ease);
+      letter-spacing: .01em;
+    }
+    .btn-next-sheet:hover { transform: translateY(-2px); box-shadow: 4px 4px 0 var(--lime-ink); }
+    .btn-next-sheet .arrow-down {
+      width: 28px; height: 28px;
+      background: var(--lime-ink); color: var(--lime);
+      border-radius: 50%;
+      display: grid; place-items: center;
+      font-weight: 900; font-size: 14px;
+      transition: transform 240ms var(--ease);
+    }
+    .btn-next-sheet:hover .arrow-down { transform: translateY(2px); }
+
+    /* Indicador vertical de progreso entre hojas */
+    .sheets-progress {
+      position: fixed; right: 22px; top: 50%;
+      transform: translateY(-50%);
+      z-index: 40;
+      display: flex; flex-direction: column; gap: 10px;
+    }
+    .sheets-progress a {
+      width: 10px; height: 10px; border-radius: 50%;
+      background: rgba(13,15,16,.15);
+      border: 2px solid transparent;
+      transition: all 200ms var(--ease);
+      text-decoration: none;
+    }
+    .sheets-progress a:hover { background: rgba(13,15,16,.35); }
+    .sheets-progress a.active {
+      background: var(--lime);
+      border-color: var(--ink);
+      transform: scale(1.25);
+    }
+
+    /* Hoja 4 · CTA final · los márgenes del .cta-final original quedan consumidos por la hoja */
+    .sheet-4 .cta-final { margin-top: 0; }
+
+    /* Reset margin-top de las secciones internas: ya están envueltas en hojas */
+    .hero-welcome,
+    .detected-section,
+    .sugg-section { margin-top: 0; }
+
+    @media (max-width: 1080px) {
+      .sheets-progress { display: none; }
+      .sheet { padding: 40px 20px 32px; }
+    }
+    @media (prefers-reduced-motion: reduce) {
+      html { scroll-behavior: auto; }
+      .btn-next-sheet, .btn-next-sheet .arrow-down { transition: none; }
+    }
+  
+    /* ═══ Logo oficial wordmark integrado · 00-BRAND-LOGO.md · INVIOLABLE ═══ */
+    .brand {
+      display: inline-flex; align-items: baseline;
+      font-family: var(--font-display, 'Funnel Display'); font-weight: 900;
+      font-size: 24px; letter-spacing: -.055em; line-height: 1;
+      color: var(--ink, #0D0F10); text-decoration: none;
+      white-space: nowrap;
+    }
+    .brand .u-pack {
+      display: inline-flex; align-items: baseline;
+      background: var(--lime, #D9FF3A);
+      color: var(--ink, #0D0F10);
+      padding: .07em .14em .07em .09em;
+      border-radius: .2em;
+      margin-left: .02em;
+    }
+    .brand .u-pack .dot { color: var(--orange, #FF4A1C); }
+  </style>
+</head>
+<body>
+
+  <div class="top-bar">
+    <a class="brand" href="#" aria-label="Conniku">conn<span>i</span>k<span class="u-pack">u<span class="dot">.</span></span></a>
+    <div class="step-indicator">✓ Onboarding completo</div>
+    <div class="step-hint">Todo listo · <strong>tu perfil está activo</strong></div>
+  </div>
+
+  <!-- Indicador vertical de hojas -->
+  <nav class="sheets-progress" aria-label="Progreso de hojas de bienvenida">
+    <a href="#sheet-1" class="active" aria-label="Hoja 1 · Hola"></a>
+    <a href="#sheet-2" aria-label="Hoja 2 · Lo que ya cargamos"></a>
+    <a href="#sheet-3" aria-label="Hoja 3 · Primeras acciones"></a>
+    <a href="#sheet-4" aria-label="Hoja 4 · Entrar al dashboard"></a>
+  </nav>
+
+  <main class="sheets-wrap">
+
+    <!-- ═══ HOJA 1 · Hola ═══ -->
+    <section class="sheet sheet-1" id="sheet-1">
+      <div class="sheet-body">
+        <section class="hero-welcome">
+          <div class="hero-label">★ Primera entrada · Hola, bienvenido</div>
+          <h1 class="hero-h1">
+            Hola,<br>
+            <span class="chip-lime">Cristian</span><br>
+            <span class="chip-pink">.</span>
+          </h1>
+          <p class="hero-desc">
+            Tu cuenta está lista y ya detectamos tu <strong>semestre 2026-1</strong> con tus 6 asignaturas, profesores y horario completo. Te recomendamos empezar por estas 3 acciones.
+          </p>
+        </section>
+      </div>
+      <div class="sheet-footer">
+        <a href="#sheet-2" class="btn-next-sheet">
+          Siguiente
+          <span class="arrow-down">↓</span>
+        </a>
+      </div>
+    </section>
+
+    <!-- ═══ HOJA 2 · Lo que ya cargamos automáticamente ═══ -->
+    <section class="sheet sheet-2" id="sheet-2">
+      <div class="sheet-body">
+        <section class="detected-section">
+          <div class="det-label">Lo que ya cargamos automáticamente</div>
+          <h2 class="det-h2">Tu U <span class="hl">ya está sincronizada</span>.</h2>
+
+          <div class="det-grid">
+            <div class="det-card">
+              <div class="dc-label">Asignaturas cargadas</div>
+              <div class="dc-value">6</div>
+              <div class="dc-desc">5 obligatorias + 1 electivo del semestre</div>
+            </div>
+            <div class="det-card">
+              <div class="dc-label">Profesores</div>
+              <div class="dc-value">5</div>
+              <div class="dc-desc">Con sus salas y horarios de cátedra</div>
+            </div>
+            <div class="det-card">
+              <div class="dc-label">Créditos semestre</div>
+              <div class="dc-value">30</div>
+              <div class="dc-desc">De 36 posibles · carga ligera</div>
+            </div>
+            <div class="det-card">
+              <div class="dc-label">Compañeros detectados</div>
+              <div class="dc-value">127</div>
+              <div class="dc-desc">Ya tienen Conniku · puedes conectar</div>
+            </div>
+          </div>
+
+          <div class="week-peek">
+            <div class="wp-left">
+              <div class="wp-label">★ Esta semana</div>
+              <h3 class="wp-h3">
+                Tienes <span class="hl">3 clases</span> y una <span class="hl-cream">entrega</span> el viernes.
+              </h3>
+              <p class="wp-note">Detectamos todo directamente del sistema de tu universidad. Si falta algo o hay un dato mal, puedes ajustarlo en cualquier momento.</p>
+            </div>
+            <div class="wp-events">
+              <div class="wp-event">
+                <div class="wp-time">Lun 10:30</div>
+                <div class="wp-info">
+                  <div class="wp-title">Cálculo Diferencial II</div>
+                  <div class="wp-sub">Prof. Margarita Soto · Sala C-304</div>
+                </div>
+                <div class="wp-chip">Hoy</div>
+              </div>
+              <div class="wp-event">
+                <div class="wp-time">Mar 14:00</div>
+                <div class="wp-info">
+                  <div class="wp-title">Termodinámica aplicada</div>
+                  <div class="wp-sub">Prof. Rodrigo Flores · Sala K-202</div>
+                </div>
+                <div class="wp-chip cream">Mañana</div>
+              </div>
+              <div class="wp-event">
+                <div class="wp-time">Vie 23:59</div>
+                <div class="wp-info">
+                  <div class="wp-title">Entrega informe grupal Termo</div>
+                  <div class="wp-sub">Grupo 4 · workspace Conniku</div>
+                </div>
+                <div class="wp-chip pink">En 4 días</div>
+              </div>
+            </div>
+          </div>
+        </section>
+      </div>
+      <div class="sheet-footer">
+        <a href="#sheet-3" class="btn-next-sheet">
+          Siguiente
+          <span class="arrow-down">↓</span>
+        </a>
+      </div>
+    </section>
+
+    <!-- ═══ HOJA 3 · 3 primeras acciones para empezar ═══ -->
+    <section class="sheet sheet-3" id="sheet-3">
+      <div class="sheet-body">
+        <section class="sugg-section">
+          <div class="det-label">3 primeras acciones para empezar</div>
+          <h2 class="sugg-h2">Empieza <span class="hl">bien</span>.</h2>
+
+          <div class="sugg-grid">
+
+            <div class="sugg-card">
+              <div class="sugg-icon lime">★</div>
+              <div class="sugg-label">01 · completa tu cv</div>
+              <h3 class="sugg-title">
+                Arma tu <span class="hl">CV Conniku</span> y encuentra tu primera práctica.
+              </h3>
+              <p class="sugg-desc">Tienes el 40% listo con los datos de tu U. Agrega experiencia y te mostramos ofertas que hagan match con tu carrera.</p>
+              <div class="sugg-link">
+                <span class="sl-text">Ir al editor</span>
+                <div class="sl-arrow">→</div>
+              </div>
+            </div>
+
+            <div class="sugg-card">
+              <div class="sugg-icon cyan">◎</div>
+              <div class="sugg-label">02 · tu primera tutoría</div>
+              <h3 class="sugg-title">
+                Reserva una <span class="hl">tutoría verificada</span>, la primera pagamos nosotros.
+              </h3>
+              <p class="sugg-desc">Elige entre 284 tutores titulados. Pago protegido en custodia. Si no te sirve, te devolvemos.</p>
+              <div class="sugg-link">
+                <span class="sl-text">Buscar tutor</span>
+                <div class="sl-arrow">→</div>
+              </div>
+            </div>
+
+            <div class="sugg-card">
+              <div class="sugg-icon orange">♥</div>
+              <div class="sugg-label">03 · tu comunidad</div>
+              <h3 class="sugg-title">
+                Únete a la <span class="hl">comunidad</span> de tu carrera. 2.104 miembros.
+              </h3>
+              <p class="sugg-desc">Dudas, apuntes, eventos, tutorías grupales. Todo lo que tu curso comparte ya está pasando.</p>
+              <div class="sugg-link">
+                <span class="sl-text">Ver comunidad</span>
+                <div class="sl-arrow">→</div>
+              </div>
+            </div>
+
+          </div>
+        </section>
+      </div>
+      <div class="sheet-footer">
+        <a href="#sheet-4" class="btn-next-sheet">
+          Siguiente
+          <span class="arrow-down">↓</span>
+        </a>
+      </div>
+    </section>
+
+    <!-- ═══ HOJA 4 · Banner · Entrar a mi dashboard ═══ -->
+    <section class="sheet sheet-4" id="sheet-4">
+      <div class="sheet-body">
+        <div class="cta-final">
+          <div class="cta-label">★ Todo listo</div>
+          <h2 class="cta-h2">Vamos al<br><span class="hl">dashboard</span>.</h2>
+          <p class="cta-desc">Desde tu panel principal puedes acceder a todo: asignaturas, tutores, biblioteca, empleo, comunidad y diploma. Tu semestre organizado en un solo lugar.</p>
+          <div class="cta-actions">
+            <button class="btn-primary">
+              Entrar a mi dashboard
+              <div class="ring">→</div>
+            </button>
+            <button class="btn-ghost">Hacer un tour guiado</button>
+          </div>
+        </div>
+      </div>
+    </section>
+
+  </main>
+
+  <script>
+    // ═══ Indicador vertical: activar el dot de la hoja visible ═══
+    (function () {
+      const dots = document.querySelectorAll('.sheets-progress a');
+      const sheets = document.querySelectorAll('.sheet');
+      if (!dots.length || !sheets.length) return;
+      if (!('IntersectionObserver' in window)) return;
+
+      const io = new IntersectionObserver(function (entries) {
+        entries.forEach(function (entry) {
+          if (entry.isIntersecting) {
+            const id = entry.target.id;
+            dots.forEach(function (d) {
+              d.classList.toggle('active', d.getAttribute('href') === '#' + id);
+            });
+          }
+        });
+      }, { threshold: 0.55 });
+
+      sheets.forEach(function (s) { io.observe(s); });
+    })();
+  </script>
+
+</body>
+</html>

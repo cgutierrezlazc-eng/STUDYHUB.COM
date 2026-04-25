@@ -1,0 +1,2768 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Conniku — la app de tu semestre</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Funnel+Display:wght@400;500;600;700;800;900&family=Geist+Mono:wght@400;500;600&display=swap">
+<style>
+:root {
+  --ink: #0D0F10;
+  --ink-2: #2B2E30;
+  --ink-3: #696C6F;
+  --ink-4: #A0A3A7;
+  --paper: #F5F4EF;
+  --paper-2: #EBE9E1;
+  --paper-3: #DBD9CF;
+  --line: #D2CFC3;
+  --line-soft: #E2DFD4;
+  --card: #FFFFFF;
+
+  --blue: #2D62C8;
+  --blue-vivid: #2F55F0;
+  --electric: #2F55F0;
+  --electric-deep: #1E3ACC;
+  --cyan: #00C2FF;
+
+  --lime: #D9FF3A;
+  --lime-ink: #181F08;
+
+  --orange: #FF4A1C;
+  --pink: #FF4D3A;
+  --pink-deep: #D9341F;
+  --violet: #6B4EFF;
+  --cream: #FFE9B8;
+
+  --r-btn: 999px;
+  --r-card: 24px;
+  --shadow-sm: 0 1px 2px rgba(13,15,16,.04);
+  --shadow-md: 0 8px 24px -10px rgba(13,15,16,.14), 0 2px 6px rgba(13,15,16,.05);
+  --shadow-lg: 0 28px 60px -20px rgba(13,15,16,.22), 0 4px 12px rgba(13,15,16,.05);
+
+  --ease: cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+
+* { box-sizing: border-box; margin: 0; padding: 0; }
+html, body { background: var(--paper); }
+body {
+  font-family: 'Funnel Display', -apple-system, system-ui, sans-serif;
+  font-size: 16px;
+  line-height: 1.5;
+  color: var(--ink);
+  -webkit-font-smoothing: antialiased;
+  overflow-x: hidden;
+}
+a { color: inherit; text-decoration: none; }
+button { font-family: inherit; cursor: pointer; border: 0; background: none; color: inherit; }
+img, svg { display: block; max-width: 100%; }
+::selection { background: var(--lime); color: var(--lime-ink); }
+
+.mono { font-family: 'Geist Mono', ui-monospace, monospace; font-feature-settings: 'ss01'; }
+
+.container {
+  max-width: 1320px;
+  margin: 0 auto;
+  padding: 0 32px;
+}
+
+/* =========================================================
+   PROGRESS BAR (top of page)
+   ========================================================= */
+.top-progress {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 10px 28px;
+  background: var(--ink);
+  color: #fff;
+  font-family: 'Geist Mono', monospace;
+  font-size: 11px;
+  letter-spacing: .08em;
+  text-transform: uppercase;
+  gap: 16px;
+  position: relative;
+  z-index: 70;
+}
+.top-progress-label { display: flex; align-items: center; gap: 10px; }
+.top-progress-label .dot {
+  width: 6px; height: 6px; border-radius: 50%;
+  background: var(--lime);
+  box-shadow: 0 0 10px var(--lime);
+}
+.top-progress-bar {
+  flex: 1;
+  max-width: 400px;
+  height: 4px;
+  background: rgba(255,255,255,.1);
+  border-radius: 999px;
+  overflow: hidden;
+  position: relative;
+}
+.top-progress-fill {
+  height: 100%;
+  width: 34%;
+  background: linear-gradient(90deg, var(--lime), var(--pink));
+  border-radius: 999px;
+}
+.top-progress-meta { color: rgba(255,255,255,.55); }
+
+/* =========================================================
+   NAV
+   ========================================================= */
+.nav {
+  position: sticky;
+  top: 12px;
+  z-index: 60;
+  padding: 0 20px;
+  margin-top: 16px;
+}
+.nav-inner {
+  max-width: 1280px;
+  margin: 0 auto;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 8px 8px 20px;
+  background: rgba(13, 15, 16, .96);
+  backdrop-filter: saturate(1.4) blur(20px);
+  color: #fff;
+  border-radius: 999px;
+  border: 1px solid rgba(255, 255, 255, .06);
+  box-shadow: 0 16px 50px -16px rgba(13, 15, 16, .45);
+}
+.logo {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-weight: 800;
+  font-size: 19px;
+  letter-spacing: -.035em;
+  color: #fff;
+}
+.logo-mark {
+  width: 28px;
+  height: 28px;
+  border-radius: 9px;
+  background: var(--lime);
+  display: grid;
+  place-items: center;
+}
+.logo-mark svg { width: 16px; height: 16px; }
+.nav-sep { width: 1px; height: 22px; background: rgba(255,255,255,.12); margin: 0 8px; }
+.nav-links {
+  display: flex;
+  gap: 2px;
+  font-size: 14px;
+  color: rgba(255, 255, 255, .72);
+  font-weight: 500;
+}
+.nav-links a {
+  padding: 8px 14px;
+  border-radius: 999px;
+  transition: background .15s var(--ease), color .15s var(--ease);
+}
+.nav-links a:hover { background: rgba(255,255,255,.08); color: #fff; }
+.nav-spacer { flex: 1; }
+.nav-search {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 7px 10px;
+  border-radius: 999px;
+  background: rgba(255,255,255,.06);
+  font-size: 13px;
+  color: rgba(255,255,255,.55);
+  font-family: 'Geist Mono', monospace;
+}
+.nav-search kbd {
+  font-size: 10px;
+  padding: 2px 6px;
+  border-radius: 4px;
+  background: rgba(255,255,255,.08);
+  color: rgba(255,255,255,.6);
+  border: 1px solid rgba(255,255,255,.08);
+}
+.btn-login {
+  padding: 8px 14px;
+  font-size: 14px;
+  font-weight: 600;
+  color: rgba(255,255,255,.82);
+}
+.btn-enter {
+  padding: 10px 18px;
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--lime-ink);
+  background: var(--lime);
+  border-radius: 999px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  transition: transform .15s var(--ease), filter .15s var(--ease);
+  letter-spacing: -.01em;
+}
+.btn-enter:hover { filter: brightness(1.05); transform: translateY(-1px); }
+
+/* =========================================================
+   HERO
+   ========================================================= */
+.hero {
+  padding: 80px 0 60px;
+  position: relative;
+  overflow: hidden;
+}
+.hero-blobs {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  z-index: 0;
+  overflow: hidden;
+}
+.blob {
+  position: absolute;
+  border-radius: 50%;
+  filter: blur(80px);
+  opacity: .42;
+}
+.blob-1 { top: -100px; right: 10%; width: 420px; height: 420px; background: var(--lime); }
+.blob-2 { bottom: -100px; left: -80px; width: 500px; height: 500px; background: var(--pink); }
+.blob-3 { top: 30%; right: -100px; width: 300px; height: 300px; background: var(--violet); opacity: .3; }
+
+.hero > .container { position: relative; z-index: 1; }
+
+.hero-status {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  padding: 7px 14px 7px 8px;
+  background: var(--card);
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  font-size: 13.5px;
+  color: var(--ink-2);
+  font-weight: 600;
+  box-shadow: var(--shadow-sm);
+  margin-bottom: 40px;
+  letter-spacing: -.005em;
+}
+.pulse-dot {
+  position: relative;
+  width: 8px; height: 8px; border-radius: 50%;
+  background: var(--orange);
+}
+.pulse-dot::before {
+  content: "";
+  position: absolute; inset: -4px;
+  border-radius: 50%;
+  background: var(--orange);
+  opacity: .35;
+  animation: ping 1.6s var(--ease) infinite;
+}
+@keyframes ping {
+  0% { transform: scale(.6); opacity: .6; }
+  80% { transform: scale(2); opacity: 0; }
+  100% { opacity: 0; }
+}
+.hero-status .count {
+  font-variant-numeric: tabular-nums;
+  font-weight: 800;
+  color: var(--ink);
+  font-family: 'Geist Mono', monospace;
+  font-size: 13px;
+  padding: 2px 6px;
+  border-radius: 5px;
+  background: var(--lime);
+  color: var(--lime-ink);
+}
+
+.hero h1 {
+  font-family: 'Funnel Display', sans-serif;
+  font-size: clamp(64px, 12vw, 192px);
+  font-weight: 800;
+  line-height: .86;
+  letter-spacing: -0.045em;
+  color: var(--ink);
+  margin-bottom: 40px;
+  max-width: 11ch;
+  position: relative;
+}
+.hero h1 .pink {
+  color: var(--pink);
+  position: relative;
+  display: inline-block;
+}
+.hero h1 .pink::before,
+.hero h1 .pink::after {
+  content: "";
+  position: absolute;
+  border-radius: 50%;
+  pointer-events: none;
+  z-index: 2;
+}
+.hero h1 .pink::before {
+  width: 18px; height: 18px;
+  background: var(--lime);
+  top: -8px; right: -14px;
+  box-shadow:
+    -48px 22px 0 -2px var(--cyan),
+    18px 64px 0 -3px var(--cream),
+    -82px 58px 0 -5px var(--violet),
+    -30px 90px 0 -6px var(--lime);
+  transform: rotate(12deg);
+}
+.hero h1 .pink::after {
+  width: 10px; height: 10px;
+  background: var(--ink);
+  bottom: 18px; left: -20px;
+  box-shadow:
+    36px 12px 0 -1px var(--lime),
+    -12px -30px 0 0 var(--cyan),
+    58px -18px 0 -3px var(--cream);
+}
+.hero h1 .lime {
+  background: var(--lime);
+  color: var(--lime-ink);
+  padding: 0 .05em;
+  border-radius: 8px;
+  display: inline-block;
+  transform: rotate(-1.5deg);
+  margin: 0 .02em;
+}
+.hero h1 .outline {
+  -webkit-text-stroke: 2.5px var(--ink);
+  color: transparent;
+  font-weight: 800;
+}
+.hero h1 .cream {
+  background: var(--cream);
+  color: var(--ink);
+  padding: 0 .05em;
+  border-radius: 8px;
+  display: inline-block;
+}
+
+.hero-meta-row {
+  display: flex;
+  gap: 48px;
+  align-items: end;
+  margin-top: 32px;
+  flex-wrap: wrap;
+  justify-content: space-between;
+}
+.hero-description {
+  font-size: 20px;
+  line-height: 1.35;
+  color: var(--ink-2);
+  max-width: 440px;
+  font-weight: 500;
+  letter-spacing: -.005em;
+}
+.hero-description strong {
+  font-weight: 800;
+  color: var(--ink);
+  background: var(--lime);
+  padding: 0 4px;
+  border-radius: 4px;
+}
+.hero-actions {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.btn-xl-primary {
+  padding: 18px 26px;
+  font-size: 16px;
+  font-weight: 700;
+  color: #fff;
+  background: var(--ink);
+  border-radius: 999px;
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  transition: transform .15s var(--ease), background .15s var(--ease);
+  letter-spacing: -.01em;
+}
+.btn-xl-primary:hover { background: var(--ink-2); transform: translateY(-1px); }
+.btn-xl-ghost {
+  padding: 18px 22px;
+  font-size: 16px;
+  font-weight: 600;
+  color: var(--ink-2);
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  border-radius: 999px;
+  letter-spacing: -.01em;
+}
+.btn-xl-ghost:hover { color: var(--ink); background: rgba(255,255,255,.5); }
+.arrow-ring {
+  width: 28px; height: 28px; border-radius: 50%;
+  background: var(--lime);
+  display: grid; place-items: center;
+  color: var(--lime-ink);
+}
+
+/* =========================================================
+   STICKER PACK (below hero)
+   ========================================================= */
+.stickers {
+  padding: 80px 0;
+  position: relative;
+}
+.stickers-label {
+  font-family: 'Geist Mono', monospace;
+  font-size: 12px;
+  letter-spacing: .14em;
+  text-transform: uppercase;
+  color: var(--ink-3);
+  margin-bottom: 28px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+.stickers-label::before {
+  content: "";
+  width: 32px; height: 2px;
+  background: var(--ink);
+}
+.stickers-head {
+  font-family: 'Funnel Display', sans-serif;
+  font-size: clamp(44px, 6.5vw, 96px);
+  font-weight: 800;
+  line-height: .9;
+  letter-spacing: -.045em;
+  margin-bottom: 56px;
+  max-width: 14ch;
+}
+.stickers-head .pink {
+  color: var(--pink);
+  position: relative;
+  display: inline-block;
+}
+.stickers-head .pink::before {
+  content: "";
+  position: absolute;
+  width: 12px; height: 12px;
+  border-radius: 50%;
+  background: var(--lime);
+  top: -4px; right: -14px;
+  box-shadow:
+    -42px 18px 0 -1px var(--cyan),
+    16px 52px 0 -3px var(--cream),
+    -72px 48px 0 -4px var(--ink);
+  pointer-events: none;
+  z-index: 2;
+}
+.stickers-head .lime-bg {
+  background: var(--lime);
+  color: var(--lime-ink);
+  padding: 0 .05em;
+  border-radius: 12px;
+  display: inline-block;
+  transform: rotate(-1deg);
+}
+.sticker-grid {
+  display: grid;
+  grid-template-columns: repeat(12, 1fr);
+  gap: 16px;
+}
+
+/* Sticker base */
+.sticker {
+  position: relative;
+  border: 2px solid var(--ink);
+  border-radius: 24px;
+  padding: 28px;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  overflow: hidden;
+  min-height: 280px;
+  transition: transform .25s var(--ease), box-shadow .25s var(--ease);
+}
+.sticker:hover {
+  transform: translateY(-3px) rotate(var(--rot, 0deg));
+  box-shadow: 8px 8px 0 var(--ink);
+}
+.sticker-badge {
+  position: absolute;
+  top: 18px;
+  right: 18px;
+  background: var(--ink);
+  color: #fff;
+  font-family: 'Geist Mono', monospace;
+  font-size: 10px;
+  letter-spacing: .12em;
+  padding: 5px 10px;
+  border-radius: 999px;
+  text-transform: uppercase;
+  font-weight: 500;
+}
+.sticker-num {
+  font-family: 'Funnel Display', sans-serif;
+  font-weight: 900;
+  font-size: 16px;
+  letter-spacing: -.02em;
+  font-variant-numeric: tabular-nums;
+}
+.sticker h3 {
+  font-family: 'Funnel Display', sans-serif;
+  font-size: 30px;
+  font-weight: 800;
+  letter-spacing: -.035em;
+  line-height: .95;
+}
+.sticker p {
+  font-size: 14.5px;
+  line-height: 1.4;
+  font-weight: 500;
+  margin-top: 4px;
+}
+.sticker .visual { margin-top: auto; }
+
+/* Sticker colors */
+.stk-lime { background: var(--lime); color: var(--lime-ink); }
+.stk-pink { background: var(--pink); color: #fff; --rot: -1deg; position: relative; overflow: hidden; }
+.stk-pink::before {
+  content: "";
+  position: absolute;
+  width: 140px; height: 140px;
+  border-radius: 50%;
+  background: var(--lime);
+  top: -60px; right: -50px;
+  filter: blur(2px);
+  opacity: .95;
+  pointer-events: none;
+}
+.stk-pink::after {
+  content: "";
+  position: absolute;
+  width: 60px; height: 60px;
+  border-radius: 50%;
+  background: var(--cyan);
+  bottom: 40%; left: -18px;
+  box-shadow:
+    20px -40px 0 -20px var(--cream),
+    50px 30px 0 -26px var(--ink);
+  pointer-events: none;
+}
+.stk-cream { background: var(--cream); color: var(--ink); --rot: 1.2deg; }
+.stk-ink { background: var(--ink); color: #fff; --rot: -0.8deg; }
+.stk-violet { background: var(--violet); color: #fff; --rot: 0.6deg; }
+.stk-orange { background: var(--orange); color: #fff; --rot: -1.3deg; }
+.stk-white { background: #fff; color: var(--ink); --rot: 0.8deg; }
+
+.stk-pink .sticker-badge, .stk-ink .sticker-badge, .stk-violet .sticker-badge, .stk-orange .sticker-badge {
+  background: #fff; color: var(--ink);
+}
+.stk-pink p { color: rgba(255,255,255,.9); }
+.stk-ink p { color: rgba(255,255,255,.75); }
+.stk-violet p { color: rgba(255,255,255,.9); }
+.stk-orange p { color: rgba(255,255,255,.9); }
+.stk-lime p { color: rgba(23,31,8,.8); }
+.stk-cream p { color: rgba(13,15,16,.7); }
+
+.sticker.s-3 { grid-column: span 3; }
+.sticker.s-4 { grid-column: span 4; }
+.sticker.s-5 { grid-column: span 5; }
+.sticker.s-6 { grid-column: span 6; }
+.sticker.s-7 { grid-column: span 7; }
+.sticker.s-8 { grid-column: span 8; }
+.sticker.tall { min-height: 360px; }
+
+/* Sticker visuals */
+.viz-flash {
+  padding: 14px 16px;
+  background: rgba(0,0,0,.08);
+  border-radius: 14px;
+  border: 2px solid rgba(0,0,0,.15);
+}
+.stk-pink .viz-flash, .stk-ink .viz-flash, .stk-violet .viz-flash, .stk-orange .viz-flash {
+  background: rgba(255,255,255,.1);
+  border-color: rgba(255,255,255,.2);
+}
+.viz-flash .q-label {
+  font-family: 'Geist Mono', monospace;
+  font-size: 10px;
+  letter-spacing: .12em;
+  text-transform: uppercase;
+  margin-bottom: 6px;
+  opacity: .7;
+}
+.viz-flash .q-text { font-size: 14px; font-weight: 600; line-height: 1.3; }
+
+.viz-lib {
+  display: flex;
+  gap: 6px;
+}
+.viz-book {
+  flex: 1;
+  aspect-ratio: 2/3;
+  border-radius: 3px;
+  background: linear-gradient(135deg, var(--b1), var(--b2));
+  box-shadow: 0 2px 6px rgba(0,0,0,.15);
+  border: 1px solid rgba(0,0,0,.1);
+}
+
+.viz-chat {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+.viz-chat-row {
+  display: flex;
+  gap: 6px;
+  align-items: end;
+}
+.viz-chat-ava {
+  width: 20px; height: 20px; border-radius: 50%;
+  font-size: 8px; font-weight: 800;
+  display: grid; place-items: center;
+  color: #fff;
+  background: linear-gradient(135deg, #fff, rgba(255,255,255,.6));
+  color: var(--violet);
+}
+.viz-chat-msg {
+  background: rgba(255,255,255,.15);
+  padding: 6px 10px;
+  border-radius: 10px;
+  font-size: 12px;
+  border-bottom-left-radius: 3px;
+  max-width: 80%;
+}
+.viz-chat-row.out { flex-direction: row-reverse; }
+.viz-chat-row.out .viz-chat-msg {
+  background: var(--lime);
+  color: var(--lime-ink);
+  border-bottom-right-radius: 3px;
+  border-bottom-left-radius: 10px;
+  font-weight: 600;
+}
+.viz-chat-row.out .viz-chat-ava {
+  background: linear-gradient(135deg, var(--lime), var(--cream));
+  color: var(--lime-ink);
+}
+
+.viz-job-card {
+  padding: 14px;
+  background: rgba(255,255,255,.12);
+  border: 2px solid rgba(255,255,255,.2);
+  border-radius: 14px;
+}
+.viz-job-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 10px;
+}
+.viz-job-name {
+  font-size: 15px;
+  font-weight: 700;
+  letter-spacing: -.01em;
+}
+.viz-job-sub {
+  font-family: 'Geist Mono', monospace;
+  font-size: 10px;
+  letter-spacing: .04em;
+  opacity: .7;
+  margin-top: 2px;
+}
+.viz-job-salary {
+  background: var(--lime);
+  color: var(--lime-ink);
+  font-family: 'Geist Mono', monospace;
+  font-size: 11px;
+  padding: 4px 8px;
+  border-radius: 6px;
+  font-weight: 700;
+}
+.viz-job-tags {
+  display: flex;
+  gap: 5px;
+  flex-wrap: wrap;
+}
+.viz-job-tag {
+  font-size: 11px;
+  padding: 3px 8px;
+  border-radius: 999px;
+  background: rgba(0,0,0,.12);
+  font-weight: 500;
+  font-family: 'Geist Mono', monospace;
+}
+.stk-pink .viz-job-tag, .stk-ink .viz-job-tag, .stk-violet .viz-job-tag, .stk-orange .viz-job-tag {
+  background: rgba(255,255,255,.15);
+}
+
+.viz-tutor {
+  display: flex;
+  gap: 8px;
+  margin-top: 16px;
+}
+.viz-tutor-ava {
+  width: 38px; height: 38px;
+  border-radius: 12px;
+  border: 2px solid currentColor;
+  display: grid; place-items: center;
+  font-weight: 800;
+  font-size: 12px;
+  margin-left: -6px;
+}
+.viz-tutor-ava:first-child { margin-left: 0; }
+
+.viz-calendar {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 4px;
+}
+.viz-day {
+  aspect-ratio: 1;
+  background: rgba(255,255,255,.15);
+  border: 2px solid rgba(255,255,255,.25);
+  border-radius: 8px;
+  display: grid;
+  place-items: center;
+  font-family: 'Geist Mono', monospace;
+  font-size: 12px;
+  font-weight: 600;
+}
+.stk-white .viz-day { background: var(--paper-2); border-color: var(--line); color: var(--ink-3); }
+.viz-day.on {
+  background: var(--lime);
+  color: var(--lime-ink);
+  border-color: var(--lime-ink);
+}
+.viz-day.busy {
+  background: var(--pink);
+  color: #fff;
+  border-color: var(--ink);
+}
+
+/* =========================================================
+   NOTIFICATION STACK (floating)
+   ========================================================= */
+.notif-ticker {
+  position: relative;
+  margin: 120px 0;
+  padding: 80px 0;
+  background: var(--ink);
+  color: #fff;
+  border-radius: 32px;
+  overflow: hidden;
+}
+.notif-ticker::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background:
+    radial-gradient(circle 600px at 20% 30%, rgba(255,63,164,.18), transparent 60%),
+    radial-gradient(circle 500px at 85% 70%, rgba(217,255,58,.15), transparent 60%);
+}
+.notif-ticker-inner {
+  max-width: 1280px;
+  margin: 0 auto;
+  padding: 0 40px;
+  position: relative;
+  display: grid;
+  grid-template-columns: 1.1fr .9fr;
+  gap: 48px;
+  align-items: center;
+}
+.notif-copy .label {
+  font-family: 'Geist Mono', monospace;
+  font-size: 12px;
+  letter-spacing: .14em;
+  text-transform: uppercase;
+  color: var(--lime);
+  margin-bottom: 16px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.notif-copy .label::before {
+  content: "";
+  width: 32px; height: 2px;
+  background: var(--lime);
+}
+.notif-copy h2 {
+  font-family: 'Funnel Display', sans-serif;
+  font-size: clamp(48px, 6vw, 88px);
+  font-weight: 800;
+  line-height: .92;
+  letter-spacing: -.045em;
+  color: #fff;
+  margin-bottom: 24px;
+}
+.notif-copy h2 .accent {
+  background: var(--lime);
+  color: var(--lime-ink);
+  padding: 0 .05em;
+  border-radius: 10px;
+  display: inline-block;
+  transform: rotate(-1deg);
+}
+.notif-copy p {
+  font-size: 18px;
+  color: rgba(255,255,255,.68);
+  max-width: 460px;
+  line-height: 1.45;
+  font-weight: 500;
+}
+
+.notif-stack {
+  position: relative;
+  min-height: 420px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+.notif-card {
+  background: rgba(255,255,255,.05);
+  border: 1px solid rgba(255,255,255,.1);
+  backdrop-filter: blur(20px);
+  border-radius: 18px;
+  padding: 14px 16px;
+  display: flex;
+  gap: 14px;
+  align-items: start;
+  animation: notifSlide .5s var(--ease);
+}
+@keyframes notifSlide {
+  from { opacity: 0; transform: translateY(12px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+.notif-card.highlight {
+  background: var(--lime);
+  color: var(--lime-ink);
+  border-color: var(--lime);
+  transform: scale(1.02);
+}
+.notif-icon {
+  width: 38px; height: 38px;
+  border-radius: 12px;
+  flex-shrink: 0;
+  display: grid;
+  place-items: center;
+  font-size: 18px;
+}
+.notif-body { flex: 1; min-width: 0; }
+.notif-title {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: 10px;
+}
+.notif-title strong {
+  font-size: 14px;
+  font-weight: 700;
+  letter-spacing: -.01em;
+}
+.notif-title time {
+  font-family: 'Geist Mono', monospace;
+  font-size: 10px;
+  opacity: .55;
+  white-space: nowrap;
+}
+.notif-text {
+  font-size: 13px;
+  margin-top: 3px;
+  opacity: .8;
+  line-height: 1.4;
+}
+
+/* =========================================================
+   BIG STATS (cut by grid)
+   ========================================================= */
+.big-stats {
+  padding: 120px 0 80px;
+}
+.big-stats-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 1px;
+  background: var(--line);
+  border: 1px solid var(--line);
+  border-radius: 24px;
+  overflow: hidden;
+}
+.big-stat {
+  background: var(--paper);
+  padding: 40px 28px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  position: relative;
+  min-height: 200px;
+}
+.big-stat.hl { background: var(--lime); color: var(--lime-ink); }
+.big-stat.hl2 { background: var(--ink); color: #fff; }
+.big-stat-label {
+  font-family: 'Geist Mono', monospace;
+  font-size: 11px;
+  letter-spacing: .14em;
+  text-transform: uppercase;
+  color: currentColor;
+  opacity: .6;
+}
+.big-stat-n {
+  font-family: 'Funnel Display', sans-serif;
+  font-size: clamp(60px, 8vw, 112px);
+  font-weight: 900;
+  line-height: .88;
+  letter-spacing: -.06em;
+  font-variant-numeric: tabular-nums;
+  margin-top: auto;
+}
+.big-stat-sub {
+  font-size: 14px;
+  opacity: .75;
+  font-weight: 500;
+}
+
+/* =========================================================
+   CHAT GROUP (testimonials)
+   ========================================================= */
+.chat-section {
+  padding: 120px 0;
+  background: var(--paper-2);
+  border-radius: 32px 32px 0 0;
+  margin: 0 16px;
+}
+.chat-head-row {
+  display: grid;
+  grid-template-columns: 200px 1fr auto;
+  gap: 32px;
+  align-items: end;
+  margin-bottom: 56px;
+}
+.chat-label {
+  font-family: 'Geist Mono', monospace;
+  font-size: 12px;
+  letter-spacing: .14em;
+  text-transform: uppercase;
+  color: var(--ink-3);
+  position: relative;
+  padding-top: 14px;
+}
+.chat-label::before {
+  content: "";
+  position: absolute;
+  top: 0; left: 0;
+  width: 32px; height: 2px;
+  background: var(--ink);
+}
+.chat-title {
+  font-family: 'Funnel Display', sans-serif;
+  font-size: clamp(44px, 5.5vw, 80px);
+  font-weight: 800;
+  line-height: .92;
+  letter-spacing: -.045em;
+  max-width: 18ch;
+}
+.chat-title .accent {
+  background: var(--pink);
+  color: #fff;
+  padding: 0 .06em;
+  border-radius: 12px;
+  display: inline-block;
+  transform: rotate(-1.5deg);
+  position: relative;
+}
+.chat-title .accent::before {
+  content: "";
+  position: absolute;
+  width: 14px; height: 14px;
+  border-radius: 50%;
+  background: var(--lime);
+  top: -6px; right: -8px;
+  box-shadow:
+    -24px -10px 0 -2px var(--cyan),
+    38px 8px 0 -3px var(--cream),
+    -16px 48px 0 -4px var(--ink),
+    54px 38px 0 -5px var(--violet);
+  pointer-events: none;
+  z-index: 3;
+}
+
+.chat-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 20px;
+}
+.chat-card {
+  background: var(--card);
+  border: 2px solid var(--ink);
+  border-radius: 24px;
+  padding: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  box-shadow: 4px 4px 0 var(--ink);
+}
+.chat-card-head {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding-bottom: 12px;
+  border-bottom: 1px solid var(--line);
+}
+.chat-card-ava {
+  width: 36px; height: 36px;
+  border-radius: 12px;
+  display: grid; place-items: center;
+  font-weight: 800;
+  font-size: 12px;
+  color: #fff;
+}
+.chat-card-group { flex: 1; }
+.chat-card-name {
+  font-size: 14px;
+  font-weight: 700;
+  letter-spacing: -.01em;
+}
+.chat-card-meta {
+  font-family: 'Geist Mono', monospace;
+  font-size: 10px;
+  color: var(--ink-3);
+  letter-spacing: .04em;
+}
+.chat-card-presence {
+  font-family: 'Geist Mono', monospace;
+  font-size: 10px;
+  padding: 3px 8px;
+  border-radius: 6px;
+  background: var(--lime);
+  color: var(--lime-ink);
+  font-weight: 700;
+  letter-spacing: .04em;
+}
+.chat-card-msgs {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.cc-msg {
+  display: flex;
+  gap: 8px;
+  align-items: end;
+}
+.cc-msg-ava {
+  width: 26px; height: 26px;
+  border-radius: 50%;
+  display: grid; place-items: center;
+  font-size: 10px;
+  font-weight: 800;
+  color: #fff;
+  flex-shrink: 0;
+}
+.cc-msg-body {
+  max-width: 78%;
+}
+.cc-msg-name {
+  font-family: 'Geist Mono', monospace;
+  font-size: 10px;
+  color: var(--ink-3);
+  margin-bottom: 3px;
+  letter-spacing: .04em;
+}
+.cc-msg-text {
+  background: var(--paper-2);
+  padding: 8px 12px;
+  border-radius: 12px;
+  font-size: 13px;
+  line-height: 1.4;
+  border-bottom-left-radius: 4px;
+  font-weight: 500;
+}
+.cc-msg.out { align-self: flex-end; flex-direction: row-reverse; }
+.cc-msg.out .cc-msg-body { text-align: right; }
+.cc-msg.out .cc-msg-text {
+  background: var(--ink);
+  color: #fff;
+  border-bottom-right-radius: 4px;
+  border-bottom-left-radius: 12px;
+}
+.cc-msg.out .cc-msg-ava { background: linear-gradient(135deg, var(--pink), var(--orange)); }
+
+.cc-reaction {
+  display: flex;
+  gap: 4px;
+  margin-top: 2px;
+}
+.cc-reaction span {
+  background: var(--card);
+  border: 1px solid var(--line);
+  font-size: 10px;
+  padding: 2px 6px;
+  border-radius: 999px;
+  font-family: 'Geist Mono', monospace;
+}
+
+/* =========================================================
+   DAY IN CONNIKU - timeline
+   ========================================================= */
+.day {
+  padding: 120px 0 100px;
+  background: var(--paper-2);
+  margin: 0 16px;
+  border-radius: 0 0 32px 32px;
+}
+.day-head {
+  display: grid;
+  grid-template-columns: 200px 1fr;
+  gap: 32px;
+  margin-bottom: 48px;
+  align-items: end;
+}
+.day-title {
+  font-family: 'Funnel Display', sans-serif;
+  font-size: clamp(40px, 5vw, 72px);
+  font-weight: 800;
+  line-height: .92;
+  letter-spacing: -.045em;
+  max-width: 20ch;
+}
+.day-title .accent {
+  background: var(--ink);
+  color: #fff;
+  padding: 0 .06em;
+  border-radius: 10px;
+  display: inline-block;
+  transform: rotate(-0.8deg);
+}
+.day-timeline {
+  display: grid;
+  grid-template-columns: repeat(6, 1fr);
+  gap: 12px;
+}
+.day-slot {
+  background: var(--card);
+  border: 2px solid var(--ink);
+  border-radius: 18px;
+  padding: 18px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  min-height: 220px;
+  position: relative;
+}
+.day-slot.hl { background: var(--lime); }
+.day-slot.hl2 { background: var(--pink); color: #fff; }
+.day-slot.hl3 { background: var(--cream); }
+.day-slot.hl4 { background: var(--violet); color: #fff; }
+.day-slot.hl5 { background: var(--orange); color: #fff; }
+.day-time {
+  font-family: 'Geist Mono', monospace;
+  font-size: 14px;
+  font-weight: 700;
+  letter-spacing: -.005em;
+}
+.day-emoji { font-size: 28px; }
+.day-slot h4 {
+  font-size: 16px;
+  font-weight: 800;
+  letter-spacing: -.02em;
+  line-height: 1.15;
+  margin-top: auto;
+}
+.day-slot p {
+  font-size: 12px;
+  opacity: .7;
+  font-weight: 500;
+  line-height: 1.35;
+}
+
+/* =========================================================
+   CTA
+   ========================================================= */
+.cta {
+  padding: 120px 0 60px;
+  text-align: center;
+  position: relative;
+}
+.cta-headline {
+  font-family: 'Funnel Display', sans-serif;
+  font-size: clamp(64px, 10vw, 160px);
+  font-weight: 900;
+  line-height: .88;
+  letter-spacing: -.055em;
+  max-width: 14ch;
+  margin: 0 auto 40px;
+}
+.cta-headline .accent {
+  background: var(--lime);
+  color: var(--lime-ink);
+  padding: 0 .06em;
+  border-radius: 14px;
+  display: inline-block;
+  transform: rotate(-1.5deg);
+  position: relative;
+}
+.cta-headline .accent::before {
+  content: "";
+  position: absolute;
+  width: 16px; height: 16px;
+  border-radius: 50%;
+  background: var(--pink);
+  top: -8px; right: -12px;
+  box-shadow:
+    -30px 14px 0 -2px var(--cyan),
+    42px 18px 0 -4px var(--ink),
+    -48px 54px 0 -5px var(--violet);
+  pointer-events: none;
+  z-index: 3;
+}
+.cta-actions {
+  display: flex;
+  gap: 10px;
+  justify-content: center;
+  margin-bottom: 16px;
+}
+.cta-note {
+  font-family: 'Geist Mono', monospace;
+  font-size: 12px;
+  letter-spacing: .14em;
+  color: var(--ink-3);
+  margin-top: 24px;
+  text-transform: uppercase;
+}
+
+/* =========================================================
+   TRACKLIST FOOTER
+   ========================================================= */
+.tracklist {
+  padding: 80px 0 40px;
+  border-top: 1px solid var(--line);
+  margin: 80px 16px 0;
+}
+.tracklist-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  margin-bottom: 40px;
+  flex-wrap: wrap;
+  gap: 20px;
+}
+.tracklist-logo {
+  font-family: 'Funnel Display', sans-serif;
+  font-size: clamp(100px, 18vw, 280px);
+  font-weight: 900;
+  letter-spacing: -.08em;
+  line-height: .82;
+  color: var(--ink);
+}
+.tracklist-logo .dot {
+  display: inline-block;
+  width: .12em; height: .12em;
+  background: var(--orange);
+  border-radius: 50%;
+  margin-bottom: .08em;
+  margin-left: -.05em;
+}
+.tracklist-meta {
+  font-family: 'Geist Mono', monospace;
+  font-size: 11px;
+  letter-spacing: .1em;
+  color: var(--ink-3);
+  text-transform: uppercase;
+  text-align: right;
+  line-height: 1.8;
+}
+.tracklist-meta strong {
+  color: var(--ink);
+  font-weight: 700;
+}
+
+.tracks {
+  display: grid;
+  grid-template-columns: 40px 1fr 200px 120px;
+  gap: 20px;
+  padding: 14px 0;
+  border-bottom: 1px solid var(--line);
+  font-family: 'Geist Mono', monospace;
+  font-size: 11px;
+  letter-spacing: .08em;
+  color: var(--ink-3);
+  text-transform: uppercase;
+  font-weight: 600;
+}
+.track-row {
+  display: grid;
+  grid-template-columns: 40px 1fr 200px 120px;
+  gap: 20px;
+  padding: 16px 0;
+  border-bottom: 1px solid var(--line-soft);
+  align-items: center;
+  transition: background .15s var(--ease);
+}
+.track-row:hover { background: var(--paper); }
+.track-n {
+  font-family: 'Geist Mono', monospace;
+  font-size: 12px;
+  color: var(--ink-3);
+  font-variant-numeric: tabular-nums;
+}
+.track-name {
+  font-size: 15px;
+  font-weight: 700;
+  letter-spacing: -.01em;
+}
+.track-name em {
+  font-style: normal;
+  color: var(--ink-3);
+  font-weight: 500;
+  font-size: 13px;
+  margin-left: 8px;
+}
+.track-tag {
+  font-family: 'Geist Mono', monospace;
+  font-size: 10px;
+  letter-spacing: .08em;
+  text-transform: uppercase;
+  color: var(--ink-3);
+}
+.track-cta {
+  text-align: right;
+}
+.track-cta a {
+  font-size: 13px;
+  font-weight: 700;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}
+.track-cta a:hover { color: var(--orange); }
+
+.footer-bottom {
+  margin-top: 40px;
+  padding-top: 24px;
+  border-top: 1px solid var(--line);
+  display: flex;
+  justify-content: space-between;
+  font-family: 'Geist Mono', monospace;
+  font-size: 11px;
+  letter-spacing: .08em;
+  color: var(--ink-3);
+  text-transform: uppercase;
+  flex-wrap: wrap;
+  gap: 20px;
+}
+.footer-bottom a:hover { color: var(--ink); }
+
+/* =========================================================
+   RESPONSIVE
+   ========================================================= */
+@media (max-width: 1080px) {
+  .sticker.s-3, .sticker.s-4, .sticker.s-5, .sticker.s-6, .sticker.s-7, .sticker.s-8 { grid-column: span 6; }
+  .day-timeline { grid-template-columns: repeat(3, 1fr); }
+  .big-stats-grid { grid-template-columns: 1fr 1fr; }
+  .notif-ticker-inner { grid-template-columns: 1fr; }
+  .chat-grid { grid-template-columns: 1fr; }
+  .chat-head-row { grid-template-columns: 1fr; gap: 16px; }
+  .day-head { grid-template-columns: 1fr; gap: 16px; }
+}
+@media (max-width: 680px) {
+  .container { padding: 0 18px; }
+  .nav { padding: 0 10px; top: 8px; }
+  .nav-inner { padding: 6px 8px 6px 14px; }
+  .nav-links, .nav-search, .nav-sep, .btn-login { display: none; }
+  .top-progress { padding: 8px 16px; gap: 10px; font-size: 10px; }
+  .top-progress-bar { max-width: 100px; }
+  .hero { padding: 40px 0; }
+  .sticker.s-3, .sticker.s-4, .sticker.s-5, .sticker.s-6, .sticker.s-7, .sticker.s-8 { grid-column: span 12; }
+  .day-timeline { grid-template-columns: 1fr 1fr; }
+  .big-stats-grid { grid-template-columns: 1fr; }
+  .tracks, .track-row { grid-template-columns: 30px 1fr 80px; }
+  .tracks > :nth-child(3), .track-row > :nth-child(3) { display: none; }
+}
+
+@media print {
+  * { -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; }
+  @page { size: 1400px 2200px; margin: 0; }
+  .nav { position: static !important; margin: 16px auto; }
+  .notif-ticker, .chat-section, .day, .cta, .tracklist { page-break-inside: avoid; }
+}
+
+/* =========================================================
+   ANTI-MANIFESTO STRIP
+   ========================================================= */
+.antistrip {
+  padding: 60px 0 40px;
+  overflow: hidden;
+  position: relative;
+}
+.antistrip-label {
+  font-family: 'Geist Mono', monospace;
+  font-size: 12px;
+  letter-spacing: .14em;
+  text-transform: uppercase;
+  color: var(--ink-3);
+  margin-bottom: 28px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 0 32px;
+  max-width: 1320px;
+  margin-left: auto;
+  margin-right: auto;
+}
+.antistrip-label::before {
+  content: "";
+  width: 32px; height: 2px;
+  background: var(--ink);
+}
+.antistrip-rail {
+  display: flex;
+  gap: 20px;
+  white-space: nowrap;
+  animation: antiroll 40s linear infinite;
+}
+.antistrip-chip {
+  font-family: 'Funnel Display', sans-serif;
+  font-size: clamp(38px, 5.5vw, 78px);
+  font-weight: 800;
+  letter-spacing: -.04em;
+  line-height: 1;
+  padding: 14px 28px;
+  border: 2px solid var(--ink);
+  border-radius: 18px;
+  background: var(--paper);
+  position: relative;
+  flex-shrink: 0;
+  color: var(--ink-3);
+  text-decoration: line-through;
+  text-decoration-thickness: 5px;
+  text-decoration-color: var(--pink);
+}
+.antistrip-chip.good {
+  color: var(--lime-ink);
+  background: var(--lime);
+  text-decoration: none;
+  transform: rotate(-1.2deg);
+}
+.antistrip-chip.good em { font-style: normal; }
+.antistrip-chip.good::after {
+  content: "✓";
+  position: absolute;
+  top: -14px; right: -14px;
+  width: 32px; height: 32px;
+  border-radius: 50%;
+  background: var(--ink);
+  color: var(--lime);
+  display: grid;
+  place-items: center;
+  font-size: 18px;
+  font-weight: 800;
+  font-family: sans-serif;
+}
+@keyframes antiroll {
+  from { transform: translateX(0); }
+  to { transform: translateX(-50%); }
+}
+
+/* =========================================================
+   COMPARISON MATRIX
+   ========================================================= */
+.compare {
+  padding: 120px 0 80px;
+  position: relative;
+}
+.compare-head {
+  display: grid;
+  grid-template-columns: 200px 1fr;
+  gap: 32px;
+  align-items: end;
+  margin-bottom: 48px;
+}
+.compare-label {
+  font-family: 'Geist Mono', monospace;
+  font-size: 12px;
+  letter-spacing: .14em;
+  text-transform: uppercase;
+  color: var(--ink-3);
+  position: relative;
+  padding-top: 14px;
+}
+.compare-label::before {
+  content: "";
+  position: absolute;
+  top: 0; left: 0;
+  width: 32px; height: 2px;
+  background: var(--ink);
+}
+.compare-title {
+  font-family: 'Funnel Display', sans-serif;
+  font-size: clamp(44px, 5.5vw, 84px);
+  font-weight: 800;
+  line-height: .92;
+  letter-spacing: -.045em;
+  max-width: 22ch;
+}
+.compare-title .accent {
+  background: var(--ink);
+  color: #fff;
+  padding: 0 .06em;
+  border-radius: 12px;
+  display: inline-block;
+  transform: rotate(-.8deg);
+}
+
+.matrix {
+  border: 2px solid var(--ink);
+  border-radius: 24px;
+  overflow: hidden;
+  background: var(--card);
+  position: relative;
+}
+.matrix-row {
+  display: grid;
+  grid-template-columns: 1.6fr repeat(7, 1fr);
+  border-bottom: 1px solid var(--line);
+  min-height: 64px;
+  align-items: center;
+}
+.matrix-row:last-child { border-bottom: 0; }
+.matrix-row.head {
+  background: var(--paper-2);
+  min-height: 72px;
+  border-bottom: 2px solid var(--ink);
+}
+.matrix-cell {
+  padding: 16px 14px;
+  border-right: 1px solid var(--line);
+  font-size: 13px;
+  font-weight: 600;
+  text-align: center;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.matrix-cell:last-child { border-right: 0; }
+.matrix-cell.feat {
+  justify-content: flex-start;
+  text-align: left;
+  font-family: 'Funnel Display', sans-serif;
+  font-size: 15px;
+  font-weight: 700;
+  letter-spacing: -.01em;
+  padding-left: 20px;
+  min-width: 0;
+}
+.matrix-cell.head-cell {
+  font-family: 'Geist Mono', monospace;
+  font-size: 10.5px;
+  letter-spacing: .08em;
+  text-transform: uppercase;
+  color: var(--ink-3);
+  font-weight: 600;
+  line-height: 1.2;
+}
+.matrix-cell.head-cell.us {
+  background: var(--lime);
+  color: var(--lime-ink);
+  font-family: 'Funnel Display', sans-serif;
+  font-size: 16px;
+  font-weight: 900;
+  letter-spacing: -.02em;
+  text-transform: none;
+  border-left: 2px solid var(--ink);
+}
+.matrix-cell.us {
+  background: rgba(217, 255, 58, .2);
+  border-left: 2px solid var(--ink);
+}
+.tick {
+  width: 28px; height: 28px;
+  border-radius: 50%;
+  display: grid;
+  place-items: center;
+  font-weight: 800;
+  font-size: 14px;
+  font-family: sans-serif;
+}
+.tick.yes { background: var(--lime); color: var(--lime-ink); }
+.tick.no { background: var(--paper-2); color: var(--ink-4); }
+.tick.part { background: var(--cream); color: var(--ink); }
+
+.matrix-row.totals {
+  background: var(--ink);
+  color: #fff;
+  min-height: 56px;
+  border-bottom: 0;
+}
+.matrix-row.totals .matrix-cell {
+  border-color: rgba(255,255,255,.08);
+  font-family: 'Funnel Display', sans-serif;
+  font-weight: 900;
+  font-size: 18px;
+  letter-spacing: -.02em;
+}
+.matrix-row.totals .matrix-cell.feat {
+  font-size: 14px;
+  font-family: 'Geist Mono', monospace;
+  text-transform: uppercase;
+  letter-spacing: .1em;
+  font-weight: 600;
+  color: rgba(255,255,255,.6);
+}
+.matrix-row.totals .matrix-cell.us {
+  background: var(--lime);
+  color: var(--lime-ink);
+  font-size: 22px;
+}
+
+/* =========================================================
+   MANIFESTO
+   ========================================================= */
+.manifesto {
+  padding: 140px 0;
+  text-align: center;
+  position: relative;
+  overflow: hidden;
+}
+.manifesto-label {
+  font-family: 'Geist Mono', monospace;
+  font-size: 12px;
+  letter-spacing: .14em;
+  text-transform: uppercase;
+  color: var(--ink-3);
+  margin-bottom: 40px;
+}
+.manifesto-label::before, .manifesto-label::after {
+  content: "—"; margin: 0 10px;
+}
+.manifesto h2 {
+  font-family: 'Funnel Display', sans-serif;
+  font-size: clamp(56px, 9vw, 136px);
+  font-weight: 900;
+  line-height: .92;
+  letter-spacing: -.055em;
+  max-width: 18ch;
+  margin: 0 auto;
+  position: relative;
+}
+.manifesto h2 .lime-bg {
+  background: var(--lime);
+  color: var(--lime-ink);
+  padding: 0 .06em;
+  border-radius: 14px;
+  display: inline-block;
+  transform: rotate(-1.2deg);
+}
+.manifesto h2 .pink-bg {
+  background: var(--pink);
+  color: #fff;
+  padding: 0 .06em;
+  border-radius: 14px;
+  display: inline-block;
+  transform: rotate(1.2deg);
+  position: relative;
+}
+.manifesto h2 .pink-bg::before {
+  content: "";
+  position: absolute;
+  width: 16px; height: 16px;
+  border-radius: 50%;
+  background: var(--lime);
+  top: -8px; right: -10px;
+  box-shadow:
+    38px 12px 0 -3px var(--cyan),
+    -22px 52px 0 -4px var(--cream),
+    60px -18px 0 -5px var(--ink);
+  pointer-events: none;
+}
+.manifesto-sub {
+  font-family: 'Geist Mono', monospace;
+  font-size: 13px;
+  letter-spacing: .14em;
+  text-transform: uppercase;
+  color: var(--ink-3);
+  margin-top: 40px;
+}
+.manifesto-blobs { position: absolute; inset: 0; pointer-events: none; overflow: hidden; }
+.manifesto-blobs .blob { opacity: .25; }
+.manifesto-blobs .b1 { top: -100px; left: 10%; width: 400px; height: 400px; background: var(--cyan); }
+.manifesto-blobs .b2 { bottom: -100px; right: 5%; width: 500px; height: 500px; background: var(--pink); }
+
+/* =========================================================
+   MULTI-COUNTRY
+   ========================================================= */
+.world {
+  padding: 120px 0;
+  margin: 0 16px 20px;
+  background: var(--ink);
+  color: #fff;
+  border-radius: 32px;
+}
+.world-head {
+  display: grid;
+  grid-template-columns: 200px 1fr;
+  gap: 32px;
+  align-items: end;
+  margin-bottom: 56px;
+}
+.world-label {
+  font-family: 'Geist Mono', monospace;
+  font-size: 12px;
+  letter-spacing: .14em;
+  text-transform: uppercase;
+  color: var(--lime);
+  position: relative;
+  padding-top: 14px;
+}
+.world-label::before {
+  content: "";
+  position: absolute;
+  top: 0; left: 0;
+  width: 32px; height: 2px;
+  background: var(--lime);
+}
+.world-title {
+  font-family: 'Funnel Display', sans-serif;
+  font-size: clamp(44px, 5.5vw, 80px);
+  font-weight: 800;
+  line-height: .92;
+  letter-spacing: -.045em;
+  max-width: 18ch;
+  color: #fff;
+}
+.world-title .lime {
+  background: var(--lime);
+  color: var(--lime-ink);
+  padding: 0 .06em;
+  border-radius: 10px;
+  display: inline-block;
+  transform: rotate(-1deg);
+}
+
+.world-grid {
+  display: grid;
+  grid-template-columns: 1.2fr 1fr 1fr;
+  gap: 20px;
+  margin-bottom: 48px;
+}
+.world-card {
+  background: rgba(255,255,255,.04);
+  border: 1px solid rgba(255,255,255,.1);
+  border-radius: 24px;
+  padding: 32px;
+  position: relative;
+  overflow: hidden;
+}
+.world-card.live {
+  background: var(--lime);
+  color: var(--lime-ink);
+  border-color: var(--lime);
+}
+.world-card-status {
+  font-family: 'Geist Mono', monospace;
+  font-size: 10px;
+  letter-spacing: .12em;
+  text-transform: uppercase;
+  padding: 4px 10px;
+  border-radius: 999px;
+  background: rgba(255,255,255,.08);
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-weight: 600;
+}
+.world-card.live .world-card-status {
+  background: var(--lime-ink);
+  color: var(--lime);
+}
+.world-card-status .dot { width: 6px; height: 6px; border-radius: 50%; background: currentColor; }
+.world-card-flag {
+  font-size: 56px;
+  line-height: 1;
+  margin: 24px 0 16px;
+}
+.world-card-country {
+  font-family: 'Funnel Display', sans-serif;
+  font-size: 38px;
+  font-weight: 900;
+  letter-spacing: -.035em;
+  line-height: 1;
+  margin-bottom: 6px;
+}
+.world-card-meta {
+  font-family: 'Geist Mono', monospace;
+  font-size: 12px;
+  letter-spacing: .04em;
+  opacity: .7;
+  margin-bottom: 20px;
+}
+.world-card-n {
+  font-family: 'Funnel Display', sans-serif;
+  font-size: 64px;
+  font-weight: 900;
+  line-height: .9;
+  letter-spacing: -.045em;
+  font-variant-numeric: tabular-nums;
+  margin-top: auto;
+}
+.world-card-sub {
+  font-size: 13px;
+  opacity: .75;
+  font-weight: 500;
+  margin-top: 6px;
+}
+
+.world-langs {
+  display: flex;
+  gap: 16px;
+  flex-wrap: wrap;
+  padding-top: 32px;
+  border-top: 1px solid rgba(255,255,255,.08);
+}
+.world-lang {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 12px 18px;
+  background: rgba(255,255,255,.05);
+  border-radius: 999px;
+  font-family: 'Geist Mono', monospace;
+  font-size: 12px;
+  letter-spacing: .08em;
+  text-transform: uppercase;
+  font-weight: 600;
+}
+.world-lang.on { background: var(--lime); color: var(--lime-ink); }
+.world-lang .code {
+  font-family: 'Funnel Display', sans-serif;
+  font-size: 16px;
+  font-weight: 900;
+  letter-spacing: -.02em;
+  text-transform: none;
+}
+
+/* =========================================================
+   TWEAKS PANEL
+   ========================================================= */
+.tweaks-panel {
+  position: fixed;
+  bottom: 20px;
+  right: 20px;
+  z-index: 200;
+  width: 300px;
+  background: var(--ink);
+  color: #fff;
+  border-radius: 20px;
+  padding: 18px;
+  box-shadow: 0 24px 60px -20px rgba(0,0,0,.5);
+  display: none;
+  font-size: 13px;
+}
+.tweaks-panel.on { display: block; }
+.tweaks-panel h3 {
+  font-family: 'Funnel Display', sans-serif;
+  font-size: 14px;
+  font-weight: 800;
+  letter-spacing: -.01em;
+  margin-bottom: 4px;
+}
+.tweaks-panel .tweaks-sub {
+  font-family: 'Geist Mono', monospace;
+  font-size: 10px;
+  letter-spacing: .1em;
+  opacity: .5;
+  text-transform: uppercase;
+  margin-bottom: 14px;
+}
+.tweak-group { margin-bottom: 16px; }
+.tweak-group-label {
+  font-family: 'Geist Mono', monospace;
+  font-size: 10px;
+  letter-spacing: .1em;
+  text-transform: uppercase;
+  opacity: .5;
+  margin-bottom: 6px;
+}
+.tweak-options { display: flex; flex-direction: column; gap: 4px; }
+.tweak-opt {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 8px 10px;
+  background: rgba(255,255,255,.04);
+  border: 1px solid rgba(255,255,255,.06);
+  border-radius: 10px;
+  cursor: pointer;
+  transition: background .15s ease;
+  text-align: left;
+  color: #fff;
+  width: 100%;
+  font-size: 12.5px;
+  font-family: inherit;
+}
+.tweak-opt:hover { background: rgba(255,255,255,.08); }
+.tweak-opt.active {
+  background: var(--lime);
+  color: var(--lime-ink);
+  border-color: var(--lime);
+}
+.tweak-opt .tweak-swatch {
+  width: 18px; height: 18px; border-radius: 6px;
+  border: 1px solid rgba(255,255,255,.15);
+  flex-shrink: 0;
+}
+.tweak-opt.active .tweak-swatch { border-color: rgba(0,0,0,.2); }
+
+@media (max-width: 1080px) {
+  .matrix-row { grid-template-columns: 1.4fr repeat(7, 1fr); font-size: 11px; }
+  .compare-head, .world-head { grid-template-columns: 1fr; gap: 16px; }
+  .world-grid { grid-template-columns: 1fr; }
+  .antistrip-chip { font-size: 44px; padding: 10px 20px; }
+  .matrix-cell.feat { font-size: 13px; padding-left: 14px; }
+}
+</style>
+</head>
+<body>
+
+<!-- TOP PROGRESS -->
+<div class="top-progress">
+  <div class="top-progress-label">
+    <span class="dot"></span>
+    Semestre 2026-1
+  </div>
+  <div class="top-progress-bar"><div class="top-progress-fill"></div></div>
+  <div class="top-progress-meta">34% · día 41 de 120</div>
+</div>
+
+<!-- NAV -->
+<nav class="nav">
+  <div class="nav-inner">
+    <a href="#" class="logo">
+      <span class="logo-mark">
+        <svg viewBox="0 0 40 40" fill="none">
+          <g transform="translate(20 20) rotate(45)">
+            <circle r="11" fill="none" stroke="#0D0F10" stroke-width="5" stroke-linecap="round" stroke-dasharray="52 18"/>
+          </g>
+        </svg>
+      </span>
+      conniku
+    </a>
+    <span class="nav-sep"></span>
+    <div class="nav-links">
+      <a href="#">Estudio</a>
+      <a href="#">Comunidad</a>
+      <a href="#">Tutores</a>
+      <a href="#">Empleo</a>
+      <a href="#">Biblioteca</a>
+    </div>
+    <div class="nav-spacer"></div>
+    <div class="nav-search">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="11" cy="11" r="7"/><path d="m21 21-4.3-4.3"/></svg>
+      Buscar
+      <kbd>⌘K</kbd>
+    </div>
+    <button class="btn-login">Entrar</button>
+    <button class="btn-enter">
+      Empezar
+      <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round"><path d="M5 12h14M13 5l7 7-7 7"/></svg>
+    </button>
+  </div>
+</nav>
+
+<!-- HERO -->
+<section class="hero">
+  <div class="hero-blobs">
+    <div class="blob blob-1"></div>
+    <div class="blob blob-2"></div>
+    <div class="blob blob-3"></div>
+  </div>
+  <div class="container">
+    <div class="hero-status">
+      <span class="pulse-dot"></span>
+      estudiando ahora mismo <span class="count" id="counter">127</span>
+    </div>
+
+    <h1 id="hero-h1">
+      Tu <span class="outline">U</span> <span class="lime">entera</span>.<br>
+      En <span class="pink">una</span><br>
+      <span class="cream">sola app</span>.
+    </h1>
+
+    <div class="hero-meta-row">
+      <p class="hero-description">
+        Sync con tu U, documentos con IA, tutores verificados, biblioteca de <strong>+70k títulos</strong>, empleo y diploma propio. <strong>Todo en un lugar.</strong>
+      </p>
+      <div class="hero-actions">
+        <button class="btn-xl-primary">
+          Entrar gratis
+          <span class="arrow-ring">
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round"><path d="M5 12h14M13 5l7 7-7 7"/></svg>
+          </span>
+        </button>
+        <button class="btn-xl-ghost">Ver demo →</button>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ANTI-MANIFESTO STRIP -->
+<section class="antistrip">
+  <div class="antistrip-label">
+    <span>lo que conniku NO es</span>
+  </div>
+  <div class="antistrip-rail">
+    <span class="antistrip-chip">Facebook con clases</span>
+    <span class="antistrip-chip good"><em>UN SOLO LUGAR</em></span>
+    <span class="antistrip-chip">Moodle modernizado</span>
+    <span class="antistrip-chip">Notion con menos libertad</span>
+    <span class="antistrip-chip good"><em>HECHO PARA TI</em></span>
+    <span class="antistrip-chip">WhatsApp académico</span>
+    <span class="antistrip-chip">LinkedIn light</span>
+    <span class="antistrip-chip good"><em>CON TU U DE VERDAD</em></span>
+    <span class="antistrip-chip">Udemy en español</span>
+    <span class="antistrip-chip">grupos de Discord</span>
+    <!-- loop -->
+    <span class="antistrip-chip">Facebook con clases</span>
+    <span class="antistrip-chip good"><em>UN SOLO LUGAR</em></span>
+    <span class="antistrip-chip">Moodle modernizado</span>
+    <span class="antistrip-chip">Notion con menos libertad</span>
+    <span class="antistrip-chip good"><em>HECHO PARA TI</em></span>
+    <span class="antistrip-chip">WhatsApp académico</span>
+    <span class="antistrip-chip">LinkedIn light</span>
+    <span class="antistrip-chip good"><em>CON TU U DE VERDAD</em></span>
+    <span class="antistrip-chip">Udemy en español</span>
+    <span class="antistrip-chip">grupos de Discord</span>
+  </div>
+</section>
+
+<!-- STICKERS -->
+<section class="stickers">
+  <div class="container">
+    <div class="stickers-label">
+      <span>01 · lo que hace conniku</span>
+    </div>
+    <h2 class="stickers-head">
+      Siete <span class="pink">superpoderes</span><br>
+      en tu <span class="lime-bg">mochila</span>.
+    </h2>
+
+    <div class="sticker-grid">
+
+      <!-- 01 Apuntes IA (lime) -->
+      <div class="sticker stk-lime s-5 tall">
+        <span class="sticker-badge">01 / Apuntes</span>
+        <div class="sticker-num">✦</div>
+        <h3>Sube tu PDF.<br>Sale un plan<br>de estudio.</h3>
+        <p>Resumen + flashcards + quiz — en 30 segundos, con tu propio material.</p>
+        <div class="visual" style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
+          <div class="viz-flash">
+            <div class="q-label">pregunta</div>
+            <div class="q-text">¿Cuál es la condición para aplicar Green?</div>
+          </div>
+          <div class="viz-flash" style="background:var(--lime-ink);color:var(--lime);border-color:var(--lime-ink)">
+            <div class="q-label">respuesta</div>
+            <div class="q-text" style="color:var(--lime)">Curva simple, cerrada, orientada positivamente.</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- 02 Comunidad (pink) -->
+      <div class="sticker stk-pink s-4 tall">
+        <span class="sticker-badge">02 / Comunidad</span>
+        <div class="sticker-num">✦</div>
+        <h3>Tu gente.<br>Tu curso.<br>Tu U.</h3>
+        <p>Sin feed infinito. Solo la gente que te importa.</p>
+        <div class="visual viz-chat">
+          <div class="viz-chat-row">
+            <div class="viz-chat-ava">FC</div>
+            <div class="viz-chat-msg">tienes los apuntes del ayudante?</div>
+          </div>
+          <div class="viz-chat-row out">
+            <div class="viz-chat-ava">AT</div>
+            <div class="viz-chat-msg">sí tkm ✨</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- 03 Biblioteca (ink) -->
+      <div class="sticker stk-ink s-3 tall">
+        <span class="sticker-badge">03 / Biblioteca</span>
+        <div class="sticker-num">✦</div>
+        <h3>+70k libros.</h3>
+        <p>Con chat interactivo.</p>
+        <div class="visual viz-lib">
+          <div class="viz-book" style="--b1:#2D62C8;--b2:#1E3F8A"></div>
+          <div class="viz-book" style="--b1:#FF4A1C;--b2:#C13E1E"></div>
+          <div class="viz-book" style="--b1:#D9FF3A;--b2:#95B828"></div>
+          <div class="viz-book" style="--b1:#FF3FA4;--b2:#C22365"></div>
+          <div class="viz-book" style="--b1:#6B4EFF;--b2:#5635D6"></div>
+        </div>
+      </div>
+
+      <!-- 04 Empleo (cream) -->
+      <div class="sticker stk-cream s-5">
+        <span class="sticker-badge">04 / Empleo</span>
+        <div class="sticker-num">✦</div>
+        <h3>Prácticas reales,<br>sin spam.</h3>
+        <p>Filtradas por tu carrera, tu año, tu ciudad.</p>
+        <div class="visual viz-job-card" style="background:var(--ink);color:#fff;border-color:var(--ink)">
+          <div class="viz-job-row">
+            <div>
+              <div class="viz-job-name">Dev Junior · Fintual</div>
+              <div class="viz-job-sub">remoto · 20h/sem</div>
+            </div>
+            <div class="viz-job-salary">$800k</div>
+          </div>
+          <div class="viz-job-tags">
+            <span class="viz-job-tag" style="background:rgba(255,255,255,.15)">react</span>
+            <span class="viz-job-tag" style="background:rgba(255,255,255,.15)">typescript</span>
+            <span class="viz-job-tag" style="background:rgba(255,255,255,.15)">+3 match</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- 05 Tutores (violet) -->
+      <div class="sticker stk-violet s-4">
+        <span class="sticker-badge">05 / Tutores</span>
+        <div class="sticker-num">✦</div>
+        <h3>Tutores con<br>título real.</h3>
+        <p>Pagos protegidos. Si no sirve, te devolvemos.</p>
+        <div class="visual viz-tutor">
+          <div class="viz-tutor-ava" style="background:var(--blue)">MR</div>
+          <div class="viz-tutor-ava" style="background:var(--orange)">JC</div>
+          <div class="viz-tutor-ava" style="background:var(--pink)">AS</div>
+          <div class="viz-tutor-ava" style="background:var(--ink);color:var(--lime)">+450</div>
+        </div>
+      </div>
+
+      <!-- 06 CV (white) -->
+      <div class="sticker stk-white s-3">
+        <span class="sticker-badge">06 / CV</span>
+        <div class="sticker-num">✦</div>
+        <h3>CV editorial.<br>No plantilla.</h3>
+        <p>Construido con IA en 5 min.</p>
+      </div>
+
+      <!-- 07 Sync (orange) -->
+      <div class="sticker stk-orange s-7">
+        <span class="sticker-badge">07 / Sync U.</span>
+        <div class="sticker-num">✦</div>
+        <h3>Enganchado con<br><span style="background:#fff;color:var(--orange);padding:0 .08em;border-radius:8px;display:inline-block">tu universidad.</span></h3>
+        <p>Calendario, notas, materiales. Sincronizado automáticamente.</p>
+        <div class="visual viz-calendar">
+          <div class="viz-day">L</div>
+          <div class="viz-day">M</div>
+          <div class="viz-day">M</div>
+          <div class="viz-day">J</div>
+          <div class="viz-day">V</div>
+          <div class="viz-day">S</div>
+          <div class="viz-day">D</div>
+          <div class="viz-day">4</div>
+          <div class="viz-day busy">5</div>
+          <div class="viz-day">6</div>
+          <div class="viz-day on">7</div>
+          <div class="viz-day busy">8</div>
+          <div class="viz-day">9</div>
+          <div class="viz-day">10</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- COMPARISON MATRIX -->
+<section class="compare">
+  <div class="container">
+    <div class="compare-head">
+      <div class="compare-label">02 · por qué conniku</div>
+      <h2 class="compare-title">Siete capacidades. <span class="accent">Una sola app.</span><br>El resto tiene una o dos.</h2>
+    </div>
+
+    <div class="matrix">
+      <div class="matrix-row head">
+        <div class="matrix-cell feat head-cell" style="text-align:left;justify-content:flex-start">Capacidad</div>
+        <div class="matrix-cell head-cell us">CONNIKU</div>
+        <div class="matrix-cell head-cell">Moodle</div>
+        <div class="matrix-cell head-cell">Crehana</div>
+        <div class="matrix-cell head-cell">Udemy</div>
+        <div class="matrix-cell head-cell">LinkedIn<br>Learning</div>
+        <div class="matrix-cell head-cell">Notion</div>
+        <div class="matrix-cell head-cell">WhatsApp</div>
+      </div>
+      <div class="matrix-row">
+        <div class="matrix-cell feat">Sync con tu universidad</div>
+        <div class="matrix-cell us"><span class="tick yes">✓</span></div>
+        <div class="matrix-cell"><span class="tick part">~</span></div>
+        <div class="matrix-cell"><span class="tick no">—</span></div>
+        <div class="matrix-cell"><span class="tick no">—</span></div>
+        <div class="matrix-cell"><span class="tick no">—</span></div>
+        <div class="matrix-cell"><span class="tick no">—</span></div>
+        <div class="matrix-cell"><span class="tick no">—</span></div>
+      </div>
+      <div class="matrix-row">
+        <div class="matrix-cell feat">Documentos con chat IA propio</div>
+        <div class="matrix-cell us"><span class="tick yes">✓</span></div>
+        <div class="matrix-cell"><span class="tick no">—</span></div>
+        <div class="matrix-cell"><span class="tick no">—</span></div>
+        <div class="matrix-cell"><span class="tick no">—</span></div>
+        <div class="matrix-cell"><span class="tick no">—</span></div>
+        <div class="matrix-cell"><span class="tick part">~</span></div>
+        <div class="matrix-cell"><span class="tick no">—</span></div>
+      </div>
+      <div class="matrix-row">
+        <div class="matrix-cell feat">Escritura académica asistida</div>
+        <div class="matrix-cell us"><span class="tick yes">✓</span></div>
+        <div class="matrix-cell"><span class="tick no">—</span></div>
+        <div class="matrix-cell"><span class="tick no">—</span></div>
+        <div class="matrix-cell"><span class="tick no">—</span></div>
+        <div class="matrix-cell"><span class="tick no">—</span></div>
+        <div class="matrix-cell"><span class="tick part">~</span></div>
+        <div class="matrix-cell"><span class="tick no">—</span></div>
+      </div>
+      <div class="matrix-row">
+        <div class="matrix-cell feat">Biblioteca +70k con chat interactivo</div>
+        <div class="matrix-cell us"><span class="tick yes">✓</span></div>
+        <div class="matrix-cell"><span class="tick no">—</span></div>
+        <div class="matrix-cell"><span class="tick no">—</span></div>
+        <div class="matrix-cell"><span class="tick no">—</span></div>
+        <div class="matrix-cell"><span class="tick no">—</span></div>
+        <div class="matrix-cell"><span class="tick no">—</span></div>
+        <div class="matrix-cell"><span class="tick no">—</span></div>
+      </div>
+      <div class="matrix-row">
+        <div class="matrix-cell feat">Tutores verificados con pagos protegidos</div>
+        <div class="matrix-cell us"><span class="tick yes">✓</span></div>
+        <div class="matrix-cell"><span class="tick no">—</span></div>
+        <div class="matrix-cell"><span class="tick no">—</span></div>
+        <div class="matrix-cell"><span class="tick no">—</span></div>
+        <div class="matrix-cell"><span class="tick no">—</span></div>
+        <div class="matrix-cell"><span class="tick no">—</span></div>
+        <div class="matrix-cell"><span class="tick no">—</span></div>
+      </div>
+      <div class="matrix-row">
+        <div class="matrix-cell feat">Bolsa laboral con CV asistido</div>
+        <div class="matrix-cell us"><span class="tick yes">✓</span></div>
+        <div class="matrix-cell"><span class="tick no">—</span></div>
+        <div class="matrix-cell"><span class="tick no">—</span></div>
+        <div class="matrix-cell"><span class="tick no">—</span></div>
+        <div class="matrix-cell"><span class="tick part">~</span></div>
+        <div class="matrix-cell"><span class="tick no">—</span></div>
+        <div class="matrix-cell"><span class="tick no">—</span></div>
+      </div>
+      <div class="matrix-row">
+        <div class="matrix-cell feat">Cursos propios + Diploma Conniku</div>
+        <div class="matrix-cell us"><span class="tick yes">✓</span></div>
+        <div class="matrix-cell"><span class="tick no">—</span></div>
+        <div class="matrix-cell"><span class="tick yes">✓</span></div>
+        <div class="matrix-cell"><span class="tick yes">✓</span></div>
+        <div class="matrix-cell"><span class="tick yes">✓</span></div>
+        <div class="matrix-cell"><span class="tick no">—</span></div>
+        <div class="matrix-cell"><span class="tick no">—</span></div>
+      </div>
+      <div class="matrix-row totals">
+        <div class="matrix-cell feat">Score</div>
+        <div class="matrix-cell us">7/7</div>
+        <div class="matrix-cell">0</div>
+        <div class="matrix-cell">1</div>
+        <div class="matrix-cell">1</div>
+        <div class="matrix-cell">1</div>
+        <div class="matrix-cell">0</div>
+        <div class="matrix-cell">0</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- NOTIFICATION TICKER -->
+<section class="notif-ticker">
+  <div class="notif-ticker-inner">
+    <div class="notif-copy">
+      <div class="label">03 · lo que pasa</div>
+      <h2>En tu uni,<br><span class="accent">siempre</span><br>pasa algo.</h2>
+      <p>Notificaciones que sí te importan. Nada de "María comentó una foto de hace 3 años". Solo lo de tu carrera, tus grupos, tu trabajo.</p>
+    </div>
+    <div class="notif-stack" id="notif-stack">
+      <div class="notif-card">
+        <div class="notif-icon" style="background:var(--violet)">📘</div>
+        <div class="notif-body">
+          <div class="notif-title"><strong>Matías P. subió apuntes</strong><time>hace 2 min</time></div>
+          <div class="notif-text">Cálculo III · Clase 14 · 12 páginas · ya procesadas por IA</div>
+        </div>
+      </div>
+      <div class="notif-card highlight">
+        <div class="notif-icon" style="background:var(--lime-ink);color:var(--lime)">💼</div>
+        <div class="notif-body">
+          <div class="notif-title"><strong>Nueva práctica que te calza 94%</strong><time>hace 6 min</time></div>
+          <div class="notif-text">Fintual · Dev Junior · $800k · 14 estudiantes ya postularon</div>
+        </div>
+      </div>
+      <div class="notif-card">
+        <div class="notif-icon" style="background:var(--orange)">💬</div>
+        <div class="notif-body">
+          <div class="notif-title"><strong>María te respondió</strong><time>hace 12 min</time></div>
+          <div class="notif-text">Sobre tu duda de integrales de superficie — te agendó directo</div>
+        </div>
+      </div>
+      <div class="notif-card">
+        <div class="notif-icon" style="background:var(--pink)">🔥</div>
+        <div class="notif-body">
+          <div class="notif-title"><strong>Racha de 14 días estudiando</strong><time>hoy · 07:32</time></div>
+          <div class="notif-text">Tu equipo de estudio está 3 puntos arriba de la media del curso</div>
+        </div>
+      </div>
+      <div class="notif-card">
+        <div class="notif-icon" style="background:var(--blue)">📅</div>
+        <div class="notif-body">
+          <div class="notif-title"><strong>Entrega mañana a las 23:59</strong><time>mañana</time></div>
+          <div class="notif-text">Informe Lab Química · 3 compañeros también están trabajando ahora</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- BIG STATS -->
+<section class="big-stats">
+  <div class="container">
+    <div class="big-stats-grid">
+      <div class="big-stat hl">
+        <div class="big-stat-label">Estudiantes</div>
+        <div class="big-stat-n">12k</div>
+        <div class="big-stat-sub">y creciendo esta semana</div>
+      </div>
+      <div class="big-stat">
+        <div class="big-stat-label">Biblioteca</div>
+        <div class="big-stat-n">70k</div>
+        <div class="big-stat-sub">títulos con chat IA</div>
+      </div>
+      <div class="big-stat hl2">
+        <div class="big-stat-label">Tutores verificados</div>
+        <div class="big-stat-n">450+</div>
+        <div class="big-stat-sub">con título académico</div>
+      </div>
+      <div class="big-stat">
+        <div class="big-stat-label">Setup promedio</div>
+        <div class="big-stat-n">3<span style="font-size:.55em;opacity:.6">min</span></div>
+        <div class="big-stat-sub">sin tarjeta, sin fricción</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- MANIFESTO -->
+<section class="manifesto">
+  <div class="manifesto-blobs">
+    <div class="blob b1"></div>
+    <div class="blob b2"></div>
+  </div>
+  <div class="container">
+    <div class="manifesto-label">la emoción que queremos para ti</div>
+    <h2>
+      <span class="lime-bg">Concentración</span><br>
+      con <span class="pink-bg">pertenencia</span>.
+    </h2>
+    <p class="manifesto-sub">Puedes enfocarte. Y no estás solo.</p>
+  </div>
+</section>
+
+<!-- CHAT CARDS -->
+<section class="chat-section">
+  <div class="container">
+    <div class="chat-head-row">
+      <div class="chat-label">05 · lo que dicen</div>
+      <h2 class="chat-title">Reseñas de<br><span class="accent">gente real</span></h2>
+      <div style="font-family:'Geist Mono',monospace;font-size:12px;color:var(--ink-3);text-transform:uppercase;letter-spacing:.1em">★★★★★ 4.9/5 · 2.1k reseñas</div>
+    </div>
+
+    <div class="chat-grid">
+      <!-- Card 1 -->
+      <div class="chat-card">
+        <div class="chat-card-head">
+          <div class="chat-card-ava" style="background:linear-gradient(135deg,#2D62C8,#6B4EFF)">MP</div>
+          <div class="chat-card-group">
+            <div class="chat-card-name">Medicina · PUC · 6°</div>
+            <div class="chat-card-meta">28 miembros</div>
+          </div>
+          <div class="chat-card-presence">8 on</div>
+        </div>
+        <div class="chat-card-msgs">
+          <div class="cc-msg">
+            <div class="cc-msg-ava" style="background:linear-gradient(135deg,#FF3FA4,#FF4A1C)">FC</div>
+            <div class="cc-msg-body">
+              <div class="cc-msg-name">Francisca · 8:42</div>
+              <div class="cc-msg-text">alguien más siente que conniku cambió su semestre? 😭</div>
+            </div>
+          </div>
+          <div class="cc-msg out">
+            <div class="cc-msg-ava">AT</div>
+            <div class="cc-msg-body">
+              <div class="cc-msg-name">Ana · 8:43</div>
+              <div class="cc-msg-text">literal borré notion, canvas y 4 grupos de whatsapp</div>
+            </div>
+          </div>
+          <div class="cc-reaction"><span>🔥 12</span><span>😭 8</span></div>
+        </div>
+      </div>
+
+      <!-- Card 2 -->
+      <div class="chat-card">
+        <div class="chat-card-head">
+          <div class="chat-card-ava" style="background:linear-gradient(135deg,#FF4A1C,#FF3FA4)">IC</div>
+          <div class="chat-card-group">
+            <div class="chat-card-name">Ing. Civil · USACH · 4°</div>
+            <div class="chat-card-meta">41 miembros</div>
+          </div>
+          <div class="chat-card-presence">14 on</div>
+        </div>
+        <div class="chat-card-msgs">
+          <div class="cc-msg">
+            <div class="cc-msg-ava" style="background:linear-gradient(135deg,#6B4EFF,#2D62C8)">MP</div>
+            <div class="cc-msg-body">
+              <div class="cc-msg-name">Matías · 20:15</div>
+              <div class="cc-msg-text">pasé de 4.2 a 6.1 el sem pasado. literal con las flashcards</div>
+            </div>
+          </div>
+          <div class="cc-msg out">
+            <div class="cc-msg-ava">JC</div>
+            <div class="cc-msg-body">
+              <div class="cc-msg-name">Javi · 20:16</div>
+              <div class="cc-msg-text">dímelo a mí, conseguí mi práctica por acá 👀</div>
+            </div>
+          </div>
+          <div class="cc-reaction"><span>🎉 24</span><span>💼 6</span></div>
+        </div>
+      </div>
+
+      <!-- Card 3 -->
+      <div class="chat-card">
+        <div class="chat-card-head">
+          <div class="chat-card-ava" style="background:linear-gradient(135deg,#D9FF3A,#FFE9B8)">PS</div>
+          <div class="chat-card-group">
+            <div class="chat-card-name">Psico · U. Chile · 3°</div>
+            <div class="chat-card-meta">52 miembros</div>
+          </div>
+          <div class="chat-card-presence">22 on</div>
+        </div>
+        <div class="chat-card-msgs">
+          <div class="cc-msg">
+            <div class="cc-msg-ava" style="background:linear-gradient(135deg,#D9FF3A,#FF3FA4)">SL</div>
+            <div class="cc-msg-body">
+              <div class="cc-msg-name">Sofía · 22:03</div>
+              <div class="cc-msg-text">mi tutora de estadística me salvó la vida ☁️</div>
+            </div>
+          </div>
+          <div class="cc-msg out">
+            <div class="cc-msg-ava">DV</div>
+            <div class="cc-msg-body">
+              <div class="cc-msg-name">Diego · 22:05</div>
+              <div class="cc-msg-text">ya son 3 veces que te salva 😂 pásame el link pls</div>
+            </div>
+          </div>
+          <div class="cc-reaction"><span>☁️ 9</span><span>💜 5</span></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- DAY IN CONNIKU -->
+<section class="day">
+  <div class="container">
+    <div class="day-head">
+      <div class="chat-label" style="color:var(--ink-3)">06 · tu día</div>
+      <h2 class="day-title">De 7 AM a medianoche,<br><span class="accent">con vos</span>.</h2>
+    </div>
+    <div class="day-timeline">
+      <div class="day-slot hl">
+        <div class="day-time">07:30</div>
+        <div class="day-emoji">☕</div>
+        <h4>Revisas tu día</h4>
+        <p>Agenda, entregas, tutorías, todo en una pantalla.</p>
+      </div>
+      <div class="day-slot hl2">
+        <div class="day-time">10:15</div>
+        <div class="day-emoji">📘</div>
+        <h4>PDF a plan en 30s</h4>
+        <p>Arrastra, espera, estudia. Así de simple.</p>
+      </div>
+      <div class="day-slot hl3">
+        <div class="day-time">13:00</div>
+        <div class="day-emoji">🍕</div>
+        <h4>Casino + grupo</h4>
+        <p>Apuntes compartidos, dudas resueltas al almuerzo.</p>
+      </div>
+      <div class="day-slot hl4">
+        <div class="day-time">16:45</div>
+        <div class="day-emoji">🎓</div>
+        <h4>40 min con tutora</h4>
+        <p>Verificada, reservada, pagada. En 2 clics.</p>
+      </div>
+      <div class="day-slot hl5">
+        <div class="day-time">20:00</div>
+        <div class="day-emoji">💼</div>
+        <h4>Postulas práctica</h4>
+        <p>Tu CV ya está actualizado. IA ya sugirió ajustes.</p>
+      </div>
+      <div class="day-slot">
+        <div class="day-time">22:30</div>
+        <div class="day-emoji">🛌</div>
+        <h4>Repaso de 5 min</h4>
+        <p>12 flashcards. Repetición espaciada. Y a dormir.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- MULTI-COUNTRY WORLD -->
+<section class="world">
+  <div class="container">
+    <div class="world-head">
+      <div class="world-label">07 · alcance</div>
+      <h2 class="world-title">Multi-U, multi-país, <span class="lime">multi-idioma</span>. Desde el día uno.</h2>
+    </div>
+
+    <div class="world-grid">
+      <div class="world-card live">
+        <span class="world-card-status"><span class="dot"></span> EN VIVO · 2026</span>
+        <div class="world-card-flag">🇨🇱</div>
+        <div class="world-card-country">Chile</div>
+        <div class="world-card-meta">MERCADO PILOTO · SANTIAGO</div>
+        <div class="world-card-n">14</div>
+        <div class="world-card-sub">universidades sincronizadas</div>
+      </div>
+      <div class="world-card">
+        <span class="world-card-status"><span class="dot"></span> PRÓXIMO · Q3 2026</span>
+        <div class="world-card-flag">🇲🇽</div>
+        <div class="world-card-country">México</div>
+        <div class="world-card-meta">EXPANSIÓN LATAM</div>
+        <div class="world-card-n">2.8M</div>
+        <div class="world-card-sub">universitarios activos</div>
+      </div>
+      <div class="world-card">
+        <span class="world-card-status"><span class="dot"></span> PLAN · 2027</span>
+        <div class="world-card-flag">🇺🇸</div>
+        <div class="world-card-country">USA</div>
+        <div class="world-card-meta">MERCADO HISPANO</div>
+        <div class="world-card-n">19.6M</div>
+        <div class="world-card-sub">universitarios · crecimiento global</div>
+      </div>
+    </div>
+
+    <div class="world-langs">
+      <div class="world-lang on"><span class="code">ES</span> · Español</div>
+      <div class="world-lang"><span class="code">EN</span> · English</div>
+      <div class="world-lang"><span class="code">PT</span> · Português</div>
+      <div class="world-lang" style="opacity:.4">+ más idiomas en 2027</div>
+    </div>
+  </div>
+</section>
+
+<!-- CTA -->
+<section class="cta">
+  <div class="container">
+    <h2 class="cta-headline">
+      Tu semestre,<br>
+      <span class="accent">en piloto</span><br>
+      automático.
+    </h2>
+    <div class="cta-actions">
+      <button class="btn-xl-primary" style="font-size:18px;padding:22px 32px">
+        Entrar gratis
+        <span class="arrow-ring">
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round"><path d="M5 12h14M13 5l7 7-7 7"/></svg>
+        </span>
+      </button>
+      <button class="btn-xl-ghost" style="font-size:18px;padding:22px 22px">Agendar demo →</button>
+    </div>
+    <div class="cta-note">GRATIS · SIN TARJETA · SETUP EN 2 MIN</div>
+  </div>
+</section>
+
+<!-- TRACKLIST FOOTER -->
+<footer class="tracklist">
+  <div class="container">
+    <div class="tracklist-head">
+      <div class="tracklist-logo">conniku<span class="dot"></span></div>
+      <div class="tracklist-meta">
+        <div>LADO A · <strong>13 TRACKS</strong></div>
+        <div>SANTIAGO · 2026</div>
+        <div>SPA · ENG · POR</div>
+      </div>
+    </div>
+
+    <div class="tracks">
+      <div class="track-n">#</div>
+      <div>TRACK</div>
+      <div>TAG</div>
+      <div class="track-cta">LINK</div>
+    </div>
+    <div class="track-row">
+      <div class="track-n">01</div>
+      <div class="track-name">Estudio con IA <em>Apuntes, resúmenes, flashcards</em></div>
+      <div class="track-tag">/ studio</div>
+      <div class="track-cta"><a href="#">Abrir →</a></div>
+    </div>
+    <div class="track-row">
+      <div class="track-n">02</div>
+      <div class="track-name">Comunidad <em>Tu curso, tu gente, tu U</em></div>
+      <div class="track-tag">/ social</div>
+      <div class="track-cta"><a href="#">Abrir →</a></div>
+    </div>
+    <div class="track-row">
+      <div class="track-n">03</div>
+      <div class="track-name">Tutores verificados <em>Con título y pagos protegidos</em></div>
+      <div class="track-tag">/ tutor</div>
+      <div class="track-cta"><a href="#">Abrir →</a></div>
+    </div>
+    <div class="track-row">
+      <div class="track-n">04</div>
+      <div class="track-name">Empleo <em>Prácticas y part-time</em></div>
+      <div class="track-tag">/ jobs</div>
+      <div class="track-cta"><a href="#">Abrir →</a></div>
+    </div>
+    <div class="track-row">
+      <div class="track-n">05</div>
+      <div class="track-name">Biblioteca <em>+70k títulos con chat interactivo</em></div>
+      <div class="track-tag">/ library</div>
+      <div class="track-cta"><a href="#">Abrir →</a></div>
+    </div>
+    <div class="track-row">
+      <div class="track-n">06</div>
+      <div class="track-name">CV editorial <em>Construido con IA, no con plantilla</em></div>
+      <div class="track-tag">/ resume</div>
+      <div class="track-cta"><a href="#">Abrir →</a></div>
+    </div>
+    <div class="track-row">
+      <div class="track-n">07</div>
+      <div class="track-name">Sync universitario <em>Calendario, notas, materiales</em></div>
+      <div class="track-tag">/ sync</div>
+      <div class="track-cta"><a href="#">Abrir →</a></div>
+    </div>
+
+    <div class="footer-bottom">
+      <div>© 2026 conniku · santiago de chile</div>
+      <div style="display:flex;gap:24px">
+        <a href="#">términos</a>
+        <a href="#">privacidad</a>
+        <a href="#">cookies</a>
+      </div>
+      <div>manifiesto · blog · twitter · instagram</div>
+    </div>
+  </div>
+</footer>
+
+<script>
+// Live counter
+let count = 127;
+const countEl = document.getElementById('counter');
+setInterval(() => {
+  count += Math.floor(Math.random() * 5) - 2;
+  if (count < 110) count = 110;
+  if (count > 180) count = 180;
+  if (countEl) countEl.textContent = count;
+}, 2400);
+
+// Rotating highlight on notifications
+const stack = document.getElementById('notif-stack');
+if (stack) {
+  const cards = Array.from(stack.querySelectorAll('.notif-card'));
+  let hl = 1;
+  setInterval(() => {
+    cards.forEach(c => c.classList.remove('highlight'));
+    hl = (hl + 1) % cards.length;
+    cards[hl].classList.add('highlight');
+  }, 2800);
+}
+
+/* =========================================================
+   TWEAKS — tagline variants + more
+   ========================================================= */
+const TWEAK_DEFAULTS = /*EDITMODE-BEGIN*/{
+  "tagline": "juvenil",
+  "manifestoAccent": "lime-pink"
+}/*EDITMODE-END*/;
+
+const TAGLINES = {
+  oficial: {
+    h1: 'El sistema <span class="outline">operativo</span><br>de tu <span class="lime">carrera</span><br><span class="pink">universitaria</span>.',
+    sub: 'La tagline oficial de la marca'
+  },
+  juvenil: {
+    h1: 'Tu <span class="outline">U</span> <span class="lime">entera</span>.<br>En <span class="pink">una</span><br><span class="cream">sola app</span>.',
+    sub: 'Más directo · voz estudiante'
+  },
+  emocional: {
+    h1: '<span class="outline">Concéntrate</span>.<br>No <span class="pink">estás</span><br><span class="lime">solo</span>.',
+    sub: 'Apela a la emoción dominante'
+  }
+};
+
+let currentTweaks = { ...TWEAK_DEFAULTS };
+
+function applyTagline(key) {
+  const t = TAGLINES[key] || TAGLINES.oficial;
+  const h1 = document.getElementById('hero-h1');
+  if (h1) h1.innerHTML = t.h1;
+}
+
+function applyAllTweaks() {
+  applyTagline(currentTweaks.tagline);
+  // reflect active state in panel
+  document.querySelectorAll('.tweak-opt').forEach(el => {
+    const g = el.dataset.group, v = el.dataset.value;
+    el.classList.toggle('active', currentTweaks[g] === v);
+  });
+}
+
+// Edit-mode protocol — listener FIRST
+window.addEventListener('message', (e) => {
+  if (!e.data || typeof e.data !== 'object') return;
+  if (e.data.type === '__activate_edit_mode') {
+    document.getElementById('tweaks-panel').classList.add('on');
+  } else if (e.data.type === '__deactivate_edit_mode') {
+    document.getElementById('tweaks-panel').classList.remove('on');
+  }
+});
+
+// Panel click handling
+document.addEventListener('click', (e) => {
+  const btn = e.target.closest('.tweak-opt');
+  if (!btn) return;
+  const g = btn.dataset.group, v = btn.dataset.value;
+  currentTweaks[g] = v;
+  applyAllTweaks();
+  window.parent.postMessage({ type: '__edit_mode_set_keys', edits: { [g]: v } }, '*');
+});
+
+// Initial state
+applyAllTweaks();
+
+// Announce AFTER listener is registered
+window.parent.postMessage({ type: '__edit_mode_available' }, '*');
+</script>
+
+<!-- TWEAKS PANEL -->
+<div class="tweaks-panel" id="tweaks-panel">
+  <h3>Tweaks</h3>
+  <div class="tweaks-sub">landing · conniku</div>
+
+  <div class="tweak-group">
+    <div class="tweak-group-label">Tagline del hero</div>
+    <div class="tweak-options">
+      <button class="tweak-opt" data-group="tagline" data-value="oficial">
+        <span class="tweak-swatch" style="background:#D9FF3A"></span>
+        <span>A · "sistema operativo"</span>
+      </button>
+      <button class="tweak-opt" data-group="tagline" data-value="juvenil">
+        <span class="tweak-swatch" style="background:#FF6B9D"></span>
+        <span>B · "tu U entera"</span>
+      </button>
+      <button class="tweak-opt" data-group="tagline" data-value="emocional">
+        <span class="tweak-swatch" style="background:#FFE4B5"></span>
+        <span>C · "concéntrate"</span>
+      </button>
+    </div>
+  </div>
+</div>
+
+</body>
+</html>

@@ -33,33 +33,55 @@ from __future__ import annotations
 
 import math
 from dataclasses import dataclass, field
+from datetime import date
 from enum import Enum
 from typing import Optional
 
+from backend.constants.labor_chile import (  # noqa: E402
+    AFC_EMPLEADOR_INDEFINIDO_PCT,
+    AFC_EMPLEADOR_PLAZO_FIJO_PCT,
+    AFC_TRABAJADOR_INDEFINIDO_PCT,
+    AFP_OBLIGATORIA_PCT,
+    AFP_UNO_COMMISSION_PCT,
+    FONASA_PCT,
+    GRATIFICACION_TOPE_IMM,
+    MUTUAL_BASE_PCT,
+    SIS_PCT,
+    SUELDO_MINIMO_2026,
+    TOPE_IMPONIBLE_AFC_UF,
+    TOPE_IMPONIBLE_AFP_UF,
+    UF_ABRIL_2026,
+    UTM_ABRIL_2026,
+    get_monthly_hours_at_date,
+    get_weekly_hours_at_date,
+)
+from backend.constants.tax_chile import IMPUESTO_2A_CATEGORIA_TRAMOS_2026_UTM  # noqa: E402
 
 # ---------------------------------------------------------------------------
-# Configurable economic constants
+# Aliases de compatibilidad — exponer los mismos nombres que el código
+# existente espera, ahora respaldados por labor_chile / tax_chile.
 # ---------------------------------------------------------------------------
 
-# Unidad de Fomento - updated monthly by the Central Bank of Chile.
-# This is a representative mid-range value; in production, fetch from
-# mindicadores.cl or Banco Central API.
-UF_VALUE: float = 38_000.0  # CLP
+# UF vigente: derivada de labor_chile (actualizada mensualmente)
+UF_VALUE: float = float(UF_ABRIL_2026)
 
-# Unidad Tributaria Mensual - set by SII each month.
-UTM_VALUE: float = 66_000.0  # CLP
+# UTM vigente: derivada de labor_chile
+UTM_VALUE: float = float(UTM_ABRIL_2026)
 
-# Ingreso Minimo Mensual (sueldo minimo) - $500,000 CLP as of 2025.
-SUELDO_MINIMO: int = 500_000  # CLP
+# Sueldo mínimo 2026 — Ley 21.751
+SUELDO_MINIMO: int = SUELDO_MINIMO_2026
 
-# Standard monthly working hours (45 hrs/week legal maximum).
-MONTHLY_HOURS: float = 180.0  # 45 hrs * 4 weeks (legal reference)
-WEEKLY_HOURS: float = 45.0
+# Horas base mensuales (legacy alias — usar get_monthly_hours_at_date(fecha) para
+# cálculos nuevos; este valor refleja jornada vigente HOY para retrocompatibilidad).
+# IMPORTANTE: calculate_overtime() acepta period_date para usar el valor correcto.
+MONTHLY_HOURS: float = float(get_monthly_hours_at_date(date.today()))
+WEEKLY_HOURS: float = float(get_weekly_hours_at_date(date.today()))
 
 
 # ---------------------------------------------------------------------------
 # AFP definitions
 # ---------------------------------------------------------------------------
+
 
 class AFPName(str, Enum):
     """
@@ -69,6 +91,7 @@ class AFPName(str, Enum):
     The mandatory pension contribution is always 10% of gross taxable salary;
     each AFP adds its own commission (comision) on top.
     """
+
     CAPITAL = "Capital"
     CUPRUM = "Cuprum"
     HABITAT = "Habitat"
@@ -79,20 +102,26 @@ class AFPName(str, Enum):
 
 
 # Total rate = 10% mandatory savings + AFP commission.
+# AFP UNO commission actualizada a 0.0046 (D-E aprobado 2026-04-21, labor_chile.py).
+# Comisiones vigentes 2026 según Superintendencia de Pensiones.
+_AFP_MANDATORY: float = float(AFP_OBLIGATORIA_PCT)
+_AFP_UNO_COMM: float = float(AFP_UNO_COMMISSION_PCT)  # 0.0046, no 0.0069 (legacy)
+
 AFP_RATES: dict[AFPName, dict[str, float]] = {
-    AFPName.CAPITAL:   {"mandatory": 0.10, "commission": 0.0144, "total": 0.1144},
-    AFPName.CUPRUM:    {"mandatory": 0.10, "commission": 0.0144, "total": 0.1144},
-    AFPName.HABITAT:   {"mandatory": 0.10, "commission": 0.0127, "total": 0.1127},
-    AFPName.MODELO:    {"mandatory": 0.10, "commission": 0.0058, "total": 0.1058},
-    AFPName.PLANVITAL: {"mandatory": 0.10, "commission": 0.0041, "total": 0.1041},
-    AFPName.PROVIDA:   {"mandatory": 0.10, "commission": 0.0145, "total": 0.1145},
-    AFPName.UNO:       {"mandatory": 0.10, "commission": 0.0069, "total": 0.1069},
+    AFPName.CAPITAL: {"mandatory": _AFP_MANDATORY, "commission": 0.0144, "total": _AFP_MANDATORY + 0.0144},
+    AFPName.CUPRUM: {"mandatory": _AFP_MANDATORY, "commission": 0.0144, "total": _AFP_MANDATORY + 0.0144},
+    AFPName.HABITAT: {"mandatory": _AFP_MANDATORY, "commission": 0.0127, "total": _AFP_MANDATORY + 0.0127},
+    AFPName.MODELO: {"mandatory": _AFP_MANDATORY, "commission": 0.0058, "total": _AFP_MANDATORY + 0.0058},
+    AFPName.PLANVITAL: {"mandatory": _AFP_MANDATORY, "commission": 0.0041, "total": _AFP_MANDATORY + 0.0041},
+    AFPName.PROVIDA: {"mandatory": _AFP_MANDATORY, "commission": 0.0145, "total": _AFP_MANDATORY + 0.0145},
+    AFPName.UNO: {"mandatory": _AFP_MANDATORY, "commission": _AFP_UNO_COMM, "total": _AFP_MANDATORY + _AFP_UNO_COMM},
 }
 
 
 # ---------------------------------------------------------------------------
 # Health system
 # ---------------------------------------------------------------------------
+
 
 class HealthSystem(str, Enum):
     """
@@ -101,16 +130,18 @@ class HealthSystem(str, Enum):
     - ISAPRE: private health insurer, minimum 7% but the plan may cost more
       (the difference is an additional voluntary deduction expressed in UF).
     """
+
     FONASA = "Fonasa"
     ISAPRE = "Isapre"
 
 
-FONASA_RATE: float = 0.07  # 7% of gross taxable salary
+FONASA_RATE: float = float(FONASA_PCT)  # 7% — Ley 18.469, de labor_chile
 
 
 # ---------------------------------------------------------------------------
 # Contract types (affect AFC rates)
 # ---------------------------------------------------------------------------
+
 
 class ContractType(str, Enum):
     """
@@ -118,13 +149,20 @@ class ContractType(str, Enum):
     - INDEFINIDO: open-ended contract. Employee pays 0.6%, employer 2.4%.
     - PLAZO_FIJO: fixed-term or per-task contract. Employee pays 0%, employer 3%.
     """
+
     INDEFINIDO = "Indefinido"
     PLAZO_FIJO = "Plazo Fijo"
 
 
 AFC_RATES: dict[ContractType, dict[str, float]] = {
-    ContractType.INDEFINIDO: {"employee": 0.006, "employer": 0.024},
-    ContractType.PLAZO_FIJO: {"employee": 0.0,   "employer": 0.03},
+    ContractType.INDEFINIDO: {
+        "employee": float(AFC_TRABAJADOR_INDEFINIDO_PCT),
+        "employer": float(AFC_EMPLEADOR_INDEFINIDO_PCT),
+    },
+    ContractType.PLAZO_FIJO: {
+        "employee": 0.0,
+        "employer": float(AFC_EMPLEADOR_PLAZO_FIJO_PCT),
+    },
 }
 
 
@@ -132,27 +170,21 @@ AFC_RATES: dict[ContractType, dict[str, float]] = {
 # Employer-only contributions
 # ---------------------------------------------------------------------------
 
-# SIS - Seguro de Invalidez y Sobrevivencia.
-# Covers disability and survivor pensions. Fully paid by the employer.
-SIS_RATE: float = 0.0153  # ~1.53%
+# SIS - Seguro de Invalidez y Sobrevivencia (de labor_chile — 1.54%, no 1.53% legacy).
+SIS_RATE: float = float(SIS_PCT)  # 0.0154, de labor_chile.py
 
-# Mutual de Seguridad (or ACHS / IST) - occupational accident insurance.
-# Base rate is 0.93%; can be higher depending on company risk classification.
-MUTUAL_BASE_RATE: float = 0.0093  # 0.93%
+# Mutual de Seguridad (de labor_chile — tasa base 0.93%).
+MUTUAL_BASE_RATE: float = float(MUTUAL_BASE_PCT)  # 0.0093, de labor_chile.py
 
 
 # ---------------------------------------------------------------------------
 # Topes imponibles (taxable salary caps)
 # ---------------------------------------------------------------------------
 
-# Maximum taxable salary for AFP contributions (81.6 UF).
-TOPE_AFP_UF: float = 81.6
-
-# Maximum taxable salary for Fonasa health (81.6 UF).
-TOPE_SALUD_UF: float = 81.6
-
-# Maximum taxable salary for AFC unemployment insurance (122.6 UF).
-TOPE_AFC_UF: float = 122.6
+# Topes desde labor_chile.py (D-B aprobado 2026-04-21: AFC 135.2 UF, no 122.6 legacy).
+TOPE_AFP_UF: float = float(TOPE_IMPONIBLE_AFP_UF)  # 81.6 UF — DL 3500
+TOPE_SALUD_UF: float = float(TOPE_IMPONIBLE_AFP_UF)  # 81.6 UF — igual que AFP
+TOPE_AFC_UF: float = float(TOPE_IMPONIBLE_AFC_UF)  # 135.2 UF — spensiones.cl feb-2026
 
 
 def tope_afp() -> int:
@@ -174,18 +206,11 @@ def tope_afc() -> int:
 # Impuesto Unico de Segunda Categoria (monthly income tax)
 # ---------------------------------------------------------------------------
 
-# Progressive tax brackets expressed in UTM multiples.
-# Each tuple: (lower_bound_utm, upper_bound_utm, rate, deductible_factor_utm)
-# The deductible is the accumulated credit that makes the bracket marginal.
+# Tramos de impuesto desde tax_chile.py (fuente SII 2026).
+# Alias float para compatibilidad con el motor que usa UTM_VALUE float.
 TAX_BRACKETS: list[tuple[float, float, float, float]] = [
-    (0.0,    13.5,  0.000,  0.0),
-    (13.5,   30.0,  0.04,   0.54),
-    (30.0,   50.0,  0.08,   1.74),
-    (50.0,   70.0,  0.135,  4.49),
-    (70.0,   90.0,  0.23,   11.14),
-    (90.0,  120.0,  0.304,  17.80),
-    (120.0, 310.0,  0.35,   23.32),
-    (310.0, math.inf, 0.40, 38.82),
+    (float(lo), float(hi) if hi is not None else math.inf, float(rate), float(ded))
+    for lo, hi, rate, ded in IMPUESTO_2A_CATEGORIA_TRAMOS_2026_UTM
 ]
 
 
@@ -224,6 +249,7 @@ def calculate_income_tax(taxable_income_clp: int) -> int:
 # Gratificacion Legal
 # ---------------------------------------------------------------------------
 
+
 def calculate_gratificacion(sueldo_base: int) -> int:
     """
     Calculate Gratificacion Legal (Art. 50, Codigo del Trabajo).
@@ -239,7 +265,7 @@ def calculate_gratificacion(sueldo_base: int) -> int:
     Returns:
         Monthly gratificacion amount in CLP.
     """
-    monthly_cap = int((4.75 * SUELDO_MINIMO) / 12)
+    monthly_cap = int((float(GRATIFICACION_TOPE_IMM) * SUELDO_MINIMO) / 12)
     calculated = int(sueldo_base * 0.25)
     return min(calculated, monthly_cap)
 
@@ -248,31 +274,43 @@ def calculate_gratificacion(sueldo_base: int) -> int:
 # Overtime (horas extras)
 # ---------------------------------------------------------------------------
 
-def calculate_overtime(sueldo_base: int, overtime_hours: float) -> int:
+
+def calculate_overtime(
+    sueldo_base: int,
+    overtime_hours: float,
+    period_date: Optional[date] = None,
+) -> int:
     """
     Calculate overtime pay (horas extras).
 
     Chilean law mandates a 50% surcharge (recargo) on top of the regular
-    hourly rate for overtime hours. Overtime is capped at 2 hours per day
-    by law, but enforcement of the cap is outside this calculation.
+    hourly rate for overtime hours (Art. 32 Código del Trabajo).
+    La base mensual cambia según la fecha:
+    - Antes de 2026-04-26: 176h (44h × 4, escalón 1 Ley 21.561).
+    - Desde 2026-04-26: 168h (42h × 4, escalón 2 Ley 21.561).
 
     Args:
         sueldo_base: Monthly base salary in CLP.
         overtime_hours: Number of overtime hours worked in the month.
+        period_date: Fecha del período de pago. Si None, usa date.today().
+            Determina la base mensual de horas según Ley 21.561.
 
     Returns:
         Overtime pay in CLP.
     """
     if overtime_hours <= 0:
         return 0
-    hourly_rate = sueldo_base / MONTHLY_HOURS
-    overtime_rate = hourly_rate * 1.5  # 50% surcharge
+    effective_date = period_date if period_date is not None else date.today()
+    monthly_base = get_monthly_hours_at_date(effective_date)
+    hourly_rate = sueldo_base / monthly_base
+    overtime_rate = hourly_rate * 1.5  # 50% surcharge (Art. 32 CT)
     return int(overtime_rate * overtime_hours)
 
 
 # ---------------------------------------------------------------------------
 # Vacation provision
 # ---------------------------------------------------------------------------
+
 
 def calculate_vacation_provision(sueldo_base: int, years_of_service: float = 1.0) -> int:
     """
@@ -312,6 +350,7 @@ def calculate_vacation_provision(sueldo_base: int, years_of_service: float = 1.0
 # ---------------------------------------------------------------------------
 # Severance (indemnizacion por anos de servicio)
 # ---------------------------------------------------------------------------
+
 
 def calculate_severance(
     last_monthly_salary: int,
@@ -354,6 +393,7 @@ def calculate_severance(
 # Input / Output dataclasses
 # ---------------------------------------------------------------------------
 
+
 @dataclass
 class EmployeeData:
     """
@@ -385,6 +425,7 @@ class EmployeeData:
         mutual_rate: Override for the Mutual de Seguridad rate if the company
             has a different risk classification. Defaults to base rate.
     """
+
     rut: str
     nombre: str
     sueldo_base: int
@@ -408,6 +449,7 @@ class EmployeeData:
 @dataclass
 class Haberes:
     """Breakdown of all earnings (haberes) for the month."""
+
     sueldo_base: int = 0
     gratificacion: int = 0
     horas_extras: int = 0
@@ -419,21 +461,12 @@ class Haberes:
     @property
     def total_imponible(self) -> int:
         """Total taxable earnings (haberes imponibles)."""
-        return (
-            self.sueldo_base
-            + self.gratificacion
-            + self.horas_extras
-            + self.bonos_imponibles
-        )
+        return self.sueldo_base + self.gratificacion + self.horas_extras + self.bonos_imponibles
 
     @property
     def total_no_imponible(self) -> int:
         """Total non-taxable earnings (haberes no imponibles)."""
-        return (
-            self.bonos_no_imponibles
-            + self.colacion
-            + self.movilizacion
-        )
+        return self.bonos_no_imponibles + self.colacion + self.movilizacion
 
     @property
     def total_haberes(self) -> int:
@@ -449,6 +482,7 @@ class DescuentosLegales:
     These are deducted from the employee's gross taxable salary before
     they receive their net pay.
     """
+
     afp: int = 0
     afp_name: str = ""
     afp_rate: float = 0.0
@@ -475,6 +509,7 @@ class DescuentosVoluntarios:
 
     APV (Ahorro Previsional Voluntario) under regimen A reduces the tax base.
     """
+
     apv: int = 0
     additional_health: int = 0
     other: int = 0
@@ -490,6 +525,7 @@ class CostosEmpleador:
     Employer-side costs that do not appear on the employee's payslip
     as deductions, but are paid by the company on top of the salary.
     """
+
     afc_employer: int = 0
     sis: int = 0
     mutual: int = 0
@@ -504,6 +540,7 @@ class Liquidacion:
     """
     Complete Liquidacion de Remuneraciones (payslip) for one employee/month.
     """
+
     rut: str = ""
     nombre: str = ""
     periodo: str = ""  # e.g. "2025-04"
@@ -532,6 +569,7 @@ class PreviredLine:
     social security contributions each month. This dataclass contains the
     fields needed for one employee line in the Previred file.
     """
+
     rut: str = ""
     nombre: str = ""
     afp_code: str = ""
@@ -554,19 +592,20 @@ class PreviredLine:
 # ---------------------------------------------------------------------------
 
 AFP_PREVIRED_CODES: dict[AFPName, str] = {
-    AFPName.CAPITAL:   "033",
-    AFPName.CUPRUM:    "005",
-    AFPName.HABITAT:   "029",
-    AFPName.MODELO:    "036",
+    AFPName.CAPITAL: "033",
+    AFPName.CUPRUM: "005",
+    AFPName.HABITAT: "029",
+    AFPName.MODELO: "036",
     AFPName.PLANVITAL: "021",
-    AFPName.PROVIDA:   "008",
-    AFPName.UNO:       "037",
+    AFPName.PROVIDA: "008",
+    AFPName.UNO: "037",
 }
 
 
 # ---------------------------------------------------------------------------
 # Core calculation: Liquidacion de Remuneraciones
 # ---------------------------------------------------------------------------
+
 
 def calculate_liquidacion(
     employee: EmployeeData,
@@ -701,9 +740,7 @@ def calculate_liquidacion(
     liq.total_costo_empresa = hab.total_haberes + ce.total
 
     # ---- Vacation provision (informational) ----
-    liq.vacation_provision = calculate_vacation_provision(
-        employee.sueldo_base, employee.years_of_service
-    )
+    liq.vacation_provision = calculate_vacation_provision(employee.sueldo_base, employee.years_of_service)
 
     return liq
 
@@ -711,6 +748,7 @@ def calculate_liquidacion(
 # ---------------------------------------------------------------------------
 # Previred line
 # ---------------------------------------------------------------------------
+
 
 def calculate_previred_line(
     employee: EmployeeData,
@@ -759,6 +797,7 @@ def calculate_previred_line(
 # Total employer cost
 # ---------------------------------------------------------------------------
 
+
 def calculate_employer_total_cost(employee: EmployeeData) -> dict[str, int]:
     """
     Calculate the total cost to the employer for one employee in a month.
@@ -789,6 +828,7 @@ def calculate_employer_total_cost(employee: EmployeeData) -> dict[str, int]:
 # ---------------------------------------------------------------------------
 # Utility: pretty-print a liquidacion
 # ---------------------------------------------------------------------------
+
 
 def format_liquidacion(liq: Liquidacion) -> str:
     """
@@ -824,11 +864,12 @@ def format_liquidacion(liq: Liquidacion) -> str:
     lines.append("")
     lines.append("  DESCUENTOS LEGALES")
     lines.append("  " + "-" * 44)
-    lines.append(f"    AFP ({liq.descuentos_legales.afp_name} "
-                 f"{liq.descuentos_legales.afp_rate*100:.2f}%)"
-                 f"    : ${liq.descuentos_legales.afp:>12,}")
-    lines.append(f"    Salud ({liq.descuentos_legales.salud_system})"
-                 f"         : ${liq.descuentos_legales.salud:>12,}")
+    lines.append(
+        f"    AFP ({liq.descuentos_legales.afp_name} "
+        f"{liq.descuentos_legales.afp_rate * 100:.2f}%)"
+        f"    : ${liq.descuentos_legales.afp:>12,}"
+    )
+    lines.append(f"    Salud ({liq.descuentos_legales.salud_system})         : ${liq.descuentos_legales.salud:>12,}")
     lines.append(f"    AFC Trabajador       : ${liq.descuentos_legales.afc_employee:>12,}")
     lines.append(f"    Impuesto Unico       : ${liq.descuentos_legales.impuesto:>12,}")
     lines.append("  " + "-" * 44)

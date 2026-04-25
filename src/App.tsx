@@ -20,10 +20,13 @@ import PWAInstallPrompt from './components/PWAInstallPrompt';
 import AppAvailableBanner from './components/AppAvailableBanner';
 import SupportChat from './components/SupportChat';
 import CommandBar from './components/CommandBar';
+// ─── Cookie Consent (Bloque cookie-consent-banner-v1, Pieza 3) ───
+import { CookieConsentProvider } from './components/CookieConsent/CookieConsentProvider';
+import { useCookieConsent } from './hooks/useCookieConsent';
+import CookieBanner from './components/CookieConsent/CookieBanner';
+import CookieSettings from './components/CookieConsent/CookieSettings';
+import CookieSettingsFooterLink from './components/CookieConsent/CookieSettingsFooterLink';
 
-// Landing legacy — respaldo en disco, NO se renderiza. No borrar.
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
-import LandingLegacy from './pages/Landing';
 import { Project } from './types';
 import { api, initPushNotifications } from './services/api';
 
@@ -76,8 +79,17 @@ const WorkspaceInvite = React.lazy(() => import('./pages/Workspaces/WorkspaceInv
 // ─────────────────────────────────────────────────────────────────
 const NotFound = React.lazy(() => import('./pages/NotFound'));
 const AdminPanelRoutes = React.lazy(() => import('./admin/AdminPanelRoutes'));
+// ─── Legal viewer v1 (Bloque legal-viewer-v1) ────────────────────
+const LegalLayout = React.lazy(() =>
+  import('./pages/Legal/LegalLayout').then((m) => ({ default: m.LegalLayout }))
+);
+const LegalDocumentPage = React.lazy(() =>
+  import('./pages/Legal/LegalDocumentPage').then((m) => ({ default: m.LegalDocumentPage }))
+);
+// ─────────────────────────────────────────────────────────────────
 const TermsOfService = React.lazy(() => import('./pages/TermsOfService'));
 const PrivacyPolicy = React.lazy(() => import('./pages/PrivacyPolicy'));
+const CookiesPolicy = React.lazy(() => import('./pages/CookiesPolicy'));
 const DeleteAccount = React.lazy(() => import('./pages/DeleteAccount'));
 const AboutPage = React.lazy(() =>
   import('./pages/InfoPages').then((m) => ({ default: m.AboutPage }))
@@ -165,7 +177,8 @@ function SEORouter() {
   return <SEOHead title={seo?.title} description={seo?.description} path={path} />;
 }
 
-export default function App() {
+// AppContent es el árbol real. App lo envuelve con CookieConsentProvider.
+function AppContent() {
   const { user, isLoading, refreshUser } = useAuth();
   const device = useDevice();
   const showMobileUI = device.isMobile || isNative;
@@ -179,6 +192,17 @@ export default function App() {
   const { isFocusMode, exitFocus } = useFocusMode();
   const navigate = useNavigate();
   const location = useLocation();
+  // Cookie consent: estado y métodos del contexto (Pieza 3)
+  const {
+    bannerVisible,
+    settingsVisible,
+    acceptAll: cookieAcceptAll,
+    rejectAll: cookieRejectAll,
+    savePreferences: cookieSavePreferences,
+    openSettings: cookieOpenSettings,
+    closeSettings: cookieCloseSettings,
+    consent: cookieConsent,
+  } = useCookieConsent();
 
   // Close sidebar when navigating on mobile
   useEffect(() => {
@@ -247,11 +271,12 @@ export default function App() {
   }, [user]);
 
   // Initialize push notifications when user is logged in
+  // Gate: solo si el usuario consintió categoría "functional" (plan §7.3, I-11)
   useEffect(() => {
-    if (user) {
+    if (user && cookieConsent?.categoriesAccepted?.includes('functional')) {
       initPushNotifications();
     }
-  }, [user]);
+  }, [user, cookieConsent]);
 
   // Apply theme — opciones: corporativo (claro) | conniku (oscuro)
   useEffect(() => {
@@ -435,26 +460,71 @@ export default function App() {
       );
     }
 
-    // Legal pages accessible without authentication
+    // Legal pages accessible without authentication.
+    // Wrapper con scroll propio porque body tiene overflow:hidden globalmente.
+    const legalScrollWrapper: React.CSSProperties = {
+      height: '100vh',
+      width: '100%',
+      overflowY: 'auto',
+      background: 'var(--bg-primary)',
+    };
+    // ── Rutas /legal/* — layout con sidebar (D-L3=B) ──
+    // Incluye /legal, /legal/terms, /legal/privacy, /legal/cookies, /legal/age-declaration
+    if (location.pathname === '/legal' || location.pathname.startsWith('/legal/')) {
+      return (
+        <div style={legalScrollWrapper}>
+          <Suspense fallback={<PageLoader />}>
+            <Routes>
+              <Route path="/legal" element={<LegalLayout />}>
+                <Route index element={<Navigate to="/legal/terms" replace />} />
+                <Route path="terms" element={<LegalDocumentPage docKey="terms" />} />
+                <Route path="privacy" element={<LegalDocumentPage docKey="privacy" />} />
+                <Route path="cookies" element={<LegalDocumentPage docKey="cookies" />} />
+                <Route
+                  path="age-declaration"
+                  element={<LegalDocumentPage docKey="age-declaration" />}
+                />
+              </Route>
+            </Routes>
+          </Suspense>
+        </div>
+      );
+    }
+
     if (location.pathname === '/terms') {
       return (
-        <Suspense fallback={<PageLoader />}>
-          <TermsOfService onNavigate={(path) => navigate(path)} />
-        </Suspense>
+        <div style={legalScrollWrapper}>
+          <Suspense fallback={<PageLoader />}>
+            <TermsOfService onNavigate={(path) => navigate(path)} />
+          </Suspense>
+        </div>
       );
     }
     if (location.pathname === '/privacy') {
       return (
-        <Suspense fallback={<PageLoader />}>
-          <PrivacyPolicy onNavigate={(path) => navigate(path)} />
-        </Suspense>
+        <div style={legalScrollWrapper}>
+          <Suspense fallback={<PageLoader />}>
+            <PrivacyPolicy onNavigate={(path) => navigate(path)} />
+          </Suspense>
+        </div>
+      );
+    }
+    if (location.pathname === '/cookies') {
+      return (
+        <div style={legalScrollWrapper}>
+          <Suspense fallback={<PageLoader />}>
+            <CookiesPolicy onNavigate={(path) => navigate(path)} />
+          </Suspense>
+        </div>
       );
     }
     if (location.pathname === '/delete-account') {
       return (
-        <Suspense fallback={<PageLoader />}>
-          <DeleteAccount onNavigate={(path) => navigate(path)} />
-        </Suspense>
+        <div style={legalScrollWrapper}>
+          <Suspense fallback={<PageLoader />}>
+            <DeleteAccount onNavigate={(path) => navigate(path)} />
+          </Suspense>
+        </div>
       );
     }
     if (location.pathname.startsWith('/cert/')) {
@@ -566,7 +636,7 @@ export default function App() {
     return (
       <Suspense fallback={<PageLoader />}>
         <SEOHead {...authSEO} />
-        {authView === 'landing' && <UnderConstruction />}
+        {authView === 'landing' && <UnderConstruction onStaffLogin={() => setAuthView('login')} />}
         {authView === 'forgot' && <ForgotPassword onBack={() => setAuthView('login')} />}
         {authView === 'login' && (
           <Login
@@ -858,6 +928,18 @@ export default function App() {
                     ) : null
                   }
                 />
+                {/* Rutas /legal/* con sidebar (D-L3=B, D-L4=B) */}
+                <Route path="/legal" element={<LegalLayout />}>
+                  <Route index element={<Navigate to="/legal/terms" replace />} />
+                  <Route path="terms" element={<LegalDocumentPage docKey="terms" />} />
+                  <Route path="privacy" element={<LegalDocumentPage docKey="privacy" />} />
+                  <Route path="cookies" element={<LegalDocumentPage docKey="cookies" />} />
+                  <Route
+                    path="age-declaration"
+                    element={<LegalDocumentPage docKey="age-declaration" />}
+                  />
+                </Route>
+                {/* Rutas heredadas — convivencia 3 meses (D-L4=B) */}
                 <Route
                   path="/terms"
                   element={<TermsOfService onNavigate={(path) => navigate(path)} />}
@@ -865,6 +947,10 @@ export default function App() {
                 <Route
                   path="/privacy"
                   element={<PrivacyPolicy onNavigate={(path) => navigate(path)} />}
+                />
+                <Route
+                  path="/cookies"
+                  element={<CookiesPolicy onNavigate={(path) => navigate(path)} />}
                 />
                 <Route
                   path="/delete-account"
@@ -958,6 +1044,52 @@ export default function App() {
       <PWAInstallPrompt />
       <AppAvailableBanner />
       <SupportChat />
+
+      {/* Ícono persistente "Configurar cookies" — visible cuando no hay banner activo
+          Invariante I-14: accesible desde cualquier página (plan §6.4).
+          UnderConstruction.tsx está frozen; este elemento global lo cubre. */}
+      {!bannerVisible && (
+        <div
+          style={{
+            position: 'fixed',
+            bottom: 12,
+            right: 12,
+            zIndex: 9000,
+          }}
+        >
+          <CookieSettingsFooterLink variant="icon" fontSize={11} />
+        </div>
+      )}
+
+      {/* Banner de consentimiento de cookies (Pieza 3, I-01) */}
+      {bannerVisible && (
+        <CookieBanner
+          onAcceptAll={cookieAcceptAll}
+          onRejectAll={cookieRejectAll}
+          onCustomize={cookieOpenSettings}
+        />
+      )}
+
+      {/* Modal de personalización de cookies */}
+      {settingsVisible && (
+        <CookieSettings
+          initialCategories={cookieConsent?.categoriesAccepted ?? []}
+          onAcceptAll={cookieAcceptAll}
+          onRejectAll={cookieRejectAll}
+          onSave={cookieSavePreferences}
+          onRevokeAll={cookieRejectAll}
+          onClose={cookieCloseSettings}
+        />
+      )}
     </div>
+  );
+}
+
+/** Componente raíz exportado. Envuelve AppContent con CookieConsentProvider. */
+export default function App() {
+  return (
+    <CookieConsentProvider>
+      <AppContent />
+    </CookieConsentProvider>
   );
 }

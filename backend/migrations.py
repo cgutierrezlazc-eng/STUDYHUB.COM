@@ -548,6 +548,190 @@ def migrate():
             )
             logger.info("Created athena_usage table with index.")
 
+    # ─── cookie_consents (bloque-cookie-consent-banner-v1 Pieza 1) ──────────
+    # Tabla probatoria de consentimiento granular de cookies por visitante.
+    # ON DELETE SET NULL en user_id: el registro SOBREVIVE al borrar el usuario
+    # como evidencia legal (GDPR Art. 17(3)(e)).
+    # SQLAlchemy Base.metadata.create_all() ya crea la tabla si no existía.
+    # Este bloque actúa como fallback para entornos con create_all manual.
+    if not inspector.has_table("cookie_consents"):  # type: ignore[union-attr]
+        with engine.begin() as conn:
+            conn.execute(
+                text("""
+                CREATE TABLE cookie_consents (
+                    id INTEGER PRIMARY KEY AUTOINCREMENT,
+                    visitor_uuid VARCHAR(36) NOT NULL,
+                    user_id VARCHAR(16) NULL,
+                    accepted_at_utc TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+                    user_timezone VARCHAR(64) NULL,
+                    client_ip VARCHAR(64) NULL,
+                    user_agent TEXT NULL,
+                    policy_version VARCHAR(20) NOT NULL,
+                    policy_hash VARCHAR(64) NOT NULL,
+                    categories_accepted TEXT NOT NULL,
+                    origin VARCHAR(40) NOT NULL,
+                    retention_expires_at TIMESTAMP NOT NULL,
+                    revoked_at_utc TIMESTAMP NULL,
+                    revocation_reason VARCHAR(80) NULL,
+                    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                    FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE SET NULL
+                )
+            """)
+            )
+            conn.execute(
+                text("CREATE INDEX IF NOT EXISTS ix_cookie_consents_visitor_uuid ON cookie_consents(visitor_uuid)")
+            )
+            conn.execute(text("CREATE INDEX IF NOT EXISTS ix_cookie_consents_user_id ON cookie_consents(user_id)"))
+            conn.execute(
+                text("CREATE INDEX IF NOT EXISTS ix_cookie_consents_policy_hash ON cookie_consents(policy_hash)")
+            )
+            conn.execute(
+                text(
+                    "CREATE INDEX IF NOT EXISTS ix_cookie_consents_visitor_accepted "
+                    "ON cookie_consents(visitor_uuid, accepted_at_utc DESC)"
+                )
+            )
+            logger.info("Created cookie_consents table with indexes.")
+
+    # ─── cookie_consents: columna pseudonymized_at_utc (D-08) ────────────
+    # Decisión D-07/D-08 Capa 0 bloque-cookie-consent-banner-v1.
+    # Registra cuándo el job de pseudonimización a 12 meses nullificó
+    # client_ip y user_agent de cada fila.
+    #
+    # Referencia legal:
+    # - GDPR Art. 5(1)(e): limitación del plazo de conservación de datos.
+    # - Ley 21.719 Art. 14 vigente 2026-12-01 (Diario Oficial CVE 2583630,
+    #   Art. 1° transitorio: día primero del mes vigésimo cuarto posterior
+    #   a la publicación 2024-12-13).
+    # - URL: https://www.bcn.cl/leychile/navegar?idNorma=1212270
+    # - Fecha de verificación: 2026-04-21. Verificador: backend-builder (Tori).
+    if inspector.has_table("cookie_consents"):
+        existing_cols = {c["name"] for c in inspector.get_columns("cookie_consents")}
+        if "pseudonymized_at_utc" not in existing_cols:
+            with engine.begin() as conn:
+                conn.execute(text("ALTER TABLE cookie_consents ADD COLUMN pseudonymized_at_utc TIMESTAMP NULL"))
+            logger.info("Added pseudonymized_at_utc column to cookie_consents.")
+
+    # ─── document_views (bloque-legal-viewer-v1 D-L5) ───────────────────────
+    # Tabla probatoria de apertura de documentos legales por visitante
+    # (autenticado o anónimo). Evidencia GDPR Art. 7(1).
+    # ON DELETE SET NULL en user_id: el registro SOBREVIVE al borrar el usuario
+    # como evidencia legal (GDPR Art. 17(3)(e) + Art. 2515 CC Chile).
+    # SQLAlchemy Base.metadata.create_all() ya crea la tabla si no existía.
+    # Este bloque actúa como fallback para entornos con create_all manual.
+    #
+    # Referencia legal:
+    # - GDPR Art. 7(1): demostrabilidad del consentimiento.
+    # - GDPR Art. 17(3)(e): retención 5 años para defensa de reclamaciones.
+    # - Art. 2515 Código Civil Chile: prescripción ordinaria 5 años.
+    #   URL: https://www.bcn.cl/leychile/navegar?idNorma=172986
+    # - Fecha de verificación: 2026-04-21. Verificador: backend-builder (Tori).
+    if not inspector.has_table("document_views"):
+        with engine.begin() as conn:
+            conn.execute(
+                text("""
+                CREATE TABLE document_views (
+                    id VARCHAR(16) PRIMARY KEY,
+                    user_id VARCHAR(16) NULL,
+                    session_token VARCHAR(36) NULL,
+                    doc_key VARCHAR(40) NOT NULL,
+                    doc_version VARCHAR(20) NOT NULL,
+                    doc_hash VARCHAR(64) NOT NULL,
+                    viewed_at_utc TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+                    scrolled_to_end BOOLEAN NOT NULL DEFAULT FALSE,
+                    ip_address VARCHAR(64) NULL,
+                    user_agent VARCHAR(512) NULL,
+                    retained_until_utc TIMESTAMP NOT NULL,
+                    pseudonymized_at_utc TIMESTAMP NULL,
+                    FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE SET NULL
+                )
+            """)
+            )
+            conn.execute(text("CREATE INDEX IF NOT EXISTS idx_document_views_user_id ON document_views(user_id)"))
+            conn.execute(
+                text("CREATE INDEX IF NOT EXISTS idx_document_views_session_token ON document_views(session_token)")
+            )
+            conn.execute(
+                text(
+                    "CREATE INDEX IF NOT EXISTS idx_document_views_doc_key_version "
+                    "ON document_views(doc_key, doc_version)"
+                )
+            )
+            conn.execute(
+                text("CREATE INDEX IF NOT EXISTS idx_document_views_user_doc ON document_views(user_id, doc_key)")
+            )
+            logger.info("Created document_views table with indexes.")
+
+    # ─── Contact Tickets — bloque-contact-tickets-v1 ─────────────────────────
+    # Crea las tablas contact_tickets y contact_ticket_messages si no existen.
+    # Idempotente: IF NOT EXISTS en todas las sentencias.
+    # Referencia legal: GDPR Art. 17(3)(e) + Art. 2515 CC Chile (retención 5 años).
+    if not inspector.has_table("contact_tickets"):
+        with engine.begin() as conn:
+            conn.execute(
+                text("""
+                CREATE TABLE IF NOT EXISTS contact_tickets (
+                    id              VARCHAR(16)  NOT NULL PRIMARY KEY,
+                    ticket_number   VARCHAR(20)  NOT NULL UNIQUE,
+                    name            VARCHAR(120) NOT NULL,
+                    email           VARCHAR(255) NOT NULL,
+                    reason          VARCHAR(20)  NOT NULL,
+                    org             VARCHAR(120) NULL,
+                    message         TEXT         NOT NULL,
+                    status          VARCHAR(20)  NOT NULL DEFAULT 'open',
+                    assigned_to     VARCHAR(16)  NULL,
+                    routed_to_email VARCHAR(255) NOT NULL,
+                    routed_label    VARCHAR(80)  NOT NULL,
+                    sla_hours       INTEGER      NOT NULL,
+                    consent_version VARCHAR(20)  NOT NULL,
+                    consent_hash    VARCHAR(64)  NOT NULL,
+                    consent_accepted_at_utc TIMESTAMP NOT NULL,
+                    client_ip       VARCHAR(64)  NULL,
+                    user_agent      VARCHAR(512) NULL,
+                    user_timezone   VARCHAR(64)  NULL,
+                    first_response_at_utc TIMESTAMP NULL,
+                    resolved_at_utc       TIMESTAMP NULL,
+                    resolution_note       TEXT     NULL,
+                    retained_until_utc    TIMESTAMP NOT NULL,
+                    pseudonymized_at_utc  TIMESTAMP NULL,
+                    created_at  TIMESTAMP NOT NULL,
+                    updated_at  TIMESTAMP NOT NULL
+                )
+            """)
+            )
+            conn.execute(text("CREATE INDEX IF NOT EXISTS ix_contact_tickets_email ON contact_tickets(email)"))
+            conn.execute(text("CREATE INDEX IF NOT EXISTS ix_contact_tickets_reason ON contact_tickets(reason)"))
+            conn.execute(text("CREATE INDEX IF NOT EXISTS ix_contact_tickets_status ON contact_tickets(status)"))
+            conn.execute(
+                text("CREATE INDEX IF NOT EXISTS ix_contact_tickets_created_at ON contact_tickets(created_at)")
+            )
+            logger.info("Created contact_tickets table with indexes.")
+
+    if not inspector.has_table("contact_ticket_messages"):
+        with engine.begin() as conn:
+            conn.execute(
+                text("""
+                CREATE TABLE IF NOT EXISTS contact_ticket_messages (
+                    id              VARCHAR(16)  NOT NULL PRIMARY KEY,
+                    ticket_id       VARCHAR(16)  NOT NULL,
+                    direction       VARCHAR(10)  NOT NULL,
+                    author_user_id  VARCHAR(16)  NULL,
+                    author_email    VARCHAR(255) NOT NULL,
+                    body            TEXT         NOT NULL,
+                    created_at      TIMESTAMP    NOT NULL,
+                    email_message_id VARCHAR(255) NULL,
+                    FOREIGN KEY (ticket_id) REFERENCES contact_tickets(id) ON DELETE CASCADE
+                )
+            """)
+            )
+            conn.execute(
+                text(
+                    "CREATE INDEX IF NOT EXISTS ix_ctm_ticket_direction "
+                    "ON contact_ticket_messages(ticket_id, direction)"
+                )
+            )
+            logger.info("Created contact_ticket_messages table with indexes.")
+
     logger.info("Migrations complete.")
 
 

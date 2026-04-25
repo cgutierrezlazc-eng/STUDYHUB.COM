@@ -6,7 +6,11 @@ import { Gender, Language } from '../types';
 import { api } from '../services/api';
 import TermsOfService from '../components/TermsOfService';
 import { getCurrencyForCountry, formatUsdToLocal } from '../utils/currency';
-import { AGE_DECLARATION_HASH, AGE_DECLARATION_TEXT_V1 } from 'shared/legal_texts';
+import { AGE_DECLARATION_HASH } from 'shared/legal_texts';
+import {
+  MultiDocumentConsent,
+  type ConsentState,
+} from '../components/LegalConsent/MultiDocumentConsent';
 import {
   searchUniversities,
   getUniversitiesForCountry,
@@ -126,11 +130,12 @@ export default function Register({ onSwitchToLogin, onBack }: Props) {
     bio: '',
     username: '',
     country: 'CL',
-    tosAccepted: false,
-    // Componente 2 CLAUDE.md §Verificación de edad: checkbox declarativo
-    // de 5 puntos. El hash y la zona horaria se envían al backend como
-    // evidencia probatoria (se persisten en tabla user_agreements).
-    ageDeclarationAccepted: false,
+    // Consentimiento multi-documento (multi-document-consent-v1).
+    // Reemplaza tosAccepted + ageDeclarationAccepted legacy.
+    // El sessionToken se genera en useReadingEvidence al montar MultiDocumentConsent.
+    multiDocumentConsentAccepted: false,
+    legalSessionToken: '',
+    // Mantenemos el hash del texto de edad para compatibilidad con backend existente.
     acceptedTextVersionHash: AGE_DECLARATION_HASH,
     userTimezone:
       typeof Intl !== 'undefined' ? Intl.DateTimeFormat().resolvedOptions().timeZone || null : null,
@@ -295,12 +300,8 @@ export default function Register({ onSwitchToLogin, onBack }: Props) {
         setError(t('err.enterMentoringPrice'));
         return false;
       }
-      if (!form.ageDeclarationAccepted) {
-        setError('Debes marcar la declaración jurada de edad para continuar con el registro.');
-        return false;
-      }
-      if (!form.tosAccepted) {
-        setError(t('err.acceptTOS'));
+      if (!form.multiDocumentConsentAccepted) {
+        setError('Debes leer los 4 documentos y marcar tu aceptación para continuar.');
         return false;
       }
     }
@@ -410,8 +411,8 @@ export default function Register({ onSwitchToLogin, onBack }: Props) {
         </div>
 
         <div className={rgStyles.footerLinks}>
-          <a href="/terminos">Términos</a>
-          <a href="/privacidad">Privacidad</a>
+          <a href="/terms">Términos</a>
+          <a href="/privacy">Privacidad</a>
           <a href="/cookies">Cookies</a>
           <a href="mailto:contacto@conniku.com">Contacto</a>
           <span className={rgStyles.mini}>+18 años · Hecho en Chile</span>
@@ -1755,66 +1756,18 @@ export default function Register({ onSwitchToLogin, onBack }: Props) {
                 />
               </div>
 
-              {/* Declaración jurada de edad (CLAUDE.md §Componente 2) */}
-              <div
-                className="auth-tos-check"
-                style={{
-                  marginTop: 20,
-                  padding: 16,
-                  background: 'var(--bg-secondary)',
-                  border: '1px solid var(--border-subtle)',
-                  borderRadius: 8,
+              {/* Consentimiento multi-documento — reemplaza age-declaration-block y TOS legacy.
+                  D-M1=C: src/components/LegalConsent/MultiDocumentConsent
+                  D-M6=A+C: checkbox disabled + barra progreso hasta leer 4 docs */}
+              <MultiDocumentConsent
+                onConsentChange={(state: ConsentState) => {
+                  setForm((prev) => ({
+                    ...prev,
+                    multiDocumentConsentAccepted: state.consented,
+                    legalSessionToken: state.sessionToken,
+                  }));
                 }}
-                data-testid="age-declaration-block"
-              >
-                <label
-                  className="auth-checkbox-label"
-                  style={{ alignItems: 'flex-start', gap: 12 }}
-                >
-                  <input
-                    type="checkbox"
-                    data-testid="age-declaration-checkbox"
-                    checked={form.ageDeclarationAccepted}
-                    onChange={(e) => update('ageDeclarationAccepted', e.target.checked)}
-                    aria-describedby="age-declaration-text"
-                    style={{ marginTop: 4 }}
-                  />
-                  <pre
-                    id="age-declaration-text"
-                    style={{
-                      whiteSpace: 'pre-wrap',
-                      fontFamily: 'inherit',
-                      fontSize: 13,
-                      lineHeight: 1.5,
-                      margin: 0,
-                      color: 'var(--text-primary)',
-                    }}
-                  >
-                    {AGE_DECLARATION_TEXT_V1}
-                  </pre>
-                </label>
-              </div>
-
-              {/* TOS Checkbox */}
-              <div className="auth-tos-check">
-                <label className="auth-checkbox-label">
-                  <input
-                    type="checkbox"
-                    checked={form.tosAccepted}
-                    onChange={(e) => update('tosAccepted', e.target.checked)}
-                  />
-                  <span>
-                    {t('tos.iAccept')}{' '}
-                    <button
-                      type="button"
-                      className="auth-tos-link"
-                      onClick={() => setShowTOS(true)}
-                    >
-                      {t('tos.termsLink')}
-                    </button>
-                  </span>
-                </label>
-              </div>
+              />
             </>
           )}
 

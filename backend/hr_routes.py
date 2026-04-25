@@ -24,6 +24,7 @@ from middleware import get_current_user
 from pydantic import BaseModel, Field
 from sqlalchemy import Boolean, Column, DateTime, Float, ForeignKey, Index, Integer, String, Text, desc, func
 from sqlalchemy.orm import Session, relationship
+from constants.labor_chile import get_weekly_hours_at_date  # Ley 21.561 escalones dinámicos
 
 router = APIRouter(prefix="/hr", tags=["hr"])
 
@@ -371,15 +372,18 @@ except Exception as _e:
 #  CHILEAN PAYROLL CALCULATION ENGINE
 # ═══════════════════════════════════════════════════════════════════
 
-# AFP contribution rates (employee %) as of 2025-2026
+# AFP contribution rates (employee %) 2026
+# SIS unificado a 1.54% (Superintendencia Pensiones, enero 2026)
+# Fuente: https://www.spensiones.cl/portal/institucional/594/w3-propertyvalue-9917.html
+# Verificado: 2026-04-21 (Cristian Capa 0 batch §21 D-D unificación motor)
 AFP_RATES = {
-    "capital":   {"employee": 0.1144, "sis": 0.0141},
-    "cuprum":    {"employee": 0.1144, "sis": 0.0141},
-    "habitat":   {"employee": 0.1127, "sis": 0.0141},
-    "modelo":    {"employee": 0.1058, "sis": 0.0141},
-    "planvital": {"employee": 0.1116, "sis": 0.0141},
-    "provida":   {"employee": 0.1145, "sis": 0.0141},
-    "uno":       {"employee": 0.1069, "sis": 0.0141},
+    "capital":   {"employee": 0.1144, "sis": 0.0154},
+    "cuprum":    {"employee": 0.1144, "sis": 0.0154},
+    "habitat":   {"employee": 0.1127, "sis": 0.0154},
+    "modelo":    {"employee": 0.1058, "sis": 0.0154},
+    "planvital": {"employee": 0.1116, "sis": 0.0154},
+    "provida":   {"employee": 0.1145, "sis": 0.0154},
+    "uno":       {"employee": 0.1069, "sis": 0.0154},
 }
 
 # AFC (Seguro de Cesantia) rates
@@ -417,11 +421,16 @@ INCOME_TAX_BRACKETS = [
 
 # Tope imponible (max taxable base) ~ 81.6 UF
 TOPE_IMPONIBLE_UF = 81.6
-# Tope AFC ~ 126.6 UF (higher than AFP tope)
-TOPE_AFC_UF = 126.6
+# Tope AFC 135.2 UF desde febrero 2026 (Superintendencia Pensiones)
+# Fuente: https://www.spensiones.cl/portal/institucional/594/w3-article-16921.html
+# Verificado: 2026-04-21 (Cristian Capa 0 batch §21 D-B)
+TOPE_AFC_UF = 135.2
 
-# Gratificacion legal: 25% of gross, capped at 4.75 monthly minimum wages
-MINIMUM_WAGE_CLP = 500000.0  # Sueldo minimo approximate 2026
+# Sueldo mínimo $539.000 desde 2026-01-01 (Ley 21.751)
+# Fuente: https://www.mintrab.gob.cl/ya-es-una-realidad-diario-oficial-publica-ley-21-751-que-reajusta-el-monto-del-ingreso-minimo-mensual/
+# Verificado: 2026-04-21 (Cristian Capa 0 batch §21)
+# Gratificacion legal: 25% of gross, capped at 4.75 monthly minimum wages (Art. 50 CT)
+MINIMUM_WAGE_CLP = 539000.0
 GRATIFICACION_CAP = 4.75 * MINIMUM_WAGE_CLP / 12
 
 
@@ -567,7 +576,8 @@ class EmployeeCreate(BaseModel):
     end_date: Optional[str] = None
     contract_type: str = "indefinido"
     work_schedule: str = "full_time"
-    weekly_hours: int = 45
+    # Desde 2026-04-26 la jornada máxima legal es 42h (Ley 21.561 escalón 2)
+    weekly_hours: int = 42
     gross_salary: float
     colacion: float = 0
     movilizacion: float = 0
@@ -896,7 +906,10 @@ _daily_update_log = {
 MINDICADOR_URL = "https://mindicador.cl/api"
 
 # Historial de IMM (Ingreso Mínimo Mensual) — se actualiza por ley
+# Fuente: https://www.mintrab.gob.cl (Ley 21.751 vigente 2026-01-01)
+# Verificado: 2026-04-22 — Tori (auditoría legal bloque-sandbox-integrity-v1)
 IMM_HISTORY = [
+    {"from": "2026-01-01", "amount": 539000, "law": "Ley 21.751"},  # vigente 2026
     {"from": "2024-07-01", "amount": 500000, "law": "Ley 21.578"},
     {"from": "2024-01-01", "amount": 460000, "law": "Ley 21.578"},
     {"from": "2023-09-01", "amount": 440000, "law": "Ley 21.526"},
@@ -962,12 +975,14 @@ async def _fetch_indicators():
                 "source": "Ley vigente",
             },
             # Calculated values for payroll
+            # AFC tope: 135.2 UF desde feb-2026 (Superintendencia Pensiones)
+            # Verificado: 2026-04-22 — Tori (auditoría legal)
             "topes": {
                 "afp_uf": 81.6,
-                "afc_uf": 122.6,
+                "afc_uf": 135.2,
                 "salud_uf": 81.6,
                 "afp_clp": round(raw.get("uf", {}).get("valor", 0) * 81.6),
-                "afc_clp": round(raw.get("uf", {}).get("valor", 0) * 122.6),
+                "afc_clp": round(raw.get("uf", {}).get("valor", 0) * 135.2),
                 "salud_clp": round(raw.get("uf", {}).get("valor", 0) * 81.6),
             },
             "gratificacion": {
@@ -984,8 +999,21 @@ async def _fetch_indicators():
                 "employer_indefinido": 2.4,
                 "employer_plazo_fijo": 3.0,
             },
-            "sis_rate": 1.41,
+            "sis_rate": 1.54,  # 1.54% vigente desde ene-2026 (Superintendencia Pensiones)
             "mutual_base_rate": 0.93,
+            # Jornada laboral — automática según Ley 21.561 escalones
+            # get_weekly_hours_at_date() ya tiene los 3 escalones codificados con sus fechas
+            "jornada_laboral": {
+                "horas_semanales": get_weekly_hours_at_date(date.today()),
+                "horas_mensuales": get_weekly_hours_at_date(date.today()) * 4,
+                "proximo_escalon": {
+                    "horas": 40,
+                    "fecha": "2028-04-26",
+                    "ley": "Ley 21.561 Art. 1° escalón 3",
+                },
+                "ley": "Ley 21.561",
+                "fuente": "bcn.cl/leychile/navegar?idNorma=1194020",
+            },
             "source": "mindicador.cl",
             "fetched_at": datetime.utcnow().isoformat(),
             "cache_ttl_seconds": _CACHE_TTL,
@@ -1006,7 +1034,7 @@ async def _fetch_indicators():
             "utm": {"value": 67294, "name": "UTM (valor por defecto)", "date": ""},
             "dolar": {"value": 950, "name": "Dolar (valor por defecto)", "date": ""},
             "imm": {"value": _get_current_imm(), "name": "Ingreso Minimo Mensual"},
-            "topes": {"afp_uf": 81.6, "afc_uf": 122.6, "salud_uf": 81.6, "afp_clp": 3158520, "afc_clp": 4749420, "salud_clp": 3158520},
+            "topes": {"afp_uf": 81.6, "afc_uf": 135.2, "salud_uf": 81.6, "afp_clp": 3158520, "afc_clp": 5386326, "salud_clp": 3158520},  # afc_clp: 135.2 * 39841 ≈ 5.386.326
             "gratificacion": {"tope_mensual": round(_get_current_imm() * 4.75 / 12), "tope_anual": round(_get_current_imm() * 4.75), "rate": 0.25},
             "error": str(e),
             "source": "fallback",
