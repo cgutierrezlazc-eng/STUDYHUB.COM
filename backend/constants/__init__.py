@@ -23,7 +23,7 @@ Estado 2026-04-21: labor_chile.py y tax_chile.py creados en bloque nomina-chile-
 payroll_calculator.py migrado a importar desde aquí. hr_routes.py pendiente (FROZEN).
 """
 
-from backend.constants.labor_chile import (
+from .labor_chile import (
     AFC_EMPLEADOR_INDEFINIDO_PCT,
     AFC_EMPLEADOR_PLAZO_FIJO_PCT,
     AFC_TRABAJADOR_INDEFINIDO_PCT,
@@ -46,7 +46,7 @@ from backend.constants.labor_chile import (
     get_monthly_hours_at_date,
     get_weekly_hours_at_date,
 )
-from backend.constants.tax_chile import (
+from .tax_chile import (
     IMPUESTO_2A_CATEGORIA_TRAMOS_2026_UTM,
     IVA_PCT,
     PPM_PROPYME_14D3_PCT,

@@ -37,7 +37,7 @@ from datetime import date
 from enum import Enum
 from typing import Optional
 
-from backend.constants.labor_chile import (  # noqa: E402
+from constants.labor_chile import (  # noqa: E402
     AFC_EMPLEADOR_INDEFINIDO_PCT,
     AFC_EMPLEADOR_PLAZO_FIJO_PCT,
     AFC_TRABAJADOR_INDEFINIDO_PCT,
@@ -55,7 +55,7 @@ from backend.constants.labor_chile import (  # noqa: E402
     get_monthly_hours_at_date,
     get_weekly_hours_at_date,
 )
-from backend.constants.tax_chile import IMPUESTO_2A_CATEGORIA_TRAMOS_2026_UTM  # noqa: E402
+from constants.tax_chile import IMPUESTO_2A_CATEGORIA_TRAMOS_2026_UTM  # noqa: E402
 
 # ---------------------------------------------------------------------------
 # Aliases de compatibilidad — exponer los mismos nombres que el código
