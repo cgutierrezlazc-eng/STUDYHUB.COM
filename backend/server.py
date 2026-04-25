@@ -13,7 +13,6 @@ import anthropic as anthropic_lib
 import uvicorn
 from admin_routes import router as admin_router
 from ai_detection_routes import router as ai_detection_router
-from cookie_consent_routes import router as cookie_consent_router
 from ai_engine import AIEngine
 from ai_workflow_routes import router as ai_workflow_router
 from auth_routes import router as auth_router
@@ -79,7 +78,6 @@ from tier_gate import tier_gate
 from tutor_routes import router as tutor_router
 from video_routes import router as video_router
 from wellness_routes import router as wellness_router
-from contact_tickets_routes import router as contact_tickets_router
 from workspaces_athena import router as workspaces_athena_router
 from workspaces_export import router as workspaces_export_router
 from workspaces_routes import router as workspaces_router
@@ -333,14 +331,6 @@ app.include_router(workspaces_ws_router)
 app.include_router(workspaces_athena_router)
 app.include_router(workspaces_export_router)
 # app.include_router(payment_router)  # Stripe removed
-# bloque-cookie-consent-banner-v1 Pieza 1
-app.include_router(cookie_consent_router)
-# bloque-legal-viewer-v1 D-L5: registro de apertura de documentos legales
-from legal_document_views_routes import router as legal_document_views_router  # noqa: E402
-
-app.include_router(legal_document_views_router)
-# bloque-contact-tickets-v1: tickets de contacto público + admin bidireccional
-app.include_router(contact_tickets_router)
 
 
 # ─── Contact Form (público, sin auth) ──────────────────────────────────────
