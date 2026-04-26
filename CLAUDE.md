@@ -62,9 +62,31 @@ Base de datos y autenticación: Supabase.
 Asistente conversacional al usuario final: Claude API de Anthropic, modelo
 claude-haiku-4-5-20251001 para chatbot y soporte.
 
-Email transaccional: Zoho Mail SMTP (smtp.zoho.com puerto 587) con tres
-cuentas configuradas: noreply@conniku.com, contacto@conniku.com,
-ceo@conniku.com.
+Email transaccional: Zoho Mail SMTP (smtp.zoho.com puerto 587).
+
+Buzones reales con credenciales SMTP propias (tienen SMTP_PASS en Render):
+- noreply@conniku.com  → SMTP_PASS_NOREPLY  — notificaciones automáticas
+- contacto@conniku.com → SMTP_PASS_CONTACTO — inbound genérico / soporte
+- ceo@conniku.com      → SMTP_PASS_CEO      — buzón de Cristian (titular: Cristian Andres Gutierrez Lazcano)
+
+Alias de ceo@conniku.com:
+- c.gutierrez@conniku.com — alias personal de Cristian; entrega en ceo@
+
+Aliases que entregan en contacto@conniku.com (sin buzón ni contraseña propios;
+para enviar *desde* un alias usar las credenciales de contacto@):
+- dpo@conniku.com         — Oficial de Protección de Datos
+- hr@conniku.com          — Recursos Humanos
+- j.ruiz@conniku.com      — Jennifer Ruiz (personal)
+- legal@conniku.com       — Asuntos legales
+- moderacion@conniku.com  — Moderación
+- prensa@conniku.com      — Prensa y medios
+- seguridad@conniku.com   — Seguridad / Ley Karin
+- soporte@conniku.com     — Soporte técnico
+- talento@conniku.com     — Talento y postulaciones
+- tutores@conniku.com     — Tutores
+
+Regla: para enviar a cualquier alias, usar from_account="noreply" o "contacto"
+(lo que corresponda al contexto). No crear SMTP_PASS_* adicionales para aliases.
 
 Lint y formato: ESLint 9 con Prettier para frontend, Ruff para backend.
 Husky con lint-staged como pre-commit.
@@ -1091,6 +1113,89 @@ inset: 0` en el CSS module. Nunca dejar el canvas sin className.
   (`sticky` luego sobreescrito por `relative`), eliminando el sticky y
   bajando el z-index. Prevención: revisar el CSS generado antes de commitear;
   una propiedad declarada dos veces siempre indica error de copia.
+
+- **2026-04-25**: Tori declaró que módulos estaban "listos para
+  cerrar" o "M01.4 cierra" hablando como si pudiera autorizar el
+  cierre. Solo Cristian cierra módulos con su firma literal
+  "OK Cristian + fecha", como define _MODULOS.md y la sección 18.
+  Mientras Cristian no firme, el módulo permanece EN PRUEBAS.
+  Prevención aplicada: Tori NUNCA declara cierres ni dice "está
+  listo para cerrar" / "puedes bloquear" / "queda APROBADO". Solo
+  reporta el estado funcional ("M01.X funciona end-to-end, esperando
+  tu verificación") y espera la firma explícita de Cristian.
+
+- **2026-04-25**: Tori cambió cosas sin autorización explícita —
+  proponía algo y lo ejecutaba en el mismo turno, tratando su propia
+  propuesta como si fuera autorización. Casos: refactor del
+  composer/sidebar al pedir eliminar Centro de soporte (asumió la
+  Opción A entre dos opciones que él mismo planteó), mergeó múltiples
+  PRs sin pedir confirmación turno por turno, refactorizó Support
+  completo cuando Cristian sólo había mencionado un detalle.
+  Prevención aplicada, sin excepción:
+  (1) propongo → espero respuesta literal "sí" / "hazlo" / "aprobado"
+  / "autorizado" / "procede" → recién ahí ejecuto;
+  (2) acciones inminentes que describo (ej. "voy a mergear", "voy a
+  crear un PR", "voy a refactorizar X") requieren autorización
+  explícita previa, no posterior;
+  (3) si una propuesta tiene ramificaciones (ej. mover algo, eliminar
+  algo, cambiar tema), pregunto opción por opción y espero respuesta
+  específica por cada una;
+  (4) merges, force-push, reset, branch deletes y cualquier acción
+  destructiva o irreversible siempre requieren autorización explícita,
+  nunca se hacen "porque parecía obvio".
+
+- **2026-04-25 (A)**: Tori inventó tokens/colores de tema en vez de buscar
+  la fuente de verdad existente. Cuando Cristian pidió "tema navy", se
+  inventaron hexadecimales (#0a1628, #0e1d35, etc.) en vez de leer
+  `ORBIT-U/shared/themes.css` y `ORBIT-U/_CONCEPTOS/perfil-social-temas.html`
+  que ya contenían el tema `navy-l` exacto. Prevención: antes de inventar
+  cualquier token, color, paleta o valor visual, buscar primero en
+  `ORBIT-U/shared/themes.css`. Esos archivos son la fuente de verdad para
+  temas; si no están ahí, preguntar a Cristian.
+
+- **2026-04-25 (B)**: Tori asumió que la ruta `/signup` existía en el
+  frontend sin verificar `App.tsx` ni `src/` antes de diseñar un flujo
+  que dependía de ella. La ruta no existía. Era un grep de 5 segundos.
+  Prevención: antes de referenciar cualquier ruta, componente o archivo
+  como "existente" en el código, hacer grep/Read y confirmar con evidencia
+  directa. "Asumiendo que X existe" no es aceptable.
+
+- **2026-04-25 (C)**: Tori pasó al usuario URLs de preview de una rama
+  antigua (PR #34) cuando el fix ya estaba en otra rama. El usuario vio
+  el bug "[object Object]" que ya estaba corregido en el PR correcto,
+  generando confusión y retrabajo. Prevención: antes de compartir una URL
+  de preview, verificar que corresponda exactamente al commit/rama que
+  contiene el cambio que se está reportando.
+
+- **2026-04-25 (D)**: Tori ejecutó trabajo de fondo (curl loops,
+  ScheduleWakeup, polls a Render) sin pedir autorización por turno.
+  Aunque el usuario consideraba útil el monitoreo, estas son acciones
+  ejecutivas que requieren OK explícito previo, igual que cualquier
+  otra. Prevención: antes de lanzar cualquier loop, cron, poll o agente
+  de fondo, pedir autorización explícita. Si el usuario ya aprobó una
+  vez, no asumir que eso cubre las siguientes veces.
+
+- **2026-04-25 (E)**: Tori intentó `git push origin main` directo,
+  saltándose el flujo PR + CI. La branch protection lo bloqueó. Sin ella,
+  habría mergeado sin revisión. Prevención: nunca hacer push directo a
+  `main`. Todo cambio va por PR, aunque sea un doc de una línea. La
+  branch protection no es el único freno — Tori no debe llegar a ese punto.
+
+- **2026-04-25 (F)**: Tori mezcló cleanup/refactor no pedido con el
+  cambio pedido dentro de los mismos commits. Cuando Cristian pidió
+  eliminar "Centro de soporte" del sidebar, Tori también refactorizó el
+  composer, movió imports, eliminó clases CSS huérfanas y reorganizó
+  lógica — todo sin pedir autorización para ese trabajo extra. Prevención:
+  el alcance de un cambio es exactamente lo que Cristian pidió. Nada más.
+  Si se identifica cleanup obvio, mencionarlo y esperar OK antes de tocarlo.
+
+- **2026-04-25 (G)**: Tori inventó estructura de documento (tabla con
+  columnas Síntoma / Causa / Fix en `docs/ERRORES.md`) sin verificar si
+  existía un formato o precedente en el repo, y sin preguntar. La
+  estructura correcta ya existía en CLAUDE.md sec 17 con su propio
+  formato de entrada. Prevención: antes de crear cualquier archivo de
+  registro, log o lección, buscar si ya existe el formato en CLAUDE.md.
+  Si no existe precedente, proponer el formato a Cristian antes de crear.
 
 Este registro queda vivo. Si en el futuro Tori comete un error con
 implicaciones similares, se agrega a este registro como lección
