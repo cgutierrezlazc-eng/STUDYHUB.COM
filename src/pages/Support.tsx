@@ -20,6 +20,7 @@
  */
 import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
+import HexNebulaCanvas from '../lib/hex-nebula/HexNebulaCanvas';
 import styles from './Support.module.css';
 
 type Category = 'all' | 'cuenta' | 'pagos' | 'plataforma' | 'privacidad' | 'tutores';
@@ -306,14 +307,12 @@ export default function Support() {
 
   const term = search.trim().toLowerCase();
 
-  const handleContact = (e: React.MouseEvent<HTMLAnchorElement>) => {
-    e.preventDefault();
-    window.alert('Pendiente · Contacto');
-  };
-
   return (
     <div className={styles.page}>
-      {/* TODO: cuando se bridgee el motor Nebula → src/lib/hex-nebula */}
+      <HexNebulaCanvas
+        options={{ hexSize: 34, intensity: 0.5, bgColor: '#0A0C12' }}
+        className={styles.nebulaBg}
+      />
 
       <div className={styles.topbar}>
         <Link to="/" className={styles.backLink}>
@@ -332,108 +331,166 @@ export default function Support() {
           </span>
         </Link>
         <div className={styles.topbarSep} />
-        <span className={styles.topbarTitle}>CENTRO DE SOPORTE</span>
+        <span className={styles.topbarTitle}>CENTRO DE AYUDA</span>
       </div>
 
-      <div className={styles.pageWrap}>
-        <div className={styles.pageBadge}>SOPORTE Y AYUDA</div>
-        <h1 className={styles.pageTitle}>¿En qué podemos ayudarte?</h1>
-        <p className={styles.pageSub}>
-          Encuentra respuestas a las preguntas más frecuentes. Si no encuentras lo que buscas,
-          escríbenos directamente.
-        </p>
+      <div className={styles.layout}>
+        {/* SIDEBAR · 360px */}
+        <aside className={styles.sidebar}>
+          <section className={styles.dCard}>
+            <h2 className={styles.dCardTitle}>Centro de ayuda</h2>
+            <p className={styles.dCardText}>
+              Aquí encuentras respuestas a las preguntas más frecuentes sobre Conniku: cuenta,
+              pagos, plataforma, privacidad y tutores.
+            </p>
+            <p className={styles.dCardText}>
+              Usa la búsqueda o filtra por categoría para llegar más rápido a tu respuesta.
+            </p>
+          </section>
 
-        {/* Search */}
-        <div className={styles.searchWrap}>
-          <span className={styles.searchIcon}>
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-              <circle cx="11" cy="11" r="8" />
-              <path d="M21 21l-4.35-4.35" />
-            </svg>
-          </span>
-          <input
-            className={styles.searchInput}
-            type="text"
-            placeholder="Busca tu pregunta…"
-            value={search}
-            onChange={(e) => setSearch(e.target.value)}
-          />
-        </div>
+          <section className={styles.dCard}>
+            <h2 className={styles.dCardTitle}>Categorías</h2>
+            <div className={styles.catChipList}>
+              {CATEGORIES.map((c) => (
+                <button
+                  key={c.id}
+                  type="button"
+                  className={`${styles.catChip} ${activeCat === c.id ? styles.active : ''}`}
+                  onClick={() => setActiveCat(c.id)}
+                >
+                  {c.label}
+                </button>
+              ))}
+            </div>
+          </section>
 
-        {/* Category tabs */}
-        <div className={styles.catTabs}>
-          {CATEGORIES.map((c) => (
-            <button
-              key={c.id}
-              type="button"
-              className={`${styles.catTab} ${activeCat === c.id ? styles.active : ''}`}
-              onClick={() => setActiveCat(c.id)}
-            >
-              {c.label}
-            </button>
-          ))}
-        </div>
+          <section className={styles.dCard}>
+            <h2 className={styles.dCardTitle}>Tiempos de respuesta</h2>
+            <ul className={styles.infoList}>
+              <li>
+                <span className={styles.infoKey}>Soporte técnico</span>
+                <span className={styles.infoVal}>24 h hábiles</span>
+              </li>
+              <li>
+                <span className={styles.infoKey}>Contacto general</span>
+                <span className={styles.infoVal}>48 h hábiles</span>
+              </li>
+              <li>
+                <span className={styles.infoKey}>Privacidad</span>
+                <span className={styles.infoVal}>24 h hábiles</span>
+              </li>
+              <li>
+                <span className={styles.infoKey}>Legal</span>
+                <span className={styles.infoVal}>48 h hábiles</span>
+              </li>
+            </ul>
+          </section>
 
-        {/* FAQ sections */}
-        {SECTIONS.map((section, idx) => {
-          if (activeCat !== 'all' && activeCat !== section.cat) return null;
+          <section className={styles.dCard}>
+            <h2 className={styles.dCardTitle}>¿No encuentras tu respuesta?</h2>
+            <p className={styles.dCardText}>
+              Escríbenos al canal correspondiente desde el formulario de contacto. Te respondemos
+              dentro de 24–48 horas hábiles.
+            </p>
+            <Link to="/contact" className={styles.helpLinkBtn}>
+              Ir al formulario de contacto →
+            </Link>
+          </section>
+        </aside>
 
-          const visibleItems = section.items.filter((item) => {
-            if (!term) return true;
-            const haystack = (item.q + ' ' + extractText(item.a)).toLowerCase();
-            return haystack.includes(term);
-          });
+        {/* COLUMNA DERECHA · feed */}
+        <main className={styles.feed}>
+          <section className={styles.pageHead}>
+            <div className={styles.pageBadge}>SOPORTE Y AYUDA</div>
+            <h1 className={styles.pageTitle}>¿En qué podemos ayudarte?</h1>
+            <p className={styles.pageSub}>
+              Encuentra respuestas a las preguntas más frecuentes. Si no encuentras lo que buscas,
+              escríbenos directamente.
+            </p>
+          </section>
 
-          if (visibleItems.length === 0 && term) return null;
+          {/* Search · vive en una dCard del feed para coherencia visual */}
+          <section className={styles.dCard}>
+            <div className={styles.searchWrap}>
+              <span className={styles.searchIcon}>
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                  <circle cx="11" cy="11" r="8" />
+                  <path d="M21 21l-4.35-4.35" />
+                </svg>
+              </span>
+              <input
+                className={styles.searchInput}
+                type="text"
+                placeholder="Busca tu pregunta…"
+                value={search}
+                onChange={(e) => setSearch(e.target.value)}
+              />
+            </div>
+          </section>
 
-          return (
-            <React.Fragment key={section.cat}>
-              <div className={styles.faqSection}>
-                <div className={styles.faqSectionTitle}>{section.title}</div>
+          {/* FAQ sections · cada sección como su propia dCard */}
+          {SECTIONS.map((section) => {
+            if (activeCat !== 'all' && activeCat !== section.cat) return null;
 
-                {visibleItems.map((item, i) => {
-                  const key = `${section.cat}-${i}`;
-                  const isOpen = openKey === key;
-                  return (
-                    <div key={key} className={styles.faqItem}>
-                      <button
-                        type="button"
-                        className={`${styles.faqQ} ${isOpen ? styles.open : ''}`}
-                        onClick={() => setOpenKey(isOpen ? null : key)}
-                        aria-expanded={isOpen}
-                      >
-                        {item.q}
-                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                          <path d="M6 9l6 6 6-6" />
-                        </svg>
-                      </button>
-                      <div className={`${styles.faqA} ${isOpen ? styles.open : ''}`}>{item.a}</div>
-                    </div>
-                  );
-                })}
-              </div>
-              {activeCat === 'all' && idx < SECTIONS.length - 1 && (
-                <div className={styles.sectionSep} />
-              )}
-            </React.Fragment>
-          );
-        })}
+            const visibleItems = section.items.filter((item) => {
+              if (!term) return true;
+              const haystack = (item.q + ' ' + extractText(item.a)).toLowerCase();
+              return haystack.includes(term);
+            });
 
-        {/* CTA */}
-        <div className={styles.ctaBox}>
-          <h2>¿No encontraste lo que buscabas?</h2>
-          <p>
-            Nuestro equipo de soporte está disponible para ayudarte. Respondemos dentro de 24–48
-            horas hábiles.
-          </p>
-          {/* TODO: cuando se bridgee contacto.html (M01.4) → ruta /contact */}
-          <a href="#" className={styles.ctaBtn} onClick={handleContact}>
-            Contactar soporte →
-          </a>
-        </div>
+            if (visibleItems.length === 0 && term) return null;
+
+            return (
+              <section key={section.cat} className={styles.dCard}>
+                <div className={styles.faqSection}>
+                  <div className={styles.faqSectionTitle}>{section.title}</div>
+                  {visibleItems.map((item, i) => {
+                    const key = `${section.cat}-${i}`;
+                    const isOpen = openKey === key;
+                    return (
+                      <div key={key} className={styles.faqItem}>
+                        <button
+                          type="button"
+                          className={`${styles.faqQ} ${isOpen ? styles.open : ''}`}
+                          onClick={() => setOpenKey(isOpen ? null : key)}
+                          aria-expanded={isOpen}
+                        >
+                          {item.q}
+                          <svg
+                            viewBox="0 0 24 24"
+                            fill="none"
+                            stroke="currentColor"
+                            strokeWidth="2"
+                          >
+                            <path d="M6 9l6 6 6-6" />
+                          </svg>
+                        </button>
+                        <div className={`${styles.faqA} ${isOpen ? styles.open : ''}`}>
+                          {item.a}
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              </section>
+            );
+          })}
+
+          {/* CTA final */}
+          <div className={styles.ctaBox}>
+            <h2>¿No encontraste lo que buscabas?</h2>
+            <p>
+              Nuestro equipo de soporte está disponible para ayudarte. Respondemos dentro de 24–48
+              horas hábiles.
+            </p>
+            <Link to="/contact" className={styles.ctaBtn}>
+              Contactar soporte →
+            </Link>
+          </div>
+        </main>
       </div>
 
-      {/* Footer · TODO: cuando se bridgeen cookies/contacto/prensa/empleo */}
+      {/* Footer · igualado al de Contact */}
       <footer className={styles.pageFooter}>
         <span className={styles.footerCopy}>© 2026 Conniku SpA · Antofagasta, Chile</span>
         <nav className={styles.footerLinks}>
@@ -451,15 +508,7 @@ export default function Support() {
           <Link to="/support" className={styles.active}>
             Soporte
           </Link>
-          <a
-            href="#"
-            onClick={(e) => {
-              e.preventDefault();
-              pendingAlert('Contacto')();
-            }}
-          >
-            Contacto
-          </a>
+          <Link to="/contact">Contacto</Link>
           <a
             href="#"
             onClick={(e) => {
