@@ -155,7 +155,7 @@ export default function Careers() {
   return (
     <div className={styles.page}>
       <HexNebulaCanvas
-        options={{ hexSize: 34, intensity: 0.42, bgColor: '#E8EEF8' }}
+        options={{ hexSize: 34, intensity: 0.18, bgColor: '#060f1e' }}
         className={styles.nebulaBg}
       />
 
