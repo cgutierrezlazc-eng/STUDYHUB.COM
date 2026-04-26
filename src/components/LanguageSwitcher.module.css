@@ -1,0 +1,183 @@
+/*
+ * LanguageSwitcher.module.css
+ *
+ * Trigger pill fijo en esquina superior derecha + popup grid 2×3.
+ * z-index 300: el switcher vive en /start. Los modales globales (z-index 10001) viven en
+ * la app autenticada y nunca se montan sobre /start. Usar 10002 taparía modales globales
+ * si en el futuro se montaran durante onboarding — peor UX. 300 supera el máximo real del
+ * scope de Start.module.css (200: .onboardOverlay) con margen para overlays intermedios.
+ * Decisión D11 confirmada por Cristian (2026-04-26 Checkpoint B→C).
+ */
+
+/* ── Root ────────────────────────────────────────────────────── */
+.root {
+  position: fixed;
+  top: 16px;
+  right: 16px;
+  z-index: 300;
+}
+
+/* ── Trigger pill ────────────────────────────────────────────── */
+.trigger {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  min-width: 64px;
+  padding: 6px 10px;
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  border-radius: 999px;
+  background: rgba(0, 0, 0, 0.4);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  color: #ffffff;
+  font-size: 13px;
+  font-weight: 600;
+  letter-spacing: 0.03em;
+  cursor: pointer;
+  transition:
+    background 0.12s ease,
+    border-color 0.12s ease;
+}
+
+.trigger:hover {
+  background: rgba(0, 0, 0, 0.6);
+  border-color: rgba(255, 255, 255, 0.3);
+}
+
+.trigger:focus-visible {
+  outline: 2px solid rgba(255, 255, 255, 0.6);
+  outline-offset: 2px;
+}
+
+.triggerFlag {
+  font-size: 14px;
+  line-height: 1;
+}
+
+.triggerCode {
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+}
+
+.triggerArrow {
+  font-size: 10px;
+  opacity: 0.7;
+  margin-left: 1px;
+}
+
+/* ── Popup ───────────────────────────────────────────────────── */
+.popup {
+  position: absolute;
+  top: calc(100% + 8px);
+  right: 0;
+  width: 280px;
+  background: rgba(10, 12, 20, 0.95);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 14px;
+  padding: 12px;
+  box-shadow:
+    0 8px 32px rgba(0, 0, 0, 0.5),
+    0 2px 8px rgba(0, 0, 0, 0.3);
+
+  /* Animación fade + scale 120ms */
+  animation: popupEnter 0.12s ease-out both;
+  transform-origin: top right;
+}
+
+@keyframes popupEnter {
+  from {
+    opacity: 0;
+    transform: scale(0.94);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+/* ── Grid 2×3 ────────────────────────────────────────────────── */
+.grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+}
+
+/* ── Cards de idioma ─────────────────────────────────────────── */
+.card {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+  padding: 10px 8px;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 10px;
+  background: rgba(255, 255, 255, 0.04);
+  color: rgba(255, 255, 255, 0.85);
+  cursor: pointer;
+  transition:
+    background 0.1s ease,
+    border-color 0.1s ease,
+    transform 0.1s ease;
+  text-align: center;
+}
+
+.card:hover {
+  background: rgba(255, 255, 255, 0.1);
+  border-color: rgba(255, 255, 255, 0.2);
+}
+
+.card:focus-visible {
+  outline: 2px solid rgba(255, 255, 255, 0.6);
+  outline-offset: 2px;
+  background: rgba(255, 255, 255, 0.08);
+}
+
+.card:active {
+  transform: scale(0.97);
+}
+
+/* Card del idioma actualmente seleccionado */
+.cardActive {
+  border-color: rgba(217, 255, 58, 0.5);
+  background: rgba(217, 255, 58, 0.08);
+}
+
+.cardActive:hover {
+  border-color: rgba(217, 255, 58, 0.7);
+  background: rgba(217, 255, 58, 0.14);
+}
+
+.cardFlag {
+  font-size: 22px;
+  line-height: 1;
+}
+
+.cardLabel {
+  font-size: 12px;
+  font-weight: 600;
+  color: #ffffff;
+  line-height: 1.2;
+}
+
+.cardSub {
+  font-size: 10px;
+  color: rgba(255, 255, 255, 0.5);
+  line-height: 1.2;
+}
+
+/* ── Media query móvil ≤ 480px ───────────────────────────────── */
+@media (max-width: 480px) {
+  .root {
+    top: 12px;
+    right: 12px;
+  }
+
+  .popup {
+    /* En móvil el popup ocupa casi todo el ancho de la pantalla */
+    width: calc(100vw - 24px);
+    right: 0;
+  }
+}
