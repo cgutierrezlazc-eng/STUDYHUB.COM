@@ -713,6 +713,7 @@ export default function Privacy() {
         <nav className={styles.footerLinks}>
           <Link to="/terms">Términos</Link>
           <span className={styles.active}>Privacidad</span>
+          <Link to="/cookies">Cookies</Link>
           <Link to="/support">Soporte</Link>
           <Link to="/contact">Contacto</Link>
           <Link to="/careers">Trabaja con nosotros</Link>
