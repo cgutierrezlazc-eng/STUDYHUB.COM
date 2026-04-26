@@ -285,6 +285,10 @@
   color: var(--text-4);
   text-decoration: none;
   transition: color 0.15s;
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 0;
 }
 .backLink:hover {
   color: var(--text-2);
