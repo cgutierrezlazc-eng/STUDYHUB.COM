@@ -11,6 +11,12 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useI18n } from '../services/i18n';
+import {
+  AGE_DECLARATION_TEXT_HASH,
+  CANONICAL_DOC_HASHES,
+  LEGAL_DOC_KEYS,
+  type LegalDocKey,
+} from '../services/legalConstants';
 import styles from './Start.module.css';
 
 type ModalKind = null | 'entrar' | 'crear' | 'student' | 'tutor' | 'general' | 'business';
@@ -105,6 +111,15 @@ export default function Start() {
   const [rfSending, setRfSending] = useState(false);
   const [rfSent, setRfSent] = useState(false);
   const [rfError, setRfError] = useState('');
+  // Legal consent wizard state
+  const [legalSessionToken, setLegalSessionToken] = useState('');
+  const [legalViewed, setLegalViewed] = useState<Partial<Record<LegalDocKey, boolean>>>({});
+  const [legalLoading, setLegalLoading] = useState<Partial<Record<LegalDocKey, boolean>>>({});
+  const [legalDone, setLegalDone] = useState(false);
+  // Registration extra fields
+  const [rfBirthDate, setRfBirthDate] = useState('');
+  const [rfTosAccepted, setRfTosAccepted] = useState(false);
+  const [rfAgeAccepted, setRfAgeAccepted] = useState(false);
 
   function resetRoleForm() {
     setRfNombre('');
@@ -121,6 +136,13 @@ export default function Start() {
     setRfSending(false);
     setRfSent(false);
     setRfError('');
+    setLegalSessionToken('');
+    setLegalViewed({});
+    setLegalLoading({});
+    setLegalDone(false);
+    setRfBirthDate('');
+    setRfTosAccepted(false);
+    setRfAgeAccepted(false);
   }
 
   const startedRef = useRef(false);
@@ -442,6 +464,9 @@ export default function Start() {
     window.setTimeout(() => {
       setOnboarding(null);
       setOnboardClosing(false);
+      setLegalSessionToken(crypto.randomUUID());
+      setLegalViewed({});
+      setLegalDone(false);
       setModal(code as ModalKind);
     }, 320);
   }
@@ -489,13 +514,145 @@ export default function Start() {
     setModal(null);
   }
 
+  async function handleLegalCheck(docKey: LegalDocKey, checked: boolean) {
+    if (!checked || legalViewed[docKey]) return;
+    setLegalLoading((prev) => ({ ...prev, [docKey]: true }));
+    try {
+      const baseUrl = import.meta.env.VITE_API_URL || 'https://studyhub-api-bpco.onrender.com';
+      await fetch(`${baseUrl}/legal/documents/${docKey}/viewed`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ session_token: legalSessionToken, scrolled_to_end: true }),
+      });
+      setLegalViewed((prev) => ({ ...prev, [docKey]: true }));
+    } finally {
+      setLegalLoading((prev) => ({ ...prev, [docKey]: false }));
+    }
+  }
+
+  const allLegalViewed = LEGAL_DOC_KEYS.every((k) => legalViewed[k]);
+
+  function renderLegalWizard() {
+    const docs: { key: LegalDocKey; label: string; href: string | null; desc?: string }[] = [
+      { key: 'terms', label: t('register.legal.terms'), href: '/terms' },
+      { key: 'privacy', label: t('register.legal.privacy'), href: '/privacy' },
+      { key: 'cookies', label: t('register.legal.cookies'), href: null },
+      {
+        key: 'age-declaration',
+        label: t('register.legal.age'),
+        href: null,
+        desc: t('register.legal.age_desc'),
+      },
+    ];
+    return (
+      <div className={styles.legalWizard}>
+        <div className={styles.legalWizardTitle}>{t('register.legal.title')}</div>
+        <div className={styles.legalWizardSub}>{t('register.legal.subtitle')}</div>
+        {docs.map(({ key, label, href, desc }) => (
+          <label
+            key={key}
+            className={`${styles.legalItem} ${legalViewed[key] ? styles.legalItemDone : ''}`}
+          >
+            <input
+              type="checkbox"
+              className={styles.legalCheck}
+              checked={!!legalViewed[key]}
+              onChange={(e) => handleLegalCheck(key, e.target.checked)}
+              disabled={!!legalViewed[key] || !!legalLoading[key]}
+            />
+            <span className={styles.legalItemBody}>
+              <span className={styles.legalItemLabel}>{label}</span>
+              {desc && <span className={styles.legalItemDesc}>{desc}</span>}
+            </span>
+            {href ? (
+              <a
+                href={href}
+                target="_blank"
+                rel="noreferrer"
+                className={styles.legalViewLink}
+                onClick={(e) => e.stopPropagation()}
+              >
+                {t('register.legal.view')} ↗
+              </a>
+            ) : legalLoading[key] ? (
+              <span className={styles.legalSpinner}>…</span>
+            ) : legalViewed[key] ? (
+              <span className={styles.legalCheckDone}>✓</span>
+            ) : null}
+          </label>
+        ))}
+        {!allLegalViewed && (
+          <div className={styles.legalHint}>{t('register.legal.all_required')}</div>
+        )}
+        <button
+          type="button"
+          className={styles.modalBtn}
+          disabled={!allLegalViewed}
+          onClick={() => setLegalDone(true)}
+        >
+          {t('register.legal.continue')}
+        </button>
+      </div>
+    );
+  }
+
   async function handleRoleSubmit(e: React.FormEvent) {
     e.preventDefault();
+    setRfError('');
     setRfSending(true);
-    // Simulated submit — wire to real endpoint in Phase 2
-    await new Promise((r) => window.setTimeout(r, 800));
-    setRfSending(false);
-    setRfSent(true);
+    try {
+      const baseUrl = import.meta.env.VITE_API_URL || 'https://studyhub-api-bpco.onrender.com';
+      const res = await fetch(`${baseUrl}/auth/register`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          email: rfEmail,
+          password: rfPass,
+          first_name: rfNombre,
+          last_name: rfApellido,
+          birth_date: rfBirthDate,
+          university: rfUniv,
+          bio: rfBio,
+          language: lang,
+          offers_mentoring: modal === 'tutor',
+          mentoring_subjects: rfMaterias
+            ? rfMaterias
+                .split(',')
+                .map((s) => s.trim())
+                .filter(Boolean)
+            : [],
+          academic_status: rfObjetivo || 'estudiante',
+          tos_accepted: rfTosAccepted,
+          age_declaration_accepted: rfAgeAccepted,
+          accepted_text_version_hash: AGE_DECLARATION_TEXT_HASH,
+          legal_session_token: legalSessionToken,
+        }),
+      });
+      if (!res.ok) {
+        type ValidationItem = { loc?: (string | number)[]; msg?: string };
+        const err = (await res.json().catch(() => ({}))) as {
+          detail?: string | ValidationItem[];
+        };
+        let msg = 'Error al registrarse';
+        if (typeof err.detail === 'string') {
+          msg = err.detail;
+        } else if (Array.isArray(err.detail)) {
+          msg = err.detail
+            .map((item) => {
+              const field = (item.loc || []).filter((p) => p !== 'body').join('.');
+              return field ? `${field}: ${item.msg}` : item.msg;
+            })
+            .filter(Boolean)
+            .join(' · ');
+        }
+        throw new Error(msg);
+      }
+      setRfSent(true);
+    } catch (err) {
+      setRfError(err instanceof Error ? err.message : 'error desconocido');
+    } finally {
+      setRfSending(false);
+    }
   }
 
   async function handleBizContactSubmit(e: React.FormEvent) {
@@ -1306,6 +1463,8 @@ export default function Start() {
                   {t('start.planets.entrar')} →
                 </button>
               </div>
+            ) : !legalDone ? (
+              renderLegalWizard()
             ) : (
               <form onSubmit={handleRoleSubmit}>
                 <div className={styles.mfRow}>
@@ -1387,6 +1546,46 @@ export default function Start() {
                     <option>Otra universidad</option>
                   </select>
                 </div>
+                <div className={styles.mfGroup}>
+                  <label className={styles.mfLabel}>{t('register.form.birth_date')}</label>
+                  <input
+                    className={styles.mfInput}
+                    type="date"
+                    value={rfBirthDate}
+                    onChange={(e) => setRfBirthDate(e.target.value)}
+                    required
+                    max={new Date(Date.now() - 18 * 365.25 * 86400000).toISOString().split('T')[0]}
+                  />
+                  <div className={styles.mfHint}>{t('register.form.birth_date_hint')}</div>
+                </div>
+                <label className={styles.mfCheckRow}>
+                  <input
+                    type="checkbox"
+                    checked={rfTosAccepted}
+                    onChange={(e) => setRfTosAccepted(e.target.checked)}
+                    required
+                  />
+                  <span className={styles.mfCheckLabel}>
+                    {t('start.modal.tos_prefix')}{' '}
+                    <Link to="/terms" target="_blank" className={styles.mfLink}>
+                      {t('register.legal.terms')}
+                    </Link>{' '}
+                    {t('start.modal.tos_and')}{' '}
+                    <Link to="/privacy" target="_blank" className={styles.mfLink}>
+                      {t('register.legal.privacy')}
+                    </Link>
+                  </span>
+                </label>
+                <label className={styles.mfCheckRow}>
+                  <input
+                    type="checkbox"
+                    checked={rfAgeAccepted}
+                    onChange={(e) => setRfAgeAccepted(e.target.checked)}
+                    required
+                  />
+                  <span className={styles.mfCheckLabel}>{t('register.legal.age_desc')}</span>
+                </label>
+                {rfError && <p className={styles.mfError}>{rfError}</p>}
                 <button type="submit" className={styles.modalBtn} disabled={rfSending}>
                   {rfSending ? '…' : t('start.modal.btn_register')}
                 </button>
@@ -1459,6 +1658,8 @@ export default function Start() {
                   {t('start.planets.entrar')} →
                 </button>
               </div>
+            ) : !legalDone ? (
+              renderLegalWizard()
             ) : (
               <form onSubmit={handleRoleSubmit}>
                 <div className={styles.mfRow}>
@@ -1537,6 +1738,46 @@ export default function Start() {
                     rows={3}
                   />
                 </div>
+                <div className={styles.mfGroup}>
+                  <label className={styles.mfLabel}>{t('register.form.birth_date')}</label>
+                  <input
+                    className={styles.mfInput}
+                    type="date"
+                    value={rfBirthDate}
+                    onChange={(e) => setRfBirthDate(e.target.value)}
+                    required
+                    max={new Date(Date.now() - 18 * 365.25 * 86400000).toISOString().split('T')[0]}
+                  />
+                  <div className={styles.mfHint}>{t('register.form.birth_date_hint')}</div>
+                </div>
+                <label className={styles.mfCheckRow}>
+                  <input
+                    type="checkbox"
+                    checked={rfTosAccepted}
+                    onChange={(e) => setRfTosAccepted(e.target.checked)}
+                    required
+                  />
+                  <span className={styles.mfCheckLabel}>
+                    {t('start.modal.tos_prefix')}{' '}
+                    <Link to="/terms" target="_blank" className={styles.mfLink}>
+                      {t('register.legal.terms')}
+                    </Link>{' '}
+                    {t('start.modal.tos_and')}{' '}
+                    <Link to="/privacy" target="_blank" className={styles.mfLink}>
+                      {t('register.legal.privacy')}
+                    </Link>
+                  </span>
+                </label>
+                <label className={styles.mfCheckRow}>
+                  <input
+                    type="checkbox"
+                    checked={rfAgeAccepted}
+                    onChange={(e) => setRfAgeAccepted(e.target.checked)}
+                    required
+                  />
+                  <span className={styles.mfCheckLabel}>{t('register.legal.age_desc')}</span>
+                </label>
+                {rfError && <p className={styles.mfError}>{rfError}</p>}
                 <button type="submit" className={styles.modalBtn} disabled={rfSending}>
                   {rfSending ? '…' : t('start.modal.btn_register')}
                 </button>
@@ -1609,6 +1850,8 @@ export default function Start() {
                   {t('start.planets.entrar')} →
                 </button>
               </div>
+            ) : !legalDone ? (
+              renderLegalWizard()
             ) : (
               <form onSubmit={handleRoleSubmit}>
                 <div className={styles.mfRow}>
@@ -1681,6 +1924,46 @@ export default function Start() {
                     <option value="other">{t('register.general.obj_other')}</option>
                   </select>
                 </div>
+                <div className={styles.mfGroup}>
+                  <label className={styles.mfLabel}>{t('register.form.birth_date')}</label>
+                  <input
+                    className={styles.mfInput}
+                    type="date"
+                    value={rfBirthDate}
+                    onChange={(e) => setRfBirthDate(e.target.value)}
+                    required
+                    max={new Date(Date.now() - 18 * 365.25 * 86400000).toISOString().split('T')[0]}
+                  />
+                  <div className={styles.mfHint}>{t('register.form.birth_date_hint')}</div>
+                </div>
+                <label className={styles.mfCheckRow}>
+                  <input
+                    type="checkbox"
+                    checked={rfTosAccepted}
+                    onChange={(e) => setRfTosAccepted(e.target.checked)}
+                    required
+                  />
+                  <span className={styles.mfCheckLabel}>
+                    {t('start.modal.tos_prefix')}{' '}
+                    <Link to="/terms" target="_blank" className={styles.mfLink}>
+                      {t('register.legal.terms')}
+                    </Link>{' '}
+                    {t('start.modal.tos_and')}{' '}
+                    <Link to="/privacy" target="_blank" className={styles.mfLink}>
+                      {t('register.legal.privacy')}
+                    </Link>
+                  </span>
+                </label>
+                <label className={styles.mfCheckRow}>
+                  <input
+                    type="checkbox"
+                    checked={rfAgeAccepted}
+                    onChange={(e) => setRfAgeAccepted(e.target.checked)}
+                    required
+                  />
+                  <span className={styles.mfCheckLabel}>{t('register.legal.age_desc')}</span>
+                </label>
+                {rfError && <p className={styles.mfError}>{rfError}</p>}
                 <button type="submit" className={styles.modalBtn} disabled={rfSending}>
                   {rfSending ? '…' : t('start.modal.btn_register')}
                 </button>
