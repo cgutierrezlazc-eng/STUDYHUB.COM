@@ -1,0 +1,330 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Política de privacidad · Conniku</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Funnel+Display:wght@400;600;700;800;900&family=Inter:wght@400;500;600;700&family=Geist+Mono:wght@400;500;600&display=swap" />
+<link rel="stylesheet" href="../shared/tokens.css" />
+<link rel="stylesheet" href="../shared/base.css" />
+<link rel="stylesheet" href="../shared/logo-oficial/handoff/ConnikuWordmark.css" />
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+#bg-nebula { position: fixed; inset: 0; width: 100vw; height: 100vh; z-index: -1; pointer-events: none; display: block; }
+html { background: var(--bg); }
+body { background: transparent; color: var(--text); font-family: 'Inter', sans-serif; font-size: 15px; line-height: 1.7; min-height: 100vh; }
+.topbar { position:sticky;top:0;z-index:100;background:rgba(5,6,8,0.92);backdrop-filter:blur(12px);border-bottom:1px solid var(--border);padding:14px 32px;display:flex;align-items:center;gap:20px; }
+.back-link { display:flex;align-items:center;gap:6px;font-size:12px;color:var(--text-4);text-decoration:none;transition:color .15s; }
+.back-link:hover { color:var(--text-2); }
+.back-link svg { width:14px;height:14px;flex-shrink:0; }
+.topbar-sep { width:1px;height:16px;background:var(--border); }
+.topbar-title { font-family:'Geist Mono',monospace;font-size:11px;color:var(--text-4);letter-spacing:.06em; }
+.layout { display:grid;grid-template-columns:240px 1fr;gap:0;max-width:1100px;margin:0 auto;padding:48px 32px; }
+@media(max-width:860px){.layout{grid-template-columns:1fr}.toc-wrap{display:none}}
+.toc-wrap { position:sticky;top:65px;height:fit-content;padding-right:32px; }
+.toc-label { font-family:'Geist Mono',monospace;font-size:10px;color:var(--text-4);letter-spacing:.1em;text-transform:uppercase;margin-bottom:12px; }
+.toc-list { list-style:none; }
+.toc-list li+li { margin-top:2px; }
+.toc-list a { display:block;font-size:12px;color:var(--text-4);text-decoration:none;padding:4px 8px;border-radius:6px;transition:all .15s;border-left:2px solid transparent; }
+.toc-list a:hover { color:var(--text-2);background:var(--surface);border-left-color:var(--border-2); }
+.doc-header { margin-bottom:40px; }
+.doc-badge { display:inline-flex;align-items:center;gap:6px;padding:3px 10px;border-radius:999px;background:rgba(0,194,122,0.08);border:1px solid rgba(0,194,122,0.2);font-family:'Geist Mono',monospace;font-size:10px;color:var(--green-3);letter-spacing:.08em;margin-bottom:16px; }
+.doc-badge::before { content:"";width:5px;height:5px;border-radius:50%;background:var(--green); }
+.doc-title { font-family:'Funnel Display',sans-serif;font-weight:900;font-size:clamp(28px,4vw,42px);letter-spacing:-.04em;color:var(--text);margin-bottom:12px; }
+.doc-meta { font-family:'Geist Mono',monospace;font-size:11px;color:var(--text-4);display:flex;flex-wrap:wrap;gap:16px; }
+.doc-meta strong { color:var(--text-3); }
+.doc-body h2 { font-family:'Funnel Display',sans-serif;font-weight:800;font-size:18px;letter-spacing:-.02em;color:var(--text);margin:48px 0 16px;padding-top:24px;border-top:1px solid var(--border); }
+.doc-body h2:first-child { margin-top:0;border-top:none;padding-top:0; }
+.doc-body h3 { font-size:14px;font-weight:700;color:var(--text-2);margin:24px 0 10px; }
+.doc-body p { color:var(--text-2);margin-bottom:14px; }
+.doc-body ul,.doc-body ol { color:var(--text-2);padding-left:20px;margin-bottom:14px; }
+.doc-body li { margin-bottom:6px; }
+.doc-body strong { color:var(--text);font-weight:600; }
+.doc-body a { color:var(--green);text-decoration:none; }
+.doc-body a:hover { color:var(--green-3);text-decoration:underline; }
+.doc-body code { font-family:'Geist Mono',monospace;font-size:12px;background:var(--surface-2);border:1px solid var(--border);padding:2px 6px;border-radius:4px;color:var(--text-3); }
+.info-box { background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:16px 20px;margin:20px 0;font-size:13px;color:var(--text-3); }
+.info-box.green { border-left:3px solid var(--green); }
+.info-box.orange { border-left:3px solid var(--orange); }
+.table-wrap { overflow-x:auto;margin:16px 0; }
+table { width:100%;border-collapse:collapse;font-size:13px; }
+th { font-family:'Geist Mono',monospace;font-size:10px;color:var(--text-4);letter-spacing:.08em;text-transform:uppercase;padding:10px 14px;border-bottom:1px solid var(--border);text-align:left; }
+td { padding:10px 14px;border-bottom:1px solid rgba(38,42,50,0.5);color:var(--text-3);vertical-align:top; }
+td strong { color:var(--text-2); }
+tr:last-child td { border-bottom:none; }
+.jur-chip { display:inline-block;padding:2px 8px;border-radius:4px;font-family:'Geist Mono',monospace;font-size:10px;font-weight:600;letter-spacing:.05em; }
+.jur-cl { background:rgba(0,194,122,0.1);color:var(--green-3); }
+.jur-eu { background:rgba(0,150,204,0.1);color:#5BB8E0; }
+.jur-br { background:rgba(216,184,0,0.1);color:#D4C04A; }
+.jur-us { background:rgba(255,74,28,0.1);color:#FF8A6B; }
+.jur-mx { background:rgba(107,78,255,0.1);color:#A898FF; }
+</style>
+</head>
+<body>
+
+<canvas id="bg-nebula"></canvas>
+
+<div class="topbar">
+  <a href="../index.html" class="back-link">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>
+    Volver
+  </a>
+  <div class="topbar-sep"></div>
+  <a href="../index.html" class="brand on-dark" style="font-size:16px" aria-label="Conniku">conn<span>i</span><span class="k-letter">k</span><span class="u-pack"><span class="u-letter">u</span><span class="dot"></span></span></a>
+  <div class="topbar-sep"></div>
+  <span class="topbar-title">POLÍTICA DE PRIVACIDAD</span>
+</div>
+
+<div class="layout">
+
+  <aside class="toc-wrap">
+    <div class="toc-label">Contenido</div>
+    <ul class="toc-list">
+      <li><a href="#s1">1 · Responsable del tratamiento</a></li>
+      <li><a href="#s2">2 · Datos que recopilamos</a></li>
+      <li><a href="#s3">3 · Finalidades y base legal</a></li>
+      <li><a href="#s4">4 · Terceros y subencargados</a></li>
+      <li><a href="#s5">5 · Transferencias internacionales</a></li>
+      <li><a href="#s6">6 · Plazos de retención</a></li>
+      <li><a href="#s7">7 · Derechos ARCO+</a></li>
+      <li><a href="#s8">8 · Seguridad</a></li>
+      <li><a href="#s9">9 · Menores de edad</a></li>
+      <li><a href="#s10">10 · Marco normativo</a></li>
+      <li><a href="#s11">11 · Contacto DPO</a></li>
+      <li><a href="#s12">12 · Actualizaciones</a></li>
+    </ul>
+  </aside>
+
+  <main class="doc-body">
+
+    <div class="doc-header">
+      <div class="doc-badge">DOCUMENTO LEGAL VIGENTE</div>
+      <h1 class="doc-title">Política de Privacidad</h1>
+      <div class="doc-meta">
+        <span><strong>Versión</strong> 2.4.2</span>
+        <span><strong>Vigencia</strong> 23 de abril de 2026</span>
+        <span><strong>Empresa</strong> Conniku SpA · RUT 78.395.702-7</span>
+      </div>
+    </div>
+
+    <div class="info-box green">
+      <strong>En resumen.</strong> Conniku recopila solo los datos necesarios para prestarte el servicio. No vendemos tu información. Tienes derecho a acceder, corregir, eliminar y portar tus datos en cualquier momento. Respondemos en 2 días hábiles para solicitudes urgentes (Chile) y en máximo 30 días para el resto. Escríbenos a <a href="mailto:privacidad@conniku.com">privacidad@conniku.com</a>.
+    </div>
+
+    <!-- §1 -->
+    <h2 id="s1">§1 — Responsable del tratamiento</h2>
+    <p>El responsable del tratamiento de tus datos personales es:</p>
+    <div class="info-box">
+      <strong>Conniku SpA</strong><br>
+      RUT: 78.395.702-7<br>
+      Domicilio: Antofagasta, Chile<br>
+      Correo de contacto: <a href="mailto:privacidad@conniku.com">privacidad@conniku.com</a><br>
+      DPO: <a href="mailto:dpo@conniku.com">dpo@conniku.com</a>
+    </div>
+    <p>El Delegado de Protección de Datos (DPO) de Conniku puede ser contactado directamente en <a href="mailto:dpo@conniku.com">dpo@conniku.com</a> para consultas relacionadas con el tratamiento de datos, ejercicio de derechos o reclamaciones formales.</p>
+
+    <!-- §2 -->
+    <h2 id="s2">§2 — Datos que recopilamos y cómo los obtenemos</h2>
+
+    <h3>2.1 Datos que nos proporcionas directamente</h3>
+    <ul>
+      <li><strong>Datos de registro:</strong> nombre, apellido, correo electrónico, contraseña (almacenada en hash bcrypt), fecha de nacimiento, institución educativa, carrera.</li>
+      <li><strong>Datos de perfil:</strong> foto de perfil, biografía, intereses académicos, redes sociales opcionales.</li>
+      <li><strong>Contenido generado:</strong> publicaciones, comentarios, mensajes, archivos, apuntes, respuestas en foros.</li>
+      <li><strong>Datos de tutorías:</strong> historial de sesiones, valoraciones, materiales compartidos.</li>
+      <li><strong>Datos de pago:</strong> método de pago (procesado por MercadoPago o PayPal; Conniku no almacena datos de tarjetas).</li>
+    </ul>
+
+    <h3>2.2 Datos que recopilamos automáticamente</h3>
+    <ul>
+      <li><strong>Datos técnicos:</strong> dirección IP (pseudonimizada a los 12 meses), tipo de navegador, sistema operativo, idioma, zona horaria.</li>
+      <li><strong>Datos de uso:</strong> páginas visitadas, módulos utilizados, duración de sesiones, clics, interacciones con el feed.</li>
+      <li><strong>Datos de dispositivo:</strong> en aplicaciones móviles, identificador de dispositivo, versión de la app, permisos concedidos.</li>
+    </ul>
+
+    <h3>2.3 Datos de terceros (OAuth)</h3>
+    <p>Si te registras mediante Google OAuth, recibimos de Google únicamente: nombre, correo electrónico y foto de perfil, conforme a los permisos que concedas. No recibimos contraseñas ni información adicional de tu cuenta Google.</p>
+
+    <!-- §3 -->
+    <h2 id="s3">§3 — Finalidades del tratamiento y base legal</h2>
+
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>Finalidad</th><th>Base legal</th><th>Aplicable en</th></tr></thead>
+        <tbody>
+          <tr><td><strong>Prestación del servicio</strong> (autenticación, acceso a módulos, funcionalidades de la plataforma)</td><td>Ejecución del contrato — Art. 6(1)(b) GDPR</td><td><span class="jur-chip jur-cl">CL</span> <span class="jur-chip jur-eu">UE</span> <span class="jur-chip jur-br">BR</span></td></tr>
+          <tr><td><strong>Comunicaciones del servicio</strong> (notificaciones, avisos de seguridad, cambios en T&C)</td><td>Ejecución del contrato — Art. 6(1)(b) GDPR</td><td><span class="jur-chip jur-cl">CL</span> <span class="jur-chip jur-eu">UE</span></td></tr>
+          <tr><td><strong>Personalización</strong> (preferencias de idioma, tema visual, orden del feed)</td><td>Ejecución del contrato — Art. 6(1)(b) GDPR</td><td><span class="jur-chip jur-cl">CL</span> <span class="jur-chip jur-eu">UE</span></td></tr>
+          <tr><td><strong>Seguridad y prevención de fraude</strong></td><td>Interés legítimo — Art. 6(1)(f) GDPR</td><td><span class="jur-chip jur-cl">CL</span> <span class="jur-chip jur-eu">UE</span></td></tr>
+          <tr><td><strong>Mejora del servicio</strong> (análisis de uso interno, diagnóstico de errores)</td><td>Interés legítimo — Art. 6(1)(f) GDPR</td><td><span class="jur-chip jur-cl">CL</span> <span class="jur-chip jur-eu">UE</span></td></tr>
+          <tr><td><strong>Comunicaciones comerciales</strong> (novedades, funcionalidades nuevas, ofertas)</td><td>Consentimiento — Art. 6(1)(a) GDPR (opt-in)</td><td><span class="jur-chip jur-cl">CL</span> <span class="jur-chip jur-eu">UE</span></td></tr>
+          <tr><td><strong>Cumplimiento de obligaciones legales</strong></td><td>Obligación legal — Art. 6(1)(c) GDPR</td><td>Global</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <!-- §4 -->
+    <h2 id="s4">§4 — Proveedores terceros y subencargados</h2>
+    <p>Conniku utiliza los siguientes proveedores para la prestación del servicio. Todos han suscrito acuerdos de procesamiento de datos (DPA) compatibles con el Art. 28 GDPR:</p>
+
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>Proveedor</th><th>Función</th><th>Ubicación</th></tr></thead>
+        <tbody>
+          <tr><td><strong>Supabase</strong></td><td>Base de datos principal, autenticación, almacenamiento de archivos</td><td>EE.UU. / UE (región configurable)</td></tr>
+          <tr><td><strong>Firebase (Google)</strong></td><td>Notificaciones push (FCM)</td><td>EE.UU.</td></tr>
+          <tr><td><strong>Google OAuth</strong></td><td>Inicio de sesión con Google</td><td>EE.UU.</td></tr>
+          <tr><td><strong>Anthropic</strong></td><td>Procesamiento de consultas al asistente Athena</td><td>EE.UU.</td></tr>
+          <tr><td><strong>Render</strong></td><td>Infraestructura de servidores back-end</td><td>EE.UU.</td></tr>
+          <tr><td><strong>Vercel</strong></td><td>Hosting front-end y funciones edge</td><td>EE.UU. / Global CDN</td></tr>
+          <tr><td><strong>Zoho Mail</strong></td><td>Servicio de correo electrónico institucional</td><td>EE.UU. / India</td></tr>
+          <tr><td><strong>MercadoPago</strong></td><td>Procesamiento de pagos (Latinoamérica)</td><td>Argentina / Chile</td></tr>
+          <tr><td><strong>PayPal</strong></td><td>Procesamiento de pagos (internacional)</td><td>EE.UU. / Luxemburgo</td></tr>
+          <tr><td><strong>Capacitor (Ionic)</strong></td><td>Framework de aplicaciones móviles nativas</td><td>EE.UU.</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <p>Conniku no vende, alquila ni cede datos personales de usuarios a terceros con fines comerciales propios de esos terceros.</p>
+
+    <!-- §5 -->
+    <h2 id="s5">§5 — Transferencias internacionales de datos</h2>
+    <p>Algunos proveedores listados en §4 procesan datos fuera del Espacio Económico Europeo (EEE) o fuera de Chile. Conniku adopta las siguientes salvaguardas:</p>
+    <ul>
+      <li><strong>Cláusulas Contractuales Tipo (CCT)</strong> de la Comisión Europea para transferencias desde la UE/EEE hacia EE.UU., conforme al Art. 46(2)(c) GDPR.</li>
+      <li><strong>Decisiones de adecuación</strong> donde estén vigentes (p. ej., Data Privacy Framework UE-EE.UU.).</li>
+      <li><strong>Para usuarios de Chile:</strong> las transferencias se realizan conforme al Art. 5 de la Ley 19.628 (consentimiento informado al momento del registro) y serán actualizadas conforme a la Ley 21.719 desde su vigencia el 1 de diciembre de 2026.</li>
+    </ul>
+
+    <!-- §6 -->
+    <h2 id="s6">§6 — Plazos de retención</h2>
+
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>Tipo de dato</th><th>Plazo de retención</th><th>Fundamento</th></tr></thead>
+        <tbody>
+          <tr><td><strong>Datos de cuenta activa</strong></td><td>Mientras la cuenta esté activa</td><td>Ejecución del contrato</td></tr>
+          <tr><td><strong>Datos de cuenta eliminada</strong></td><td>Eliminación inmediata de datos identificables; logs pseudonimizados hasta 12 meses adicionales</td><td>Art. 5(1)(e) GDPR · Minimización</td></tr>
+          <tr><td><strong>Registros de tickets de soporte</strong></td><td>5 años desde el cierre del ticket</td><td>Art. 2515 Código Civil (prescripción); defensa ante reclamaciones</td></tr>
+          <tr><td><strong>Feedback de soporte</strong></td><td>2 años; pseudonimizado a los 12 meses</td><td>Mejora del servicio · Art. 6(1)(f) GDPR</td></tr>
+          <tr><td><strong>Registros de consentimiento de cookies</strong></td><td>5 años desde que el consentimiento fue retirado o cuenta eliminada</td><td>Art. 7(1) GDPR · Demostrabilidad</td></tr>
+          <tr><td><strong>Logs de seguridad</strong></td><td>12 meses (IP pseudonimizada a los 12 meses)</td><td>Art. 32 GDPR · Seguridad del tratamiento</td></tr>
+          <tr><td><strong>Datos de facturación y pagos</strong></td><td>6 años</td><td>Ley 16.271 (tributaria chilena)</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <!-- §7 -->
+    <h2 id="s7">§7 — Tus derechos sobre tus datos (ARCO+)</h2>
+    <p>Tienes los siguientes derechos sobre tus datos personales, conforme a la ley chilena (Ley 19.628 / Ley 21.719) y al GDPR según tu jurisdicción:</p>
+
+    <ul>
+      <li><strong>Acceso (A):</strong> obtener confirmación de si Conniku trata tus datos y recibir una copia.</li>
+      <li><strong>Rectificación (R):</strong> corregir datos inexactos o desactualizados.</li>
+      <li><strong>Cancelación / Supresión (C):</strong> solicitar la eliminación de tus datos cuando ya no sean necesarios o cuando retires el consentimiento, sujeto a excepciones legales.</li>
+      <li><strong>Oposición (O):</strong> oponerte al tratamiento basado en interés legítimo o para fines de marketing directo.</li>
+      <li><strong>Portabilidad:</strong> recibir tus datos en formato estructurado y legible por máquina (JSON o CSV).</li>
+      <li><strong>Limitación del tratamiento:</strong> solicitar que el tratamiento se restrinja en casos específicos (GDPR Art. 18).</li>
+      <li><strong>No ser objeto de decisiones automatizadas:</strong> no serás objeto de decisiones que te afecten significativamente basadas únicamente en tratamiento automatizado sin intervención humana.</li>
+      <li><strong>Retirar el consentimiento:</strong> en cualquier momento, sin que ello afecte la licitud del tratamiento previo.</li>
+    </ul>
+
+    <div class="info-box green">
+      <strong>Cómo ejercer tus derechos.</strong> Envía tu solicitud a <a href="mailto:privacidad@conniku.com">privacidad@conniku.com</a> indicando tu nombre, correo registrado y el derecho que deseas ejercer. Conniku responderá en máximo 2 días hábiles (Chile, trámites urgentes), 15 días hábiles (Chile, trámites ordinarios) o 30 días calendario (GDPR), prorrogable por 60 días adicionales en casos de especial complejidad.
+    </div>
+
+    <h3>7.1 Reclamación ante autoridad de control</h3>
+    <p>Si consideras que el tratamiento de tus datos infringe la normativa aplicable, tienes derecho a presentar una reclamación ante:</p>
+    <ul>
+      <li><strong>Chile (hasta el 30/11/2026):</strong> Consejo para la Transparencia.</li>
+      <li><strong>Chile (desde el 01/12/2026):</strong> Agencia de Protección de Datos Personales (Ley 21.719).</li>
+      <li><strong>Unión Europea / EEE:</strong> la autoridad de control del Estado miembro donde residas.</li>
+      <li><strong>España:</strong> Agencia Española de Protección de Datos (AEPD), <a href="https://www.aepd.es" target="_blank" rel="noopener">www.aepd.es</a>.</li>
+    </ul>
+
+    <!-- §8 -->
+    <h2 id="s8">§8 — Seguridad del tratamiento</h2>
+    <p>Conniku adopta medidas técnicas y organizativas adecuadas para proteger tus datos personales conforme al Art. 32 GDPR, incluyendo:</p>
+    <ul>
+      <li>Cifrado en tránsito (TLS 1.3) y en reposo (AES-256).</li>
+      <li>Contraseñas almacenadas con hash bcrypt (factor de coste ≥ 12).</li>
+      <li>Control de acceso basado en roles (RBAC) con principio de mínimo privilegio.</li>
+      <li>Pseudonimización de IPs y User-Agents transcurridos 12 meses.</li>
+      <li>Monitoreo continuo de amenazas y logs de auditoría.</li>
+      <li>Política de divulgación responsable de vulnerabilidades: <a href="mailto:seguridad@conniku.com">seguridad@conniku.com</a>.</li>
+    </ul>
+    <p>En caso de brecha de seguridad que afecte tus datos, Conniku te notificará conforme a los plazos legales aplicables (72 horas para notificación a la autoridad conforme al Art. 33 GDPR; notificación al afectado sin dilación indebida cuando el riesgo sea alto, conforme al Art. 34 GDPR).</p>
+
+    <!-- §9 -->
+    <h2 id="s9">§9 — Menores de edad</h2>
+    <p>Conniku no presta servicios a personas menores de <strong>18 años</strong> y no recopila datos personales de menores a sabiendas. Si Conniku detecta que ha recibido datos de un menor de 18 años sin consentimiento parental verificable, procederá a eliminar esos datos de forma inmediata.</p>
+    <p>Si eres padre, madre o tutor legal y crees que tu hijo o pupilo ha facilitado datos personales a Conniku, contacta a <a href="mailto:privacidad@conniku.com">privacidad@conniku.com</a> para solicitar su eliminación.</p>
+
+    <!-- §10 -->
+    <h2 id="s10">§10 — Marco normativo aplicable</h2>
+    <p>Esta Política de Privacidad cumple con la siguiente normativa:</p>
+
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>Norma</th><th>Jurisdicción</th><th>Estado</th></tr></thead>
+        <tbody>
+          <tr><td><strong>Ley chilena 19.628</strong> sobre Protección de la Vida Privada</td><td><span class="jur-chip jur-cl">CL</span></td><td>Vigente hasta 30/11/2026</td></tr>
+          <tr><td><strong>Ley chilena 21.719</strong> sobre Protección y Tratamiento de Datos Personales</td><td><span class="jur-chip jur-cl">CL</span></td><td>Vigente desde 01/12/2026</td></tr>
+          <tr><td><strong>Reglamento (UE) 2016/679 (GDPR)</strong></td><td><span class="jur-chip jur-eu">UE</span></td><td>Vigente</td></tr>
+          <tr><td><strong>LGPD — Lei Geral de Proteção de Dados</strong> (Lei 13.709/2018)</td><td><span class="jur-chip jur-br">BR</span></td><td>Vigente</td></tr>
+          <tr><td><strong>CCPA / CPRA</strong> (California Consumer Privacy Act)</td><td><span class="jur-chip jur-us">CA</span></td><td>Vigente</td></tr>
+          <tr><td><strong>LFPDPPP</strong> (México)</td><td><span class="jur-chip jur-mx">MX</span></td><td>Vigente</td></tr>
+          <tr><td><strong>Ley chilena 21.643 (Ley Karin)</strong></td><td><span class="jur-chip jur-cl">CL</span></td><td>Vigente desde 01/08/2024</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <!-- §11 -->
+    <h2 id="s11">§11 — Contacto y canales de privacidad</h2>
+    <div class="info-box">
+      <strong>Privacidad y derechos ARCO+:</strong> <a href="mailto:privacidad@conniku.com">privacidad@conniku.com</a><br>
+      <strong>Delegado de Protección de Datos (DPO):</strong> <a href="mailto:dpo@conniku.com">dpo@conniku.com</a><br>
+      <strong>Denuncias Ley Karin y seguridad:</strong> <a href="mailto:seguridad@conniku.com">seguridad@conniku.com</a><br>
+      <strong>Soporte general:</strong> <a href="mailto:soporte@conniku.com">soporte@conniku.com</a><br>
+      <strong>Legal:</strong> <a href="mailto:legal@conniku.com">legal@conniku.com</a>
+    </div>
+
+    <!-- §12 -->
+    <h2 id="s12">§12 — Actualizaciones de esta Política</h2>
+    <p>Esta Política puede actualizarse para reflejar cambios en nuestras prácticas, nuevas funcionalidades o cambios normativos. Toda actualización material se notificará por correo electrónico con al menos 30 días de anticipación. La versión vigente siempre estará disponible en este documento con la fecha de última actualización.</p>
+
+    <div class="info-box" style="margin-top:40px">
+      <strong>Documento:</strong> Política de Privacidad · Versión 2.4.2 · Vigente desde el 23 de abril de 2026<br>
+      <strong>Empresa:</strong> Conniku SpA · RUT 78.395.702-7 · Antofagasta, Chile<br>
+      <strong>Contacto:</strong> <a href="mailto:privacidad@conniku.com">privacidad@conniku.com</a>
+    </div>
+
+  </main>
+</div>
+
+<footer style="border-top:1px solid var(--border);padding:24px 32px;display:flex;flex-wrap:wrap;justify-content:space-between;align-items:center;gap:12px;max-width:1100px;margin:0 auto;">
+  <span style="font-size:11px;color:var(--text-4);font-family:'Geist Mono',monospace;">© 2026 Conniku SpA · RUT 78.395.702-7 · Antofagasta, Chile</span>
+  <nav style="display:flex;flex-wrap:wrap;gap:16px;">
+    <a href="terminos.html" style="font-size:11px;color:var(--text-4);text-decoration:none;" onmouseover="this.style.color='var(--text-2)'" onmouseout="this.style.color='var(--text-4)'">Términos</a>
+    <a href="privacidad.html" style="font-size:11px;color:var(--green);text-decoration:none;">Privacidad</a>
+    <a href="cookies.html" style="font-size:11px;color:var(--text-4);text-decoration:none;" onmouseover="this.style.color='var(--text-2)'" onmouseout="this.style.color='var(--text-4)'">Cookies</a>
+    <a href="soporte.html" style="font-size:11px;color:var(--text-4);text-decoration:none;" onmouseover="this.style.color='var(--text-2)'" onmouseout="this.style.color='var(--text-4)'">Soporte</a>
+    <a href="contacto.html" style="font-size:11px;color:var(--text-4);text-decoration:none;" onmouseover="this.style.color='var(--text-2)'" onmouseout="this.style.color='var(--text-4)'">Contacto</a>
+    <a href="prensa.html" style="font-size:11px;color:var(--text-4);text-decoration:none;" onmouseover="this.style.color='var(--text-2)'" onmouseout="this.style.color='var(--text-4)'">Prensa</a>
+    <a href="empleo-conniku.html" style="font-size:11px;color:var(--text-4);text-decoration:none;" onmouseover="this.style.color='var(--text-2)'" onmouseout="this.style.color='var(--text-4)'">Trabaja con nosotros</a>
+  </nav>
+</footer>
+
+<script src="../shared/theme-loader.js"></script>
+<script src="../shared/hex-nebula/hex-nebula.js"></script>
+<script>
+  HexNebula.mount(document.getElementById('bg-nebula'), {
+    hexSize: 34,
+    intensity: 0.5,
+    bgColor: '#0A0C12'
+  });
+</script>
+</body>
+</html>

@@ -1,0 +1,646 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Perfil · Orbit (oscuro · logo Conniku oficial)</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Funnel+Display:wght@400;500;600;700;800;900&family=Inter:wght@400;500;600;700&family=Geist+Mono:wght@400;500;600&display=swap" />
+<link rel="stylesheet" href="../shared/tokens.css" />
+<link rel="stylesheet" href="../shared/base.css" />
+<style>
+  html, body { overflow-x: hidden; }
+
+  /* ── Ambient background · orbitas tenues detrás del phone ── */
+  body::before, body::after {
+    content: ""; position: fixed;
+    border-radius: 50%;
+    border: 1px solid;
+    pointer-events: none;
+    z-index: 0;
+  }
+  body::before {
+    width: 1200px; height: 1200px;
+    top: 50%; left: 50%;
+    transform: translate(-50%, -50%);
+    border-color: rgba(0,194,122,0.06);
+    background: radial-gradient(circle, rgba(0,194,122,0.04), transparent 60%);
+  }
+  body::after {
+    width: 1800px; height: 1800px;
+    top: 50%; left: 50%;
+    transform: translate(-50%, -50%);
+    border-color: rgba(232,232,230,0.025);
+    border-style: dashed;
+  }
+
+  .ambient-orbits {
+    position: fixed; inset: 0; z-index: 0;
+    pointer-events: none;
+    display: grid; place-items: center;
+  }
+  .ambient-orbits .ao {
+    position: absolute;
+    border-radius: 50%;
+    border: 1px solid rgba(232,232,230,0.04);
+  }
+  .ambient-orbits .ao.a1 { width: 800px;  height: 800px;  border-color: rgba(0,194,122,0.12); }
+  .ambient-orbits .ao.a2 { width: 1000px; height: 1000px; border-style: dashed; border-color: rgba(255,74,28,0.14); opacity: .9; }
+  .ambient-orbits .ao.a3 { width: 1200px; height: 1200px; border-style: dotted; border-color: rgba(255,77,58,0.18); opacity: .7; }
+  .ambient-orbits .ao.a4 { width: 1400px; height: 1400px; border-color: rgba(245,244,239,0.10); opacity: .6; }
+  .ambient-orbits .ao.a5 {
+    width: 600px; height: 600px;
+    background: radial-gradient(circle at 50% 50%, rgba(0,194,122,0.08), transparent 60%);
+    border: none;
+  }
+  .ambient-orbits .ao.a6 { width: 1600px; height: 1600px; border-style: dashed; border-color: rgba(255,74,28,0.07); opacity: .5; }
+  .ambient-orbits .ao.a7 { width: 1800px; height: 1800px; border-style: dotted; border-color: rgba(255,77,58,0.10); opacity: .5; }
+  .ambient-orbits .ao.a8 { width: 2000px; height: 2000px; border-color: rgba(245,244,239,0.05); opacity: .35; }
+  .ambient-orbits .ao.a9 { width: 2200px; height: 2200px; border-style: dashed; border-color: rgba(0,194,122,0.05); opacity: .3; }
+
+  /* Particulas tenues (legacy) */
+  .ambient-orbits .dot {
+    position: absolute; width: 3px; height: 3px;
+    border-radius: 50%; background: rgba(0,194,122,0.5);
+    box-shadow: 0 0 6px rgba(0,194,122,0.4);
+  }
+
+  /* ─── Cielo · estrellas con twinkle ─── */
+  .star {
+    position: absolute;
+    border-radius: 50%;
+    background: rgba(245,244,239,0.7);
+    box-shadow: 0 0 4px rgba(245,244,239,0.4);
+    animation: twinkle var(--dur, 3s) ease-in-out infinite;
+    animation-delay: var(--delay, 0s);
+  }
+  .star.s { width: 1.5px; height: 1.5px; box-shadow: 0 0 3px rgba(245,244,239,0.3); }
+  .star.m { width: 2px;   height: 2px; }
+  .star.l { width: 3px;   height: 3px; box-shadow: 0 0 6px rgba(245,244,239,0.5); }
+  .star.xl { width: 4px;  height: 4px;
+    box-shadow: 0 0 8px rgba(245,244,239,0.6), 0 0 16px rgba(245,244,239,0.25); }
+
+  .star.green   { background: rgba(0,194,122,0.7);  box-shadow: 0 0 6px rgba(0,194,122,0.5); }
+  .star.green.l { box-shadow: 0 0 8px rgba(0,194,122,0.6), 0 0 14px rgba(0,194,122,0.2); }
+  .star.orange  { background: rgba(255,74,28,0.7);  box-shadow: 0 0 6px rgba(255,74,28,0.5); }
+  .star.orange.l{ box-shadow: 0 0 8px rgba(255,74,28,0.6), 0 0 14px rgba(255,74,28,0.2); }
+  .star.red     { background: rgba(255,77,58,0.7);  box-shadow: 0 0 6px rgba(255,77,58,0.5); }
+  .star.cyan    { background: rgba(138,234,192,0.6);box-shadow: 0 0 6px rgba(138,234,192,0.4); }
+
+  @keyframes twinkle {
+    0%, 100% { opacity: 1; transform: scale(1); }
+    50%      { opacity: 0.25; transform: scale(0.8); }
+  }
+  @keyframes twinkle-slow {
+    0%, 100% { opacity: 1; }
+    50%      { opacity: 0.4; }
+  }
+  .star.slow { animation-name: twinkle-slow; animation-duration: 5s; }
+  .star.fast { animation-duration: 1.6s; }
+
+  .wrap {
+    max-width: 100%;
+    min-height: 100vh;
+    padding: 40px 24px;
+    display: grid; place-items: center;
+    position: relative; z-index: 1;
+  }
+
+  /* ── Frame de la app (más amplio) ── */
+  .phone {
+    width: 480px;
+    height: 940px;
+    box-shadow:
+      0 40px 100px rgba(0,0,0,0.6),
+      0 0 0 1px rgba(0,194,122,0.08),
+      0 0 80px rgba(0,194,122,0.10);
+    border-radius: 52px;
+    overflow: hidden;
+    position: relative;
+    z-index: 2;
+  }
+
+  .optA {
+    background: #0D0E11;
+    border-radius: 52px;
+    padding: 32px 22px;
+    width: 100%;
+    height: 100%;
+    position: relative;
+    overflow: hidden;
+    background-image:
+      radial-gradient(circle at 50% 38%, rgba(0,194,122,0.10), transparent 55%),
+      radial-gradient(circle at 50% 90%, rgba(0,194,122,0.04), transparent 55%);
+    display: flex; flex-direction: column;
+  }
+
+  /* ── Topbar ── */
+  .a-topbar {
+    display: flex; justify-content: space-between; align-items: center;
+    margin-bottom: 24px;
+    padding: 0 6px;
+  }
+
+.a-cmd {
+    display: inline-flex; align-items: center; gap: 8px;
+    font-family: 'Geist Mono', monospace; font-size: 11px;
+    color: #8A8A86;
+    padding: 5px 10px;
+    border: 1px solid #262A32;
+    border-radius: 8px;
+    background: #15181D;
+  }
+  .a-cmd .kbd {
+    font-family: 'Geist Mono', monospace; font-size: 10px;
+    background: #0D0E11; color: #E8E8E6;
+    padding: 1px 5px; border-radius: 4px;
+    border: 1px solid #262A32;
+    margin-left: 4px;
+  }
+
+  /* ── Center stage ── */
+  .a-center-stage {
+    position: relative;
+    flex: 1;
+    display: grid; place-items: center;
+    margin: 12px 0;
+  }
+  .a-orbit-ring {
+    position: absolute; top: 50%; left: 50%;
+    transform: translate(-50%,-50%);
+    border: 1px dashed rgba(232,232,230,0.08);
+    border-radius: 50%;
+  }
+  /* Sol = avatar (148px) → planetas a r=140, 195, 235 */
+  .a-orbit-ring.r1 { width: 280px; height: 280px; border-color: rgba(0,194,122,0.18); }
+  .a-orbit-ring.r2 { width: 390px; height: 390px; border-color: rgba(255,74,28,0.18); border-style: dashed; }
+  .a-orbit-ring.r3 { width: 470px; height: 470px; border-style: dotted; border-color: rgba(0,194,122,0.20); opacity: .7; }
+
+  /* ── Center "me" · SOL · clicable → perfil ── */
+  .a-me {
+    position: relative; z-index: 5;
+    width: 148px; height: 148px;
+    background: radial-gradient(circle at 30% 30%, #8AEAC0 0%, #00C27A 40%, #006E4A 100%);
+    border-radius: 50%;
+    display: grid; place-items: center;
+    box-shadow:
+      0 0 0 5px rgba(0,194,122,0.08),
+      0 0 60px rgba(0,194,122,0.25);
+    cursor: pointer;
+    transition: transform .25s cubic-bezier(0.2,0.8,0.2,1), box-shadow .25s;
+    text-decoration: none;
+  }
+  .a-me:hover {
+    transform: scale(1.04);
+    box-shadow:
+      0 0 0 8px rgba(0,194,122,0.12),
+      0 0 80px rgba(0,194,122,0.40);
+  }
+  .a-me-inner {
+    width: 128px; height: 128px;
+    border-radius: 50%;
+    background: #0D0E11;
+    display: flex; flex-direction: column;
+    align-items: center; justify-content: center;
+    border: 2px solid #15181D;
+  }
+  .a-me-av {
+    width: 50px; height: 50px; border-radius: 50%;
+    background: linear-gradient(135deg, #00C27A, #006E4A);
+    display: grid; place-items: center;
+    color: #0B0C0E; font-weight: 600; font-size: 22px;
+  }
+  .a-me-name {
+    font-weight: 600; font-size: 13px; margin-top: 6px;
+    letter-spacing: -0.01em;
+  }
+  .a-me-handle {
+    font-family: 'Geist Mono', monospace; font-size: 9px;
+    color: #8A8A86; margin-top: 1px;
+  }
+  .a-me-live {
+    font-family: 'Geist Mono', monospace; font-size: 8px;
+    color: #00C27A; margin-top: 5px;
+    text-transform: uppercase; letter-spacing: 0.08em;
+    display: inline-flex; align-items: center; gap: 5px;
+  }
+  .a-me-live::before {
+    content: ""; width: 6px; height: 6px;
+    border-radius: 50%; background: #00C27A;
+    box-shadow: 0 0 0 0 rgba(0,194,122,0.6);
+    animation: pulse 1.6s infinite;
+  }
+  @keyframes pulse {
+    0% { box-shadow: 0 0 0 0 rgba(0,194,122,0.5); }
+    70% { box-shadow: 0 0 0 8px rgba(0,194,122,0); }
+    100% { box-shadow: 0 0 0 0 rgba(0,194,122,0); }
+  }
+
+  /* ── Planetas (base) ── */
+  .a-node {
+    position: absolute;
+    width: 72px; height: 72px;
+    border-radius: 50%;
+    background: #15181D;
+    border: 1px solid #262A32;
+    display: flex; flex-direction: column;
+    align-items: center; justify-content: center;
+    gap: 3px; cursor: pointer;
+    transition: all .25s cubic-bezier(0.2,0.8,0.2,1);
+    z-index: 3;
+    overflow: hidden;
+  }
+  .a-node::before {
+    /* "atmósfera" sutil del planeta */
+    content: ""; position: absolute; inset: 0;
+    border-radius: 50%; pointer-events: none;
+    background: radial-gradient(circle at 35% 30%, rgba(255,255,255,0.06), transparent 55%);
+  }
+  .a-node:hover {
+    transform: translate(-50%,-50%) translate(var(--tx), var(--ty)) scale(1.08) !important;
+    box-shadow: 0 8px 24px rgba(0,0,0,0.4);
+  }
+  .a-node svg { color: #E8E8E6; opacity: 0.95; width: 18px; height: 18px; position: relative; z-index: 1; }
+  a.a-node { text-decoration: none; }
+  .a-node .lbl {
+    font-size: 9px; font-weight: 500; color: #E8E8E6;
+    position: relative; z-index: 1;
+    letter-spacing: -0.01em;
+  }
+
+  /* ──── Personalidad por módulo · solo halo + icono color ──── */
+  /* Cuerpo del planeta: oscuro neutro · halo + icono = color del módulo */
+
+  /* Workspaces · violet · 78px */
+  .a-node.n1 { width: 78px; height: 78px; border-color: rgba(107,78,255,0.55); box-shadow: 0 0 0 4px rgba(107,78,255,0.10), 0 0 18px rgba(107,78,255,0.18); }
+  .a-node.n1 svg { color: #B8A6FF; }
+  .a-node.n1:hover { box-shadow: 0 0 0 6px rgba(107,78,255,0.18), 0 0 28px rgba(107,78,255,0.40); }
+
+  /* Mensajes · green · 88px (más grande, módulo principal) */
+  .a-node.n2 { width: 88px; height: 88px; border-color: rgba(0,194,122,0.60); box-shadow: 0 0 0 4px rgba(0,194,122,0.12), 0 0 22px rgba(0,194,122,0.22); }
+  .a-node.n2 svg { color: #8AEAC0; }
+  .a-node.n2:hover { box-shadow: 0 0 0 6px rgba(0,194,122,0.22), 0 0 28px rgba(0,194,122,0.45); }
+  /* moon · indicador de mensajes nuevos */
+  .a-node.n2::after {
+    content: ""; position: absolute; top: 6px; right: 8px;
+    width: 8px; height: 8px; border-radius: 50%;
+    background: #FF4A1C; border: 2px solid #050608;
+    z-index: 4;
+    box-shadow: 0 0 8px rgba(255,74,28,0.7);
+  }
+
+  /* Amigos · orange · 82px */
+  .a-node.n3 { width: 82px; height: 82px; border-color: rgba(255,74,28,0.55); box-shadow: 0 0 0 4px rgba(255,74,28,0.10), 0 0 20px rgba(255,74,28,0.18); }
+  .a-node.n3 svg { color: #FF9572; }
+  .a-node.n3:hover { box-shadow: 0 0 0 6px rgba(255,74,28,0.20), 0 0 28px rgba(255,74,28,0.40); }
+
+  /* Comunidades · cyan · 70px */
+  .a-node.n4 { width: 70px; height: 70px; border-color: rgba(0,194,255,0.55); box-shadow: 0 0 0 4px rgba(0,194,255,0.10), 0 0 16px rgba(0,194,255,0.18); }
+  .a-node.n4 svg { color: #7FDAFF; }
+  .a-node.n4:hover { box-shadow: 0 0 0 6px rgba(0,194,255,0.20), 0 0 28px rgba(0,194,255,0.40); }
+
+  /* Biblioteca · cream · 64px (chico) */
+  .a-node.n5 { width: 64px; height: 64px; border-color: rgba(255,233,184,0.50); box-shadow: 0 0 0 3px rgba(255,233,184,0.08), 0 0 14px rgba(255,233,184,0.15); }
+  .a-node.n5 svg { width: 16px; height: 16px; }
+  .a-node.n5 .lbl { font-size: 8px; }
+  .a-node.n5 svg { color: #FFE9B8; }
+  .a-node.n5:hover { box-shadow: 0 0 0 6px rgba(255,233,184,0.18), 0 0 28px rgba(255,233,184,0.30); }
+
+  /* Cursos · lime · 76px */
+  .a-node.n6 { width: 76px; height: 76px; border-color: rgba(217,255,58,0.55); box-shadow: 0 0 0 4px rgba(217,255,58,0.08), 0 0 18px rgba(217,255,58,0.15); }
+  .a-node.n6 svg { color: #D9FF3A; }
+  .a-node.n6:hover { box-shadow: 0 0 0 6px rgba(217,255,58,0.20), 0 0 28px rgba(217,255,58,0.35); }
+
+  /* Tutores · pink coral · 60px (chico) */
+  .a-node.n7 { width: 60px; height: 60px; border-color: rgba(255,77,58,0.55); box-shadow: 0 0 0 3px rgba(255,77,58,0.10), 0 0 14px rgba(255,77,58,0.18); }
+  .a-node.n7 svg { width: 15px; height: 15px; }
+  .a-node.n7 .lbl { font-size: 8px; }
+  .a-node.n7 svg { color: #FF9787; }
+  .a-node.n7:hover { box-shadow: 0 0 0 6px rgba(255,77,58,0.20), 0 0 28px rgba(255,77,58,0.40); }
+
+  /* Calendario · paper · 72px */
+  .a-node.n8 { width: 72px; height: 72px; border-color: rgba(245,244,239,0.50); box-shadow: 0 0 0 4px rgba(245,244,239,0.06), 0 0 16px rgba(245,244,239,0.12); }
+  .a-node.n8 svg { color: #F5F4EF; }
+  .a-node.n8:hover { box-shadow: 0 0 0 6px rgba(245,244,239,0.15), 0 0 28px rgba(245,244,239,0.25); }
+
+  /* ── Mi U · "Mi" + app icon LOGO.04 canónico ── */
+  .a-node.miu {
+    width: 96px; height: 96px;
+    background: linear-gradient(135deg, #0F1217, #1A1D23);
+    border-color: rgba(0,194,122,0.50);
+    box-shadow: 0 0 0 4px rgba(0,194,122,0.10), 0 0 22px rgba(0,194,122,0.20);
+    gap: 4px;
+  }
+  .a-node.miu:hover {
+    box-shadow: 0 0 0 6px rgba(0,194,122,0.20), 0 0 32px rgba(0,194,122,0.40);
+  }
+
+  /* Lockup "Mi" + [u app-icon] */
+  .a-node.miu .miu-lockup {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+  }
+  .a-node.miu .miu-mi {
+    font-family: 'Funnel Display', sans-serif;
+    font-weight: 900; font-size: 18px;
+    color: #F5F4EF;
+    letter-spacing: -0.04em;
+    line-height: 1;
+  }
+  /* App icon oficial · LOGO.06 · sin rotación */
+  .a-node.miu .miu-logo {
+    width: 26px; height: 26px;
+    transition: transform 0.25s cubic-bezier(0.2,0.8,0.2,1);
+    display: inline-block;
+  }
+  .a-node.miu:hover .miu-logo { transform: scale(1.08); }
+  .a-node.miu .miu-logo svg { display: block; width: 100%; height: 100%; }
+  .a-node.miu .miu-meta {
+    font-family: 'Geist Mono', monospace; font-size: 7.5px;
+    color: rgba(232,232,230,0.45); letter-spacing: 0.12em; text-transform: uppercase;
+    margin-top: 1px;
+  }
+
+  /* ── Posicionamiento sobre orbits exactos · radios 140 / 195 / 235 ── */
+
+  /* Mi U (planeta GRANDE 130px) · r=240 · -55° */
+  .a-node.miu { --tx: 138px; --ty: -197px;
+    top: 50%; left: 50%;
+    transform: translate(-50%,-50%) translate(var(--tx), var(--ty)); }
+
+  /* RING 1 · r=140 · 3 planetas (78px) */
+  .a-node.n2 { --tx: 127px;   --ty: -59px;   top: 50%; left: 50%;
+    transform: translate(-50%,-50%) translate(var(--tx), var(--ty)); }   /* Mensajes -25° */
+  .a-node.n5 { --tx: -115px;  --ty: 80px;    top: 50%; left: 50%;
+    transform: translate(-50%,-50%) translate(var(--tx), var(--ty)); }   /* Biblioteca 145° */
+  .a-node.n8 { --tx: 48px;    --ty: 132px;   top: 50%; left: 50%;
+    transform: translate(-50%,-50%) translate(var(--tx), var(--ty)); }   /* Calendario 70° */
+
+  /* RING 2 · r=195 · 3 planetas (78px) */
+  .a-node.n1 { --tx: -125px;  --ty: -149px;  top: 50%; left: 50%;
+    transform: translate(-50%,-50%) translate(var(--tx), var(--ty)); }   /* Workspaces -130° */
+  .a-node.n3 { --tx: -194px;  --ty: 17px;    top: 50%; left: 50%;
+    transform: translate(-50%,-50%) translate(var(--tx), var(--ty)); }   /* Amigos 175° */
+  .a-node.n4 { --tx: -34px;   --ty: 192px;   top: 50%; left: 50%;
+    transform: translate(-50%,-50%) translate(var(--tx), var(--ty)); }   /* Comunidades 100° */
+
+  /* RING 3 · r=235 · 2 planetas chicos (60px) */
+  .a-node.n6 { --tx: 213px;   --ty: 99px;    top: 50%; left: 50%;
+    transform: translate(-50%,-50%) translate(var(--tx), var(--ty)); }   /* Cursos 25° */
+  .a-node.n7 { --tx: -204px;  --ty: -118px;  top: 50%; left: 50%;
+    transform: translate(-50%,-50%) translate(var(--tx), var(--ty)); }   /* Tutores -150° */
+
+  /* Tamaños diferenciados de planetas */
+  .a-node.n2, .a-node.n5, .a-node.n8 { width: 78px; height: 78px; }
+  .a-node.n1, .a-node.n3, .a-node.n4 { width: 78px; height: 78px; }
+  .a-node.n6, .a-node.n7 { width: 60px; height: 60px; }
+  .a-node.n6 svg, .a-node.n7 svg { width: 13px; height: 13px; }
+  .a-node.n6 .lbl, .a-node.n7 .lbl { font-size: 8px; }
+
+  /* ── Footer chips ── */
+  .a-footer {
+    display: flex; flex-direction: column; gap: 6px;
+    padding: 0 6px;
+    margin-top: auto;
+    margin-bottom: 12px;
+  }
+  .a-fchip {
+    font-family: 'Geist Mono', monospace; font-size: 10px;
+    color: #8A8A86;
+    padding: 8px 12px;
+    border-radius: 10px;
+    border: 1px solid #262A32;
+    background: #15181D;
+  }
+  .a-fchip.a {
+    color: #8AEAC0;
+    background: rgba(0,194,122,0.08);
+    border-color: rgba(0,194,122,0.2);
+    display: inline-flex; align-items: center; gap: 6px;
+  }
+  .a-fchip.a::before {
+    content: ""; width: 5px; height: 5px;
+    border-radius: 50%; background: #00C27A;
+    animation: pulse 1.6s infinite;
+  }
+</style>
+</head>
+<body>
+
+<div class="ambient-orbits" aria-hidden="true">
+  <div class="ao a5"></div>
+  <div class="ao a1"></div>
+  <div class="ao a2"></div>
+  <div class="ao a3"></div>
+  <div class="ao a4"></div>
+  <div class="ao a6"></div>
+  <div class="ao a7"></div>
+  <div class="ao a8"></div>
+  <div class="ao a9"></div>
+  <!-- Cielo · estrellas titilantes -->
+  <span class="star xl" style="top:6%;  left:18%; --dur:3.4s; --delay:0.0s;"></span>
+  <span class="star l"  style="top:14%; left:42%; --dur:2.8s; --delay:0.6s;"></span>
+  <span class="star m green slow" style="top:9%;  left:67%; --delay:1.2s;"></span>
+  <span class="star l orange" style="top:11%; left:82%; --dur:3.2s; --delay:0.4s;"></span>
+  <span class="star s"  style="top:5%;  left:5%;  --dur:2.2s; --delay:1.8s;"></span>
+  <span class="star m"  style="top:8%;  left:91%; --dur:4s;  --delay:0.2s;"></span>
+  <span class="star s slow" style="top:20%; left:8%;"></span>
+  <span class="star m red"  style="top:22%; left:32%; --dur:2.6s; --delay:0.9s;"></span>
+  <span class="star l green" style="top:18%; left:54%; --dur:3.6s; --delay:0.3s;"></span>
+  <span class="star s"  style="top:24%; left:73%; --dur:2.4s; --delay:1.5s;"></span>
+  <span class="star xl green" style="top:27%; left:88%; --dur:4.2s; --delay:0.8s;"></span>
+  <span class="star m fast" style="top:30%; left:14%;"></span>
+  <span class="star s orange" style="top:33%; left:46%; --dur:2.8s; --delay:1.0s;"></span>
+  <span class="star l"  style="top:35%; left:62%; --dur:3.0s; --delay:0.5s;"></span>
+  <span class="star s cyan" style="top:38%; left:24%; --dur:3.4s; --delay:2.0s;"></span>
+  <span class="star m slow" style="top:42%; left:5%;"></span>
+  <span class="star l red" style="top:44%; left:38%; --dur:3.8s; --delay:0.7s;"></span>
+  <span class="star xl orange" style="top:46%; left:78%; --dur:4.6s; --delay:1.3s;"></span>
+  <span class="star s green slow" style="top:50%; left:92%;"></span>
+  <span class="star m"  style="top:54%; left:18%; --dur:2.0s; --delay:0.5s;"></span>
+  <span class="star s"  style="top:58%; left:48%; --dur:3.2s; --delay:1.7s;"></span>
+  <span class="star m green" style="top:60%; left:8%; --dur:2.6s; --delay:0.4s;"></span>
+  <span class="star l cyan" style="top:62%; left:72%; --dur:3.4s; --delay:0.9s;"></span>
+  <span class="star xl"  style="top:65%; left:30%; --dur:4.0s; --delay:1.5s;"></span>
+  <span class="star s orange fast" style="top:68%; left:58%;"></span>
+  <span class="star m"  style="top:71%; left:88%; --dur:2.8s; --delay:0.3s;"></span>
+  <span class="star l green slow" style="top:74%; left:14%;"></span>
+  <span class="star s"  style="top:76%; left:42%; --dur:3.0s; --delay:1.2s;"></span>
+  <span class="star m red" style="top:78%; left:64%; --dur:2.4s; --delay:0.6s;"></span>
+  <span class="star s"  style="top:82%; left:6%;  --dur:2.6s; --delay:0.0s;"></span>
+  <span class="star l orange" style="top:84%; left:36%; --dur:3.6s; --delay:1.1s;"></span>
+  <span class="star xl green" style="top:86%; left:78%; --dur:4.2s; --delay:0.4s;"></span>
+  <span class="star m"  style="top:88%; left:54%; --dur:3.0s; --delay:1.8s;"></span>
+  <span class="star s cyan slow" style="top:90%; left:22%;"></span>
+  <span class="star m fast" style="top:92%; left:90%;"></span>
+  <span class="star s"  style="top:94%; left:48%; --dur:2.4s; --delay:0.8s;"></span>
+  <span class="star l"  style="top:96%; left:68%; --dur:3.4s; --delay:0.3s;"></span>
+  <span class="star s green" style="top:3%;  left:38%; --dur:2.8s; --delay:1.4s;"></span>
+  <span class="star s red slow" style="top:48%; left:14%;"></span>
+  <span class="star m orange" style="top:52%; left:38%; --dur:3.2s; --delay:0.6s;"></span>
+  <span class="star s"  style="top:67%; left:48%; --dur:2.6s; --delay:1.0s;"></span>
+</div>
+
+<div class="wrap">
+
+  <div class="phone">
+  <div class="optA">
+    <div class="a-topbar">
+      <span class="brand">conn<span>i</span>k<span class="u-pack">u<span class="dot">.</span></span></span>
+      <span class="a-cmd">Buscar <span class="kbd">⌘K</span></span>
+    </div>
+
+    <div class="a-center-stage">
+      <div class="a-orbit-ring r1"></div>
+      <div class="a-orbit-ring r2"></div>
+      <div class="a-orbit-ring r3"></div>
+
+      <a href="perfil-social-v2.html" class="a-me" aria-label="Ir al perfil">
+        <div class="a-me-inner">
+          <div class="a-me-av">—</div>
+          <div class="a-me-name">Nombre</div>
+          <div class="a-me-handle">@usuario</div>
+        </div>
+      </a>
+
+      <!-- Mi U · "Mi" + LOGO.04 app icon canónico (la u = Universidad) -->
+      <a href="athena.html" class="a-node miu" aria-label="Athena" style="text-decoration:none">
+        <span class="miu-lockup">
+          <span class="miu-mi">Mi</span>
+          <span class="miu-logo">
+            <!-- LOGO PENDIENTE -->
+          </span>
+        </span>
+        <span class="miu-meta">Athena</span>
+      </a>
+
+      <!-- Workspaces · violet · documento -->
+      <a href="workspaces.html" class="a-node n1" aria-label="Workspaces">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M5 3h10l4 4v14H5z"/>
+          <path d="M15 3v4h4"/>
+          <path d="M9 12h6 M9 16h4"/>
+          <circle cx="17" cy="17" r="1.2" fill="currentColor"/>
+        </svg>
+        <span class="lbl">Workspaces</span>
+      </a>
+
+      <!-- Mensajes · green · burbuja chat con tail -->
+      <a href="mensajes.html" class="a-node n2" aria-label="Mensajes">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M4 5h14a2 2 0 012 2v8a2 2 0 01-2 2h-8l-5 4v-4H4a0 0 0 010 0V7a2 2 0 012-2z" fill="currentColor" fill-opacity="0.18"/>
+          <circle cx="9" cy="11" r="1" fill="currentColor"/>
+          <circle cx="13" cy="11" r="1" fill="currentColor"/>
+          <circle cx="17" cy="11" r="1" fill="currentColor"/>
+        </svg>
+        <span class="lbl">Mensajes</span>
+      </a>
+
+      <!-- Empleo · orange · maletín -->
+      <a href="empleo.html" class="a-node n3" aria-label="Empleo">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+          <rect x="2" y="7" width="20" height="14" rx="2"/>
+          <path d="M16 7V5a2 2 0 00-2-2h-4a2 2 0 00-2 2v2"/>
+          <line x1="12" y1="12" x2="12" y2="16"/>
+          <line x1="10" y1="14" x2="14" y2="14"/>
+        </svg>
+        <span class="lbl">Empleo</span>
+      </a>
+
+      <!-- Comunidades · cyan · 3 nodos en red -->
+      <a href="chat.html" class="a-node n4" aria-label="Comunidades">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+          <circle cx="12" cy="6" r="2.5" fill="currentColor"/>
+          <circle cx="6" cy="17" r="2.5" fill="currentColor"/>
+          <circle cx="18" cy="17" r="2.5" fill="currentColor"/>
+          <path d="M11 8l-4 7 M13 8l4 7 M8 17h8"/>
+        </svg>
+        <span class="lbl">Comunidades</span>
+      </a>
+
+      <!-- Biblioteca · cream · libros con marcador -->
+      <a href="biblioteca.html" class="a-node n5" aria-label="Biblioteca">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+          <rect x="4"  y="5" width="3" height="14" rx="0.5" fill="currentColor" fill-opacity="0.2"/>
+          <rect x="8"  y="5" width="3" height="14" rx="0.5"/>
+          <rect x="12" y="3" width="3" height="16" rx="0.5" fill="currentColor" fill-opacity="0.3"/>
+          <rect x="16" y="6" width="3" height="13" rx="0.5"/>
+          <path d="M14 8v3l-1-0.7-1 0.7v-3" stroke="#0D0E11" stroke-width="1.2"/>
+        </svg>
+        <span class="lbl">Biblioteca</span>
+      </a>
+
+      <!-- Cursos · lime · graduación + diploma -->
+      <a href="cursos.html" class="a-node n6" aria-label="Cursos">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M2 9l10-5 10 5-10 5z" fill="currentColor" fill-opacity="0.25"/>
+          <path d="M6 11v5c0 1.5 3 3 6 3s6-1.5 6-3v-5"/>
+          <path d="M22 9v6"/>
+        </svg>
+        <span class="lbl">Cursos</span>
+      </a>
+
+      <!-- Tutores · coral · persona con luz/idea -->
+      <a href="tutores.html" class="a-node n7" aria-label="Tutores">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+          <circle cx="12" cy="8" r="3.5"/>
+          <path d="M5 21c0-4 3-6.5 7-6.5s7 2.5 7 6.5"/>
+          <circle cx="12" cy="3" r="1" fill="currentColor"/>
+          <path d="M5 5l1 1 M19 5l-1 1"/>
+        </svg>
+        <span class="lbl">Tutores</span>
+      </a>
+
+      <!-- Calendario · paper · grid con día activo -->
+      <a href="calendario.html" class="a-node n8" aria-label="Calendario">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+          <rect x="3" y="5" width="18" height="16" rx="2"/>
+          <path d="M3 10h18 M8 3v4 M16 3v4"/>
+          <rect x="11" y="13" width="3" height="3" rx="0.5" fill="currentColor"/>
+        </svg>
+        <span class="lbl">Calendario</span>
+      </a>
+    </div>
+
+    <div class="a-footer">
+      <!-- chips reservados para notificaciones · sin contenido por ahora -->
+    </div>
+  </div>
+  </div>
+
+</div>
+
+<!-- NOTA: la página Orbit-U mantiene su tema dark fijo intencionalmente.
+     El theme editor (perfil-skool-orbit.html) NO afecta esta página. -->
+
+<script>
+/* Hydrate .a-me block with real user from onboarding */
+(function(){
+  try {
+    const data = JSON.parse(localStorage.getItem('conniku-user-v1') || 'null');
+    if(!data || !data.profile) return;
+    const me = document.querySelector('.a-me');
+    if(!me) return;
+    const av = me.querySelector('.a-me-av');
+    const nm = me.querySelector('.a-me-name');
+    const hd = me.querySelector('.a-me-handle');
+    if(av) {
+      if(data.profile.foto) {
+        av.style.backgroundImage = 'url(' + data.profile.foto + ')';
+        av.style.backgroundSize = 'cover';
+        av.style.backgroundPosition = 'center';
+        av.textContent = '';
+      } else if(data.profile.nombre) {
+        av.textContent = data.profile.nombre.split(' ').filter(Boolean).slice(0,2).map(s=>s[0]).join('').toUpperCase();
+      }
+    }
+    if(nm && data.profile.nombre) nm.textContent = data.profile.nombre;
+    if(hd && data.profile.handle) hd.textContent = data.profile.handle.startsWith('@') ? data.profile.handle : '@' + data.profile.handle;
+  } catch(e) { console.warn('orbit-u hydrate failed', e); }
+})();
+</script>
+
+</body>
+</html>

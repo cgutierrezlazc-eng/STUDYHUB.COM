@@ -1,0 +1,307 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Política de cookies · Conniku</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Funnel+Display:wght@400;600;700;800;900&family=Inter:wght@400;500;600;700&family=Geist+Mono:wght@400;500;600&display=swap" />
+<link rel="stylesheet" href="../shared/tokens.css" />
+<link rel="stylesheet" href="../shared/base.css" />
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+body { background: var(--bg); color: var(--text); font-family: 'Inter', sans-serif; font-size: 15px; line-height: 1.7; min-height: 100vh; }
+.topbar { position:sticky;top:0;z-index:100;background:rgba(5,6,8,0.92);backdrop-filter:blur(12px);border-bottom:1px solid var(--border);padding:14px 32px;display:flex;align-items:center;gap:20px; }
+.back-link { display:flex;align-items:center;gap:6px;font-size:12px;color:var(--text-4);text-decoration:none;transition:color .15s; }
+.back-link:hover { color:var(--text-2); }
+.back-link svg { width:14px;height:14px;flex-shrink:0; }
+.topbar-sep { width:1px;height:16px;background:var(--border); }
+.topbar-title { font-family:'Geist Mono',monospace;font-size:11px;color:var(--text-4);letter-spacing:.06em; }
+.layout { display:grid;grid-template-columns:240px 1fr;gap:0;max-width:1100px;margin:0 auto;padding:48px 32px; }
+@media(max-width:860px){.layout{grid-template-columns:1fr}.toc-wrap{display:none}}
+.toc-wrap { position:sticky;top:65px;height:fit-content;padding-right:32px; }
+.toc-label { font-family:'Geist Mono',monospace;font-size:10px;color:var(--text-4);letter-spacing:.1em;text-transform:uppercase;margin-bottom:12px; }
+.toc-list { list-style:none; }
+.toc-list li+li { margin-top:2px; }
+.toc-list a { display:block;font-size:12px;color:var(--text-4);text-decoration:none;padding:4px 8px;border-radius:6px;transition:all .15s;border-left:2px solid transparent; }
+.toc-list a:hover { color:var(--text-2);background:var(--surface);border-left-color:var(--border-2); }
+.doc-header { margin-bottom:40px; }
+.doc-badge { display:inline-flex;align-items:center;gap:6px;padding:3px 10px;border-radius:999px;background:rgba(0,194,122,0.08);border:1px solid rgba(0,194,122,0.2);font-family:'Geist Mono',monospace;font-size:10px;color:var(--green-3);letter-spacing:.08em;margin-bottom:16px; }
+.doc-badge::before { content:"";width:5px;height:5px;border-radius:50%;background:var(--green); }
+.doc-title { font-family:'Funnel Display',sans-serif;font-weight:900;font-size:clamp(28px,4vw,42px);letter-spacing:-.04em;color:var(--text);margin-bottom:12px; }
+.doc-meta { font-family:'Geist Mono',monospace;font-size:11px;color:var(--text-4);display:flex;flex-wrap:wrap;gap:16px; }
+.doc-meta strong { color:var(--text-3); }
+.doc-body h2 { font-family:'Funnel Display',sans-serif;font-weight:800;font-size:18px;letter-spacing:-.02em;color:var(--text);margin:48px 0 16px;padding-top:24px;border-top:1px solid var(--border); }
+.doc-body h2:first-child { margin-top:0;border-top:none;padding-top:0; }
+.doc-body h3 { font-size:14px;font-weight:700;color:var(--text-2);margin:24px 0 10px; }
+.doc-body p { color:var(--text-2);margin-bottom:14px; }
+.doc-body ul,.doc-body ol { color:var(--text-2);padding-left:20px;margin-bottom:14px; }
+.doc-body li { margin-bottom:6px; }
+.doc-body strong { color:var(--text);font-weight:600; }
+.doc-body a { color:var(--green);text-decoration:none; }
+.doc-body a:hover { color:var(--green-3);text-decoration:underline; }
+.doc-body code { font-family:'Geist Mono',monospace;font-size:12px;background:var(--surface-2);border:1px solid var(--border);padding:2px 6px;border-radius:4px;color:var(--text-3); }
+.info-box { background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:16px 20px;margin:20px 0;font-size:13px;color:var(--text-3); }
+.info-box.green { border-left:3px solid var(--green); }
+.info-box.orange { border-left:3px solid var(--orange); }
+.info-box.none { border-left:3px solid var(--text-4); }
+.table-wrap { overflow-x:auto;margin:16px 0; }
+table { width:100%;border-collapse:collapse;font-size:13px; }
+th { font-family:'Geist Mono',monospace;font-size:10px;color:var(--text-4);letter-spacing:.08em;text-transform:uppercase;padding:10px 14px;border-bottom:1px solid var(--border);text-align:left; }
+td { padding:10px 14px;border-bottom:1px solid rgba(38,42,50,0.5);color:var(--text-3);vertical-align:top; }
+td strong { color:var(--text-2); }
+tr:last-child td { border-bottom:none; }
+.cat-chip { display:inline-block;padding:2px 8px;border-radius:4px;font-family:'Geist Mono',monospace;font-size:10px;font-weight:600;letter-spacing:.05em; }
+.cat-nec { background:rgba(0,194,122,0.1);color:var(--green-3); }
+.cat-fun { background:rgba(0,150,204,0.1);color:#5BB8E0; }
+.cat-ana { background:rgba(107,78,255,0.1);color:#A898FF; }
+.cat-mkt { background:rgba(255,74,28,0.1);color:#FF8A6B; }
+</style>
+</head>
+<body>
+
+<div class="topbar">
+  <a href="../index.html" class="back-link">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>
+    Volver
+  </a>
+  <div class="topbar-sep"></div>
+  <a href="../index.html" class="brand" style="font-size:16px">conn<span>i</span>k<span class="u-pack">u<span class="dot">.</span></span></a>
+  <div class="topbar-sep"></div>
+  <span class="topbar-title">POLÍTICA DE COOKIES</span>
+</div>
+
+<div class="layout">
+
+  <aside class="toc-wrap">
+    <div class="toc-label">Contenido</div>
+    <ul class="toc-list">
+      <li><a href="#c1">1 · ¿Qué son las cookies?</a></li>
+      <li><a href="#c2">2 · Categorías que usamos</a></li>
+      <li><a href="#c3">3 · Cookie cc_visitor_uuid</a></li>
+      <li><a href="#c4">4 · Funcionales post-login</a></li>
+      <li><a href="#c5">5 · Retención de registros</a></li>
+      <li><a href="#c6">6 · Pseudonimización</a></li>
+      <li><a href="#c7">7 · Tus derechos</a></li>
+      <li><a href="#c8">8 · Cómo gestionar cookies</a></li>
+      <li><a href="#c9">9 · Marco legal</a></li>
+      <li><a href="#c10">10 · Vigencia y cambios</a></li>
+      <li><a href="#c11">11 · Contacto</a></li>
+    </ul>
+  </aside>
+
+  <main class="doc-body">
+
+    <div class="doc-header">
+      <div class="doc-badge">DOCUMENTO LEGAL VIGENTE</div>
+      <h1 class="doc-title">Política de Cookies</h1>
+      <div class="doc-meta">
+        <span><strong>Versión</strong> 1.0.0</span>
+        <span><strong>Vigencia</strong> 21 de abril de 2026</span>
+        <span><strong>Empresa</strong> Conniku SpA · RUT 78.395.702-7</span>
+      </div>
+    </div>
+
+    <div class="info-box green">
+      <strong>Resumen.</strong> Conniku no usa cookies de analítica ni de publicidad. Solo usamos cookies estrictamente necesarias para que el servicio funcione y cookies funcionales para recordar tus preferencias una vez que has iniciado sesión. No hay rastreo publicitario, ni pixels de terceros, ni retargeting.
+    </div>
+
+    <!-- §1 -->
+    <h2 id="c1">§1 — ¿Qué son las cookies y tecnologías similares?</h2>
+    <p>Una "cookie" es un pequeño archivo de texto que un sitio web guarda en el navegador del Usuario cuando lo visita. Junto con las cookies tradicionales, los sitios modernos utilizan otras tecnologías equivalentes:</p>
+    <ul>
+      <li><code>localStorage</code> — almacenamiento local persistente del navegador.</li>
+      <li><code>sessionStorage</code> — almacenamiento temporal que se borra al cerrar la pestaña.</li>
+      <li><code>IndexedDB</code> — base de datos estructurada en el navegador.</li>
+      <li>Caché del Service Worker — usada en Progressive Web Apps para soporte offline.</li>
+    </ul>
+    <p>Esta Política cubre todas estas tecnologías de manera uniforme, conforme al Art. 5(3) de la Directiva ePrivacy (2002/58/CE) y las directrices del EDPB (Guidelines 05/2020).</p>
+
+    <!-- §2 -->
+    <h2 id="c2">§2 — Categorías de cookies que utilizamos</h2>
+
+    <h3>2.1 Necesarias (esenciales) <span class="cat-chip cat-nec">NECESARIAS</span></h3>
+    <p>Sin estas cookies el servicio no puede prestarse. No requieren consentimiento previo (Art. 5(3) in fine Directiva ePrivacy).</p>
+
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>Clave / nombre</th><th>Finalidad</th><th>Duración</th></tr></thead>
+        <tbody>
+          <tr>
+            <td><code>conniku_token</code><br><code>conniku_refresh_token</code></td>
+            <td>Mantiene la sesión autenticada del Usuario. Sin ellas el servicio no puede prestarse.</td>
+            <td>Hasta cierre de sesión o expiración del token (máx. 30 días)</td>
+          </tr>
+          <tr>
+            <td>Caché del Service Worker (PWA)</td>
+            <td>Permite funcionamiento offline y acelera la carga almacenando recursos estáticos.</td>
+            <td>Hasta la próxima actualización de la plataforma</td>
+          </tr>
+          <tr>
+            <td><code>cc_visitor_uuid</code></td>
+            <td>Identificador pseudónimo para el registro de consentimiento de cookies (ver §3).</td>
+            <td>Máximo 13 meses</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <h3>2.2 Funcionales <span class="cat-chip cat-fun">FUNCIONALES</span></h3>
+    <p>Mejoran la experiencia del Usuario. Se instalan bajo base legal de ejecución del contrato (Art. 6(1)(b) GDPR) una vez que el Usuario ha iniciado sesión (ver §4).</p>
+
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>Clave / nombre</th><th>Finalidad</th><th>Duración</th></tr></thead>
+        <tbody>
+          <tr>
+            <td><code>conniku_language</code><br><code>conniku_theme</code></td>
+            <td>Recuerda preferencias de idioma (es, en) y tema visual (claro, oscuro).</td>
+            <td>Persistente hasta cambio manual</td>
+          </tr>
+          <tr>
+            <td><code>conniku_welcomed</code><br><code>conniku_apps_banner_v3</code><br><code>pwa-install-dismissed</code><br><code>ob_visited</code></td>
+            <td>Evita mostrar el tour de bienvenida, banner de apps o invitación PWA más de una vez.</td>
+            <td>Persistente</td>
+          </tr>
+          <tr>
+            <td><code>conniku_feed_sort</code><br><code>conniku_course_progress_*</code><br><code>conniku_course_quiz_*</code><br><code>conniku_quiz_history</code><br><code>conniku_enrollment_id</code><br><code>conniku_ceo_signature</code></td>
+            <td>Guarda el progreso académico local: orden del feed, lecciones completadas, historial de cuestionarios, datos de inscripción y firmas del módulo CEO.</td>
+            <td>Persistente hasta borrado manual</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <h3>2.3 Analíticas <span class="cat-chip cat-ana">ANALÍTICAS</span></h3>
+    <div class="info-box none">
+      <strong>Estado actual: ninguna.</strong> Conniku no utiliza actualmente cookies ni scripts de analítica de terceros (Google Analytics, Mixpanel, Amplitude, Hotjar u otros). Si en el futuro se incorporasen, se implementará un mecanismo de consentimiento previo granular y esta Política se actualizará con notificación al Usuario.
+    </div>
+
+    <h3>2.4 Marketing <span class="cat-chip cat-mkt">MARKETING</span></h3>
+    <div class="info-box none">
+      <strong>Estado actual: ninguna.</strong> Conniku no utiliza cookies de terceros con fines publicitarios, no integra scripts de redes publicitarias, pixels de seguimiento, brokers de datos ni plataformas de retargeting. Cualquier cambio futuro requerirá actualización de esta Política y consentimiento previo del Usuario.
+    </div>
+
+    <!-- §3 -->
+    <h2 id="c3">§3 — Cookie <code>cc_visitor_uuid</code> — clasificación como esencial</h2>
+    <p>La cookie <code>cc_visitor_uuid</code> es un identificador pseudónimo UUID v4 generado del lado cliente la primera vez que un visitante interactúa con el banner de cookies. Se utiliza exclusivamente para asociar el registro de consentimiento almacenado en el servidor con el dispositivo del visitante.</p>
+
+    <p>Conniku la clasifica como <strong>cookie estrictamente necesaria</strong> porque su única función es permitir a Conniku cumplir su obligación de demostrar el consentimiento conforme al Art. 7(1) GDPR. Esta clasificación se sustenta en cuatro condiciones que Conniku asume como obligaciones públicas:</p>
+
+    <ol>
+      <li><strong>Plazo máximo 13 meses en dispositivo.</strong> Alineado con el criterio recomendado por la CNIL francesa y la AEPD española para cookies técnicas de consentimiento.</li>
+      <li><strong>Uso restringido al registro de consentimiento.</strong> El UUID no se combina con datos analíticos, no se envía a terceros, no participa en decisiones automatizadas y no se usa para personalización ni publicidad.</li>
+      <li><strong>Regeneración al retirar consentimiento.</strong> Cuando el Usuario retira el consentimiento, la cookie existente se elimina y se genera un UUID nuevo si el Usuario vuelve a interactuar con el banner.</li>
+      <li><strong>Declaración explícita en esta Política.</strong> Esta cláusula §3 constituye la declaración expresa de existencia, finalidad, duración y base legal conforme al Art. 13 GDPR y al Art. 4° de la Ley 19.628.</li>
+    </ol>
+
+    <p>Base legal: Art. 6(1)(f) GDPR (interés legítimo de Conniku en demostrar el consentimiento), en concordancia con la excepción del Art. 5(3) in fine de la Directiva ePrivacy.</p>
+
+    <!-- §4 -->
+    <h2 id="c4">§4 — Cookies funcionales post-login: base legal Art. 6(1)(b) GDPR</h2>
+    <p>Las cookies clasificadas como funcionales en §2.2 se instalan bajo base legal de <strong>ejecución del contrato</strong> (Art. 6(1)(b) GDPR), una vez que el Usuario ha iniciado sesión y aceptado los Términos y Condiciones.</p>
+    <p>La justificación es que el contrato de prestación de servicios educativos incluye la entrega de un servicio personalizado: el Usuario espera razonablemente que la plataforma recuerde su idioma, su tema visual, su progreso académico y los banners que ya descartó. Sin estas cookies, Conniku no puede ejecutar el contrato conforme a la expectativa del Usuario.</p>
+    <p>Por esta razón, Conniku no solicita consentimiento adicional específico para las cookies funcionales post-login. El Usuario puede eliminarlas manualmente desde su navegador (§8), aceptando que la experiencia se degradará.</p>
+
+    <!-- §5 -->
+    <h2 id="c5">§5 — Retención de registros de consentimiento</h2>
+    <p>Conniku conserva los registros de consentimiento otorgados a través del banner de cookies durante un plazo mínimo de <strong>5 años</strong> contados desde la fecha en que el Usuario eliminó su cuenta o desde la fecha en que el consentimiento fue retirado, el que sea posterior.</p>
+    <p>Este plazo se fundamenta en: el Art. 17(3)(e) GDPR (excepción al derecho al olvido para defensa ante reclamaciones), el Art. 2515 del Código Civil chileno (prescripción general de 5 años) y el Art. 5(1)(e) GDPR (principio de limitación del plazo de conservación).</p>
+    <p>Transcurridos los 5 años, los registros se eliminan de forma irreversible.</p>
+
+    <!-- §6 -->
+    <h2 id="c6">§6 — Pseudonimización de IP y User-Agent a los 12 meses</h2>
+    <p>Como medida adicional de minimización de datos (Art. 5(1)(c) GDPR y Art. 32 GDPR), Conniku aplica pseudonimización automática a los campos del registro de consentimiento transcurridos <strong>12 meses</strong> desde la fecha de emisión:</p>
+    <ul>
+      <li><strong>Dirección IP:</strong> se reemplaza por un hash SHA-256 de la IP original más un salt propio de Conniku. El hash no permite recuperar la IP de origen.</li>
+      <li><strong>User-Agent:</strong> se reemplaza por una descripción canónica reducida (navegador y sistema operativo principales, sin versión menor ni identificadores únicos de dispositivo).</li>
+    </ul>
+
+    <!-- §7 -->
+    <h2 id="c7">§7 — Tus derechos sobre cookies y almacenamiento</h2>
+    <p>Conforme a la Ley 19.628, el GDPR y la legislación aplicable en tu jurisdicción, tienes derecho a:</p>
+    <ul>
+      <li><strong>Retirar tu consentimiento</strong> en cualquier momento, sin que ello afecte la licitud del tratamiento previo (Art. 7(3) GDPR).</li>
+      <li><strong>Acceder</strong> a los registros de consentimiento que Conniku tiene sobre ti (Art. 15 GDPR; Art. 12 Ley 19.628).</li>
+      <li><strong>Rectificar</strong> información errónea en tu registro (Art. 16 GDPR).</li>
+      <li><strong>Suprimir</strong> tu registro, con las limitaciones del §5 y del Art. 17(3)(e) GDPR.</li>
+      <li><strong>Portabilidad:</strong> recibir una copia en JSON o CSV de los registros de consentimiento asociados a tu cuenta (Art. 20 GDPR).</li>
+      <li><strong>Oponerte</strong> al tratamiento fundado en interés legítimo (Art. 21 GDPR).</li>
+      <li><strong>Presentar un reclamo</strong> ante la autoridad competente: Consejo para la Transparencia (Chile, hasta 30/11/2026), Agencia de Protección de Datos Personales (Chile, desde 01/12/2026) o la autoridad de control de tu Estado miembro (UE).</li>
+    </ul>
+    <p>Para ejercer estos derechos escribe a <a href="mailto:legal@conniku.com">legal@conniku.com</a> o <a href="mailto:dpo@conniku.com">dpo@conniku.com</a>. Conniku responderá en máximo 30 días calendario (Art. 12(3) GDPR), prorrogable por 60 días adicionales en casos de especial complejidad.</p>
+
+    <!-- §8 -->
+    <h2 id="c8">§8 — Cómo cambiar tus preferencias de cookies</h2>
+
+    <h3>A. Banner de preferencias de Conniku</h3>
+    <p>El banner de cookies, accesible desde el pie de página, te permite revisar y modificar en cualquier momento y de forma granular el consentimiento otorgado a cada categoría. Los cambios surten efecto inmediato.</p>
+
+    <h3>B. Configuración del navegador</h3>
+    <p>Puedes gestionar o eliminar cookies y almacenamiento local directamente desde tu navegador:</p>
+    <ul>
+      <li><strong>Chrome:</strong> Configuración → Privacidad y seguridad → Cookies y otros datos de sitios</li>
+      <li><strong>Firefox:</strong> Preferencias → Privacidad y seguridad → Cookies y datos del sitio</li>
+      <li><strong>Safari:</strong> Preferencias → Privacidad → Gestionar datos de sitios</li>
+      <li><strong>Edge:</strong> Configuración → Cookies y permisos del sitio</li>
+    </ul>
+
+    <h3>C. Aplicaciones móviles</h3>
+    <p>En las aplicaciones móviles basadas en Capacitor, puedes limpiar los datos locales desde los ajustes del sistema operativo: <em>Ajustes → Aplicaciones → Conniku → Almacenamiento → Borrar datos</em>, o desinstalando la aplicación.</p>
+
+    <div class="info-box orange">
+      <strong>Advertencia.</strong> Si desactivas las cookies estrictamente necesarias (autenticación o <code>cc_visitor_uuid</code>), la plataforma dejará de funcionar correctamente: no podrás iniciar sesión, acceder a contenido que requiera identificación, ni interactuar con el banner de consentimiento.
+    </div>
+
+    <!-- §9 -->
+    <h2 id="c9">§9 — Marco legal aplicable</h2>
+    <ul>
+      <li><strong>Reglamento (UE) 2016/679 (GDPR):</strong> Art. 5(3), 6(1)(a)(b)(f), 7, 13-14, 15-22, 17(3)(e), 25, 32.</li>
+      <li><strong>Directiva 2002/58/CE (ePrivacy):</strong> Art. 5(3).</li>
+      <li><strong>Ley chilena 19.628:</strong> Art. 4° (información al momento de recolectar), Art. 12 (derechos ARCO). Vigente hasta el 30/11/2026.</li>
+      <li><strong>Ley chilena 21.719:</strong> Vigente desde el 1 de diciembre de 2026. Moderniza el régimen chileno de protección de datos y crea la Agencia de Protección de Datos Personales.</li>
+      <li><strong>Ley chilena 19.496:</strong> Art. 3 letra b (información veraz y oportuna), Art. 3 bis (retracto).</li>
+      <li><strong>EDPB Guidelines 05/2020</strong> sobre consentimiento.</li>
+      <li><strong>AEPD Guía sobre uso de cookies</strong> (julio 2023).</li>
+    </ul>
+    <p>En caso de conflicto entre regímenes aplicables, Conniku aplica el estándar más protector para el Usuario.</p>
+
+    <!-- §10 -->
+    <h2 id="c10">§10 — Vigencia y cambios a esta Política</h2>
+    <p>Esta Política está vigente desde el <strong>21 de abril de 2026</strong>, versión <strong>1.0.0</strong>. Conniku podrá actualizarla cuando cambien las tecnologías utilizadas, se incorporen nuevos proveedores o evolucione el marco regulatorio.</p>
+    <p>Cada actualización material (nueva categoría de cookies, nuevos proveedores, cambio de base legal) se notificará al Usuario y requerirá nuevo consentimiento. Las actualizaciones menores (correcciones tipográficas, aclaraciones sin cambio sustantivo) se notificarán por correo sin requerir re-aceptación.</p>
+
+    <!-- §11 -->
+    <h2 id="c11">§11 — Contacto</h2>
+    <div class="info-box">
+      <strong>Asuntos legales y privacidad:</strong> <a href="mailto:legal@conniku.com">legal@conniku.com</a><br>
+      <strong>Delegado de Protección de Datos (DPO):</strong> <a href="mailto:dpo@conniku.com">dpo@conniku.com</a><br>
+      <strong>Contacto general:</strong> <a href="mailto:contacto@conniku.com">contacto@conniku.com</a><br><br>
+      Conniku SpA · RUT: 78.395.702-7 · Antofagasta, Chile
+    </div>
+
+    <div class="info-box" style="margin-top:40px">
+      <strong>Documento:</strong> Política de Cookies · Versión 1.0.0 · Vigente desde el 21 de abril de 2026<br>
+      <strong>Empresa:</strong> Conniku SpA · RUT 78.395.702-7 · Antofagasta, Chile
+    </div>
+
+  </main>
+</div>
+
+<footer style="border-top:1px solid var(--border);padding:24px 32px;display:flex;flex-wrap:wrap;justify-content:space-between;align-items:center;gap:12px;max-width:1100px;margin:0 auto;">
+  <span style="font-size:11px;color:var(--text-4);font-family:'Geist Mono',monospace;">© 2026 Conniku SpA · RUT 78.395.702-7 · Antofagasta, Chile</span>
+  <nav style="display:flex;flex-wrap:wrap;gap:16px;">
+    <a href="terminos.html" style="font-size:11px;color:var(--text-4);text-decoration:none;" onmouseover="this.style.color='var(--text-2)'" onmouseout="this.style.color='var(--text-4)'">Términos</a>
+    <a href="privacidad.html" style="font-size:11px;color:var(--text-4);text-decoration:none;" onmouseover="this.style.color='var(--text-2)'" onmouseout="this.style.color='var(--text-4)'">Privacidad</a>
+    <a href="cookies.html" style="font-size:11px;color:var(--green);text-decoration:none;">Cookies</a>
+    <a href="soporte.html" style="font-size:11px;color:var(--text-4);text-decoration:none;" onmouseover="this.style.color='var(--text-2)'" onmouseout="this.style.color='var(--text-4)'">Soporte</a>
+    <a href="contacto.html" style="font-size:11px;color:var(--text-4);text-decoration:none;" onmouseover="this.style.color='var(--text-2)'" onmouseout="this.style.color='var(--text-4)'">Contacto</a>
+    <a href="prensa.html" style="font-size:11px;color:var(--text-4);text-decoration:none;" onmouseover="this.style.color='var(--text-2)'" onmouseout="this.style.color='var(--text-4)'">Prensa</a>
+    <a href="empleo-conniku.html" style="font-size:11px;color:var(--text-4);text-decoration:none;" onmouseover="this.style.color='var(--text-2)'" onmouseout="this.style.color='var(--text-4)'">Trabaja con nosotros</a>
+  </nav>
+</footer>
+
+<script src="../shared/theme-loader.js"></script>
+</body>
+</html>

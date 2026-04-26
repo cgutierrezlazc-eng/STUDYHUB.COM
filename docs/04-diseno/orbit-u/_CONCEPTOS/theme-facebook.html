@@ -1,0 +1,571 @@
+<!DOCTYPE html>
+<html lang="es" data-theme="fb-light">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>Facebook Themes · Conniku</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"/>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Funnel+Display:wght@700;800;900&family=Inter:wght@400;500;600;700&family=Geist+Mono:wght@400;500;600&display=swap"/>
+<style>
+* { box-sizing: border-box; margin: 0; padding: 0; }
+
+/* ══════════════════════════════════════
+   FB LIGHT — exacto al Facebook clásico
+   ══════════════════════════════════════ */
+[data-theme="fb-light"] {
+  --bg:        #F0F2F5;
+  --surface:   #FFFFFF;
+  --surface-2: #F0F2F5;
+  --surface-3: #E4E6EB;
+  --border:    #CED0D4;
+  --border-2:  #E4E6EB;
+  --text:      #050505;
+  --text-2:    #1C1E21;
+  --text-3:    #65676B;
+  --text-4:    #8A8D91;
+  --sig:       #1877F2;
+  --sig-soft:  #E7F0FD;
+  --sig-mid:   #BDD1F8;
+  --sig-ink:   #FFFFFF;
+  --hex-bg:    #F0F2F5;
+  --ban1:      rgba(24,119,242,.12);
+  --ban2:      rgba(24,119,242,.05);
+  --react-bg:  #F2F2F2;
+}
+
+/* ══════════════════════════════════════
+   FB DARK — exacto al Facebook dark mode
+   ══════════════════════════════════════ */
+[data-theme="fb-dark"] {
+  --bg:        #18191A;
+  --surface:   #242526;
+  --surface-2: #3A3B3C;
+  --surface-3: #4E4F50;
+  --border:    #3E4042;
+  --border-2:  #3A3B3C;
+  --text:      #E4E6EB;
+  --text-2:    #B0B3B8;
+  --text-3:    #8A8D91;
+  --text-4:    #5A5C61;
+  --sig:       #2D88FF;
+  --sig-soft:  rgba(45,136,255,.15);
+  --sig-mid:   rgba(45,136,255,.30);
+  --sig-ink:   #FFFFFF;
+  --hex-bg:    #18191A;
+  --ban1:      rgba(45,136,255,.20);
+  --ban2:      rgba(45,136,255,.07);
+  --react-bg:  rgba(255,255,255,.08);
+}
+
+/* ══════════════════════════════════════
+   BASE
+   ══════════════════════════════════════ */
+html, body {
+  background: var(--bg) !important;
+  min-height: 100vh;
+  font-family: 'Inter', sans-serif;
+  font-size: 14px;
+  -webkit-font-smoothing: antialiased;
+  color: var(--text);
+  transition: background .3s, color .3s;
+}
+#hexTide { position: fixed; inset: 0; pointer-events: none; z-index: 0; width: 100%; height: 100%; }
+.wrap    { position: relative; z-index: 2; max-width: 1080px; margin: 0 auto; padding: 0 16px 40px; }
+
+/* ══ SELECTOR ══ */
+.switcher {
+  position: sticky; top: 0; z-index: 50;
+  background: var(--surface);
+  border-bottom: 1px solid var(--border);
+  padding: 10px 20px;
+  display: flex; gap: 8px; align-items: center;
+  box-shadow: 0 1px 4px rgba(0,0,0,.12);
+  transition: background .3s;
+}
+.switcher-label { font-family: 'Geist Mono', monospace; font-size: 9px; letter-spacing: .14em; color: var(--text-4); text-transform: uppercase; margin-right: 6px; }
+.tbtn { border: 1.5px solid var(--border); cursor: pointer; font-family: 'Geist Mono', monospace; font-size: 10px; font-weight: 600; padding: 5px 16px; border-radius: 20px; transition: all .18s; background: var(--surface-2); color: var(--text-3); }
+.tbtn:hover { border-color: var(--sig); color: var(--sig); }
+.tbtn.on    { background: var(--sig); color: var(--sig-ink); border-color: transparent; }
+.badge-cur  { margin-left: auto; font-family: 'Geist Mono', monospace; font-size: 10px; color: var(--text-4); }
+
+/* ══ NAV — estilo Facebook ══ */
+.nav {
+  background: var(--surface);
+  border-bottom: 1px solid var(--border-2);
+  height: 56px; display: flex; align-items: center;
+  padding: 0 16px; gap: 8px; margin-bottom: 0;
+  position: sticky; top: 41px; z-index: 40;
+  box-shadow: 0 2px 4px rgba(0,0,0,.10);
+  transition: background .3s;
+}
+.nav-brand  { display: flex; align-items: center; gap: 8px; }
+.nav-name   { font-family: 'Funnel Display', sans-serif; font-weight: 900; font-size: 22px; color: var(--sig); transition: color .3s; letter-spacing: -.5px; }
+.nav-search-wrap {
+  display: flex; align-items: center; gap: 8px;
+  background: var(--surface-2); border: 1px solid var(--border-2);
+  border-radius: 20px; padding: 0 12px; height: 36px; width: 220px;
+  transition: all .2s;
+}
+.nav-search-wrap:focus-within { border-color: var(--sig); background: var(--surface); }
+.nav-search-wrap span { color: var(--text-4); font-size: 14px; }
+.nav-search { flex: 1; background: transparent; border: none; outline: none; font-family: 'Inter', sans-serif; font-size: 13px; color: var(--text); }
+.nav-search::placeholder { color: var(--text-4); }
+.nav-tabs   { flex: 1; display: flex; justify-content: center; gap: 4px; }
+.nav-tab    { width: 96px; height: 48px; border-radius: 8px; background: transparent; border: none; cursor: pointer; display: grid; place-items: center; font-size: 20px; color: var(--text-3); transition: all .2s; position: relative; }
+.nav-tab.on { color: var(--sig); }
+.nav-tab.on::after { content: ''; position: absolute; bottom: -4px; left: 0; right: 0; height: 3px; background: var(--sig); border-radius: 3px 3px 0 0; }
+.nav-tab:hover { background: var(--surface-2); color: var(--text); }
+.nav-r      { display: flex; gap: 8px; align-items: center; }
+.nav-btn    { width: 36px; height: 36px; border-radius: 50%; background: var(--surface-2); border: 1px solid var(--border-2); display: grid; place-items: center; cursor: pointer; font-size: 16px; color: var(--text); transition: all .2s; position: relative; }
+.nav-btn:hover { background: var(--surface-3); }
+.ndot       { position: absolute; top: 2px; right: 2px; width: 8px; height: 8px; border-radius: 50%; background: #E41E3F; border: 2px solid var(--surface); font-size: 0; }
+.nav-me     { width: 36px; height: 36px; border-radius: 50%; background: var(--sig); color: var(--sig-ink); font-size: 11px; font-weight: 800; display: grid; place-items: center; cursor: pointer; border: 2px solid var(--surface-3); transition: background .3s; }
+
+/* ══ LAYOUT ══ */
+.main-layout { display: grid; grid-template-columns: 280px 1fr 300px; gap: 16px; padding-top: 16px; align-items: start; }
+
+/* ══ LEFT SIDEBAR — Perfil + menú ══ */
+.left-menu  { position: sticky; top: 113px; }
+.profile-mini {
+  display: flex; align-items: center; gap: 10px; padding: 8px 8px;
+  border-radius: 8px; cursor: pointer; transition: background .18s; margin-bottom: 4px;
+}
+.profile-mini:hover { background: var(--surface-2); }
+.pm-av { width: 36px; height: 36px; border-radius: 50%; background: var(--sig); color: var(--sig-ink); font-weight: 800; font-size: 12px; display: grid; place-items: center; flex-shrink: 0; transition: background .3s; }
+.pm-name { font-weight: 600; font-size: 14px; color: var(--text); transition: color .3s; }
+.menu-item {
+  display: flex; align-items: center; gap: 10px; padding: 8px 8px;
+  border-radius: 8px; cursor: pointer; transition: background .18s;
+}
+.menu-item:hover { background: var(--surface-2); }
+.menu-icon { width: 36px; height: 36px; border-radius: 50%; background: var(--surface-2); display: grid; place-items: center; font-size: 16px; flex-shrink: 0; transition: background .3s; }
+.menu-label { font-size: 14px; font-weight: 500; color: var(--text); transition: color .3s; }
+.menu-sep { height: 1px; background: var(--border-2); margin: 8px 0; }
+.menu-section { font-size: 13px; font-weight: 600; color: var(--text-3); padding: 4px 8px; }
+
+/* ══ FEED CENTER ══ */
+/* Story strip */
+.stories {
+  background: var(--surface); border: 1px solid var(--border-2);
+  border-radius: 8px; padding: 10px 12px; margin-bottom: 14px;
+  display: flex; gap: 8px; overflow-x: auto;
+  box-shadow: 0 1px 2px rgba(0,0,0,.10);
+  transition: background .3s;
+}
+.story-card {
+  width: 96px; height: 160px; border-radius: 10px; flex-shrink: 0; overflow: hidden;
+  cursor: pointer; position: relative;
+  background: linear-gradient(180deg, var(--surface-2) 0%, var(--surface-3) 100%);
+  border: 1px solid var(--border-2); transition: transform .18s;
+}
+.story-card:hover { transform: scale(1.03); }
+.story-card.add {
+  display: flex; flex-direction: column; align-items: center; justify-content: flex-end;
+  padding-bottom: 10px;
+}
+.story-add-img { height: 108px; width: 100%; background: var(--surface-2); border-bottom: 1px solid var(--border-2); display: grid; place-items: center; }
+.story-add-btn { width: 32px; height: 32px; border-radius: 50%; background: var(--sig); display: grid; place-items: center; margin-top: -16px; font-size: 18px; color: white; border: 3px solid var(--surface); position: absolute; top: 90px; left: 50%; transform: translateX(-50%); z-index: 2; }
+.story-add-label { font-size: 11px; font-weight: 600; color: var(--text); text-align: center; padding: 0 4px; margin-top: 22px; }
+.story-user { position: absolute; top: 0; left: 0; right: 0; bottom: 0; background: linear-gradient(180deg, rgba(0,0,0,.1) 0%, rgba(0,0,0,.5) 100%); display: flex; flex-direction: column; justify-content: space-between; padding: 8px; }
+.story-av { width: 32px; height: 32px; border-radius: 50%; border: 3px solid var(--sig); display: grid; place-items: center; font-size: 14px; background: var(--sig); color: white; }
+.story-name { font-size: 11px; font-weight: 700; color: white; }
+.story-emoji { font-size: 32px; text-align: center; margin: auto 0; display: block; }
+
+/* Composer */
+.composer {
+  background: var(--surface); border: 1px solid var(--border-2);
+  border-radius: 8px; padding: 12px 16px; margin-bottom: 14px;
+  box-shadow: 0 1px 2px rgba(0,0,0,.10); transition: background .3s;
+}
+.cmp-top { display: flex; gap: 10px; align-items: center; margin-bottom: 10px; }
+.cmp-av  { width: 40px; height: 40px; border-radius: 50%; background: var(--sig); color: var(--sig-ink); font-weight: 800; font-size: 13px; display: grid; place-items: center; flex-shrink: 0; transition: background .3s; }
+.cmp-pill {
+  flex: 1; height: 40px; border-radius: 20px;
+  background: var(--surface-2); border: 1px solid var(--border-2);
+  display: flex; align-items: center; padding: 0 14px;
+  font-size: 14px; color: var(--text-3); cursor: text;
+  transition: background .2s;
+}
+.cmp-pill:hover { background: var(--surface-3); }
+.cmp-divider { height: 1px; background: var(--border-2); margin: 0 -16px 10px; }
+.cmp-actions { display: flex; gap: 2px; }
+.cmp-action {
+  flex: 1; height: 36px; border-radius: 6px; background: transparent; border: none; cursor: pointer;
+  display: flex; align-items: center; justify-content: center; gap: 6px;
+  font-family: 'Inter', sans-serif; font-size: 12px; font-weight: 600; color: var(--text-3);
+  transition: background .18s;
+}
+.cmp-action:hover { background: var(--surface-2); color: var(--text); }
+
+/* Posts */
+.post {
+  background: var(--surface); border: 1px solid var(--border-2);
+  border-radius: 8px; margin-bottom: 14px;
+  box-shadow: 0 1px 2px rgba(0,0,0,.10); overflow: hidden;
+  transition: background .3s;
+}
+.post-head  { display: flex; align-items: flex-start; gap: 10px; padding: 12px 16px 8px; }
+.pav        { width: 40px; height: 40px; border-radius: 50%; flex-shrink: 0; background: var(--surface-2); border: 1px solid var(--border-2); display: grid; place-items: center; font-size: 18px; }
+.pmt        { flex: 1; }
+.pn         { font-weight: 700; font-size: 14px; color: var(--text); line-height: 1.2; }
+.pt         { font-size: 12px; color: var(--text-3); margin-top: 1px; display: flex; align-items: center; gap: 4px; }
+.pt-dot     { font-size: 8px; }
+.post-more  { width: 36px; height: 36px; border-radius: 50%; background: transparent; border: none; cursor: pointer; display: grid; place-items: center; font-size: 18px; color: var(--text-3); transition: background .18s; }
+.post-more:hover { background: var(--surface-2); }
+.post-body  { padding: 0 16px 10px; font-size: 14px; line-height: 1.6; color: var(--text); }
+.post-body strong { font-weight: 700; }
+.post-media {
+  width: 100%; background: var(--surface-2);
+  border-top: 1px solid var(--border-2); border-bottom: 1px solid var(--border-2);
+  height: 200px; display: flex; align-items: center; justify-content: center; gap: 12px;
+  font-size: 13px; color: var(--text-3); font-weight: 600;
+}
+.post-media-icon { font-size: 36px; }
+.post-reactions {
+  padding: 8px 16px; display: flex; align-items: center; justify-content: space-between;
+  border-bottom: 1px solid var(--border-2); font-size: 13px; color: var(--text-3);
+}
+.react-icons { display: flex; gap: 0; }
+.react-icon  { width: 18px; height: 18px; border-radius: 50%; border: 2px solid var(--surface); margin-left: -4px; font-size: 11px; display: grid; place-items: center; line-height: 1; }
+.react-icon:first-child { margin-left: 0; }
+.react-count { margin-left: 4px; }
+.post-actions { display: flex; padding: 4px 8px; gap: 2px; }
+.pa {
+  flex: 1; height: 36px; border-radius: 6px; background: transparent; border: none; cursor: pointer;
+  display: flex; align-items: center; justify-content: center; gap: 6px;
+  font-family: 'Inter', sans-serif; font-size: 13px; font-weight: 600; color: var(--text-3);
+  transition: background .18s;
+}
+.pa:hover        { background: var(--surface-2); color: var(--text); }
+.pa.liked        { color: var(--sig); }
+.pa.liked:hover  { background: var(--sig-soft); }
+
+/* ══ RIGHT SIDEBAR ══ */
+.right-panel { position: sticky; top: 113px; }
+.rp-section  { margin-bottom: 20px; }
+.rp-title    { font-size: 17px; font-weight: 700; color: var(--text); margin-bottom: 10px; }
+.rp-link     { font-size: 13px; color: var(--sig); font-weight: 600; cursor: pointer; }
+.contact-item { display: flex; align-items: center; gap: 10px; padding: 6px 8px; border-radius: 8px; cursor: pointer; transition: background .18s; }
+.contact-item:hover { background: var(--surface-2); }
+.contact-av   { width: 36px; height: 36px; border-radius: 50%; flex-shrink: 0; background: var(--surface-2); border: 1px solid var(--border-2); display: grid; place-items: center; font-size: 16px; position: relative; }
+.online-dot   { position: absolute; bottom: 1px; right: 1px; width: 10px; height: 10px; border-radius: 50%; background: #31A24C; border: 2px solid var(--surface); }
+.contact-name { font-size: 14px; font-weight: 500; color: var(--text); }
+.sponsored {
+  background: var(--surface); border: 1px solid var(--border-2);
+  border-radius: 8px; overflow: hidden; margin-bottom: 14px;
+  box-shadow: 0 1px 2px rgba(0,0,0,.08);
+}
+.sp-img  { height: 100px; background: linear-gradient(135deg, var(--sig-soft), var(--sig-mid)); display: grid; place-items: center; font-size: 32px; }
+.sp-body { padding: 8px 12px 12px; }
+.sp-brand { font-size: 13px; font-weight: 700; color: var(--text); }
+.sp-desc  { font-size: 12px; color: var(--text-3); margin-top: 2px; }
+.sp-btn   { margin-top: 8px; display: block; width: 100%; padding: 7px; border-radius: 6px; background: var(--surface-2); border: 1px solid var(--border); font-family: 'Inter', sans-serif; font-size: 13px; font-weight: 600; color: var(--text); cursor: pointer; text-align: center; transition: background .18s; }
+.sp-btn:hover { background: var(--surface-3); }
+
+/* Birthday / events */
+.event-item { display: flex; align-items: center; gap: 10px; padding: 8px 0; }
+.event-icon { font-size: 22px; }
+.event-text { font-size: 13px; color: var(--text); }
+.event-text span { font-weight: 700; }
+
+/* Footer links */
+.footer-links { display: flex; flex-wrap: wrap; gap: 4px 8px; margin-top: 16px; }
+.footer-link  { font-size: 11px; color: var(--text-4); cursor: pointer; }
+.footer-link:hover { text-decoration: underline; }
+.footer-copy  { font-size: 11px; color: var(--text-4); margin-top: 8px; }
+</style>
+</head>
+<body>
+<canvas id="hexTide"></canvas>
+
+<!-- SELECTOR -->
+<div class="switcher">
+  <span class="switcher-label">Facebook style ·</span>
+  <button class="tbtn on" data-t="fb-light">☀️ Light</button>
+  <button class="tbtn"    data-t="fb-dark">🌙 Dark</button>
+  <span class="badge-cur" id="cur">fb-light</span>
+</div>
+
+<!-- NAV -->
+<nav class="nav">
+  <div class="nav-brand">
+    <!-- LOGO PENDIENTE -->
+    <div class="nav-search-wrap">
+      <span>🔍</span>
+      <input class="nav-search" placeholder="Buscar en Conniku"/>
+    </div>
+  </div>
+  <div class="nav-tabs">
+    <button class="nav-tab on">🏠</button>
+    <button class="nav-tab">👥</button>
+    <button class="nav-tab">▶️</button>
+    <button class="nav-tab">🎮</button>
+    <button class="nav-tab">🏪</button>
+  </div>
+  <div class="nav-r">
+    <button class="nav-btn">⚙️</button>
+    <button class="nav-btn">💬</button>
+    <button class="nav-btn">🔔<span class="ndot"></span></button>
+    <div class="nav-me">CG</div>
+  </div>
+</nav>
+
+<div class="wrap">
+  <div class="main-layout">
+
+    <!-- LEFT SIDEBAR -->
+    <aside class="left-menu">
+      <div class="profile-mini">
+        <div class="pm-av">CG</div>
+        <div class="pm-name">Cristian G.</div>
+      </div>
+      <div class="menu-item"><div class="menu-icon">👥</div><div class="menu-label">Amigos</div></div>
+      <div class="menu-item"><div class="menu-icon">💬</div><div class="menu-label">Messenger</div></div>
+      <div class="menu-item"><div class="menu-icon">📺</div><div class="menu-label">Watch</div></div>
+      <div class="menu-item"><div class="menu-icon">🗓</div><div class="menu-label">Eventos</div></div>
+      <div class="menu-item"><div class="menu-icon">🎮</div><div class="menu-label">Juegos</div></div>
+      <div class="menu-item"><div class="menu-icon">🏪</div><div class="menu-label">Marketplace</div></div>
+      <div class="menu-sep"></div>
+      <div class="menu-section">Atajos</div>
+      <div class="menu-item"><div class="menu-icon">📐</div><div class="menu-label">Diseño UX</div></div>
+      <div class="menu-item"><div class="menu-icon">🤖</div><div class="menu-label">IA Aplicada</div></div>
+      <div class="menu-item"><div class="menu-icon">📊</div><div class="menu-label">Data Analytics</div></div>
+    </aside>
+
+    <!-- FEED -->
+    <main>
+
+      <!-- Stories -->
+      <div class="stories">
+        <div class="story-card add">
+          <div class="story-add-img">👤</div>
+          <div class="story-add-btn">＋</div>
+          <div class="story-add-label">Crear historia</div>
+        </div>
+        <div class="story-card">
+          <div class="story-user">
+            <div class="story-av">👩‍💻</div>
+            <span class="story-emoji">🎓</span>
+            <div class="story-name">Ana M.</div>
+          </div>
+        </div>
+        <div class="story-card">
+          <div class="story-user">
+            <div class="story-av">🧑‍🎓</div>
+            <span class="story-emoji">🚀</span>
+            <div class="story-name">Rodrigo V.</div>
+          </div>
+        </div>
+        <div class="story-card">
+          <div class="story-user">
+            <div class="story-av">👨‍🏫</div>
+            <span class="story-emoji">🏆</span>
+            <div class="story-name">Sofía P.</div>
+          </div>
+        </div>
+        <div class="story-card">
+          <div class="story-user">
+            <div class="story-av">👩‍🔬</div>
+            <span class="story-emoji">📚</span>
+            <div class="story-name">Laura S.</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Composer -->
+      <div class="composer">
+        <div class="cmp-top">
+          <div class="cmp-av">CG</div>
+          <div class="cmp-pill">¿Qué estás pensando, Cristian?</div>
+        </div>
+        <div class="cmp-divider"></div>
+        <div class="cmp-actions">
+          <button class="cmp-action">🎬 Video en vivo</button>
+          <button class="cmp-action">📷 Foto/video</button>
+          <button class="cmp-action">😊 Sentimiento</button>
+        </div>
+      </div>
+
+      <!-- POST 1 -->
+      <div class="post">
+        <div class="post-head">
+          <div class="pav">👩‍💻</div>
+          <div class="pmt">
+            <div class="pn">Ana Martínez</div>
+            <div class="pt">hace 15 min <span class="pt-dot">•</span> 🌐</div>
+          </div>
+          <button class="post-more">···</button>
+        </div>
+        <div class="post-body">
+          Terminé <strong>Fundamentos de IA Generativa</strong> con 98/100 🎉
+          La metodología de Conniku es increíble: aprendes haciendo desde el día 1. ¡Muy recomendado para quienes empiezan en IA!
+        </div>
+        <div class="post-media">
+          <div class="post-media-icon">🎓</div>
+          <div>Certificado obtenido · IA Generativa · Nivel Avanzado</div>
+        </div>
+        <div class="post-reactions">
+          <div style="display:flex;align-items:center;gap:6px">
+            <div class="react-icons">
+              <div class="react-icon" style="background:#1877F2">👍</div>
+              <div class="react-icon" style="background:#E41E3F">❤️</div>
+              <div class="react-icon" style="background:#F5C518">😮</div>
+            </div>
+            <span class="react-count">Ana, Rodrigo y 22 más</span>
+          </div>
+          <span>8 comentarios · 3 veces compartido</span>
+        </div>
+        <div class="post-actions">
+          <button class="pa liked">👍 Me gusta</button>
+          <button class="pa">💬 Comentar</button>
+          <button class="pa">↗️ Compartir</button>
+        </div>
+      </div>
+
+      <!-- POST 2 -->
+      <div class="post">
+        <div class="post-head">
+          <div class="pav">🧑‍🎓</div>
+          <div class="pmt">
+            <div class="pn">Rodrigo Vargas</div>
+            <div class="pt">hace 1 h <span class="pt-dot">•</span> 🌐</div>
+          </div>
+          <button class="post-more">···</button>
+        </div>
+        <div class="post-body">
+          ¡Primera entrevista conseguida gracias a Conniku! 🚀 El módulo de <strong>Portafolio Profesional</strong> junto con el tutor Athena me ayudaron a estructurarlo todo en solo 3 sesiones. El sistema realmente funciona.
+        </div>
+        <div class="post-reactions">
+          <div style="display:flex;align-items:center;gap:6px">
+            <div class="react-icons">
+              <div class="react-icon" style="background:#E41E3F">❤️</div>
+              <div class="react-icon" style="background:#F7A825">🔥</div>
+            </div>
+            <span class="react-count">41 personas</span>
+          </div>
+          <span>15 comentarios</span>
+        </div>
+        <div class="post-actions">
+          <button class="pa">👍 Me gusta</button>
+          <button class="pa">💬 Comentar</button>
+          <button class="pa">↗️ Compartir</button>
+        </div>
+      </div>
+
+      <!-- POST 3 -->
+      <div class="post">
+        <div class="post-head">
+          <div class="pav">👨‍🏫</div>
+          <div class="pmt">
+            <div class="pn">Sofía Pedraza</div>
+            <div class="pt">hace 3 h <span class="pt-dot">•</span> 🌐</div>
+          </div>
+          <button class="post-more">···</button>
+        </div>
+        <div class="post-body">
+          Llegué a nivel <strong>Platino</strong> en el leaderboard semanal de Conniku 🥇 El reto de programación fue difícil pero valió cada minuto. ¡Nos vemos en el top la semana que viene!
+        </div>
+        <div class="post-reactions">
+          <div style="display:flex;align-items:center;gap:6px">
+            <div class="react-icons">
+              <div class="react-icon" style="background:#1877F2">👍</div>
+              <div class="react-icon" style="background:#F5C518">⭐</div>
+            </div>
+            <span class="react-count">87 personas</span>
+          </div>
+          <span>32 comentarios · 12 veces compartido</span>
+        </div>
+        <div class="post-actions">
+          <button class="pa">👍 Me gusta</button>
+          <button class="pa">💬 Comentar</button>
+          <button class="pa">↗️ Compartir</button>
+        </div>
+      </div>
+
+    </main>
+
+    <!-- RIGHT SIDEBAR -->
+    <aside class="right-panel">
+
+      <div class="rp-section">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px">
+          <div class="rp-title">Patrocinado</div>
+        </div>
+        <div class="sponsored">
+          <div class="sp-img">🎓</div>
+          <div class="sp-body">
+            <div class="sp-brand">Conniku · ORBIT·U</div>
+            <div class="sp-desc">Aprende IA, UX y más con tutores especializados</div>
+            <button class="sp-btn">Más información</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="rp-section">
+        <div class="event-item">
+          <div class="event-icon">🎂</div>
+          <div class="event-text"><span>Laura Soto</span> cumple años hoy</div>
+        </div>
+        <div class="event-item">
+          <div class="event-icon">🗓</div>
+          <div class="event-text">Reto semanal de <span>Data Analytics</span> empieza mañana</div>
+        </div>
+      </div>
+
+      <div class="rp-section">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px">
+          <div class="rp-title">Contactos</div>
+          <span class="rp-link">🔍</span>
+        </div>
+        <div class="contact-item"><div class="contact-av">👩‍🔬<span class="online-dot"></span></div><div class="contact-name">Laura Soto</div></div>
+        <div class="contact-item"><div class="contact-av">👨‍💼<span class="online-dot"></span></div><div class="contact-name">Marcos Ruiz</div></div>
+        <div class="contact-item"><div class="contact-av">👩‍🎨<span class="online-dot"></span></div><div class="contact-name">Daniela V.</div></div>
+        <div class="contact-item"><div class="contact-av">👩‍💻</div><div class="contact-name">Ana Martínez</div></div>
+        <div class="contact-item"><div class="contact-av">🧑‍🎓</div><div class="contact-name">Rodrigo Vargas</div></div>
+      </div>
+
+      <div class="footer-links">
+        <span class="footer-link">Privacidad</span>
+        <span class="footer-link">Términos</span>
+        <span class="footer-link">Publicidad</span>
+        <span class="footer-link">Cookies</span>
+        <span class="footer-link">Ver más</span>
+      </div>
+      <div class="footer-copy">Conniku © 2026</div>
+
+    </aside>
+
+  </div>
+</div>
+
+<script src="../shared/hex-tide/hex-tide.js"></script>
+<script>
+const CFG = {
+  'fb-light': { bg: '#F0F2F5', maxOpacity: 0.14, vignette: 0.08 },
+  'fb-dark':  { bg: '#18191A', maxOpacity: 0.22, vignette: 0.20 },
+};
+
+const INIT = 'fb-light';
+window._hx = HexTide.mount('#hexTide', {
+  variant: 'whisper', background: CFG[INIT].bg,
+  hexSize: 30, maxOpacity: CFG[INIT].maxOpacity,
+  mouseReactive: true, vignette: CFG[INIT].vignette,
+});
+
+const btns = document.querySelectorAll('.tbtn');
+const cur  = document.getElementById('cur');
+const html = document.documentElement;
+
+function apply(id) {
+  html.setAttribute('data-theme', id);
+  cur.textContent = id;
+  btns.forEach(b => b.classList.toggle('on', b.dataset.t === id));
+  const c = CFG[id];
+  if (c) window._hx.setOptions({ background: c.bg, maxOpacity: c.maxOpacity, vignette: c.vignette });
+}
+
+btns.forEach(b => b.addEventListener('click', () => apply(b.dataset.t)));
+apply(INIT);
+</script>
+</body>
+</html>

@@ -1,0 +1,1150 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Conniku — Perfil Social Light Variantes</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Playfair+Display:wght@400;600;700&display=swap" rel="stylesheet">
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: 'Inter', system-ui, sans-serif; background: #E8EEF8; min-height: 100vh; }
+
+  /* ── TAB SELECTOR ── */
+  .tab-bar {
+    position: sticky; top: 0; z-index: 1000;
+    background: #0A2878; display: flex; gap: 2px;
+    padding: 10px 16px; overflow-x: auto; scrollbar-width: none;
+    box-shadow: 0 2px 12px rgba(10,40,120,.35);
+  }
+  .tab-bar::-webkit-scrollbar { display: none; }
+  .tab-btn {
+    flex-shrink: 0; padding: 8px 18px; border-radius: 6px;
+    border: none; cursor: pointer; font-size: 13px; font-weight: 600;
+    font-family: 'Inter', sans-serif; transition: all .2s;
+    background: rgba(255,255,255,.12); color: rgba(255,255,255,.75);
+    white-space: nowrap;
+  }
+  .tab-btn:hover { background: rgba(255,255,255,.22); color: #fff; }
+  .tab-btn.active { background: #00C27A; color: #fff; }
+
+  /* ── VARIANT PANELS ── */
+  .variant { display: none; min-height: 100vh; }
+  .variant.active { display: block; }
+
+  /* ══════════════════════════════════════════════
+     V1 — LinkedIn Navy
+  ══════════════════════════════════════════════ */
+  .v1 { background: #E8EEF8; }
+  .v1-wrap { max-width: 1200px; margin: 0 auto; padding: 24px 16px; display: grid; grid-template-columns: 280px 1fr 280px; gap: 20px; }
+  @media(max-width:900px){ .v1-wrap { grid-template-columns: 1fr; } .v1-right { display: none; } }
+
+  .v1-cover { height: 120px; background: linear-gradient(135deg,#c9d8f0 0%,#a8bedd 100%); border-radius: 12px 12px 0 0; }
+  .v1-card { background: #fff; border-radius: 12px; overflow: hidden; box-shadow: 0 1px 4px rgba(10,40,120,.08); }
+  .v1-avatar-wrap { padding: 0 20px; margin-top: -36px; margin-bottom: 12px; }
+  .v1-avatar { width: 72px; height: 72px; border-radius: 50%; background: #0A2878; display: flex; align-items: center; justify-content: center; font-size: 24px; font-weight: 700; color: #fff; border: 3px solid #fff; }
+  .v1-info { padding: 0 20px 16px; }
+  .v1-info h2 { font-size: 18px; font-weight: 700; color: #060E24; }
+  .v1-info .uni { font-size: 13px; color: #5a7abf; margin-top: 2px; }
+  .v1-info .tagline { font-size: 13px; color: #374151; margin-top: 8px; line-height: 1.5; }
+  .v1-connect { display: flex; gap: 8px; margin-top: 12px; }
+  .v1-connect button { padding: 7px 18px; border-radius: 20px; font-size: 13px; font-weight: 600; cursor: pointer; font-family: inherit; }
+  .btn-primary { background: #0A2878; color: #fff; border: none; }
+  .btn-outline { background: transparent; color: #0A2878; border: 2px solid #0A2878; }
+  .v1-divider { height: 1px; background: #e8eef8; margin: 0 20px; }
+  .v1-stats { display: flex; justify-content: space-around; padding: 14px 20px; }
+  .v1-stat { text-align: center; }
+  .v1-stat .num { font-size: 18px; font-weight: 700; color: #0A2878; }
+  .v1-stat .lbl { font-size: 11px; color: #6b7280; margin-top: 2px; }
+
+  .v1-section-card { background: #fff; border-radius: 12px; box-shadow: 0 1px 4px rgba(10,40,120,.08); padding: 16px 20px; margin-bottom: 16px; }
+  .v1-section-card h3 { font-size: 14px; font-weight: 700; color: #060E24; margin-bottom: 12px; }
+  .v1-highlight { display: flex; gap: 10px; align-items: flex-start; padding: 8px 0; border-bottom: 1px solid #f0f4ff; }
+  .v1-highlight:last-child { border-bottom: none; }
+  .v1-hl-icon { width: 36px; height: 36px; border-radius: 8px; background: #e8eef8; display: flex; align-items: center; justify-content: center; font-size: 16px; flex-shrink: 0; }
+  .v1-hl-text { font-size: 13px; color: #374151; line-height: 1.4; }
+  .v1-hl-text strong { display: block; color: #060E24; font-weight: 600; }
+
+  .v1-module-tag { display: inline-flex; align-items: center; gap: 6px; background: #f0f4ff; border-radius: 20px; padding: 5px 12px; font-size: 12px; font-weight: 500; color: #0A2878; margin: 4px 3px; cursor: pointer; }
+  .v1-module-tag:hover { background: #0A2878; color: #fff; }
+
+  .v1-post { background: #fff; border-radius: 12px; box-shadow: 0 1px 4px rgba(10,40,120,.08); padding: 16px 20px; margin-bottom: 16px; }
+  .v1-post-header { display: flex; gap: 10px; align-items: center; margin-bottom: 10px; }
+  .v1-post-av { width: 40px; height: 40px; border-radius: 50%; background: #0A2878; display: flex; align-items: center; justify-content: center; font-size: 14px; font-weight: 700; color: #fff; flex-shrink: 0; }
+  .v1-post-meta strong { font-size: 14px; color: #060E24; display: block; }
+  .v1-post-meta span { font-size: 12px; color: #9ca3af; }
+  .v1-post p { font-size: 14px; color: #374151; line-height: 1.6; }
+  .v1-post-tag { display: inline-block; background: #e8f7f0; color: #00C27A; border-radius: 4px; padding: 2px 8px; font-size: 11px; font-weight: 600; margin-top: 8px; }
+  .v1-reactions { display: flex; gap: 16px; margin-top: 12px; padding-top: 10px; border-top: 1px solid #f0f4ff; }
+  .v1-react-btn { background: none; border: none; cursor: pointer; font-size: 13px; color: #6b7280; display: flex; align-items: center; gap: 5px; font-family: inherit; padding: 4px 8px; border-radius: 6px; }
+  .v1-react-btn:hover { background: #f0f4ff; color: #0A2878; }
+
+  .v1-right-card { background: #fff; border-radius: 12px; box-shadow: 0 1px 4px rgba(10,40,120,.08); padding: 16px 20px; margin-bottom: 16px; }
+  .v1-right-card h3 { font-size: 13px; font-weight: 700; color: #060E24; margin-bottom: 12px; text-transform: uppercase; letter-spacing: .5px; }
+  .v1-metric-row { display: flex; justify-content: space-between; align-items: center; padding: 8px 0; border-bottom: 1px solid #f5f7ff; font-size: 13px; }
+  .v1-metric-row:last-child { border-bottom: none; }
+  .v1-metric-row .metric-lbl { color: #6b7280; }
+  .v1-metric-row .metric-val { font-weight: 700; color: #0A2878; }
+  .v1-suggestion { display: flex; gap: 10px; align-items: center; padding: 8px 0; }
+  .v1-sug-av { width: 38px; height: 38px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 13px; font-weight: 700; color: #fff; flex-shrink: 0; }
+  .v1-sug-info { flex: 1; font-size: 13px; }
+  .v1-sug-info strong { display: block; color: #060E24; }
+  .v1-sug-info span { color: #9ca3af; font-size: 11px; }
+  .v1-sug-btn { background: transparent; border: 1.5px solid #0A2878; color: #0A2878; border-radius: 16px; padding: 4px 12px; font-size: 12px; font-weight: 600; cursor: pointer; font-family: inherit; }
+
+  /* ══════════════════════════════════════════════
+     V2 — Twitter/X Clean
+  ══════════════════════════════════════════════ */
+  .v2 { background: #f7f9fc; }
+  .v2-center { max-width: 720px; margin: 0 auto; padding: 0 0 40px; }
+  .v2-cover { height: 160px; background: linear-gradient(160deg, #dce9ff 0%, #b8d0f8 50%, #a0c4ff 100%); position: relative; }
+  .v2-avatar { position: absolute; bottom: -40px; left: 24px; width: 80px; height: 80px; border-radius: 50%; background: #0A2878; display: flex; align-items: center; justify-content: center; font-size: 28px; font-weight: 700; color: #fff; border: 4px solid #f7f9fc; }
+  .v2-actions { display: flex; justify-content: flex-end; padding: 12px 24px; }
+  .v2-follow-btn { background: #0A2878; color: #fff; border: none; border-radius: 20px; padding: 8px 22px; font-size: 14px; font-weight: 700; cursor: pointer; font-family: inherit; }
+  .v2-profile-info { padding: 8px 24px 16px; }
+  .v2-profile-info h2 { font-size: 20px; font-weight: 800; color: #060E24; }
+  .v2-handle { font-size: 14px; color: #8a9bbf; margin-top: 2px; }
+  .v2-bio { font-size: 15px; color: #374151; margin-top: 10px; line-height: 1.55; }
+  .v2-meta { display: flex; gap: 16px; margin-top: 10px; flex-wrap: wrap; }
+  .v2-meta-item { font-size: 13px; color: #8a9bbf; display: flex; align-items: center; gap: 4px; }
+  .v2-stats-row { display: flex; gap: 24px; margin-top: 14px; }
+  .v2-stats-row a { font-size: 14px; color: #374151; text-decoration: none; cursor: pointer; }
+  .v2-stats-row a strong { color: #060E24; font-weight: 700; }
+  .v2-stats-row a:hover { text-decoration: underline; }
+  .v2-tabs { display: flex; border-bottom: 2px solid #e8eef8; margin-top: 12px; }
+  .v2-tab { flex: 1; text-align: center; padding: 14px 8px; font-size: 14px; font-weight: 600; color: #8a9bbf; cursor: pointer; border-bottom: 3px solid transparent; margin-bottom: -2px; transition: all .15s; }
+  .v2-tab.active { color: #0A2878; border-bottom-color: #0A2878; }
+  .v2-tab:hover { background: #f0f4ff; color: #0A2878; }
+  .v2-tweet { background: #fff; border-bottom: 1px solid #e8eef8; padding: 16px 24px; display: flex; gap: 12px; }
+  .v2-tweet:hover { background: #fafbff; }
+  .v2-tweet-av { width: 44px; height: 44px; border-radius: 50%; background: #0A2878; display: flex; align-items: center; justify-content: center; font-size: 16px; font-weight: 700; color: #fff; flex-shrink: 0; }
+  .v2-tweet-body { flex: 1; }
+  .v2-tweet-meta { display: flex; gap: 6px; align-items: baseline; flex-wrap: wrap; }
+  .v2-tweet-meta strong { font-size: 15px; color: #060E24; }
+  .v2-tweet-meta span { font-size: 13px; color: #9ca3af; }
+  .v2-tweet-text { font-size: 15px; color: #374151; line-height: 1.6; margin-top: 4px; }
+  .v2-tweet-hashtag { color: #0A2878; font-weight: 500; }
+  .v2-tweet-actions { display: flex; gap: 20px; margin-top: 10px; }
+  .v2-act { background: none; border: none; cursor: pointer; font-size: 13px; color: #9ca3af; display: flex; align-items: center; gap: 5px; font-family: inherit; transition: color .15s; }
+  .v2-act:hover { color: #0A2878; }
+  .v2-badge { display: inline-block; background: #e8f7f0; color: #00C27A; border-radius: 12px; padding: 2px 10px; font-size: 12px; font-weight: 700; margin-top: 8px; }
+
+  /* ══════════════════════════════════════════════
+     V3 — Discord Channels
+  ══════════════════════════════════════════════ */
+  .v3 { background: #F5F7FF; }
+  .v3-layout { display: flex; height: calc(100vh - 48px); max-width: 1100px; margin: 0 auto; padding: 20px 16px; gap: 12px; }
+  @media(max-width:768px){ .v3-layout { flex-direction: column; height: auto; } .v3-members { display: none; } }
+  .v3-sidebar { width: 220px; flex-shrink: 0; background: #fff; border-radius: 14px; box-shadow: 0 1px 4px rgba(10,40,120,.07); overflow-y: auto; display: flex; flex-direction: column; }
+  .v3-server-header { padding: 16px; border-bottom: 1px solid #eef1fb; }
+  .v3-server-name { font-size: 15px; font-weight: 800; color: #060E24; }
+  .v3-server-sub { font-size: 11px; color: #8a9bbf; margin-top: 2px; }
+  .v3-profile-mini { display: flex; gap: 10px; align-items: center; padding: 12px 16px; border-bottom: 1px solid #eef1fb; }
+  .v3-pm-av { width: 36px; height: 36px; border-radius: 50%; background: #0A2878; display: flex; align-items: center; justify-content: center; font-size: 13px; font-weight: 700; color: #fff; flex-shrink: 0; }
+  .v3-pm-info strong { font-size: 13px; color: #060E24; display: block; }
+  .v3-pm-info span { font-size: 11px; color: #00C27A; }
+  .v3-ch-category { padding: 12px 16px 4px; font-size: 10px; font-weight: 700; color: #9ca3af; text-transform: uppercase; letter-spacing: .8px; }
+  .v3-ch-item { display: flex; align-items: center; gap: 8px; padding: 7px 12px; margin: 1px 6px; border-radius: 8px; cursor: pointer; font-size: 14px; color: #6b7280; transition: all .15s; }
+  .v3-ch-item:hover { background: #f0f4ff; color: #0A2878; }
+  .v3-ch-item.active { background: #e8eef8; color: #0A2878; font-weight: 600; }
+  .v3-ch-icon { font-size: 16px; }
+  .v3-ch-badge { margin-left: auto; background: #0A2878; color: #fff; border-radius: 10px; padding: 1px 6px; font-size: 10px; font-weight: 700; }
+
+  .v3-main { flex: 1; background: #fff; border-radius: 14px; box-shadow: 0 1px 4px rgba(10,40,120,.07); display: flex; flex-direction: column; overflow: hidden; }
+  .v3-ch-header { padding: 14px 20px; border-bottom: 1px solid #eef1fb; display: flex; align-items: center; gap: 10px; }
+  .v3-ch-header h3 { font-size: 16px; font-weight: 700; color: #060E24; }
+  .v3-ch-header span { font-size: 13px; color: #9ca3af; }
+  .v3-feed { flex: 1; overflow-y: auto; padding: 16px 20px; }
+  .v3-msg { display: flex; gap: 12px; padding: 10px 0; border-bottom: 1px solid #f5f7ff; }
+  .v3-msg:last-child { border-bottom: none; }
+  .v3-msg-av { width: 38px; height: 38px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 13px; font-weight: 700; color: #fff; flex-shrink: 0; }
+  .v3-msg-content { flex: 1; }
+  .v3-msg-header { display: flex; gap: 8px; align-items: baseline; margin-bottom: 3px; }
+  .v3-msg-header strong { font-size: 14px; color: #060E24; }
+  .v3-msg-header time { font-size: 11px; color: #c9d0e0; }
+  .v3-msg-text { font-size: 14px; color: #374151; line-height: 1.55; }
+  .v3-msg-badge { display: inline-block; background: #f0f4ff; color: #0A2878; border-radius: 6px; padding: 2px 8px; font-size: 11px; font-weight: 600; margin-top: 5px; }
+  .v3-msg-reactions { display: flex; gap: 6px; margin-top: 8px; }
+  .v3-reaction { background: #f5f7ff; border: 1px solid #e8eef8; border-radius: 12px; padding: 2px 8px; font-size: 13px; cursor: pointer; }
+  .v3-reaction:hover { background: #e8eef8; }
+  .v3-input-wrap { padding: 12px 20px; border-top: 1px solid #eef1fb; }
+  .v3-input { width: 100%; background: #f5f7ff; border: none; border-radius: 10px; padding: 10px 16px; font-size: 14px; color: #374151; font-family: inherit; outline: none; }
+
+  .v3-members { width: 200px; flex-shrink: 0; background: #fff; border-radius: 14px; box-shadow: 0 1px 4px rgba(10,40,120,.07); overflow-y: auto; padding: 16px 12px; }
+  .v3-members h4 { font-size: 10px; font-weight: 700; color: #9ca3af; text-transform: uppercase; letter-spacing: .8px; margin-bottom: 10px; padding: 0 4px; }
+  .v3-member { display: flex; gap: 8px; align-items: center; padding: 5px 4px; border-radius: 8px; margin-bottom: 2px; cursor: pointer; }
+  .v3-member:hover { background: #f5f7ff; }
+  .v3-mem-av { width: 30px; height: 30px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 11px; font-weight: 700; color: #fff; flex-shrink: 0; position: relative; }
+  .v3-mem-dot { position: absolute; bottom: 0; right: 0; width: 9px; height: 9px; border-radius: 50%; background: #00C27A; border: 2px solid #fff; }
+  .v3-mem-info strong { font-size: 12px; color: #374151; display: block; }
+  .v3-mem-info span { font-size: 11px; color: #9ca3af; }
+
+  /* ══════════════════════════════════════════════
+     V4 — Instagram Grid
+  ══════════════════════════════════════════════ */
+  .v4 { background: #fafbff; }
+  .v4-center { max-width: 900px; margin: 0 auto; padding: 40px 16px; }
+  .v4-profile-header { display: flex; align-items: center; gap: 48px; margin-bottom: 32px; flex-wrap: wrap; }
+  @media(max-width:600px){ .v4-profile-header { flex-direction: column; gap: 20px; text-align: center; } }
+  .v4-avatar { width: 96px; height: 96px; border-radius: 50%; background: linear-gradient(135deg, #0A2878 0%, #1a3fa0 100%); display: flex; align-items: center; justify-content: center; font-size: 34px; font-weight: 800; color: #fff; border: 3px solid #fff; box-shadow: 0 0 0 3px #00C27A; flex-shrink: 0; }
+  .v4-info { flex: 1; }
+  .v4-info h2 { font-size: 22px; font-weight: 700; color: #060E24; display: flex; align-items: center; gap: 8px; }
+  .v4-verified { width: 20px; height: 20px; background: #0A2878; border-radius: 50%; display: inline-flex; align-items: center; justify-content: center; font-size: 12px; color: #fff; }
+  .v4-info .uni { font-size: 14px; color: #5a7abf; margin-top: 4px; font-weight: 500; }
+  .v4-info .bio { font-size: 14px; color: #374151; margin-top: 8px; line-height: 1.5; }
+  .v4-info .interests { font-size: 13px; color: #00C27A; margin-top: 6px; font-weight: 600; }
+  .v4-btns { display: flex; gap: 8px; margin-top: 14px; flex-wrap: wrap; }
+  .v4-btn-follow { background: #0A2878; color: #fff; border: none; border-radius: 8px; padding: 8px 22px; font-size: 13px; font-weight: 700; cursor: pointer; font-family: inherit; }
+  .v4-btn-msg { background: #fff; color: #0A2878; border: 1.5px solid #d0d9f0; border-radius: 8px; padding: 8px 18px; font-size: 13px; font-weight: 600; cursor: pointer; font-family: inherit; }
+  .v4-stats-row { display: flex; gap: 40px; border-top: 1px solid #e8eef8; border-bottom: 1px solid #e8eef8; padding: 20px 0; margin-bottom: 8px; flex-wrap: wrap; gap: 24px; }
+  .v4-stat { text-align: center; }
+  .v4-stat .num { font-size: 22px; font-weight: 800; color: #0A2878; }
+  .v4-stat .lbl { font-size: 12px; color: #9ca3af; margin-top: 2px; text-transform: uppercase; letter-spacing: .5px; }
+  .v4-grid-tabs { display: flex; justify-content: center; gap: 0; border-top: 1px solid #e8eef8; margin-bottom: 4px; }
+  .v4-grid-tab { padding: 14px 28px; font-size: 13px; font-weight: 600; color: #9ca3af; cursor: pointer; border-top: 2px solid transparent; margin-top: -1px; transition: all .15s; }
+  .v4-grid-tab.active { color: #0A2878; border-top-color: #0A2878; }
+  .v4-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 3px; }
+  .v4-grid-item { aspect-ratio: 1; background: #fff; border-radius: 4px; overflow: hidden; cursor: pointer; position: relative; box-shadow: 0 1px 3px rgba(10,40,120,.07); transition: transform .15s; }
+  .v4-grid-item:hover { transform: scale(1.02); }
+  .v4-grid-item:hover .v4-overlay { opacity: 1; }
+  .v4-gi-bg { width: 100%; height: 100%; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 16px; gap: 8px; }
+  .v4-gi-icon { font-size: 28px; }
+  .v4-gi-title { font-size: 13px; font-weight: 700; color: #060E24; text-align: center; line-height: 1.3; }
+  .v4-gi-sub { font-size: 11px; color: #9ca3af; text-align: center; }
+  .v4-gi-badge { background: #00C27A; color: #fff; border-radius: 12px; padding: 2px 8px; font-size: 10px; font-weight: 700; }
+  .v4-overlay { position: absolute; inset: 0; background: rgba(10,40,120,.55); display: flex; align-items: center; justify-content: center; gap: 20px; opacity: 0; transition: opacity .2s; border-radius: 4px; }
+  .v4-ol-stat { text-align: center; color: #fff; font-size: 13px; font-weight: 700; }
+  .v4-ol-stat span { display: block; font-size: 11px; font-weight: 400; opacity: .8; }
+
+  /* ══════════════════════════════════════════════
+     V5 — Notion Style
+  ══════════════════════════════════════════════ */
+  .v5 { background: #fff; }
+  .v5-wrap { max-width: 720px; margin: 0 auto; padding: 60px 24px 80px; }
+  .v5-header { display: flex; align-items: center; gap: 16px; margin-bottom: 32px; padding-bottom: 24px; border-bottom: 1px solid #f0f0f0; }
+  .v5-avatar { width: 52px; height: 52px; border-radius: 10px; background: #0A2878; display: flex; align-items: center; justify-content: center; font-size: 18px; font-weight: 700; color: #fff; flex-shrink: 0; }
+  .v5-header-info h2 { font-size: 22px; font-weight: 700; color: #060E24; font-family: 'Playfair Display', serif; }
+  .v5-header-info p { font-size: 14px; color: #9ca3af; margin-top: 3px; }
+  .v5-header-badges { display: flex; gap: 6px; margin-top: 8px; flex-wrap: wrap; }
+  .v5-hbadge { background: #f7f7f7; border-radius: 4px; padding: 3px 10px; font-size: 12px; color: #374151; font-weight: 500; }
+  .v5-hbadge.green { background: #e8f7f0; color: #00C27A; }
+  .v5-hbadge.navy { background: #e8eef8; color: #0A2878; }
+
+  .v5-block { margin-bottom: 36px; }
+  .v5-block-title { font-size: 18px; font-weight: 700; color: #060E24; font-family: 'Playfair Display', serif; margin-bottom: 12px; display: flex; align-items: center; gap: 10px; }
+  .v5-block-title::after { content: ''; flex: 1; height: 1px; background: #f0f0f0; }
+  .v5-text-block { font-size: 15px; color: #374151; line-height: 1.75; background: #fafafa; border-left: 3px solid #0A2878; padding: 14px 18px; border-radius: 0 8px 8px 0; }
+  .v5-callout { background: #f0f4ff; border-radius: 8px; padding: 14px 16px; display: flex; gap: 12px; margin-bottom: 10px; }
+  .v5-callout-icon { font-size: 20px; flex-shrink: 0; }
+  .v5-callout-text { font-size: 14px; color: #374151; line-height: 1.55; }
+  .v5-callout-text strong { color: #0A2878; }
+
+  .v5-table { width: 100%; border-collapse: collapse; font-size: 14px; border-radius: 8px; overflow: hidden; }
+  .v5-table th { background: #f7f8fc; padding: 10px 14px; text-align: left; font-weight: 600; color: #6b7280; font-size: 12px; text-transform: uppercase; letter-spacing: .5px; border-bottom: 1px solid #eff1f8; }
+  .v5-table td { padding: 10px 14px; border-bottom: 1px solid #f5f7fc; color: #374151; vertical-align: middle; }
+  .v5-table tr:last-child td { border-bottom: none; }
+  .v5-table tr:hover td { background: #fafbff; }
+  .v5-prog { background: #e8eef8; border-radius: 4px; height: 6px; width: 100%; }
+  .v5-prog-fill { height: 100%; border-radius: 4px; background: #00C27A; }
+  .v5-status { display: inline-block; padding: 2px 8px; border-radius: 4px; font-size: 11px; font-weight: 600; }
+  .v5-status.done { background: #e8f7f0; color: #00C27A; }
+  .v5-status.progress { background: #fff3cd; color: #d97706; }
+  .v5-status.plan { background: #f0f4ff; color: #0A2878; }
+
+  .v5-skills { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 8px; }
+  .v5-skill { background: #f7f8fc; border: 1px solid #e8eef8; border-radius: 6px; padding: 6px 14px; font-size: 13px; font-weight: 500; color: #374151; }
+  .v5-skill.highlight { background: #0A2878; color: #fff; border-color: #0A2878; }
+  .v5-skill.green { background: #e8f7f0; color: #00C27A; border-color: #b8e9d4; }
+
+  .v5-timeline { position: relative; padding-left: 24px; }
+  .v5-timeline::before { content: ''; position: absolute; left: 6px; top: 8px; bottom: 8px; width: 2px; background: #e8eef8; }
+  .v5-tl-item { position: relative; padding-bottom: 20px; }
+  .v5-tl-item::before { content: ''; position: absolute; left: -20px; top: 5px; width: 10px; height: 10px; border-radius: 50%; background: #0A2878; }
+  .v5-tl-item.green::before { background: #00C27A; }
+  .v5-tl-date { font-size: 11px; color: #9ca3af; margin-bottom: 3px; }
+  .v5-tl-text { font-size: 14px; color: #374151; }
+  .v5-tl-text strong { color: #060E24; }
+
+  /* ══════════════════════════════════════════════
+     V6 — Dashboard Académico
+  ══════════════════════════════════════════════ */
+  .v6 { background: #F0F4FF; }
+  .v6-wrap { max-width: 1200px; margin: 0 auto; padding: 24px 16px; }
+  .v6-header { background: #fff; border-radius: 16px; padding: 24px 28px; margin-bottom: 20px; display: flex; align-items: center; gap: 24px; box-shadow: 0 1px 4px rgba(10,40,120,.08); flex-wrap: wrap; gap: 20px; }
+  .v6-avatar { width: 64px; height: 64px; border-radius: 14px; background: #0A2878; display: flex; align-items: center; justify-content: center; font-size: 22px; font-weight: 800; color: #fff; flex-shrink: 0; }
+  .v6-id h2 { font-size: 20px; font-weight: 800; color: #060E24; }
+  .v6-id p { font-size: 13px; color: #5a7abf; margin-top: 3px; }
+  .v6-id-badges { display: flex; gap: 6px; margin-top: 8px; flex-wrap: wrap; }
+  .v6-badge { padding: 3px 10px; border-radius: 6px; font-size: 11px; font-weight: 700; }
+  .v6-badge.navy { background: #e8eef8; color: #0A2878; }
+  .v6-badge.green { background: #e8f7f0; color: #00C27A; }
+  .v6-badge.orange { background: #fff3e0; color: #e07b00; }
+  .v6-header-right { margin-left: auto; display: flex; gap: 12px; }
+  .v6-hbtn { padding: 9px 22px; border-radius: 10px; font-size: 13px; font-weight: 700; cursor: pointer; font-family: inherit; }
+  .v6-hbtn.primary { background: #0A2878; color: #fff; border: none; }
+  .v6-hbtn.ghost { background: transparent; color: #0A2878; border: 1.5px solid #c5d3ec; }
+
+  .v6-kpi-row { display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; margin-bottom: 20px; }
+  @media(max-width:768px){ .v6-kpi-row { grid-template-columns: repeat(2, 1fr); } }
+  .v6-kpi { background: #fff; border-radius: 14px; padding: 20px 22px; box-shadow: 0 1px 4px rgba(10,40,120,.07); position: relative; overflow: hidden; }
+  .v6-kpi::before { content: ''; position: absolute; top: 0; left: 0; right: 0; height: 4px; }
+  .v6-kpi.k1::before { background: #0A2878; }
+  .v6-kpi.k2::before { background: #00C27A; }
+  .v6-kpi.k3::before { background: #7c3aed; }
+  .v6-kpi.k4::before { background: #e07b00; }
+  .v6-kpi-label { font-size: 12px; color: #9ca3af; text-transform: uppercase; letter-spacing: .6px; font-weight: 600; margin-bottom: 8px; }
+  .v6-kpi-value { font-size: 36px; font-weight: 800; color: #060E24; line-height: 1; }
+  .v6-kpi-sub { font-size: 12px; color: #9ca3af; margin-top: 6px; }
+  .v6-kpi-trend { position: absolute; top: 20px; right: 20px; font-size: 11px; font-weight: 700; padding: 3px 8px; border-radius: 6px; }
+  .v6-kpi-trend.up { background: #e8f7f0; color: #00C27A; }
+  .v6-kpi-trend.neutral { background: #f0f4ff; color: #0A2878; }
+
+  .v6-body { display: grid; grid-template-columns: 260px 1fr; gap: 20px; }
+  @media(max-width:768px){ .v6-body { grid-template-columns: 1fr; } }
+
+  .v6-sidebar { display: flex; flex-direction: column; gap: 16px; }
+  .v6-card { background: #fff; border-radius: 14px; padding: 20px; box-shadow: 0 1px 4px rgba(10,40,120,.07); }
+  .v6-card h3 { font-size: 13px; font-weight: 700; color: #060E24; text-transform: uppercase; letter-spacing: .5px; margin-bottom: 14px; }
+
+  /* Radial SVG progress */
+  .v6-radial-wrap { display: flex; flex-direction: column; align-items: center; gap: 16px; }
+  .v6-radial-labels { width: 100%; }
+  .v6-radial-lbl { display: flex; justify-content: space-between; align-items: center; padding: 4px 0; font-size: 13px; }
+  .v6-radial-lbl .lbl-name { color: #374151; }
+  .v6-radial-lbl .lbl-pct { font-weight: 700; color: #0A2878; }
+  .v6-prog-bar { background: #e8eef8; height: 5px; border-radius: 3px; flex: 1; margin: 0 10px; }
+  .v6-prog-bar-fill { height: 100%; border-radius: 3px; }
+
+  .v6-module-list { display: flex; flex-direction: column; gap: 8px; }
+  .v6-module-row { display: flex; align-items: center; gap: 10px; padding: 8px 10px; border-radius: 8px; cursor: pointer; transition: background .15s; }
+  .v6-module-row:hover { background: #f5f7ff; }
+  .v6-module-icon { width: 32px; height: 32px; border-radius: 8px; display: flex; align-items: center; justify-content: center; font-size: 16px; flex-shrink: 0; }
+  .v6-module-name { font-size: 13px; font-weight: 500; color: #374151; flex: 1; }
+  .v6-module-dot { width: 8px; height: 8px; border-radius: 50%; }
+
+  .v6-feed { display: flex; flex-direction: column; gap: 14px; }
+  .v6-activity { background: #fff; border-radius: 14px; padding: 18px 22px; box-shadow: 0 1px 4px rgba(10,40,120,.07); }
+  .v6-act-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 12px; }
+  .v6-act-title { font-size: 15px; font-weight: 700; color: #060E24; }
+  .v6-act-meta { font-size: 12px; color: #9ca3af; margin-top: 2px; }
+  .v6-act-type { font-size: 11px; font-weight: 700; padding: 4px 10px; border-radius: 6px; }
+  .v6-act-type.course { background: #e8eef8; color: #0A2878; }
+  .v6-act-type.tutoría { background: #f0e8ff; color: #7c3aed; }
+  .v6-act-type.badge { background: #e8f7f0; color: #00C27A; }
+  .v6-act-progress { margin-top: 10px; }
+  .v6-act-progress-top { display: flex; justify-content: space-between; font-size: 12px; margin-bottom: 5px; }
+  .v6-act-progress-top span { color: #9ca3af; }
+  .v6-act-progress-top strong { color: #0A2878; font-weight: 700; }
+  .v6-act-prog-bar { background: #e8eef8; height: 7px; border-radius: 4px; }
+  .v6-act-prog-fill { height: 100%; border-radius: 4px; background: linear-gradient(90deg, #0A2878 0%, #1a5ccc 100%); }
+  .v6-act-prog-fill.green { background: linear-gradient(90deg, #00C27A 0%, #00e090 100%); }
+  .v6-act-footer { display: flex; gap: 16px; margin-top: 12px; padding-top: 10px; border-top: 1px solid #f0f4ff; }
+  .v6-act-foot-item { font-size: 12px; color: #9ca3af; display: flex; align-items: center; gap: 4px; }
+  .v6-act-foot-item strong { color: #374151; font-weight: 600; }
+  .v6-recent-title { font-size: 14px; font-weight: 700; color: #060E24; margin-bottom: 12px; }
+  .v6-recent-row { display: flex; gap: 12px; align-items: center; padding: 8px 0; border-bottom: 1px solid #f5f7ff; }
+  .v6-recent-row:last-child { border-bottom: none; }
+  .v6-recent-icon { width: 36px; height: 36px; border-radius: 8px; display: flex; align-items: center; justify-content: center; font-size: 16px; flex-shrink: 0; }
+  .v6-recent-text { flex: 1; font-size: 13px; }
+  .v6-recent-text strong { display: block; color: #060E24; font-weight: 600; }
+  .v6-recent-text span { color: #9ca3af; font-size: 11px; }
+  .v6-recent-pts { font-size: 13px; font-weight: 700; color: #00C27A; }
+</style>
+</head>
+<body>
+
+<!-- TAB BAR -->
+<nav class="tab-bar" role="tablist">
+  <button class="tab-btn active" onclick="switchTab(1)" role="tab">1 · LinkedIn Navy</button>
+  <button class="tab-btn" onclick="switchTab(2)" role="tab">2 · Twitter Clean</button>
+  <button class="tab-btn" onclick="switchTab(3)" role="tab">3 · Discord Channels</button>
+  <button class="tab-btn" onclick="switchTab(4)" role="tab">4 · Instagram Grid</button>
+  <button class="tab-btn" onclick="switchTab(5)" role="tab">5 · Notion Style</button>
+  <button class="tab-btn" onclick="switchTab(6)" role="tab">6 · Dashboard Académico</button>
+</nav>
+
+<!-- ══════════════════════════════════════════════
+     VARIANTE 1 — LinkedIn Navy
+══════════════════════════════════════════════ -->
+<section class="variant v1 active" id="v1">
+  <div class="v1-wrap">
+
+    <!-- SIDEBAR -->
+    <aside>
+      <div class="v1-card" style="margin-bottom:16px">
+        <div class="v1-cover"></div>
+        <div class="v1-avatar-wrap"><div class="v1-avatar">VR</div></div>
+        <div class="v1-info">
+          <h2>Valentina Reyes</h2>
+          <div class="uni">Universidad de Chile · Ing. Comercial 4to año</div>
+          <div class="tagline">Apasionada por finanzas, datos y educación. Conectando talento universitario con oportunidades reales.</div>
+          <div class="v1-connect" style="margin-top:14px">
+            <button class="btn-primary">Conectar</button>
+            <button class="btn-outline">Mensaje</button>
+          </div>
+        </div>
+        <div class="v1-divider"></div>
+        <div class="v1-stats">
+          <div class="v1-stat"><div class="num">12</div><div class="lbl">Cursos</div></div>
+          <div class="v1-stat"><div class="num">847</div><div class="lbl">Conexiones</div></div>
+          <div class="v1-stat"><div class="num">3</div><div class="lbl">Tutorías</div></div>
+        </div>
+      </div>
+
+      <div class="v1-section-card">
+        <h3>Destacado</h3>
+        <div class="v1-highlight">
+          <div class="v1-hl-icon">📊</div>
+          <div class="v1-hl-text"><strong>Análisis de Datos con Python</strong>Certificado · Conniku · 2025</div>
+        </div>
+        <div class="v1-highlight">
+          <div class="v1-hl-icon">🏆</div>
+          <div class="v1-hl-text"><strong>Top 5% Estudiantes</strong>Ranking trimestral · Workspace</div>
+        </div>
+        <div class="v1-highlight">
+          <div class="v1-hl-icon">📝</div>
+          <div class="v1-hl-text"><strong>Artículo publicado</strong>Finanzas conductuales en LATAM</div>
+        </div>
+      </div>
+
+      <div class="v1-section-card">
+        <h3>Módulos activos</h3>
+        <div>
+          <span class="v1-module-tag">📁 Workspace</span>
+          <span class="v1-module-tag">📚 Biblioteca</span>
+          <span class="v1-module-tag">💼 Empleos</span>
+          <span class="v1-module-tag">👨‍🏫 Tutores</span>
+          <span class="v1-module-tag">🌐 Comunidad</span>
+        </div>
+      </div>
+    </aside>
+
+    <!-- FEED -->
+    <main>
+      <div class="v1-post">
+        <div class="v1-post-header">
+          <div class="v1-post-av">VR</div>
+          <div class="v1-post-meta">
+            <strong>Valentina Reyes</strong>
+            <span>Ing. Comercial · Universidad de Chile · hace 2 días</span>
+          </div>
+        </div>
+        <p>Terminé el módulo de <strong>Análisis Financiero Avanzado</strong> en Conniku. Fue un curso muy completo — especialmente la parte de modelos de valoración con DCF. ¡Muy recomendado para quienes están en finanzas! 🎯</p>
+        <span class="v1-post-tag">✅ Curso completado</span>
+        <div class="v1-reactions">
+          <button class="v1-react-btn">👍 42 Me gusta</button>
+          <button class="v1-react-btn">💬 8 Comentarios</button>
+          <button class="v1-react-btn">↗ Compartir</button>
+        </div>
+      </div>
+
+      <div class="v1-post">
+        <div class="v1-post-header">
+          <div class="v1-post-av">VR</div>
+          <div class="v1-post-meta">
+            <strong>Valentina Reyes</strong>
+            <span>hace 5 días</span>
+          </div>
+        </div>
+        <p>Mi primera tutoría como tutora en Conniku fue una experiencia increíble. Ayudé a dos estudiantes de primer año con estadística básica. Si puedo devolver lo que la plataforma me ha dado, vale la pena cada minuto.</p>
+        <span class="v1-post-tag">🎓 Tutoría realizada</span>
+        <div class="v1-reactions">
+          <button class="v1-react-btn">❤️ 89 Me gusta</button>
+          <button class="v1-react-btn">💬 14 Comentarios</button>
+          <button class="v1-react-btn">↗ Compartir</button>
+        </div>
+      </div>
+
+      <div class="v1-post">
+        <div class="v1-post-header">
+          <div class="v1-post-av">VR</div>
+          <div class="v1-post-meta">
+            <strong>Valentina Reyes</strong>
+            <span>hace 1 semana</span>
+          </div>
+        </div>
+        <p>Acabo de alcanzar <strong>2.400 puntos</strong> en Conniku. Cada curso, cada conexión, cada tutoría cuenta. La gamificación de la plataforma realmente motiva a seguir aprendiendo consistentemente.</p>
+        <span class="v1-post-tag">⭐ 2.400 puntos alcanzados</span>
+        <div class="v1-reactions">
+          <button class="v1-react-btn">🎉 156 Me gusta</button>
+          <button class="v1-react-btn">💬 23 Comentarios</button>
+          <button class="v1-react-btn">↗ Compartir</button>
+        </div>
+      </div>
+    </main>
+
+    <!-- PANEL DERECHO -->
+    <aside class="v1-right">
+      <div class="v1-right-card">
+        <h3>Métricas de perfil</h3>
+        <div class="v1-metric-row"><span class="metric-lbl">Vistas esta semana</span><span class="metric-val">234</span></div>
+        <div class="v1-metric-row"><span class="metric-lbl">Apariciones en búsqueda</span><span class="metric-val">67</span></div>
+        <div class="v1-metric-row"><span class="metric-lbl">Conexiones nuevas</span><span class="metric-val">+12</span></div>
+        <div class="v1-metric-row"><span class="metric-lbl">Puntos totales</span><span class="metric-val">2.400</span></div>
+      </div>
+
+      <div class="v1-right-card">
+        <h3>Personas que podrías conocer</h3>
+        <div class="v1-suggestion">
+          <div class="v1-sug-av" style="background:#1a5ccc">CM</div>
+          <div class="v1-sug-info">
+            <strong>Carlos Mendoza</strong>
+            <span>Economía · PUC Chile</span>
+          </div>
+          <button class="v1-sug-btn">+ Conectar</button>
+        </div>
+        <div class="v1-suggestion" style="margin-top:8px">
+          <div class="v1-sug-av" style="background:#00C27A">AS</div>
+          <div class="v1-sug-info">
+            <strong>Ana Soto</strong>
+            <span>Ing. Industrial · USACH</span>
+          </div>
+          <button class="v1-sug-btn">+ Conectar</button>
+        </div>
+        <div class="v1-suggestion" style="margin-top:8px">
+          <div class="v1-sug-av" style="background:#7c3aed">LV</div>
+          <div class="v1-sug-info">
+            <strong>Luis Vargas</strong>
+            <span>Finanzas · UAI</span>
+          </div>
+          <button class="v1-sug-btn">+ Conectar</button>
+        </div>
+      </div>
+    </aside>
+
+  </div>
+</section>
+
+<!-- ══════════════════════════════════════════════
+     VARIANTE 2 — Twitter/X Clean
+══════════════════════════════════════════════ -->
+<section class="variant v2" id="v2">
+  <div class="v2-center">
+    <div class="v2-cover">
+      <div class="v2-avatar">VR</div>
+    </div>
+    <div class="v2-actions">
+      <button class="v2-follow-btn">Seguir</button>
+    </div>
+    <div class="v2-profile-info">
+      <h2>Valentina Reyes</h2>
+      <div class="v2-handle">@valentina_reyes · Conniku</div>
+      <div class="v2-bio">Ing. Comercial 4to año · Universidad de Chile. Aprendiz perpetua, tutora ocasional. Finanzas + datos + comunidad educativa 🌱</div>
+      <div class="v2-meta">
+        <span class="v2-meta-item">📍 Santiago, Chile</span>
+        <span class="v2-meta-item">🎓 Universidad de Chile</span>
+        <span class="v2-meta-item">📅 Desde enero 2024</span>
+      </div>
+      <div class="v2-stats-row">
+        <a><strong>12</strong> Cursos</a>
+        <a><strong>847</strong> Conexiones</a>
+        <a><strong>3</strong> Tutorías</a>
+        <a><strong>2.400</strong> pts</a>
+      </div>
+    </div>
+    <div class="v2-tabs">
+      <div class="v2-tab active">Publicaciones</div>
+      <div class="v2-tab">Respuestas</div>
+      <div class="v2-tab">Cursos</div>
+      <div class="v2-tab">Me gusta</div>
+    </div>
+
+    <div class="v2-tweet">
+      <div class="v2-tweet-av">VR</div>
+      <div class="v2-tweet-body">
+        <div class="v2-tweet-meta">
+          <strong>Valentina Reyes</strong>
+          <span>@valentina_reyes</span>
+          <span>·</span>
+          <span>2d</span>
+        </div>
+        <div class="v2-tweet-text">
+          Terminé el módulo de Análisis Financiero Avanzado en @Conniku ✅ El modelo de valoración DCF es 🔥. Si estudias finanzas en LATAM, no te lo puedes perder.<br><br>
+          <span class="v2-tweet-hashtag">#Conniku</span> <span class="v2-tweet-hashtag">#FinanzasUni</span> <span class="v2-tweet-hashtag">#AprendizajeContinuo</span>
+        </div>
+        <div class="v2-badge">✅ Curso completado</div>
+        <div class="v2-tweet-actions">
+          <button class="v2-act">💬 8</button>
+          <button class="v2-act">🔁 14</button>
+          <button class="v2-act">❤️ 42</button>
+          <button class="v2-act">📊</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="v2-tweet">
+      <div class="v2-tweet-av">VR</div>
+      <div class="v2-tweet-body">
+        <div class="v2-tweet-meta">
+          <strong>Valentina Reyes</strong>
+          <span>@valentina_reyes</span>
+          <span>·</span>
+          <span>5d</span>
+        </div>
+        <div class="v2-tweet-text">
+          Primera tutoría en Conniku como tutora: APROBADA 🎓<br><br>
+          Ayudé a dos chicos de primer año con estadística. La cara de alivio cuando entendieron las pruebas de hipótesis... no tiene precio. Se los recomiendo mucho.
+        </div>
+        <div class="v2-badge">🎓 Tutoría realizada</div>
+        <div class="v2-tweet-actions">
+          <button class="v2-act">💬 14</button>
+          <button class="v2-act">🔁 31</button>
+          <button class="v2-act">❤️ 89</button>
+          <button class="v2-act">📊</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="v2-tweet">
+      <div class="v2-tweet-av">VR</div>
+      <div class="v2-tweet-body">
+        <div class="v2-tweet-meta">
+          <strong>Valentina Reyes</strong>
+          <span>@valentina_reyes</span>
+          <span>·</span>
+          <span>1sem</span>
+        </div>
+        <div class="v2-tweet-text">
+          2.400 puntos en Conniku 🏆🏆🏆<br><br>
+          Cada curso completado, cada conexión nueva, cada hora de tutoría suma. La gamificación de la plataforma está increíblemente bien diseñada — nunca sentí que era una obligación aprender.
+        </div>
+        <div class="v2-badge">⭐ Hito: 2.400 puntos</div>
+        <div class="v2-tweet-actions">
+          <button class="v2-act">💬 23</button>
+          <button class="v2-act">🔁 67</button>
+          <button class="v2-act">❤️ 156</button>
+          <button class="v2-act">📊</button>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</section>
+
+<!-- ══════════════════════════════════════════════
+     VARIANTE 3 — Discord Channels
+══════════════════════════════════════════════ -->
+<section class="variant v3" id="v3">
+  <div class="v3-layout">
+
+    <!-- SIDEBAR -->
+    <nav class="v3-sidebar">
+      <div class="v3-server-header">
+        <div class="v3-server-name">Conniku</div>
+        <div class="v3-server-sub">Plataforma educativa LATAM</div>
+      </div>
+      <div class="v3-profile-mini">
+        <div class="v3-pm-av">VR</div>
+        <div class="v3-pm-info">
+          <strong>Valentina Reyes</strong>
+          <span>● En línea</span>
+        </div>
+      </div>
+      <div class="v3-ch-category">Módulos</div>
+      <div class="v3-ch-item active"><span class="v3-ch-icon">📁</span> workspace <span class="v3-ch-badge">3</span></div>
+      <div class="v3-ch-item"><span class="v3-ch-icon">📚</span> biblioteca</div>
+      <div class="v3-ch-item"><span class="v3-ch-icon">💼</span> empleos <span class="v3-ch-badge">1</span></div>
+      <div class="v3-ch-item"><span class="v3-ch-icon">👨‍🏫</span> tutores</div>
+      <div class="v3-ch-item"><span class="v3-ch-icon">🌐</span> comunidad</div>
+      <div class="v3-ch-category" style="margin-top:8px">Actividad</div>
+      <div class="v3-ch-item"><span class="v3-ch-icon">🏆</span> logros</div>
+      <div class="v3-ch-item"><span class="v3-ch-icon">📊</span> progreso</div>
+      <div class="v3-ch-item"><span class="v3-ch-icon">⚙️</span> ajustes</div>
+    </nav>
+
+    <!-- MAIN FEED -->
+    <main class="v3-main">
+      <div class="v3-ch-header">
+        <span style="font-size:18px">📁</span>
+        <h3>workspace</h3>
+        <span>· Colaboración y proyectos activos</span>
+      </div>
+      <div class="v3-feed">
+        <div class="v3-msg">
+          <div class="v3-msg-av" style="background:#0A2878">VR</div>
+          <div class="v3-msg-content">
+            <div class="v3-msg-header"><strong>Valentina Reyes</strong><time>Hoy a las 14:32</time></div>
+            <div class="v3-msg-text">Acabo de subir el informe final del proyecto de costos. Lo pueden revisar en la carpeta compartida 📎 Si alguien tiene comentarios, dejo abierto el documento hasta el viernes.</div>
+            <span class="v3-msg-badge">📁 Archivo adjunto</span>
+            <div class="v3-msg-reactions"><span class="v3-reaction">✅ 5</span><span class="v3-reaction">👀 3</span><span class="v3-reaction">🔥 2</span></div>
+          </div>
+        </div>
+        <div class="v3-msg">
+          <div class="v3-msg-av" style="background:#1a5ccc">CM</div>
+          <div class="v3-msg-content">
+            <div class="v3-msg-header"><strong>Carlos Mendoza</strong><time>Hoy a las 13:15</time></div>
+            <div class="v3-msg-text">@Valentina excelente trabajo con el análisis de regresión 📊 ¿Podrías agregar la prueba de heterocedasticidad? Sería perfecto para la entrega final.</div>
+            <div class="v3-msg-reactions"><span class="v3-reaction">👍 4</span><span class="v3-reaction">💡 1</span></div>
+          </div>
+        </div>
+        <div class="v3-msg">
+          <div class="v3-msg-av" style="background:#00C27A">AS</div>
+          <div class="v3-msg-content">
+            <div class="v3-msg-header"><strong>Ana Soto</strong><time>Ayer a las 20:47</time></div>
+            <div class="v3-msg-text">Valentina completó el módulo de Análisis Financiero Avanzado 🎉 ¡Felicitaciones! Ya van 12 cursos en la plataforma.</div>
+            <span class="v3-msg-badge" style="background:#e8f7f0;color:#00C27A">🏆 Logro desbloqueado</span>
+            <div class="v3-msg-reactions"><span class="v3-reaction">🎉 12</span><span class="v3-reaction">❤️ 8</span><span class="v3-reaction">⭐ 6</span></div>
+          </div>
+        </div>
+      </div>
+      <div class="v3-input-wrap">
+        <input class="v3-input" type="text" placeholder="Mensaje en #workspace ...">
+      </div>
+    </main>
+
+    <!-- MEMBERS -->
+    <aside class="v3-members">
+      <h4>En línea — 12</h4>
+      <div class="v3-member">
+        <div class="v3-mem-av" style="background:#0A2878">VR<div class="v3-mem-dot"></div></div>
+        <div class="v3-mem-info"><strong>Valentina R.</strong><span>Tú</span></div>
+      </div>
+      <div class="v3-member">
+        <div class="v3-mem-av" style="background:#1a5ccc">CM<div class="v3-mem-dot"></div></div>
+        <div class="v3-mem-info"><strong>Carlos M.</strong><span>Workspace</span></div>
+      </div>
+      <div class="v3-member">
+        <div class="v3-mem-av" style="background:#00C27A">AS<div class="v3-mem-dot"></div></div>
+        <div class="v3-mem-info"><strong>Ana S.</strong><span>Biblioteca</span></div>
+      </div>
+      <div class="v3-member">
+        <div class="v3-mem-av" style="background:#7c3aed">LV<div class="v3-mem-dot"></div></div>
+        <div class="v3-mem-info"><strong>Luis V.</strong><span>Empleos</span></div>
+      </div>
+      <div class="v3-member">
+        <div class="v3-mem-av" style="background:#e07b00">MG<div class="v3-mem-dot"></div></div>
+        <div class="v3-mem-info"><strong>María G.</strong><span>Tutores</span></div>
+      </div>
+      <h4 style="margin-top:16px">Inactivos — 5</h4>
+      <div class="v3-member" style="opacity:.5">
+        <div class="v3-mem-av" style="background:#9ca3af">JP</div>
+        <div class="v3-mem-info"><strong>Juan P.</strong><span>hace 2h</span></div>
+      </div>
+      <div class="v3-member" style="opacity:.5">
+        <div class="v3-mem-av" style="background:#9ca3af">SR</div>
+        <div class="v3-mem-info"><strong>Sofía R.</strong><span>hace 5h</span></div>
+      </div>
+    </aside>
+
+  </div>
+</section>
+
+<!-- ══════════════════════════════════════════════
+     VARIANTE 4 — Instagram Grid
+══════════════════════════════════════════════ -->
+<section class="variant v4" id="v4">
+  <div class="v4-center">
+    <div class="v4-profile-header">
+      <div class="v4-avatar">VR</div>
+      <div class="v4-info">
+        <h2>Valentina Reyes <span class="v4-verified">✓</span></h2>
+        <div class="uni">Universidad de Chile · Ing. Comercial 4to año</div>
+        <div class="bio">Finanzas · Datos · Educación LATAM. Tutora certificada en Conniku. Aprendiz perpetua 🌱</div>
+        <div class="interests">Python · DCF Modeling · Estadística · Emprendimiento</div>
+        <div class="v4-btns">
+          <button class="v4-btn-follow">Seguir</button>
+          <button class="v4-btn-msg">Mensaje</button>
+          <button class="v4-btn-msg" style="padding:8px 12px">···</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="v4-stats-row">
+      <div class="v4-stat"><div class="num">12</div><div class="lbl">Cursos</div></div>
+      <div class="v4-stat"><div class="num">847</div><div class="lbl">Conexiones</div></div>
+      <div class="v4-stat"><div class="num">3</div><div class="lbl">Tutorías</div></div>
+      <div class="v4-stat"><div class="num">2.400</div><div class="lbl">Puntos</div></div>
+    </div>
+
+    <div class="v4-grid-tabs">
+      <div class="v4-grid-tab active">⊞ Actividades</div>
+      <div class="v4-grid-tab">🏆 Logros</div>
+      <div class="v4-grid-tab">❤️ Guardados</div>
+    </div>
+
+    <div class="v4-grid">
+      <div class="v4-grid-item" style="background:#f0f4ff">
+        <div class="v4-gi-bg">
+          <div class="v4-gi-icon">📊</div>
+          <div class="v4-gi-title">Análisis Financiero Avanzado</div>
+          <div class="v4-gi-badge">Completado</div>
+        </div>
+        <div class="v4-overlay"><div class="v4-ol-stat">❤️ 42<span>reacciones</span></div><div class="v4-ol-stat">💬 8<span>comentarios</span></div></div>
+      </div>
+      <div class="v4-grid-item" style="background:#e8f7f0">
+        <div class="v4-gi-bg">
+          <div class="v4-gi-icon">🎓</div>
+          <div class="v4-gi-title">Tutoría realizada</div>
+          <div class="v4-gi-sub">Estadística Básica</div>
+          <div class="v4-gi-badge">+80 pts</div>
+        </div>
+        <div class="v4-overlay"><div class="v4-ol-stat">❤️ 89<span>reacciones</span></div><div class="v4-ol-stat">💬 14<span>comentarios</span></div></div>
+      </div>
+      <div class="v4-grid-item" style="background:#fef3e0">
+        <div class="v4-gi-bg">
+          <div class="v4-gi-icon">⭐</div>
+          <div class="v4-gi-title">Hito: 2.400 puntos</div>
+          <div class="v4-gi-badge">Top 5%</div>
+        </div>
+        <div class="v4-overlay"><div class="v4-ol-stat">❤️ 156<span>reacciones</span></div><div class="v4-ol-stat">💬 23<span>comentarios</span></div></div>
+      </div>
+      <div class="v4-grid-item" style="background:#f5f0ff">
+        <div class="v4-gi-bg">
+          <div class="v4-gi-icon">🐍</div>
+          <div class="v4-gi-title">Python para Finanzas</div>
+          <div class="v4-gi-sub">75% completado</div>
+        </div>
+        <div class="v4-overlay"><div class="v4-ol-stat">❤️ 31<span>reacciones</span></div><div class="v4-ol-stat">💬 5<span>comentarios</span></div></div>
+      </div>
+      <div class="v4-grid-item" style="background:#e8f0ff">
+        <div class="v4-gi-bg">
+          <div class="v4-gi-icon">💼</div>
+          <div class="v4-gi-title">Conexión nueva</div>
+          <div class="v4-gi-sub">847 conexiones totales</div>
+        </div>
+        <div class="v4-overlay"><div class="v4-ol-stat">❤️ 19<span>reacciones</span></div><div class="v4-ol-stat">💬 3<span>comentarios</span></div></div>
+      </div>
+      <div class="v4-grid-item" style="background:#fff0f0">
+        <div class="v4-gi-bg">
+          <div class="v4-gi-icon">📝</div>
+          <div class="v4-gi-title">Artículo publicado</div>
+          <div class="v4-gi-sub">Biblioteca Conniku</div>
+        </div>
+        <div class="v4-overlay"><div class="v4-ol-stat">❤️ 67<span>reacciones</span></div><div class="v4-ol-stat">💬 11<span>comentarios</span></div></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ══════════════════════════════════════════════
+     VARIANTE 5 — Notion Style
+══════════════════════════════════════════════ -->
+<section class="variant v5" id="v5">
+  <div class="v5-wrap">
+    <div class="v5-header">
+      <div class="v5-avatar">VR</div>
+      <div class="v5-header-info">
+        <h2>Valentina Reyes</h2>
+        <p>Universidad de Chile · Ing. Comercial 4to año · Santiago</p>
+        <div class="v5-header-badges">
+          <span class="v5-hbadge navy">2.400 pts</span>
+          <span class="v5-hbadge green">Tutora certificada</span>
+          <span class="v5-hbadge">12 cursos</span>
+          <span class="v5-hbadge">847 conexiones</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="v5-block">
+      <div class="v5-block-title">Sobre mí</div>
+      <div class="v5-text-block">
+        Estudiante de cuarto año de Ingeniería Comercial en la Universidad de Chile. Me apasionan las finanzas conductuales, el análisis de datos y la construcción de comunidades educativas en LATAM. Creo que el acceso al conocimiento de calidad debería ser universal, y por eso me unté a Conniku desde el primer día.
+      </div>
+      <div class="v5-callout" style="margin-top:12px">
+        <span class="v5-callout-icon">💡</span>
+        <div class="v5-callout-text"><strong>Actualmente buscando:</strong> práctica profesional en análisis financiero o consultoría estratégica para enero 2025. Disponible para tutorías en estadística y finanzas.</div>
+      </div>
+    </div>
+
+    <div class="v5-block">
+      <div class="v5-block-title">Cursos en Conniku</div>
+      <table class="v5-table">
+        <thead>
+          <tr><th>Curso</th><th>Módulo</th><th>Progreso</th><th>Estado</th></tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>Análisis Financiero Avanzado</td>
+            <td>Biblioteca</td>
+            <td><div class="v5-prog"><div class="v5-prog-fill" style="width:100%"></div></div></td>
+            <td><span class="v5-status done">Completado</span></td>
+          </tr>
+          <tr>
+            <td>Python para Finanzas</td>
+            <td>Workspace</td>
+            <td><div class="v5-prog"><div class="v5-prog-fill" style="width:75%"></div></div></td>
+            <td><span class="v5-status progress">En progreso</span></td>
+          </tr>
+          <tr>
+            <td>Estadística Inferencial</td>
+            <td>Biblioteca</td>
+            <td><div class="v5-prog"><div class="v5-prog-fill" style="width:100%"></div></div></td>
+            <td><span class="v5-status done">Completado</span></td>
+          </tr>
+          <tr>
+            <td>Marketing Digital B2B</td>
+            <td>Comunidad</td>
+            <td><div class="v5-prog"><div class="v5-prog-fill" style="width:30%"></div></div></td>
+            <td><span class="v5-status plan">Planificado</span></td>
+          </tr>
+          <tr>
+            <td>Valoración de Empresas (DCF)</td>
+            <td>Biblioteca</td>
+            <td><div class="v5-prog"><div class="v5-prog-fill" style="width:100%"></div></div></td>
+            <td><span class="v5-status done">Completado</span></td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="v5-block">
+      <div class="v5-block-title">Habilidades</div>
+      <div class="v5-skills">
+        <span class="v5-skill highlight">Python</span>
+        <span class="v5-skill highlight">Análisis financiero</span>
+        <span class="v5-skill green">Tutoría académica</span>
+        <span class="v5-skill green">Comunicación</span>
+        <span class="v5-skill">Excel avanzado</span>
+        <span class="v5-skill">SQL básico</span>
+        <span class="v5-skill">Estadística aplicada</span>
+        <span class="v5-skill">PowerPoint</span>
+        <span class="v5-skill">Inglés B2</span>
+      </div>
+    </div>
+
+    <div class="v5-block">
+      <div class="v5-block-title">Actividad reciente</div>
+      <div class="v5-timeline">
+        <div class="v5-tl-item green">
+          <div class="v5-tl-date">Hace 2 días</div>
+          <div class="v5-tl-text"><strong>Completó</strong> Análisis Financiero Avanzado · +150 puntos</div>
+        </div>
+        <div class="v5-tl-item">
+          <div class="v5-tl-date">Hace 5 días</div>
+          <div class="v5-tl-text"><strong>Realizó tutoría</strong> de Estadística Básica · 2 estudiantes · +80 puntos</div>
+        </div>
+        <div class="v5-tl-item green">
+          <div class="v5-tl-date">Hace 1 semana</div>
+          <div class="v5-tl-text"><strong>Hito alcanzado:</strong> 2.400 puntos totales · Top 5% plataforma</div>
+        </div>
+        <div class="v5-tl-item">
+          <div class="v5-tl-date">Hace 2 semanas</div>
+          <div class="v5-tl-text"><strong>Nueva conexión:</strong> +12 conexiones nuevas esta semana</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ══════════════════════════════════════════════
+     VARIANTE 6 — Dashboard Académico
+══════════════════════════════════════════════ -->
+<section class="variant v6" id="v6">
+  <div class="v6-wrap">
+
+    <!-- HEADER -->
+    <div class="v6-header">
+      <div class="v6-avatar">VR</div>
+      <div class="v6-id">
+        <h2>Valentina Reyes</h2>
+        <p>Universidad de Chile · Ing. Comercial 4to año</p>
+        <div class="v6-id-badges">
+          <span class="v6-badge navy">Nivel 8</span>
+          <span class="v6-badge green">Tutora activa</span>
+          <span class="v6-badge orange">Top 5%</span>
+        </div>
+      </div>
+      <div class="v6-header-right">
+        <button class="v6-hbtn ghost">Ver perfil público</button>
+        <button class="v6-hbtn primary">Editar perfil</button>
+      </div>
+    </div>
+
+    <!-- KPI ROW -->
+    <div class="v6-kpi-row">
+      <div class="v6-kpi k1">
+        <div class="v6-kpi-label">Cursos completados</div>
+        <div class="v6-kpi-value">12</div>
+        <div class="v6-kpi-sub">+3 este trimestre</div>
+        <span class="v6-kpi-trend up">↑ +33%</span>
+      </div>
+      <div class="v6-kpi k2">
+        <div class="v6-kpi-label">Puntos ganados</div>
+        <div class="v6-kpi-value">2.400</div>
+        <div class="v6-kpi-sub">Meta trimestral: 3.000</div>
+        <span class="v6-kpi-trend up">↑ +18%</span>
+      </div>
+      <div class="v6-kpi k3">
+        <div class="v6-kpi-label">Conexiones</div>
+        <div class="v6-kpi-value">847</div>
+        <div class="v6-kpi-sub">+12 esta semana</div>
+        <span class="v6-kpi-trend up">↑ +1.4%</span>
+      </div>
+      <div class="v6-kpi k4">
+        <div class="v6-kpi-label">Tutorías realizadas</div>
+        <div class="v6-kpi-value">3</div>
+        <div class="v6-kpi-sub">16 horas totales</div>
+        <span class="v6-kpi-trend neutral">● activa</span>
+      </div>
+    </div>
+
+    <!-- BODY -->
+    <div class="v6-body">
+
+      <!-- SIDEBAR -->
+      <div class="v6-sidebar">
+        <div class="v6-card">
+          <h3>Progreso por área</h3>
+          <div>
+            <!-- SVG radial -->
+            <svg viewBox="0 0 120 120" width="120" style="display:block;margin:0 auto 16px">
+              <circle cx="60" cy="60" r="50" fill="none" stroke="#e8eef8" stroke-width="12"/>
+              <circle cx="60" cy="60" r="50" fill="none" stroke="#0A2878" stroke-width="12"
+                stroke-dasharray="314" stroke-dashoffset="94" stroke-linecap="round"
+                transform="rotate(-90 60 60)"/>
+              <circle cx="60" cy="60" r="36" fill="none" stroke="#e8eef8" stroke-width="10"/>
+              <circle cx="60" cy="60" r="36" fill="none" stroke="#00C27A" stroke-width="10"
+                stroke-dasharray="226" stroke-dashoffset="56" stroke-linecap="round"
+                transform="rotate(-90 60 60)"/>
+              <text x="60" y="56" text-anchor="middle" font-size="14" font-weight="800" fill="#060E24" font-family="Inter,sans-serif">70%</text>
+              <text x="60" y="70" text-anchor="middle" font-size="9" fill="#9ca3af" font-family="Inter,sans-serif">general</text>
+            </svg>
+            <div class="v6-radial-labels">
+              <div class="v6-radial-lbl">
+                <span class="lbl-name">Finanzas</span>
+                <div class="v6-prog-bar" style="display:inline-block;flex:1;margin:0 8px;vertical-align:middle;width:80px"><div class="v6-prog-bar-fill" style="width:90%;height:5px;border-radius:3px;background:#0A2878"></div></div>
+                <span class="lbl-pct">90%</span>
+              </div>
+              <div class="v6-radial-lbl" style="margin-top:6px">
+                <span class="lbl-name">Datos</span>
+                <div class="v6-prog-bar" style="display:inline-block;flex:1;margin:0 8px;vertical-align:middle;width:80px"><div class="v6-prog-bar-fill" style="width:75%;height:5px;border-radius:3px;background:#00C27A"></div></div>
+                <span class="lbl-pct">75%</span>
+              </div>
+              <div class="v6-radial-lbl" style="margin-top:6px">
+                <span class="lbl-name">Marketing</span>
+                <div class="v6-prog-bar" style="display:inline-block;flex:1;margin:0 8px;vertical-align:middle;width:80px"><div class="v6-prog-bar-fill" style="width:30%;height:5px;border-radius:3px;background:#7c3aed"></div></div>
+                <span class="lbl-pct">30%</span>
+              </div>
+              <div class="v6-radial-lbl" style="margin-top:6px">
+                <span class="lbl-name">Tutorías</span>
+                <div class="v6-prog-bar" style="display:inline-block;flex:1;margin:0 8px;vertical-align:middle;width:80px"><div class="v6-prog-bar-fill" style="width:60%;height:5px;border-radius:3px;background:#e07b00"></div></div>
+                <span class="lbl-pct">60%</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="v6-card">
+          <h3>Módulos</h3>
+          <div class="v6-module-list">
+            <div class="v6-module-row">
+              <div class="v6-module-icon" style="background:#e8eef8">📁</div>
+              <span class="v6-module-name">Workspace</span>
+              <div class="v6-module-dot" style="background:#00C27A"></div>
+            </div>
+            <div class="v6-module-row">
+              <div class="v6-module-icon" style="background:#fff3e0">📚</div>
+              <span class="v6-module-name">Biblioteca</span>
+              <div class="v6-module-dot" style="background:#00C27A"></div>
+            </div>
+            <div class="v6-module-row">
+              <div class="v6-module-icon" style="background:#f0e8ff">💼</div>
+              <span class="v6-module-name">Empleos</span>
+              <div class="v6-module-dot" style="background:#e8eef8;border:1px solid #c5d3ec"></div>
+            </div>
+            <div class="v6-module-row">
+              <div class="v6-module-icon" style="background:#e8f7f0">👨‍🏫</div>
+              <span class="v6-module-name">Tutores</span>
+              <div class="v6-module-dot" style="background:#00C27A"></div>
+            </div>
+            <div class="v6-module-row">
+              <div class="v6-module-icon" style="background:#ffeef0">🌐</div>
+              <span class="v6-module-name">Comunidad</span>
+              <div class="v6-module-dot" style="background:#e8eef8;border:1px solid #c5d3ec"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- FEED -->
+      <div class="v6-feed">
+        <div class="v6-activity">
+          <div class="v6-act-header">
+            <div>
+              <div class="v6-act-title">Análisis Financiero Avanzado</div>
+              <div class="v6-act-meta">Biblioteca · Iniciado hace 3 semanas</div>
+            </div>
+            <span class="v6-act-type course">Curso</span>
+          </div>
+          <div class="v6-act-progress">
+            <div class="v6-act-progress-top"><span>Progreso general</span><strong>100%</strong></div>
+            <div class="v6-act-prog-bar"><div class="v6-act-prog-fill green" style="width:100%"></div></div>
+          </div>
+          <div class="v6-act-footer">
+            <div class="v6-act-foot-item">⏱ <strong>8h 30m</strong> invertidas</div>
+            <div class="v6-act-foot-item">⭐ <strong>+150 pts</strong> ganados</div>
+            <div class="v6-act-foot-item">📅 <strong>Completado</strong> hace 2 días</div>
+          </div>
+        </div>
+
+        <div class="v6-activity">
+          <div class="v6-act-header">
+            <div>
+              <div class="v6-act-title">Python para Finanzas</div>
+              <div class="v6-act-meta">Workspace · En progreso</div>
+            </div>
+            <span class="v6-act-type course">Curso</span>
+          </div>
+          <div class="v6-act-progress">
+            <div class="v6-act-progress-top"><span>Progreso general</span><strong>75%</strong></div>
+            <div class="v6-act-prog-bar"><div class="v6-act-prog-fill" style="width:75%"></div></div>
+          </div>
+          <div class="v6-act-footer">
+            <div class="v6-act-foot-item">⏱ <strong>6h 15m</strong> invertidas</div>
+            <div class="v6-act-foot-item">⭐ <strong>+90 pts</strong> ganados</div>
+            <div class="v6-act-foot-item">📅 <strong>Próxima clase:</strong> mañana</div>
+          </div>
+        </div>
+
+        <div class="v6-activity">
+          <div class="v6-act-header">
+            <div>
+              <div class="v6-act-title">Tutoría: Estadística Básica</div>
+              <div class="v6-act-meta">Tutores · 2 estudiantes atendidos</div>
+            </div>
+            <span class="v6-act-type tutoría">Tutoría</span>
+          </div>
+          <div class="v6-act-progress">
+            <div class="v6-act-progress-top"><span>Calificación promedio recibida</span><strong>4.8 / 5.0</strong></div>
+            <div class="v6-act-prog-bar"><div class="v6-act-prog-fill green" style="width:96%"></div></div>
+          </div>
+          <div class="v6-act-footer">
+            <div class="v6-act-foot-item">⏱ <strong>3h 00m</strong> invertidas</div>
+            <div class="v6-act-foot-item">⭐ <strong>+80 pts</strong> ganados</div>
+            <div class="v6-act-foot-item">👥 <strong>2</strong> estudiantes</div>
+          </div>
+        </div>
+
+        <div class="v6-card">
+          <div class="v6-recent-title">Actividad reciente</div>
+          <div class="v6-recent-row">
+            <div class="v6-recent-icon" style="background:#e8eef8">📊</div>
+            <div class="v6-recent-text"><strong>Módulo 7 completado</strong><span>Análisis Financiero · hace 2 días</span></div>
+            <span class="v6-recent-pts">+40 pts</span>
+          </div>
+          <div class="v6-recent-row">
+            <div class="v6-recent-icon" style="background:#e8f7f0">🤝</div>
+            <div class="v6-recent-text"><strong>Nueva conexión: Carlos Mendoza</strong><span>PUC Chile · hace 3 días</span></div>
+            <span class="v6-recent-pts">+5 pts</span>
+          </div>
+          <div class="v6-recent-row">
+            <div class="v6-recent-icon" style="background:#fef3e0">🏆</div>
+            <div class="v6-recent-text"><strong>Hito: 2.400 puntos totales</strong><span>Top 5% plataforma · hace 1 semana</span></div>
+            <span class="v6-recent-pts">+50 pts</span>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</section>
+
+<script>
+  function switchTab(n) {
+    document.querySelectorAll('.variant').forEach(function(el) { el.classList.remove('active'); });
+    document.querySelectorAll('.tab-btn').forEach(function(el) { el.classList.remove('active'); });
+    document.getElementById('v' + n).classList.add('active');
+    document.querySelectorAll('.tab-btn')[n - 1].classList.add('active');
+  }
+</script>
+</body>
+</html>

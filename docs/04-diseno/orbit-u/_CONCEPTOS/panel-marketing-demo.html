@@ -1,0 +1,405 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>Paneles de Marketing · Conniku</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"/>
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Funnel+Display:wght@400;700;800;900&family=Inter:wght@400;500;600;700&family=Geist+Mono:wght@400;500;600&display=swap"/>
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+html,body{width:100%;height:100%;overflow:hidden;background:#050608;color:#F5F4EF}
+canvas{position:fixed;inset:0;display:block;z-index:0}
+
+/* ── Orbit rings ── */
+.orb-ring{position:fixed;border-radius:50%;left:50%;top:50%;transform:translate(-50%,-50%);pointer-events:none;z-index:2}
+.orb-1{width:170px; height:170px; border:1px solid rgba(0,194,122,.13)}
+.orb-2{width:280px; height:280px; border:1px dashed rgba(196,154,58,.10)}
+.orb-3{width:390px; height:390px; border:1px dotted rgba(0,150,204,.09)}
+.orb-4{width:500px; height:500px; border:1px solid rgba(107,78,255,.09)}
+.orb-5{width:610px; height:610px; border:1px dashed rgba(255,74,28,.08)}
+
+/* ── Center engine ── */
+.engine{
+  position:fixed;left:50%;top:50%;transform:translate(-50%,-50%);
+  width:80px;height:80px;border-radius:50%;z-index:10;pointer-events:none;
+  background:radial-gradient(circle at 38% 30%,#001810,#060809);
+  border:1.5px solid rgba(0,194,122,.52);
+  display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;
+  box-shadow:0 0 24px rgba(0,194,122,.18),0 0 48px rgba(0,194,122,.07),inset 0 1px 0 rgba(0,194,122,.15);
+}
+.engine::before{content:'';position:absolute;inset:-9px;border-radius:50%;border:1px solid rgba(0,194,122,.11);animation:br 3.6s ease-in-out infinite}
+.engine::after{content:'';position:absolute;inset:-18px;border-radius:50%;border:1px dashed rgba(0,194,122,.07);animation:br 3.6s .8s ease-in-out infinite}
+@keyframes br{0%,100%{opacity:.5;transform:scale(1)}50%{opacity:1;transform:scale(1.025)}}
+.u-icon{width:30px;height:30px;border-radius:7px;background:linear-gradient(135deg,#8AEAC0,#006E4A);display:grid;place-items:center;transform:rotate(-12deg);box-shadow:0 2px 8px rgba(0,0,0,.5)}
+.u-letter{font-family:'Funnel Display',sans-serif;font-weight:900;font-size:15px;color:#0D0F10;letter-spacing:-.055em;transform:rotate(12deg);display:flex;align-items:baseline}
+.u-dot{color:#FF4A1C}
+.eng-sub{font-family:'Geist Mono',monospace;font-size:7px;color:rgba(0,194,122,.7);letter-spacing:.2em}
+
+/* ── Planet buttons (stopped/final state = big buttons) ── */
+.planet-btn{
+  position:fixed;left:50%;transform:translate(-50%,-50%);
+  display:flex;align-items:center;gap:9px;
+  padding:11px 20px 11px 14px;border-radius:100px;
+  font-family:'Geist Mono',monospace;font-size:11.5px;font-weight:600;letter-spacing:.05em;
+  text-decoration:none;cursor:pointer;white-space:nowrap;
+  transition:all .22s ease;z-index:5;border:1px solid;
+}
+.planet-btn:hover{transform:translate(-50%,-50%) scale(1.05)}
+.pb-dot{width:7px;height:7px;border-radius:50%;flex-shrink:0}
+.pb-name{flex:1}
+.pb-arr{font-size:10px;opacity:.55;margin-left:2px;transition:opacity .2s}
+.planet-btn:hover .pb-arr{opacity:1}
+
+/* Planet-specific colors */
+#pb-conniku{background:rgba(0,194,122,.13);border-color:rgba(0,194,122,.45);color:#8AEAC0;box-shadow:0 0 18px rgba(0,194,122,.12);top:calc(50% - 85px);padding:13px 22px 13px 16px;font-size:12.5px}
+#pb-conniku:hover{background:rgba(0,194,122,.22);border-color:rgba(0,194,122,.72);box-shadow:0 0 30px rgba(0,194,122,.28)}
+#pb-tutores{background:rgba(196,154,58,.11);border-color:rgba(196,154,58,.40);color:#FFD87A;box-shadow:0 0 16px rgba(196,154,58,.10);top:calc(50% + 140px)}
+#pb-tutores:hover{background:rgba(196,154,58,.20);border-color:rgba(196,154,58,.68);box-shadow:0 0 26px rgba(196,154,58,.24)}
+#pb-empleos{background:rgba(0,150,204,.11);border-color:rgba(0,150,204,.40);color:#67E8F9;box-shadow:0 0 16px rgba(0,150,204,.10);top:calc(50% + 195px)}
+#pb-empleos:hover{background:rgba(0,150,204,.20);border-color:rgba(0,150,204,.68);box-shadow:0 0 26px rgba(0,150,204,.24)}
+#pb-entrar{background:rgba(107,78,255,.11);border-color:rgba(107,78,255,.40);color:#C4B5FD;box-shadow:0 0 16px rgba(107,78,255,.10);top:calc(50% + 250px)}
+#pb-entrar:hover{background:rgba(107,78,255,.20);border-color:rgba(107,78,255,.68);box-shadow:0 0 26px rgba(107,78,255,.24)}
+#pb-crear{background:rgba(255,74,28,.11);border-color:rgba(255,74,28,.40);color:#FFBDAB;box-shadow:0 0 16px rgba(255,74,28,.10);top:calc(50% + 305px)}
+#pb-crear:hover{background:rgba(255,74,28,.20);border-color:rgba(255,74,28,.68);box-shadow:0 0 26px rgba(255,74,28,.24)}
+
+/* ── PANEL A · Glass Izquierdo ── */
+.panel-a{
+  position:fixed;left:0;top:0;bottom:0;width:290px;z-index:15;
+  background:rgba(5,6,8,.78);backdrop-filter:blur(24px);-webkit-backdrop-filter:blur(24px);
+  border-right:1px solid rgba(0,194,122,.12);
+  display:flex;flex-direction:column;padding:40px 32px;
+  opacity:0;pointer-events:none;transition:opacity .35s ease
+}
+.panel-a.visible{opacity:1;pointer-events:all}
+.pa-badge{font-family:'Geist Mono',monospace;font-size:9px;letter-spacing:.2em;color:rgba(0,194,122,.6);background:rgba(0,194,122,.07);border:1px solid rgba(0,194,122,.18);padding:4px 10px;border-radius:4px;width:fit-content;margin-bottom:20px}
+.pa-logo{font-family:'Funnel Display',sans-serif;font-weight:900;font-size:40px;letter-spacing:-.05em;color:#F5F4EF;line-height:1;margin-bottom:4px}
+.pa-logo em{font-style:italic;opacity:.4}
+.pa-utile{display:inline-flex;align-items:baseline;background:linear-gradient(135deg,#8AEAC0,#006E4A);color:#0D0F10;padding:.02em .1em .02em .06em;border-radius:.16em;margin-left:.02em;transform:rotate(-12deg);transform-origin:center}
+.pa-udot{color:#FF4A1C}
+.pa-product{font-family:'Geist Mono',monospace;font-size:10px;color:rgba(0,194,122,.5);letter-spacing:.2em;margin-bottom:28px}
+.pa-sep{height:1px;background:linear-gradient(to right,rgba(0,194,122,.3),transparent);margin-bottom:24px}
+.pa-tagline{font-family:'Funnel Display',sans-serif;font-weight:800;font-size:22px;letter-spacing:-.03em;color:#F5F4EF;line-height:1.25;margin-bottom:10px}
+.pa-tagline em{color:#00C27A;font-style:normal}
+.pa-sub{font-family:'Geist Mono',monospace;font-size:9px;color:rgba(245,244,239,.35);letter-spacing:.1em;line-height:1.8;margin-bottom:24px}
+.pa-sep2{height:1px;background:rgba(245,244,239,.06);margin-bottom:24px}
+.pa-desc{font-size:13px;color:rgba(245,244,239,.45);line-height:1.8;margin-bottom:32px;flex:1}
+.pa-desc strong{color:rgba(245,244,239,.75);font-weight:600}
+.pa-stats{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:28px}
+.pa-stat{border:1px solid rgba(245,244,239,.07);border-radius:8px;padding:10px 12px;background:rgba(245,244,239,.02)}
+.pa-stat-n{font-family:'Funnel Display',sans-serif;font-weight:900;font-size:24px;color:#00C27A;letter-spacing:-.04em}
+.pa-stat-l{font-family:'Geist Mono',monospace;font-size:9px;color:rgba(245,244,239,.3);letter-spacing:.08em;margin-top:1px}
+.pa-cta{display:flex;align-items:center;gap:8px;font-family:'Geist Mono',monospace;font-size:10px;color:#00C27A;letter-spacing:.1em;padding:12px 16px;border:1px solid rgba(0,194,122,.3);border-radius:8px;background:rgba(0,194,122,.06);cursor:pointer;transition:all .2s;text-decoration:none}
+.pa-cta:hover{background:rgba(0,194,122,.12);border-color:rgba(0,194,122,.55)}
+.pa-cta-arr{margin-left:auto;font-size:12px}
+
+/* ── PANEL B · Texto Flotante ── */
+.panel-b{
+  position:fixed;left:0;top:0;bottom:0;width:340px;z-index:14;
+  display:flex;flex-direction:column;justify-content:center;padding:0 48px;
+  opacity:0;pointer-events:none;transition:opacity .35s ease
+}
+.panel-b.visible{opacity:1;pointer-events:all}
+.pb-wm{font-family:'Funnel Display',sans-serif;font-weight:900;font-size:88px;letter-spacing:-.06em;color:#F5F4EF;opacity:.055;line-height:.9;margin-bottom:4px;pointer-events:none;user-select:none}
+.pb-wm2{font-family:'Funnel Display',sans-serif;font-weight:900;font-size:88px;letter-spacing:-.06em;color:#00C27A;opacity:.045;line-height:.9;pointer-events:none;user-select:none}
+.pb-divider{width:40px;height:2px;background:linear-gradient(to right,rgba(0,194,122,.7),transparent);margin:28px 0 22px}
+.pb-heading{font-family:'Funnel Display',sans-serif;font-weight:800;font-size:20px;letter-spacing:-.03em;color:#F5F4EF;line-height:1.3;margin-bottom:10px}
+.pb-heading em{color:#00C27A;font-style:normal}
+.pb-jp{font-family:'Geist Mono',monospace;font-size:9px;color:rgba(245,244,239,.3);letter-spacing:.12em;margin-bottom:18px;line-height:1.9}
+.pb-jp span{color:rgba(0,194,122,.55)}
+.pb-body{font-size:13px;color:rgba(245,244,239,.45);line-height:1.85;margin-bottom:24px}
+.pb-highlight{display:inline-block;font-family:'Geist Mono',monospace;font-size:10px;color:#00C27A;letter-spacing:.1em;border-left:2px solid #00C27A;padding-left:10px;line-height:1.8}
+
+/* ── PANEL C · Banda Inferior ── */
+.panel-c{
+  position:fixed;left:0;right:0;bottom:0;height:64px;z-index:15;
+  background:rgba(5,6,8,.82);backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px);
+  border-top:1px solid rgba(0,194,122,.1);
+  display:flex;align-items:center;padding:0 36px;gap:20px;
+  opacity:0;pointer-events:none;transition:opacity .35s ease
+}
+.panel-c.visible{opacity:1;pointer-events:all}
+.pc-brand{display:flex;align-items:baseline;gap:0;font-family:'Funnel Display',sans-serif;font-weight:900;font-size:18px;letter-spacing:-.04em;color:#F5F4EF;white-space:nowrap;flex-shrink:0}
+.pc-brand em{font-style:italic;opacity:.4}
+.pc-utile{display:inline-flex;align-items:baseline;background:linear-gradient(135deg,#8AEAC0,#006E4A);color:#0D0F10;padding:.02em .1em .02em .06em;border-radius:.15em;margin-left:.02em;transform:rotate(-12deg);transform-origin:center}
+.pc-udot{color:#FF4A1C}
+.pc-sep{width:1px;height:24px;background:rgba(245,244,239,.1);flex-shrink:0}
+.pc-orbit{font-family:'Geist Mono',monospace;font-size:9px;color:rgba(0,194,122,.4);letter-spacing:.18em;white-space:nowrap;flex-shrink:0}
+.pc-mid{flex:1;text-align:center}
+.pc-tagline{font-family:'Funnel Display',sans-serif;font-weight:800;font-size:14px;letter-spacing:-.02em;color:rgba(245,244,239,.55)}
+.pc-tagline em{color:#00C27A;font-style:normal}
+.pc-right{display:flex;align-items:center;gap:16px;flex-shrink:0}
+.pc-cta{font-family:'Geist Mono',monospace;font-size:9.5px;color:#00C27A;letter-spacing:.1em;padding:8px 16px;border:1px solid rgba(0,194,122,.3);border-radius:6px;background:rgba(0,194,122,.07);cursor:pointer;white-space:nowrap;text-decoration:none;transition:all .2s}
+.pc-cta:hover{background:rgba(0,194,122,.14);border-color:rgba(0,194,122,.55)}
+.pc-modules{display:flex;gap:4px}
+.pc-m{width:6px;height:6px;border-radius:50%}
+
+/* ── UI Tabs ── */
+.ui{position:fixed;top:22px;right:28px;z-index:40;display:flex;flex-direction:column;align-items:flex-end;gap:10px}
+.tabs{display:flex;gap:5px}
+.tab{background:rgba(5,6,8,.8);border:1px solid rgba(245,244,239,.1);color:rgba(245,244,239,.32);font-family:'Geist Mono',monospace;font-size:9px;letter-spacing:.1em;padding:8px 14px;border-radius:7px;cursor:pointer;transition:all .18s;backdrop-filter:blur(8px)}
+.tab:hover{border-color:rgba(0,194,122,.35);color:rgba(0,194,122,.7)}
+.tab.active{border-color:rgba(0,194,122,.65);color:#00C27A;background:rgba(0,194,122,.09)}
+.tab-label{font-family:'Geist Mono',monospace;font-size:9px;color:rgba(245,244,239,.22);letter-spacing:.06em;text-align:right}
+
+/* Concept indicator top-left */
+.concept-flag{position:fixed;top:22px;left:28px;z-index:40;display:flex;flex-direction:column;gap:5px}
+.cf-num{font-family:'Geist Mono',monospace;font-size:9px;letter-spacing:.18em;color:rgba(0,194,122,.6);background:rgba(0,194,122,.07);border:1px solid rgba(0,194,122,.2);padding:3px 8px;border-radius:4px;width:fit-content}
+.cf-name{font-family:'Funnel Display',sans-serif;font-weight:900;font-size:24px;color:#F5F4EF;letter-spacing:-.04em}
+.cf-tag{font-family:'Geist Mono',monospace;font-size:9px;color:rgba(245,244,239,.26);letter-spacing:.05em;max-width:280px;line-height:1.6}
+
+/* Fade */
+#fade{position:fixed;inset:0;background:#050608;z-index:99;pointer-events:none;opacity:0;transition:opacity .22s}
+</style>
+</head>
+<body>
+
+<canvas id="cvs"></canvas>
+
+<!-- Orbit rings -->
+<div class="orb-ring orb-1"></div>
+<div class="orb-ring orb-2"></div>
+<div class="orb-ring orb-3"></div>
+<div class="orb-ring orb-4"></div>
+<div class="orb-ring orb-5"></div>
+
+<!-- Center engine -->
+<div class="engine">
+  <div class="u-icon"><span class="u-letter">u<span class="u-dot">.</span></span></div>
+  <span class="eng-sub">ORBIT</span>
+</div>
+
+<!-- Planet buttons (stopped, vertical) -->
+<a class="planet-btn" id="pb-conniku" href="#">
+  <div class="pb-dot" style="background:#00C27A"></div>
+  <span class="pb-name">conniku.</span>
+  <span class="pb-arr">→</span>
+</a>
+<a class="planet-btn" id="pb-tutores" href="#">
+  <div class="pb-dot" style="background:#C49A3A"></div>
+  <span class="pb-name">tutores</span>
+  <span class="pb-arr">→</span>
+</a>
+<a class="planet-btn" id="pb-empleos" href="#">
+  <div class="pb-dot" style="background:#0096CC"></div>
+  <span class="pb-name">empleos</span>
+  <span class="pb-arr">→</span>
+</a>
+<a class="planet-btn" id="pb-entrar" href="#">
+  <div class="pb-dot" style="background:#6B4EFF"></div>
+  <span class="pb-name">entrar</span>
+  <span class="pb-arr">→</span>
+</a>
+<a class="planet-btn" id="pb-crear" href="#">
+  <div class="pb-dot" style="background:#FF4A1C"></div>
+  <span class="pb-name">crear cuenta gratis</span>
+  <span class="pb-arr">→</span>
+</a>
+
+<!-- ═══ PANEL A · Glass Panel Izquierdo ═══ -->
+<div class="panel-a visible" id="panelA">
+  <div class="pa-badge">ORBIT-U · CONNIKU</div>
+
+  <div class="pa-logo"><!-- WORDMARK PENDIENTE --></div>
+  <div class="pa-product">ORBIT · U</div>
+
+  <div class="pa-sep"></div>
+
+  <div class="pa-tagline">El <em>sistema operativo</em> de tu vida universitaria.</div>
+  <div class="pa-sub">MENSAJES · WORKSPACE · IA · BIBLIOTECA<br>TUTORES · CURSOS · EMPLEOS · COMUNIDAD</div>
+
+  <div class="pa-sep2"></div>
+
+  <div class="pa-desc">
+    Todo lo que necesitas para tu carrera universitaria, <strong>integrado en una sola plataforma.</strong> Hecha para la realidad latinoamericana, no para un mercado abstracto.
+  </div>
+
+  <div class="pa-stats">
+    <div class="pa-stat">
+      <div class="pa-stat-n">9</div>
+      <div class="pa-stat-l">MÓDULOS</div>
+    </div>
+    <div class="pa-stat">
+      <div class="pa-stat-n">1</div>
+      <div class="pa-stat-l">PLATAFORMA</div>
+    </div>
+    <div class="pa-stat">
+      <div class="pa-stat-n">∞</div>
+      <div class="pa-stat-l">POSIBILIDADES</div>
+    </div>
+    <div class="pa-stat">
+      <div class="pa-stat-n">CL</div>
+      <div class="pa-stat-l">LATINOAMÉRICA</div>
+    </div>
+  </div>
+
+  <a class="pa-cta" href="#">
+    Descubre el poder de conniku
+    <span class="pa-cta-arr">→</span>
+  </a>
+</div>
+
+<!-- ═══ PANEL B · Texto Flotante ═══ -->
+<div class="panel-b" id="panelB">
+  <div class="pb-wm">conn</div>
+  <div class="pb-wm2">iku.</div>
+
+  <div class="pb-divider"></div>
+
+  <div class="pb-heading">Conectar es el comienzo.<br><em>Moverse</em> es el resultado.</div>
+
+  <div class="pb-jp">
+    <span>conn</span> · conexión · the link between minds<br>
+    <span>iku · 行く</span> · avanzar · to move forward<br>
+    <span>conniku</span> · la plataforma que te pone en movimiento
+  </div>
+
+  <div class="pb-body">
+    Una sola plataforma para todo lo que la universidad exige. Tutores reales. Empleos posibles. Comunidades que entienden dónde estudias y cómo vives.
+  </div>
+
+  <div class="pb-highlight">
+    → Descubre el poder de conniku aquí
+  </div>
+</div>
+
+<!-- ═══ PANEL C · Banda Inferior ═══ -->
+<div class="panel-c" id="panelC">
+  <div class="pc-brand"><!-- WORDMARK PENDIENTE --></div>
+  <div class="pc-sep"></div>
+  <div class="pc-orbit">ORBIT · U</div>
+  <div class="pc-sep"></div>
+  <div class="pc-mid">
+    <div class="pc-tagline">Todo tu universo universitario, en <em>órbita.</em> — Descubre el poder de conniku aquí</div>
+  </div>
+  <div class="pc-right">
+    <div class="pc-modules">
+      <div class="pc-m" style="background:#00C27A"></div>
+      <div class="pc-m" style="background:#C49A3A"></div>
+      <div class="pc-m" style="background:#0096CC"></div>
+      <div class="pc-m" style="background:#6B4EFF"></div>
+      <div class="pc-m" style="background:#FF4A1C"></div>
+    </div>
+    <a class="pc-cta" href="#">Entrar →</a>
+  </div>
+</div>
+
+<!-- Concept flag -->
+<div class="concept-flag">
+  <span class="cf-num" id="cfNum">A</span>
+  <span class="cf-name" id="cfName">PANEL GLASS</span>
+  <span class="cf-tag" id="cfTag">Copy: "Sistema Operativo" · Panel lateral con estadísticas y CTA</span>
+</div>
+
+<!-- UI Tabs -->
+<div class="ui">
+  <div class="tabs">
+    <button class="tab active" onclick="sw(0,this)">A · GLASS</button>
+    <button class="tab" onclick="sw(1,this)">B · FLOTANTE</button>
+    <button class="tab" onclick="sw(2,this)">C · BANDA</button>
+  </div>
+  <div class="tab-label" id="tabLabel">Fondo oscuro · Copy "Sistema Operativo"</div>
+</div>
+
+<div id="fade"></div>
+
+<script>
+const cvs=document.getElementById('cvs');
+const ctx=cvs.getContext('2d');
+let W,H;
+function resize(){W=cvs.width=innerWidth;H=cvs.height=innerHeight;}
+resize(); window.addEventListener('resize',resize);
+
+/* ── Fixed planet positions for hex glow ── */
+const FP=[
+  {col:[0,194,122]},   // conniku top
+  {col:[196,154,58]},  // tutores bottom
+  {col:[0,150,204]},   // empleos
+  {col:[107,78,255]},  // entrar
+  {col:[255,74,28]},   // crear
+];
+function planetY(i){ return i===0 ? H/2-85 : H/2+[140,195,250,305][i-1]; }
+
+/* ── Hex grid ── */
+const S=28,SQ3=Math.sqrt(3);
+let hexes=[];
+function buildHexes(){
+  hexes=[];
+  const cols=Math.ceil(W/(S*SQ3))+3, rows=Math.ceil(H/(S*1.5))+3;
+  for(let r=0;r<rows;r++) for(let c=0;c<cols;c++){
+    const ox=(r%2)*S*SQ3*.5;
+    hexes.push({cx:c*S*SQ3+ox-S*SQ3, cy:r*S*1.5-S*1.5, glow:0, cr:0,cg:194,cb:122});
+  }
+}
+buildHexes();
+window.addEventListener('resize',buildHexes);
+
+function hexPath(cx,cy,s){
+  ctx.beginPath();
+  for(let i=0;i<6;i++){const a=Math.PI/180*(60*i-30);i===0?ctx.moveTo(cx+s*Math.cos(a),cy+s*Math.sin(a)):ctx.lineTo(cx+s*Math.cos(a),cy+s*Math.sin(a));}
+  ctx.closePath();
+}
+
+let tick=0;
+function frame(){
+  requestAnimationFrame(frame);
+  ctx.fillStyle='rgba(5,6,8,0.18)'; ctx.fillRect(0,0,W,H);
+  tick++;
+
+  // Update hex glow from static planet positions
+  for(const h of hexes){
+    h.glow=Math.max(0,h.glow-.014);
+    for(let i=0;i<FP.length;i++){
+      const px=W/2, py=planetY(i);
+      const d=Math.hypot(h.cx-px,h.cy-py), rng=S*4.2;
+      // Subtle pulse
+      const pulse=1+Math.sin(tick*.03+i)*0.12;
+      if(d<rng){const s=(1-d/rng)*pulse*.85;if(s>h.glow){h.glow=s;h.cr=FP[i].col[0];h.cg=FP[i].col[1];h.cb=FP[i].col[2];}}
+    }
+    hexPath(h.cx,h.cy,S*.88);
+    ctx.fillStyle=`rgba(${h.cr},${h.cg},${h.cb},${h.glow*.065})`; ctx.fill();
+    ctx.strokeStyle=`rgba(${h.cr},${h.cg},${h.cb},${.035+h.glow*.22})`; ctx.lineWidth=.65; ctx.stroke();
+    if(h.glow>.2){ctx.beginPath();ctx.arc(h.cx,h.cy,.8+h.glow*1.6,0,Math.PI*2);ctx.fillStyle=`rgba(${h.cr},${h.cg},${h.cb},${h.glow*.6})`;ctx.fill();}
+  }
+
+  // Centre radial glow
+  const cg=ctx.createRadialGradient(W/2,H/2,0,W/2,H/2,100);
+  cg.addColorStop(0,`rgba(0,194,122,${.10+Math.sin(tick*.025)*.03})`);
+  cg.addColorStop(1,'rgba(0,194,122,0)');
+  ctx.fillStyle=cg; ctx.beginPath(); ctx.arc(W/2,H/2,100,0,Math.PI*2); ctx.fill();
+
+  // Vertical axis line (very faint — shows the alignment)
+  ctx.strokeStyle='rgba(245,244,239,0.03)'; ctx.lineWidth=1;
+  ctx.setLineDash([4,8]);
+  ctx.beginPath(); ctx.moveTo(W/2,H/2-360); ctx.lineTo(W/2,H/2+360);
+  ctx.stroke(); ctx.setLineDash([]);
+}
+frame();
+
+/* ── Panel switching ── */
+const panels=['panelA','panelB','panelC'];
+const meta=[
+  {num:'A',name:'PANEL GLASS',    tag:'Copy: "Sistema Operativo" · Panel lateral con estadísticas y CTA', lbl:'Panel glass izquierdo · Copy ambicioso/institucional'},
+  {num:'B',name:'TEXTO FLOTANTE', tag:'Copy: "Conn · Iku" · Watermark tipográfico + copy lingüístico',     lbl:'Texto watermark flotante · Copy cultural/único'},
+  {num:'C',name:'BANDA INFERIOR', tag:'Copy: "Todo en Órbita" · Franja bottom con tagline + módulos',       lbl:'Banda inferior persistente · Copy poético/visual'},
+];
+let cur=0;
+
+function sw(idx,btn){
+  const f=document.getElementById('fade'); f.style.opacity='1';
+  setTimeout(()=>{
+    document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active')); btn.classList.add('active');
+    panels.forEach(id=>document.getElementById(id).classList.remove('visible'));
+    document.getElementById(panels[idx]).classList.add('visible');
+    const m=meta[idx];
+    document.getElementById('cfNum').textContent=m.num;
+    document.getElementById('cfName').textContent=m.name;
+    document.getElementById('cfTag').textContent=m.tag;
+    document.getElementById('tabLabel').textContent=m.lbl;
+    cur=idx; setTimeout(()=>{f.style.opacity='0';},80);
+  },220);
+}
+</script>
+</body>
+</html>

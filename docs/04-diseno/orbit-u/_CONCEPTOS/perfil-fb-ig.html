@@ -1,0 +1,2437 @@
+<!DOCTYPE html>
+<html lang="es" data-theme="navy-l">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>Perfil Social · FB+IG · Conniku</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"/>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Funnel+Display:wght@700;800;900&family=Inter:wght@400;500;600;700&family=Geist+Mono:wght@400;500;600&display=swap"/>
+<link rel="stylesheet" href="../shared/themes.css"/>
+<style>
+/* ════════════════════════════════════════
+   RESET + BASE
+   ════════════════════════════════════════ */
+* { box-sizing: border-box; margin: 0; padding: 0; }
+html, body {
+  min-height: 100vh; background: var(--bg); color: var(--text);
+  font-family: 'Inter', sans-serif; font-size: 14px;
+  -webkit-font-smoothing: antialiased; transition: background .3s, color .3s;
+}
+a { color: inherit; text-decoration: none; }
+button { font-family: inherit; cursor: pointer; border: none; background: none; }
+img { display: block; }
+
+/* ════════════════════════════════════════
+   ICON SYSTEM · stroke + dot naranja
+   coherente con el logo Conniku
+   ════════════════════════════════════════ */
+.ico {
+  display: inline-flex; align-items: center; justify-content: center;
+  position: relative; flex-shrink: 0;
+}
+.ico svg {
+  fill: none; stroke: currentColor;
+  stroke-width: 1.7; stroke-linecap: round; stroke-linejoin: round;
+  display: block;
+}
+/* dot · mismo sistema que el logo (bottom-right) */
+.ico.dot::after {
+  content: ''; position: absolute; bottom: 0px; right: 0px;
+  width: 5px; height: 5px; border-radius: 50%;
+  background: #FF4A1C; border: 1.5px solid var(--surface);
+}
+.ico.dot-glow::after {
+  content: ''; position: absolute; bottom: 0px; right: 0px;
+  width: 5px; height: 5px; border-radius: 50%;
+  background: #FF4A1C; border: 1.5px solid var(--surface);
+  box-shadow: 0 0 6px rgba(255,74,28,.55);
+}
+
+/* IG gradient */
+:root { --ig: linear-gradient(45deg, #F09433, #E6683C 25%, #DC2743 50%, #CC2366 75%, #BC1888); }
+
+/* ════════════════════════════════════════
+   HEXTIDE CANVAS
+   ════════════════════════════════════════ */
+#hexTide {
+  position: fixed; inset: 0;
+  pointer-events: none; z-index: 0;
+  width: 100%; height: 100%;
+}
+.meta-bar, .concept { position: relative; z-index: 1; }
+
+/* ════════════════════════════════════════
+   META BAR — switcher conceptos + temas
+   ════════════════════════════════════════ */
+.meta-bar {
+  position: sticky; top: 0; z-index: 200;
+  background: #0A0E18; border-bottom: 1px solid rgba(165,195,240,.10);
+  padding: 10px 24px; display: flex; align-items: center; gap: 16px;
+}
+.meta-logo { display: flex; align-items: center; gap: 8px; flex-shrink: 0; }
+.meta-logo-label { font-family: 'Geist Mono', monospace; font-size: 9px; color: rgba(165,195,240,.35); letter-spacing: .14em; text-transform: uppercase; }
+.concept-tabs { display: flex; gap: 4px; }
+.con-btn {
+  padding: 5px 16px; border-radius: 20px; cursor: pointer;
+  font-family: 'Geist Mono', monospace; font-size: 10px; font-weight: 600; letter-spacing: .06em;
+  border: 1px solid rgba(255,255,255,.10); background: rgba(255,255,255,.04); color: rgba(165,195,240,.45);
+  transition: all .18s;
+}
+.con-btn:hover { color: rgba(165,195,240,.8); background: rgba(255,255,255,.09); }
+.con-btn.on { background: var(--signature); color: #fff; border-color: transparent; }
+
+.theme-strip { margin-left: auto; display: flex; gap: 5px; align-items: center; flex-wrap: wrap; }
+.t-dot {
+  width: 16px; height: 16px; border-radius: 50%; cursor: pointer;
+  border: 2px solid transparent; transition: all .18s;
+  flex-shrink: 0;
+}
+.t-dot:hover { transform: scale(1.2); }
+.t-dot.on { border-color: #D9FF3A; box-shadow: 0 0 0 2px rgba(217,255,58,.3); }
+.t-label { font-family: 'Geist Mono', monospace; font-size: 9px; color: rgba(165,195,240,.3); letter-spacing: .1em; margin-right: 4px; }
+
+/* CONCEPT panels */
+.concept { display: none; }
+.concept.on { display: block; }
+
+/* ════════════════════════════════════════
+   SHARED COMPONENTS
+   ════════════════════════════════════════ */
+/* Instagram gradient ring */
+.ig-ring {
+  background: var(--ig); padding: 3px; border-radius: 50%; display: inline-block; flex-shrink: 0;
+}
+.ig-ring-inner { background: var(--surface); padding: 3px; border-radius: 50%; }
+.ig-ring.seen { background: var(--surface-3); }
+.ig-ring.seen .ig-ring-inner { background: var(--surface-3); }
+
+/* Avatar face */
+.av {
+  border-radius: 50%; background: var(--signature);
+  color: #fff; font-weight: 800; display: grid; place-items: center; font-family: 'Funnel Display', sans-serif;
+}
+
+/* Online dot */
+.online-dot {
+  position: absolute; bottom: 2px; right: 2px;
+  width: 11px; height: 11px; border-radius: 50%;
+  background: #31A24C; border: 2px solid var(--surface);
+}
+
+/* Story card shared */
+.hl-item { display: flex; flex-direction: column; align-items: center; gap: 5px; cursor: pointer; flex-shrink: 0; }
+.hl-name { font-size: 11px; color: var(--text-3); font-weight: 500; text-align: center; max-width: 60px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+
+/* Tag badge */
+.tag {
+  font-family: 'Geist Mono', monospace; font-size: 9px; font-weight: 600;
+  letter-spacing: .08em; text-transform: uppercase;
+  padding: 3px 8px; border-radius: 20px; border: 1px solid;
+}
+.tag-sig { color: var(--signature); border-color: rgba(10,40,120,.3); background: rgba(10,40,120,.07); }
+.tag-green { color: #00C27A; border-color: rgba(0,194,122,.3); background: rgba(0,194,122,.07); }
+
+/* Reactions row */
+.react-row { display: flex; gap: 0; }
+.react-ico { width: 18px; height: 18px; border-radius: 50%; border: 2px solid var(--surface); margin-left: -4px; font-size: 11px; display: grid; place-items: center; }
+.react-ico:first-child { margin-left: 0; }
+
+/* Post action button */
+.pa-btn {
+  flex: 1; height: 34px; border-radius: 6px; background: transparent;
+  display: flex; align-items: center; justify-content: center; gap: 6px;
+  font-size: 13px; font-weight: 600; color: var(--text-3); transition: background .18s;
+}
+.pa-btn:hover { background: var(--surface-2); color: var(--text); }
+.pa-btn.liked { color: var(--signature); }
+.pa-btn.liked:hover { background: rgba(10,40,120,.07); }
+
+/* Primary button */
+.btn-primary {
+  background: var(--signature); color: #fff;
+  padding: 8px 18px; border-radius: 8px; font-weight: 600; font-size: 13px;
+  transition: opacity .18s;
+}
+.btn-primary:hover { opacity: .88; }
+.btn-ghost {
+  background: var(--surface-2); color: var(--text);
+  padding: 8px 18px; border-radius: 8px; font-weight: 600; font-size: 13px;
+  border: 1px solid var(--border); transition: background .18s;
+}
+.btn-ghost:hover { background: var(--surface-3); }
+.btn-icon {
+  width: 36px; height: 36px; border-radius: 8px;
+  background: var(--surface-2); color: var(--text);
+  border: 1px solid var(--border); display: grid; place-items: center;
+  font-size: 16px; transition: background .18s;
+}
+.btn-icon:hover { background: var(--surface-3); }
+
+
+/* ════════════════════════════════════════════════════════════
+   CONCEPTO A — Facebook structure · Instagram spirit
+   ════════════════════════════════════════════════════════════ */
+
+/* A · NAV */
+.a-nav {
+  background: var(--surface);
+  border-bottom: 1px solid var(--border);
+  height: 56px; display: flex; align-items: center;
+  padding: 0 20px; gap: 10px;
+  box-shadow: 0 2px 8px rgba(0,0,0,.10);
+  position: sticky; top: 41px; z-index: 50;
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+}
+.a-nav-brand { display: flex; align-items: center; gap: 8px; flex-shrink: 0; }
+.a-nav-name { font-family: 'Funnel Display', sans-serif; font-weight: 900; font-size: 22px; color: var(--signature); letter-spacing: -.5px; }
+.a-search {
+  width: 220px; height: 36px; border-radius: 18px;
+  background: var(--surface-2); border: 1px solid var(--border-2);
+  display: flex; align-items: center; padding: 0 12px; gap: 8px;
+  color: var(--text-4); font-size: 13px; flex-shrink: 0;
+}
+.a-nav-tabs { flex: 1; display: flex; justify-content: center; gap: 4px; }
+.a-nav-tab {
+  width: 92px; height: 52px; border-radius: 8px; background: transparent;
+  display: flex; align-items: center; justify-content: center;
+  color: var(--text-3); transition: all .18s; position: relative;
+}
+.a-nav-tab svg { width: 22px; height: 22px; }
+.a-nav-tab:hover { background: var(--surface-2); color: var(--text); }
+.a-nav-tab.on { color: var(--signature); }
+.a-nav-tab.on::after { content: ''; position: absolute; bottom: -2px; left: 8px; right: 8px; height: 3px; background: var(--signature); border-radius: 3px 3px 0 0; }
+.a-nav-r { display: flex; gap: 8px; align-items: center; flex-shrink: 0; }
+.a-nav-btn {
+  width: 36px; height: 36px; border-radius: 50%;
+  background: var(--surface-2); border: 1px solid var(--border-2);
+  display: grid; place-items: center;
+  color: var(--text); position: relative; cursor: pointer;
+  transition: background .18s;
+}
+.a-nav-btn svg { width: 18px; height: 18px; }
+.a-nav-btn:hover { background: var(--surface-3); }
+.a-nav-btn .ndot { position: absolute; top: 3px; right: 3px; width: 8px; height: 8px; border-radius: 50%; background: #E41E3F; border: 2px solid var(--surface); }
+
+/* A · COVER */
+.a-cover { position: relative; }
+.a-cover-banner {
+  height: 300px;
+  background:
+    linear-gradient(135deg,
+      var(--signature) 0%,
+      var(--banner-g1, rgba(10,40,120,.8)) 45%,
+      var(--bg) 100%);
+  position: relative; overflow: hidden;
+}
+.a-cover-banner::before {
+  content: ''; position: absolute; inset: 0;
+  background:
+    radial-gradient(ellipse at 18% 65%, rgba(255,255,255,.16) 0%, transparent 48%),
+    radial-gradient(ellipse at 82% 28%, rgba(255,255,255,.10) 0%, transparent 38%),
+    radial-gradient(circle at 55% 90%, rgba(255,255,255,.07) 0%, transparent 55%),
+    radial-gradient(circle at 8%  20%, rgba(255,255,255,.06) 0%, transparent 30%);
+  pointer-events: none;
+}
+.a-cover-banner::after {
+  content: ''; position: absolute; inset: 0;
+  background: linear-gradient(to bottom, transparent 40%, rgba(0,0,0,.30) 100%);
+  pointer-events: none;
+}
+.a-cover-edit {
+  position: absolute; bottom: 14px; right: 14px; z-index: 5;
+  background: rgba(0,0,0,.55); backdrop-filter: blur(10px);
+  border: 1px solid rgba(255,255,255,.20); border-radius: 8px;
+  padding: 8px 14px; color: #fff; font-size: 12px; font-weight: 600;
+  display: flex; align-items: center; gap: 6px;
+  transition: background .18s;
+}
+.a-cover-edit:hover { background: rgba(0,0,0,.70); }
+
+/* A · PROFILE ROW */
+.a-profile-row {
+  background: var(--surface);
+  border-bottom: 1px solid var(--border);
+  padding: 0 28px 18px;
+  box-shadow: 0 2px 8px rgba(0,0,0,.07);
+}
+.a-profile-main {
+  display: flex; align-items: flex-end; gap: 22px;
+  margin-top: -56px; position: relative;
+}
+.a-av-wrap { flex-shrink: 0; }
+.a-av-wrap .ig-ring { box-shadow: 0 6px 20px rgba(0,0,0,.28); }
+.a-av-wrap .av { width: 114px; height: 114px; font-size: 42px; }
+.a-profile-info { flex: 1; padding-bottom: 10px; padding-top: 6px; }
+.a-name { font-family: 'Funnel Display', sans-serif; font-weight: 900; font-size: 26px; color: var(--text); letter-spacing: -.03em; line-height: 1.1; }
+.a-username { font-size: 13px; color: var(--text-3); margin-top: 3px; }
+.a-stats-row { display: flex; gap: 22px; margin-top: 10px; }
+.a-stat { font-size: 13px; color: var(--text-3); }
+.a-stat strong { font-weight: 700; color: var(--text); font-size: 14px; }
+.a-profile-cta { display: flex; gap: 8px; align-items: flex-end; padding-bottom: 10px; }
+
+/* A · HIGHLIGHTS strip */
+.a-highlights {
+  background: var(--surface);
+  border-bottom: 1px solid var(--border);
+  padding: 14px 28px;
+  display: flex; gap: 22px; overflow-x: auto; scrollbar-width: none;
+  box-shadow: 0 1px 4px rgba(0,0,0,.06);
+}
+.a-highlights::-webkit-scrollbar { display: none; }
+
+/* A · TABS */
+.a-tabs {
+  background: var(--surface);
+  border-bottom: 1px solid var(--border);
+  padding: 0 28px; display: flex; gap: 2px;
+  position: sticky; top: 97px; z-index: 40;
+  box-shadow: 0 2px 6px rgba(0,0,0,.08);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+}
+.a-tab {
+  padding: 14px 18px; border-bottom: 3px solid transparent;
+  font-size: 14px; font-weight: 600; color: var(--text-3);
+  cursor: pointer; transition: all .15s; white-space: nowrap;
+}
+.a-tab:hover { color: var(--text); background: var(--surface-2); border-radius: 6px 6px 0 0; }
+.a-tab.on { color: var(--signature); border-bottom-color: var(--signature); }
+
+/* A · BODY */
+.a-wrap { max-width: 1100px; margin: 0 auto; padding: 22px 20px 48px; }
+.a-body { display: grid; grid-template-columns: 1fr 308px; gap: 20px; }
+
+/* A · SIDEBAR */
+.a-sidebar { position: sticky; top: 148px; display: flex; flex-direction: column; gap: 14px; }
+.a-card {
+  background: var(--surface);
+  border: 1px solid var(--border-2);
+  border-radius: 12px; padding: 16px;
+  box-shadow: 0 2px 8px rgba(0,0,0,.09);
+}
+.a-card-title { font-size: 17px; font-weight: 700; color: var(--text); margin-bottom: 12px; }
+.a-intro-item {
+  display: flex; align-items: center; gap: 10px;
+  padding: 6px 0; color: var(--text-2); font-size: 13px;
+}
+.a-intro-ico { flex-shrink: 0; width: 24px; display: flex; align-items: center; justify-content: center; color: var(--text-3); }
+.a-intro-ico svg { width: 18px; height: 18px; fill: none; stroke: currentColor; stroke-width: 1.7; stroke-linecap: round; stroke-linejoin: round; display: block; }
+.a-photo-grid { display: grid; grid-template-columns: repeat(3,1fr); gap: 4px; border-radius: 8px; overflow: hidden; }
+.a-photo-cell {
+  aspect-ratio: 1; background: linear-gradient(135deg, var(--surface-2), var(--surface-3));
+  display: flex; align-items: center; justify-content: center; font-size: 24px;
+  cursor: pointer; transition: opacity .18s;
+}
+.a-photo-cell:hover { opacity: .85; }
+.a-friends-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; }
+.a-friend-item { display: flex; flex-direction: column; align-items: center; gap: 5px; cursor: pointer; }
+.a-friend-av { width: 100%; aspect-ratio: 1; border-radius: 8px; background: linear-gradient(135deg, var(--surface-2), var(--surface-3)); display: grid; place-items: center; font-size: 22px; }
+.a-friend-name { font-size: 11px; color: var(--text-2); font-weight: 500; text-align: center; }
+
+/* A · FEED */
+.a-feed { display: flex; flex-direction: column; gap: 16px; }
+
+/* A · Composer */
+.a-composer {
+  background: var(--surface);
+  border: 1px solid var(--border-2);
+  border-radius: 12px; padding: 14px 16px;
+  box-shadow: 0 2px 8px rgba(0,0,0,.09);
+}
+.a-cmp-top { display: flex; gap: 10px; align-items: center; margin-bottom: 10px; }
+.a-cmp-pill {
+  flex: 1; height: 40px; border-radius: 20px;
+  background: var(--surface-2); border: 1px solid var(--border-2);
+  display: flex; align-items: center; padding: 0 16px;
+  font-size: 14px; color: var(--text-3); cursor: text;
+}
+.a-cmp-pill:hover { background: var(--surface-3); }
+.a-cmp-div { height: 1px; background: var(--border-2); margin: 0 -14px 10px; }
+.a-cmp-acts { display: flex; gap: 2px; }
+.a-cmp-act {
+  flex: 1; height: 36px; border-radius: 6px; background: transparent;
+  display: flex; align-items: center; justify-content: center; gap: 6px;
+  font-size: 13px; font-weight: 600; color: var(--text-3); transition: background .18s;
+}
+.a-cmp-act:hover { background: var(--surface-2); color: var(--text); }
+
+/* A · Post */
+.a-post {
+  background: var(--surface);
+  border: 1px solid var(--border-2);
+  border-radius: 12px; overflow: hidden;
+  box-shadow: 0 2px 8px rgba(0,0,0,.09);
+  transition: box-shadow .2s;
+}
+.a-post:hover { box-shadow: 0 4px 16px rgba(0,0,0,.13); }
+.a-post-head { display: flex; align-items: flex-start; gap: 10px; padding: 14px 14px 8px; }
+.a-pav { width: 42px; height: 42px; border-radius: 50%; background: var(--surface-3); border: 1px solid var(--border-2); display: grid; place-items: center; font-size: 20px; flex-shrink: 0; }
+.a-pmt { flex: 1; }
+.a-pname { font-weight: 700; font-size: 14px; color: var(--text); }
+.a-ptime { font-size: 12px; color: var(--text-3); margin-top: 2px; display: flex; align-items: center; gap: 5px; }
+.a-post-more { width: 36px; height: 36px; border-radius: 50%; display: grid; place-items: center; font-size: 18px; color: var(--text-3); cursor: pointer; }
+.a-post-more:hover { background: var(--surface-2); }
+.a-post-body { padding: 0 14px 10px; font-size: 14px; line-height: 1.65; color: var(--text); }
+.a-post-body .hashtag { color: var(--signature); font-weight: 500; }
+.a-post-media {
+  width: 100%; background: var(--surface-2);
+  border-top: 1px solid var(--border-2);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 64px; position: relative; overflow: hidden;
+}
+.a-post-media.sq { aspect-ratio: 1; }
+.a-post-media.wide { aspect-ratio: 16/9; }
+.a-post-media.port { aspect-ratio: 4/5; }
+.a-post-media-overlay {
+  position: absolute; inset: 0;
+  background: linear-gradient(to bottom, transparent 50%, rgba(0,0,0,.35) 100%);
+  display: flex; align-items: flex-end; padding: 14px;
+}
+.a-post-media-caption { color: #fff; font-size: 13px; font-weight: 600; }
+.a-post-react {
+  padding: 8px 14px; display: flex; justify-content: space-between; align-items: center;
+  border-bottom: 1px solid var(--border-2); font-size: 13px; color: var(--text-3);
+}
+.a-post-acts { display: flex; padding: 4px 8px; gap: 2px; }
+.a-post-cmts {
+  padding: 10px 14px; border-top: 1px solid var(--border-2);
+  display: flex; gap: 10px; align-items: center;
+}
+.a-cmt-inp {
+  flex: 1; height: 36px; border-radius: 18px;
+  background: var(--surface-2); border: 1px solid var(--border-2);
+  padding: 0 14px; font-size: 13px; color: var(--text-3);
+  display: flex; align-items: center;
+}
+
+
+/* ════════════════════════════════════════════════════════════
+   CONCEPTO B — Instagram profile · Facebook content
+   ════════════════════════════════════════════════════════════ */
+
+/* B · NAV */
+.b-nav {
+  background: var(--surface); border-bottom: 1px solid var(--border);
+  height: 52px; display: flex; align-items: center;
+  padding: 0 20px; justify-content: space-between;
+  position: sticky; top: 41px; z-index: 50;
+  box-shadow: 0 1px 4px rgba(0,0,0,.08);
+}
+.b-nav-logo { font-family: 'Funnel Display', sans-serif; font-weight: 900; font-size: 22px; color: var(--signature); letter-spacing: -.5px; }
+.b-nav-r { display: flex; gap: 10px; align-items: center; }
+.b-nav-ico { font-size: 20px; color: var(--text-2); cursor: pointer; position: relative; }
+.b-nav-dot { position: absolute; top: -2px; right: -2px; width: 8px; height: 8px; border-radius: 50%; background: #E41E3F; border: 2px solid var(--surface); }
+
+/* B · PROFILE (centered + asymmetric) */
+.b-profile-section {
+  background: var(--surface); border-bottom: 1px solid var(--border);
+  padding: 32px 0 0; max-width: 935px; margin: 0 auto;
+}
+.b-profile-top {
+  display: flex; gap: 60px; align-items: flex-start; padding: 0 40px 28px;
+}
+.b-av-col { flex-shrink: 0; }
+.b-av-col .ig-ring { }
+.b-av-col .av { width: 140px; height: 140px; font-size: 52px; }
+.b-info-col { flex: 1; }
+.b-info-row1 { display: flex; align-items: center; gap: 16px; margin-bottom: 16px; flex-wrap: wrap; }
+.b-username { font-family: 'Funnel Display', sans-serif; font-weight: 900; font-size: 26px; color: var(--text); letter-spacing: -.03em; }
+.b-actions { display: flex; gap: 8px; flex-wrap: wrap; }
+.b-stats-row { display: flex; gap: 32px; margin-bottom: 14px; }
+.b-stat { font-size: 16px; color: var(--text-2); }
+.b-stat strong { font-weight: 700; color: var(--text); font-size: 17px; }
+.b-bio { font-size: 14px; line-height: 1.6; color: var(--text); max-width: 420px; }
+.b-bio .hashtag { color: var(--signature); font-weight: 500; }
+.b-bio .link { color: var(--signature); font-weight: 600; }
+.b-bio-title { font-weight: 700; }
+.b-location { font-size: 13px; color: var(--text-3); margin-top: 4px; }
+
+/* B · HIGHLIGHTS */
+.b-highlights {
+  padding: 16px 40px; display: flex; gap: 24px; overflow-x: auto; scrollbar-width: none;
+  border-top: 1px solid var(--border-2);
+}
+.b-highlights::-webkit-scrollbar { display: none; }
+.b-hl-add .ig-ring { background: var(--surface-3); }
+.b-hl-add .ig-ring-inner { background: var(--surface-3); }
+
+/* B · TABS */
+.b-tabs {
+  border-top: 1px solid var(--border);
+  display: flex; justify-content: center; gap: 0;
+  position: sticky; top: 93px; z-index: 40;
+  background: var(--surface);
+}
+.b-tab {
+  padding: 14px 24px; border-top: 2px solid transparent;
+  font-family: 'Geist Mono', monospace; font-size: 11px; font-weight: 600;
+  letter-spacing: .12em; text-transform: uppercase;
+  color: var(--text-4); cursor: pointer; transition: all .15s; display: flex; align-items: center; gap: 6px;
+}
+.b-tab:hover { color: var(--text); }
+.b-tab.on { color: var(--text); border-top-color: var(--text); }
+
+/* B · BODY */
+.b-body { max-width: 935px; margin: 0 auto; padding: 20px 40px; }
+
+/* B · Posts (wide FB-style cards) */
+.b-post {
+  background: var(--surface); border: 1px solid var(--border-2);
+  border-radius: 12px; overflow: hidden; margin-bottom: 16px;
+  box-shadow: 0 1px 4px rgba(0,0,0,.08);
+}
+.b-post-head { display: flex; align-items: center; gap: 12px; padding: 14px 16px 10px; }
+.b-pav { flex-shrink: 0; }
+.b-pav .ig-ring .av { width: 42px; height: 42px; font-size: 14px; }
+.b-pmt { flex: 1; }
+.b-pname { font-weight: 700; font-size: 14px; color: var(--text); }
+.b-psub { font-size: 12px; color: var(--text-3); margin-top: 2px; }
+.b-post-body { padding: 0 16px 10px; font-size: 14px; line-height: 1.65; color: var(--text); }
+.b-post-body .hashtag { color: var(--signature); }
+.b-post-img {
+  width: 100%; background: var(--surface-2);
+  border-top: 1px solid var(--border-2); border-bottom: 1px solid var(--border-2);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 64px; overflow: hidden;
+}
+.b-post-img.r169 { aspect-ratio: 16/9; }
+.b-post-img.r45 { aspect-ratio: 4/5; }
+.b-post-img.r11 { aspect-ratio: 1; }
+.b-post-acts-row { display: flex; align-items: center; padding: 6px 10px; border-bottom: 1px solid var(--border-2); }
+.b-post-reacts { display: flex; align-items: center; gap: 6px; flex: 1; font-size: 13px; color: var(--text-3); }
+.b-post-share-cnt { font-size: 13px; color: var(--text-3); }
+.b-post-btns { display: flex; padding: 4px 8px; gap: 2px; }
+.b-post-cmt-row { padding: 8px 16px 12px; display: flex; gap: 10px; align-items: center; border-top: 1px solid var(--border-2); }
+.b-cmt-inp-pill {
+  flex: 1; height: 36px; border-radius: 18px;
+  background: var(--surface-2); border: 1px solid var(--border-2);
+  display: flex; align-items: center; padding: 0 14px; font-size: 13px; color: var(--text-3);
+}
+.b-cmt-row-inner { padding: 0 16px 8px; display: flex; gap: 8px; }
+.b-cmt { display: flex; gap: 8px; align-items: flex-start; }
+.b-cmt-bubble {
+  background: var(--surface-2); border-radius: 14px; padding: 8px 12px;
+  font-size: 13px; color: var(--text);
+}
+.b-cmt-author { font-weight: 700; color: var(--text); }
+.b-cmt-hashtag { color: var(--signature); }
+
+
+/* ════════════════════════════════════════════════════════════
+   CONCEPTO C — FB 3-column + cover + IG immersive
+   ════════════════════════════════════════════════════════════ */
+
+/* C · NAV */
+.c-nav {
+  background: var(--surface); border-bottom: 1px solid var(--border);
+  height: 56px; display: flex; align-items: center; padding: 0 20px; gap: 12px;
+  position: sticky; top: 41px; z-index: 50;
+  box-shadow: 0 2px 4px rgba(0,0,0,.10);
+}
+.c-nav-name { font-family: 'Funnel Display', sans-serif; font-weight: 900; font-size: 22px; color: var(--signature); letter-spacing: -.5px; }
+.c-nav-search {
+  width: 220px; height: 36px; border-radius: 18px;
+  background: var(--surface-2); border: 1px solid var(--border-2);
+  display: flex; align-items: center; padding: 0 12px; gap: 8px;
+  font-size: 13px; color: var(--text-4);
+}
+.c-ntabs { flex: 1; display: flex; justify-content: center; gap: 4px; }
+.c-ntab {
+  width: 92px; height: 52px; border-radius: 8px; display: flex;
+  align-items: center; justify-content: center; font-size: 20px;
+  color: var(--text-3); transition: all .18s; position: relative;
+}
+.c-ntab:hover { background: var(--surface-2); color: var(--text); }
+.c-ntab.on { color: var(--signature); }
+.c-ntab.on::after { content: ''; position: absolute; bottom: -2px; left: 8px; right: 8px; height: 3px; background: var(--signature); border-radius: 3px 3px 0 0; }
+.c-nav-r { display: flex; gap: 8px; flex-shrink: 0; }
+.c-nav-btn { width: 36px; height: 36px; border-radius: 50%; background: var(--surface-2); border: 1px solid var(--border-2); display: grid; place-items: center; font-size: 16px; color: var(--text); position: relative; cursor: pointer; }
+.c-ndot { position: absolute; top: 3px; right: 3px; width: 8px; height: 8px; border-radius: 50%; background: #E41E3F; border: 2px solid var(--surface); }
+
+/* C · COVER + PROFILE */
+.c-cover { position: relative; margin-bottom: 0; }
+.c-cover-banner {
+  height: 280px;
+  background: linear-gradient(140deg, var(--signature) 0%, color-mix(in srgb, var(--signature) 40%, #7BBFFF) 100%);
+  position: relative; overflow: hidden;
+}
+.c-cover-banner::before {
+  content: ''; position: absolute; inset: 0;
+  background:
+    radial-gradient(circle at 15% 40%, rgba(255,255,255,.15) 0%, transparent 40%),
+    radial-gradient(circle at 70% 20%, rgba(255,255,255,.10) 0%, transparent 35%),
+    radial-gradient(circle at 90% 80%, rgba(255,255,255,.08) 0%, transparent 30%);
+}
+.c-cover-banner::after {
+  content: ''; position: absolute; inset: 0;
+  background: linear-gradient(to bottom, transparent 40%, rgba(0,0,0,.28) 100%);
+}
+.c-cover-profile-row {
+  background: var(--surface); border-bottom: 1px solid var(--border);
+  padding: 0 20px 0 320px; /* leaves room for 3col left padding */
+  display: flex; align-items: flex-end; gap: 18px;
+}
+.c-cover-av-wrap { margin-top: -50px; flex-shrink: 0; }
+.c-cover-av-wrap .ig-ring { box-shadow: 0 4px 18px rgba(0,0,0,.28); }
+.c-cover-av-wrap .av { width: 120px; height: 120px; font-size: 44px; }
+.c-cover-info { flex: 1; padding-bottom: 14px; padding-top: 8px; }
+.c-cname { font-family: 'Funnel Display', sans-serif; font-weight: 900; font-size: 28px; color: var(--text); letter-spacing: -.03em; line-height: 1.1; }
+.c-cuname { font-size: 13px; color: var(--text-3); margin-top: 3px; }
+.c-cstats { display: flex; gap: 20px; margin-top: 8px; }
+.c-cstat { font-size: 13px; color: var(--text-3); }
+.c-cstat strong { font-weight: 700; color: var(--text); }
+.c-cta { display: flex; gap: 8px; align-items: flex-end; padding-bottom: 14px; }
+
+/* C · STORIES strip */
+.c-stories-strip {
+  background: var(--surface); border-bottom: 2px solid var(--border);
+  padding: 12px 16px; display: flex; gap: 14px; overflow-x: auto; scrollbar-width: none;
+  align-items: center;
+}
+.c-stories-strip::-webkit-scrollbar { display: none; }
+.c-story-item { display: flex; flex-direction: column; align-items: center; gap: 5px; flex-shrink: 0; cursor: pointer; }
+.c-story-item .ig-ring .av { width: 54px; height: 54px; font-size: 16px; }
+.c-story-item .ig-ring-inner { padding: 2px; }
+.c-story-name { font-size: 11px; color: var(--text-3); max-width: 62px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; text-align: center; }
+
+/* C · TABS */
+.c-tabs {
+  background: var(--surface); border-bottom: 1px solid var(--border);
+  padding: 0 0 0 300px;
+  display: flex; gap: 4px;
+  position: sticky; top: 97px; z-index: 40;
+}
+.c-tab {
+  padding: 12px 18px; border-bottom: 3px solid transparent;
+  font-size: 14px; font-weight: 600; color: var(--text-3);
+  cursor: pointer; transition: all .15s; white-space: nowrap;
+}
+.c-tab:hover { color: var(--text); }
+.c-tab.on { color: var(--signature); border-bottom-color: var(--signature); }
+
+/* C · 3-COL BODY */
+.c-wrap { max-width: 1280px; margin: 0 auto; padding: 16px 16px; }
+.c-body { display: grid; grid-template-columns: 284px 1fr 300px; gap: 16px; align-items: start; }
+
+/* C · LEFT MENU */
+.c-left { position: sticky; top: 148px; }
+.c-pm-row { display: flex; align-items: center; gap: 10px; padding: 7px 8px; border-radius: 8px; cursor: pointer; transition: background .18s; margin-bottom: 2px; }
+.c-pm-row:hover { background: var(--surface-2); }
+.c-pm-row .av { width: 34px; height: 34px; font-size: 11px; flex-shrink: 0; }
+.c-pm-label { font-size: 14px; font-weight: 500; color: var(--text); }
+.c-menu-row { display: flex; align-items: center; gap: 10px; padding: 7px 8px; border-radius: 8px; cursor: pointer; transition: background .18s; margin-bottom: 2px; }
+.c-menu-row:hover { background: var(--surface-2); }
+.c-mico { width: 34px; height: 34px; border-radius: 50%; background: var(--surface-2); display: grid; place-items: center; font-size: 16px; flex-shrink: 0; }
+.c-mlabel { font-size: 14px; font-weight: 500; color: var(--text); }
+.c-msep { height: 1px; background: var(--border-2); margin: 8px 0; }
+.c-msec { font-size: 13px; font-weight: 600; color: var(--text-3); padding: 4px 8px; }
+.c-left-card { background: var(--surface); border: 1px solid var(--border-2); border-radius: 10px; padding: 14px; margin-top: 10px; box-shadow: 0 1px 3px rgba(0,0,0,.07); }
+.c-lc-title { font-size: 17px; font-weight: 700; color: var(--text); margin-bottom: 10px; }
+.c-intro-item { display: flex; align-items: center; gap: 8px; padding: 5px 0; font-size: 13px; color: var(--text-2); }
+
+/* C · FEED CENTER */
+.c-feed { display: flex; flex-direction: column; gap: 14px; }
+
+/* Composer */
+.c-composer {
+  background: var(--surface); border: 1px solid var(--border-2);
+  border-radius: 10px; padding: 12px 14px;
+  box-shadow: 0 1px 3px rgba(0,0,0,.08);
+}
+.c-cmp-top { display: flex; gap: 10px; align-items: center; margin-bottom: 10px; }
+.c-cmp-pill {
+  flex: 1; height: 40px; border-radius: 20px;
+  background: var(--surface-2); border: 1px solid var(--border-2);
+  display: flex; align-items: center; padding: 0 16px;
+  font-size: 14px; color: var(--text-3); cursor: text;
+}
+.c-cmp-div { height: 1px; background: var(--border-2); margin: 0 -14px 10px; }
+.c-cmp-acts { display: flex; gap: 2px; }
+.c-cmp-act {
+  flex: 1; height: 36px; border-radius: 6px; background: transparent;
+  display: flex; align-items: center; justify-content: center; gap: 6px;
+  font-size: 12px; font-weight: 600; color: var(--text-3); transition: background .18s;
+}
+.c-cmp-act:hover { background: var(--surface-2); color: var(--text); }
+
+/* Post */
+.c-post {
+  background: var(--surface); border: 1px solid var(--border-2);
+  border-radius: 10px; overflow: hidden;
+  box-shadow: 0 1px 3px rgba(0,0,0,.08);
+}
+.c-ph { display: flex; align-items: flex-start; gap: 10px; padding: 12px 14px 8px; }
+.c-pav { width: 40px; height: 40px; border-radius: 50%; background: var(--surface-3); border: 1px solid var(--border-2); display: grid; place-items: center; font-size: 18px; flex-shrink: 0; }
+.c-pmt { flex: 1; }
+.c-pname { font-weight: 700; font-size: 14px; color: var(--text); }
+.c-ptime { font-size: 12px; color: var(--text-3); margin-top: 2px; }
+.c-pbody { padding: 0 14px 8px; font-size: 14px; line-height: 1.65; color: var(--text); }
+.c-pbody .hashtag { color: var(--signature); }
+.c-pmedia {
+  width: 100%; background: var(--surface-2);
+  border-top: 1px solid var(--border-2); border-bottom: 1px solid var(--border-2);
+  display: flex; align-items: center; justify-content: center; font-size: 56px;
+  position: relative;
+}
+.c-pmedia.r169 { aspect-ratio: 16/9; }
+.c-pmedia.r45 { aspect-ratio: 4/5; }
+.c-preact {
+  padding: 6px 14px; display: flex; justify-content: space-between; align-items: center;
+  border-bottom: 1px solid var(--border-2); font-size: 13px; color: var(--text-3);
+}
+.c-pacts { display: flex; padding: 3px 8px; gap: 2px; }
+
+/* C · RIGHT PANEL */
+.c-right { position: sticky; top: 148px; display: flex; flex-direction: column; gap: 14px; }
+.c-rcard { background: var(--surface); border: 1px solid var(--border-2); border-radius: 10px; overflow: hidden; box-shadow: 0 1px 3px rgba(0,0,0,.07); }
+.c-rcard-body { padding: 14px; }
+.c-rcard-title { font-size: 17px; font-weight: 700; color: var(--text); margin-bottom: 10px; }
+.c-rcard-link { font-size: 13px; color: var(--signature); font-weight: 600; }
+.c-sp-img { height: 88px; background: linear-gradient(135deg, var(--signature), color-mix(in srgb, var(--signature) 40%, #7BBFFF)); display: flex; align-items: center; justify-content: center; font-size: 36px; }
+.c-contact { display: flex; align-items: center; gap: 10px; padding: 6px 14px; cursor: pointer; transition: background .18s; }
+.c-contact:hover { background: var(--surface-2); }
+.c-ctav { width: 36px; height: 36px; border-radius: 50%; background: var(--surface-2); border: 1px solid var(--border-2); display: grid; place-items: center; font-size: 16px; flex-shrink: 0; position: relative; }
+.c-ctname { font-size: 14px; font-weight: 500; color: var(--text); }
+.c-rphoto-grid { display: grid; grid-template-columns: repeat(3,1fr); gap: 3px; margin-top: 10px; }
+.c-rphoto { aspect-ratio: 1; background: var(--surface-2); display: flex; align-items: center; justify-content: center; font-size: 22px; cursor: pointer; border-radius: 4px; transition: opacity .18s; }
+.c-rphoto:hover { opacity: .8; }
+.c-event { display: flex; align-items: center; gap: 10px; padding: 7px 0; border-bottom: 1px solid var(--border-2); }
+.c-event-ico { font-size: 22px; }
+.c-event-txt { font-size: 13px; color: var(--text); }
+.c-event-txt span { font-weight: 700; }
+
+/* ════════════════════════════════════════════════════════════
+   CONCEPTO D — FaceGram · Referencia externa · adaptada
+   ════════════════════════════════════════════════════════════ */
+#cd .d-topnav {
+  background: var(--surface); border-bottom: 1px solid var(--border);
+  height: 56px; display: flex; align-items: center; padding: 0 16px;
+  position: sticky; top: 41px; z-index: 50;
+  box-shadow: 0 2px 4px rgba(0,0,0,.06);
+}
+#cd .d-logo {
+  font-family: 'Funnel Display', sans-serif; font-size: 22px; font-weight: 900;
+  background: linear-gradient(45deg, var(--signature) 0%, var(--signature) 50%, #e1306c 50%, #fd1d1d 75%, #fcb045 100%);
+  -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+  background-clip: text; letter-spacing: -1px; flex-shrink: 0;
+}
+#cd .d-search {
+  margin-left: 12px; background: var(--surface-2); border: 1px solid var(--border-2);
+  border-radius: 50px; padding: 9px 14px; width: 220px;
+  display: flex; align-items: center; gap: 8px;
+  color: var(--text-4); font-size: 13px;
+}
+#cd .d-nav-icons { margin-left: auto; display: flex; gap: 8px; }
+#cd .d-nav-icon {
+  width: 36px; height: 36px; background: var(--surface-2); border: 1px solid var(--border-2);
+  border-radius: 50%; display: grid; place-items: center;
+  cursor: pointer; color: var(--text); transition: background .18s; position: relative;
+}
+#cd .d-nav-icon svg { width: 18px; height: 18px; }
+#cd .d-nav-icon:hover { background: var(--surface-3); }
+/* Cover */
+#cd .d-cover-wrap { background: var(--surface); border-bottom: 1px solid var(--border); }
+#cd .d-cover {
+  max-width: 1095px; margin: 0 auto; height: 320px;
+  background: linear-gradient(135deg, var(--signature) 0%, var(--banner-g1, rgba(10,40,120,.8)) 50%, var(--bg) 100%);
+  border-radius: 0 0 8px 8px; position: relative; overflow: hidden;
+}
+#cd .d-cover::before {
+  content: ''; position: absolute; inset: 0;
+  background:
+    radial-gradient(circle at 20% 30%, rgba(255,255,255,.20) 0%, transparent 40%),
+    radial-gradient(circle at 80% 70%, rgba(255,255,255,.12) 0%, transparent 40%);
+}
+#cd .d-cover::after {
+  content: ''; position: absolute; inset: 0;
+  background: linear-gradient(to bottom, transparent 40%, rgba(0,0,0,.30) 100%);
+}
+#cd .d-edit-cover {
+  position: absolute; bottom: 14px; right: 14px; z-index: 2;
+  background: rgba(0,0,0,.55); backdrop-filter: blur(10px);
+  border: 1px solid rgba(255,255,255,.20); border-radius: 8px;
+  padding: 8px 14px; color: #fff; font-size: 12px; font-weight: 600;
+  display: flex; align-items: center; gap: 6px; cursor: pointer; transition: background .18s;
+}
+#cd .d-edit-cover:hover { background: rgba(0,0,0,.70); }
+#cd .d-edit-cover svg { width: 14px; height: 14px; }
+/* Profile header */
+#cd .d-profile-header {
+  max-width: 1095px; margin: -40px auto 0; padding: 0 16px 16px;
+  display: flex; align-items: flex-end; gap: 16px; position: relative;
+}
+#cd .d-avatar-ring {
+  padding: 3px; background: var(--ig); border-radius: 50%;
+  box-shadow: 0 6px 20px rgba(0,0,0,.28); flex-shrink: 0;
+}
+#cd .d-avatar {
+  width: 168px; height: 168px; border-radius: 50%; border: 4px solid var(--surface);
+  background: var(--signature); display: grid; place-items: center;
+  font-size: 52px; font-weight: 900; color: #fff;
+  font-family: 'Funnel Display', sans-serif;
+}
+#cd .d-profile-info { flex: 1; padding-bottom: 16px; }
+#cd .d-profile-name {
+  font-family: 'Funnel Display', sans-serif; font-size: 30px; font-weight: 900;
+  color: var(--text); display: flex; align-items: center; gap: 8px; letter-spacing: -.03em;
+}
+#cd .d-verified {
+  width: 22px; height: 22px; background: var(--signature); color: #fff;
+  border-radius: 50%; display: inline-grid; place-items: center; flex-shrink: 0;
+}
+#cd .d-verified svg { width: 12px; height: 12px; }
+#cd .d-profile-handle { color: var(--text-3); font-size: 14px; margin-top: 4px; }
+#cd .d-friends-preview {
+  color: var(--text-3); font-weight: 600; font-size: 14px;
+  margin-top: 10px; display: flex; align-items: center; gap: 10px;
+}
+#cd .d-friend-thumbs { display: flex; }
+#cd .d-friend-thumbs span {
+  width: 30px; height: 30px; border-radius: 50%; border: 2px solid var(--surface);
+  margin-left: -8px; display: grid; place-items: center;
+  font-size: 11px; color: #fff; font-weight: 700;
+}
+#cd .d-friend-thumbs span:first-child { margin-left: 0; }
+#cd .d-profile-actions { display: flex; gap: 8px; padding-bottom: 16px; align-items: flex-end; }
+#cd .d-btn {
+  padding: 8px 14px; border-radius: 8px; font-weight: 600; font-size: 13px;
+  cursor: pointer; display: flex; align-items: center; gap: 6px;
+  border: none; font-family: inherit; transition: opacity .18s;
+}
+#cd .d-btn svg { width: 15px; height: 15px; }
+#cd .d-btn-primary { background: var(--signature); color: #fff; }
+#cd .d-btn-primary:hover { opacity: .88; }
+#cd .d-btn-secondary { background: var(--surface-2); color: var(--text); border: 1px solid var(--border); transition: background .18s; }
+#cd .d-btn-secondary:hover { background: var(--surface-3); }
+/* Tabs */
+#cd .d-tabs {
+  max-width: 1095px; margin: 0 auto; padding: 0 16px;
+  display: flex; gap: 4px; border-top: 1px solid var(--border);
+  background: var(--surface);
+  position: sticky; top: 97px; z-index: 40;
+  backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px);
+}
+#cd .d-tab {
+  padding: 14px 16px; font-weight: 600; color: var(--text-3);
+  cursor: pointer; border-bottom: 3px solid transparent;
+  font-size: 14px; transition: all .15s; white-space: nowrap;
+  display: flex; align-items: center; gap: 5px;
+}
+#cd .d-tab.on { color: var(--signature); border-bottom-color: var(--signature); }
+#cd .d-tab:hover:not(.on) { background: var(--surface-2); border-radius: 6px 6px 0 0; color: var(--text); }
+#cd .d-ig-badge {
+  display: inline-flex; align-items: center; gap: 3px;
+  background: var(--ig); color: #fff;
+  padding: 2px 7px; border-radius: 10px;
+  font-size: 10px; font-weight: 700; font-family: 'Geist Mono', monospace;
+}
+/* Main layout */
+#cd .d-main {
+  max-width: 1095px; margin: 16px auto; padding: 0 16px;
+  display: grid; grid-template-columns: 360px 1fr; gap: 16px;
+}
+#cd .d-card {
+  background: var(--surface); border-radius: 10px;
+  box-shadow: 0 2px 8px rgba(0,0,0,.09); border: 1px solid var(--border-2);
+  padding: 16px; margin-bottom: 14px;
+}
+#cd .d-card-title { font-size: 18px; font-weight: 700; color: var(--text); margin-bottom: 12px; }
+#cd .d-card-head { display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; }
+#cd .d-see-all { color: var(--signature); font-size: 13px; font-weight: 600; cursor: pointer; }
+/* Intro */
+#cd .d-intro-row {
+  display: flex; align-items: center; gap: 12px;
+  padding: 6px 0; font-size: 14px; color: var(--text-2);
+}
+#cd .d-intro-ico {
+  flex-shrink: 0; width: 22px; display: flex; align-items: center;
+  justify-content: center; color: var(--text-3);
+}
+#cd .d-intro-ico svg {
+  width: 17px; height: 17px; fill: none; stroke: currentColor;
+  stroke-width: 1.7; stroke-linecap: round; stroke-linejoin: round;
+}
+/* Module grid */
+#cd .d-mod-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; }
+#cd .d-mod-tile {
+  aspect-ratio: 1; border-radius: 12px; cursor: pointer;
+  background: linear-gradient(145deg, var(--surface-2) 0%, var(--surface-3) 100%);
+  border: 1px solid var(--border-2);
+  display: flex; flex-direction: column; align-items: center; justify-content: center;
+  gap: 7px; transition: all .2s; position: relative; overflow: hidden;
+}
+#cd .d-mod-tile::before {
+  content: ''; position: absolute; inset: 0;
+  background: radial-gradient(circle at 75% 18%, rgba(255,255,255,.06) 0%, transparent 55%);
+  pointer-events: none;
+}
+#cd .d-mod-tile:hover {
+  border-color: var(--signature);
+  box-shadow: 0 0 0 1px var(--signature), 0 6px 18px rgba(0,0,0,.16);
+  transform: translateY(-2px);
+}
+#cd .d-mod-ico {
+  position: relative; width: 42px; height: 42px;
+  display: flex; align-items: center; justify-content: center;
+}
+#cd .d-mod-ico svg {
+  width: 28px; height: 28px; fill: none; stroke: var(--signature);
+  stroke-width: 1.6; stroke-linecap: round; stroke-linejoin: round;
+}
+/* dot · mismo sistema que el logo / iconos-v2 */
+#cd .d-mod-ico::after {
+  content: ''; position: absolute; bottom: 2px; right: 2px;
+  width: 7px; height: 7px; border-radius: 50%;
+  background: #FF4A1C; border: 2px solid var(--surface-2);
+}
+#cd .d-mod-tile:hover .d-mod-ico::after {
+  animation: modDotPulse 1.6s infinite;
+}
+@keyframes modDotPulse {
+  0%,100% { box-shadow: 0 0 0 0 rgba(255,74,28,.6); }
+  50%      { box-shadow: 0 0 0 4px rgba(255,74,28,0); }
+}
+#cd .d-mod-name {
+  font-size: 9.5px; font-weight: 600; color: var(--text-3);
+  font-family: 'Geist Mono', monospace; letter-spacing: .07em;
+  text-transform: uppercase; text-align: center; line-height: 1.2;
+  padding: 0 4px;
+}
+/* Photo grid (legacy, hidden but kept) */
+#cd .d-ig-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 4px; border-radius: 8px; overflow: hidden; }
+#cd .d-ig-tile {
+  aspect-ratio: 1; position: relative; overflow: hidden; cursor: pointer;
+  background: linear-gradient(135deg, var(--surface-2), var(--surface-3));
+}
+#cd .d-ig-tile:hover::after { content: ''; position: absolute; inset: 0; background: rgba(0,0,0,.12); }
+/* Friends */
+#cd .d-friends-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; }
+#cd .d-friend-card { cursor: pointer; }
+#cd .d-friend-thumb {
+  aspect-ratio: 1; border-radius: 8px; margin-bottom: 4px;
+  display: grid; place-items: center; font-weight: 900;
+  font-size: 24px; color: #fff; font-family: 'Funnel Display', sans-serif;
+}
+#cd .d-friend-name { font-size: 12px; font-weight: 600; color: var(--text-2); }
+/* Stories */
+#cd .d-stories {
+  display: flex; gap: 14px; overflow-x: auto;
+  padding: 4px 0; scrollbar-width: none;
+}
+#cd .d-stories::-webkit-scrollbar { display: none; }
+#cd .d-story { flex-shrink: 0; width: 72px; text-align: center; cursor: pointer; }
+#cd .d-story-ring {
+  width: 68px; height: 68px; border-radius: 50%; padding: 3px;
+  background: var(--ig); margin: 0 auto 5px;
+}
+#cd .d-story-ring.seen { background: var(--surface-3); }
+#cd .d-story-ring.add {
+  background: var(--surface-2); padding: 0; display: grid; place-items: center;
+  border: 2px dashed var(--border);
+}
+#cd .d-story-inner {
+  width: 100%; height: 100%; border-radius: 50%;
+  border: 2px solid var(--surface);
+  display: grid; place-items: center;
+  color: #fff; font-weight: 900; font-size: 18px;
+  font-family: 'Funnel Display', sans-serif;
+}
+#cd .d-story-label { font-size: 11px; font-weight: 500; color: var(--text-3); }
+/* Composer */
+#cd .d-composer { display: flex; gap: 10px; align-items: center; padding: 12px 16px; }
+#cd .d-composer-avatar { width: 40px; height: 40px; border-radius: 50%; background: var(--signature); flex-shrink: 0; }
+#cd .d-composer-pill {
+  flex: 1; height: 40px; border-radius: 20px;
+  background: var(--surface-2); border: 1px solid var(--border-2);
+  padding: 0 16px; font-size: 14px; color: var(--text-3); cursor: text;
+  display: flex; align-items: center;
+}
+#cd .d-composer-acts {
+  display: flex; border-top: 1px solid var(--border-2);
+  padding: 6px 8px 8px; gap: 2px;
+}
+#cd .d-composer-act {
+  flex: 1; display: flex; align-items: center; justify-content: center;
+  gap: 6px; padding: 9px; color: var(--text-3); font-weight: 600;
+  cursor: pointer; border-radius: 6px; font-size: 13px; transition: background .18s;
+}
+#cd .d-composer-act svg { width: 16px; height: 16px; }
+#cd .d-composer-act:hover { background: var(--surface-2); color: var(--text); }
+/* Post */
+#cd .d-post {
+  background: var(--surface); border: 1px solid var(--border-2);
+  border-radius: 10px; overflow: hidden; margin-bottom: 14px;
+  box-shadow: 0 2px 8px rgba(0,0,0,.09);
+}
+#cd .d-post-header { display: flex; align-items: center; gap: 10px; padding: 12px 16px 8px; }
+#cd .d-pav { width: 42px; height: 42px; border-radius: 50%; background: var(--signature); flex-shrink: 0; }
+#cd .d-ig-pav { width: 42px; height: 42px; border-radius: 50%; padding: 2px; background: var(--ig); flex-shrink: 0; }
+#cd .d-ig-pav-inner { width: 100%; height: 100%; border-radius: 50%; border: 2px solid var(--surface); background: var(--signature); }
+#cd .d-post-author { font-weight: 700; font-size: 14px; color: var(--text); display: flex; align-items: center; gap: 6px; flex-wrap: wrap; }
+#cd .d-post-meta { font-size: 12px; color: var(--text-3); margin-top: 2px; }
+#cd .d-post-menu { margin-left: auto; color: var(--text-3); cursor: pointer; padding: 8px; font-size: 18px; border-radius: 50%; transition: background .18s; }
+#cd .d-post-menu:hover { background: var(--surface-2); }
+#cd .d-post-text { padding: 0 16px 10px; font-size: 14px; line-height: 1.65; color: var(--text); }
+#cd .d-post-media {
+  width: 100%; background: linear-gradient(135deg, var(--surface-2), var(--surface-3));
+  position: relative; border-top: 1px solid var(--border-2); border-bottom: 1px solid var(--border-2);
+  display: flex; align-items: center; justify-content: center;
+}
+#cd .d-post-media.wide { aspect-ratio: 4/3; }
+#cd .d-post-media.sq { aspect-ratio: 1; }
+#cd .d-carousel-idx {
+  position: absolute; top: 12px; right: 12px;
+  background: rgba(0,0,0,.6); color: #fff; padding: 4px 10px;
+  border-radius: 20px; font-size: 12px; font-weight: 600; font-family: 'Geist Mono', monospace;
+}
+#cd .d-carousel-dots { position: absolute; bottom: 12px; left: 50%; transform: translateX(-50%); display: flex; gap: 4px; }
+#cd .d-carousel-dots span { width: 6px; height: 6px; border-radius: 50%; background: rgba(255,255,255,.5); }
+#cd .d-carousel-dots span.active { background: #fff; }
+#cd .d-post-stats {
+  display: flex; justify-content: space-between; padding: 8px 16px;
+  font-size: 13px; color: var(--text-3); border-bottom: 1px solid var(--border-2);
+}
+#cd .d-reactions { display: flex; align-items: center; gap: 6px; }
+#cd .d-react-row { display: flex; }
+#cd .d-react-row span {
+  width: 18px; height: 18px; border-radius: 50%; border: 2px solid var(--surface);
+  margin-left: -4px; display: grid; place-items: center; font-size: 10px;
+}
+#cd .d-react-row span:first-child { margin-left: 0; }
+#cd .d-post-acts { display: flex; padding: 4px 8px; gap: 2px; }
+#cd .d-post-act {
+  flex: 1; display: flex; align-items: center; justify-content: center;
+  gap: 6px; padding: 9px; color: var(--text-3); font-weight: 600;
+  font-size: 13px; cursor: pointer; border-radius: 6px; transition: background .18s;
+}
+#cd .d-post-act svg { width: 16px; height: 16px; }
+#cd .d-post-act:hover { background: var(--surface-2); color: var(--text); }
+#cd .d-post-act.liked { color: var(--signature); }
+/* Gradient swatches */
+#cd .sw1 { background: linear-gradient(135deg,#ff9a9e,#fad0c4); }
+#cd .sw2 { background: linear-gradient(135deg,#a18cd1,#fbc2eb); }
+#cd .sw3 { background: linear-gradient(135deg,#fad0c4,#ffd1ff); }
+#cd .sw4 { background: linear-gradient(135deg,#84fab0,#8fd3f4); }
+#cd .sw5 { background: linear-gradient(135deg,#ffecd2,#fcb69f); }
+#cd .sw6 { background: linear-gradient(135deg,#a1c4fd,#c2e9fb); }
+#cd .sw7 { background: linear-gradient(135deg,#d4fc79,#96e6a1); }
+#cd .sw8 { background: linear-gradient(135deg,#ffc3a0,#ffafbd); }
+#cd .sw9 { background: linear-gradient(135deg,#e0c3fc,#8ec5fc); }
+#cd .fc1 { background: linear-gradient(135deg,#667eea,#764ba2); }
+#cd .fc2 { background: linear-gradient(135deg,#f093fb,#f5576c); }
+#cd .fc3 { background: linear-gradient(135deg,#4facfe,#00f2fe); }
+#cd .fc4 { background: linear-gradient(135deg,#43e97b,#38f9d7); }
+#cd .fc5 { background: linear-gradient(135deg,#fa709a,#fee140); }
+#cd .fc6 { background: linear-gradient(135deg,#30cfd0,#330867); }
+</style>
+</head>
+<body>
+
+<canvas id="hexTide"></canvas>
+
+<!-- ═══════════════════════════════════════
+     META BAR
+     ═══════════════════════════════════════ -->
+<div class="meta-bar">
+  <div class="meta-logo">
+    <!-- LOGO PENDIENTE -->
+    <span class="meta-logo-label">perfil social</span>
+  </div>
+  <div class="concept-tabs">
+    <button class="con-btn on" data-c="a">A · FB + IG</button>
+    <button class="con-btn"    data-c="b">B · IG + FB</button>
+    <button class="con-btn"    data-c="c">C · Hub</button>
+    <button class="con-btn"    data-c="d">D · FaceGram</button>
+  </div>
+  <div class="theme-strip">
+    <span class="t-label">tema ·</span>
+  </div>
+</div>
+
+
+<!-- ═══════════════════════════════════════════════════════════
+     CONCEPTO A — Facebook structure · Instagram spirit
+     ═══════════════════════════════════════════════════════════ -->
+<div class="concept on" id="ca">
+
+  <!-- NAV -->
+  <nav class="a-nav">
+    <div class="a-nav-brand">
+      <!-- LOGO PENDIENTE -->
+      <div class="a-search">
+        <span class="ico"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="15" height="15"><circle cx="11" cy="11" r="7"/><line x1="16.5" y1="16.5" x2="21" y2="21"/></svg></span>
+        <span>Buscar en Conniku</span>
+      </div>
+    </div>
+    <div class="a-nav-tabs">
+      <button class="a-nav-tab on">
+        <span class="ico"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg></span>
+      </button>
+      <button class="a-nav-tab">
+        <span class="ico"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 00-3-3.87"/><path d="M16 3.13a4 4 0 010 7.75"/></svg></span>
+      </button>
+      <button class="a-nav-tab">
+        <span class="ico"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M22 10v6M2 10l10-5 10 5-10 5z"/><path d="M6 12v5c3 3 9 3 12 0v-5"/></svg></span>
+      </button>
+      <button class="a-nav-tab">
+        <span class="ico dot-glow"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M18 8A6 6 0 006 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 01-3.46 0"/></svg></span>
+      </button>
+    </div>
+    <div class="a-nav-r">
+      <button class="a-nav-btn">
+        <span class="ico"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 010 2.83 2 2 0 01-2.83 0l-.06-.06a1.65 1.65 0 00-1.82-.33 1.65 1.65 0 00-1 1.51V21a2 2 0 01-4 0v-.09A1.65 1.65 0 009 19.4a1.65 1.65 0 00-1.82.33l-.06.06a2 2 0 01-2.83-2.83l.06-.06A1.65 1.65 0 004.68 15a1.65 1.65 0 00-1.51-1H3a2 2 0 010-4h.09A1.65 1.65 0 004.6 9a1.65 1.65 0 00-.33-1.82l-.06-.06a2 2 0 012.83-2.83l.06.06A1.65 1.65 0 009 4.68a1.65 1.65 0 001-1.51V3a2 2 0 014 0v.09a1.65 1.65 0 001 1.51 1.65 1.65 0 001.82-.33l.06-.06a2 2 0 012.83 2.83l-.06.06A1.65 1.65 0 0019.4 9a1.65 1.65 0 001.51 1H21a2 2 0 010 4h-.09a1.65 1.65 0 00-1.51 1z"/></svg></span>
+      </button>
+      <button class="a-nav-btn">
+        <span class="ico dot-glow"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"/></svg></span>
+      </button>
+      <div class="ig-ring" style="cursor:pointer">
+        <div class="ig-ring-inner">
+          <div class="av" style="width:32px;height:32px;font-size:11px">CG</div>
+        </div>
+      </div>
+    </div>
+  </nav>
+
+  <!-- COVER -->
+  <div class="a-cover">
+    <div class="a-cover-banner">
+      <button class="a-cover-edit">
+        <span class="ico"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="15" height="15"><path d="M23 19a2 2 0 01-2 2H3a2 2 0 01-2-2V8a2 2 0 012-2h4l2-3h6l2 3h4a2 2 0 012 2z"/><circle cx="12" cy="13" r="4"/></svg></span>
+        Editar portada
+      </button>
+    </div>
+    <!-- PROFILE ROW -->
+    <div class="a-profile-row">
+      <div class="a-profile-main">
+        <div class="a-av-wrap">
+          <div class="ig-ring">
+            <div class="ig-ring-inner">
+              <div class="av" style="width:110px;height:110px;font-size:40px">CG</div>
+            </div>
+          </div>
+        </div>
+        <div class="a-profile-info">
+          <div class="a-name">Cristian García</div>
+          <div class="a-username">@cristian.g · ORBIT·U</div>
+          <div class="a-stats-row">
+            <div class="a-stat"><strong>847</strong> seguidores</div>
+            <div class="a-stat"><strong>312</strong> siguiendo</div>
+            <div class="a-stat"><strong>48</strong> publicaciones</div>
+          </div>
+        </div>
+        <div class="a-profile-cta">
+          <button class="btn-primary">✚ Seguir</button>
+          <button class="btn-ghost" style="display:flex;align-items:center;gap:7px">
+            <span class="ico"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="15" height="15"><path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"/></svg></span>
+            Mensaje
+          </button>
+          <button class="btn-icon">···</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- HIGHLIGHTS strip -->
+  <div class="a-highlights">
+    <div class="hl-item">
+      <div class="ig-ring"><div class="ig-ring-inner"><div class="av" style="width:54px;height:54px;font-size:20px">📐</div></div></div>
+      <span class="hl-name">UX</span>
+    </div>
+    <div class="hl-item">
+      <div class="ig-ring"><div class="ig-ring-inner"><div class="av" style="width:54px;height:54px;font-size:20px">🤖</div></div></div>
+      <span class="hl-name">IA</span>
+    </div>
+    <div class="hl-item">
+      <div class="ig-ring"><div class="ig-ring-inner"><div class="av" style="width:54px;height:54px;font-size:20px">📊</div></div></div>
+      <span class="hl-name">Data</span>
+    </div>
+    <div class="hl-item">
+      <div class="ig-ring seen"><div class="ig-ring-inner"><div class="av" style="width:54px;height:54px;font-size:20px;background:var(--surface-3);color:var(--text-3)">🏆</div></div></div>
+      <span class="hl-name">Logros</span>
+    </div>
+    <div class="hl-item">
+      <div class="ig-ring seen"><div class="ig-ring-inner"><div class="av" style="width:54px;height:54px;font-size:20px;background:var(--surface-3);color:var(--text-3)">🚀</div></div></div>
+      <span class="hl-name">Proyectos</span>
+    </div>
+    <div class="hl-item">
+      <div class="ig-ring seen"><div class="ig-ring-inner"><div class="av" style="width:54px;height:54px;font-size:20px;background:var(--surface-3);color:var(--text-3)">🎓</div></div></div>
+      <span class="hl-name">Cursos</span>
+    </div>
+  </div>
+
+  <!-- TABS -->
+  <div class="a-tabs">
+    <div class="a-tab on">Publicaciones</div>
+    <div class="a-tab">Sobre mí</div>
+    <div class="a-tab">Amigos</div>
+    <div class="a-tab">Fotos</div>
+    <div class="a-tab">Videos</div>
+    <div class="a-tab">Más ▾</div>
+  </div>
+
+  <!-- BODY -->
+  <div class="a-wrap">
+    <div class="a-body">
+
+      <!-- FEED -->
+      <div class="a-feed">
+
+        <!-- Composer -->
+        <div class="a-composer">
+          <div class="a-cmp-top">
+            <div class="ig-ring" style="flex-shrink:0">
+              <div class="ig-ring-inner">
+                <div class="av" style="width:40px;height:40px;font-size:14px">CG</div>
+              </div>
+            </div>
+            <div class="a-cmp-pill">¿Qué estás pensando, Cristian?</div>
+          </div>
+          <div class="a-cmp-div"></div>
+          <div class="a-cmp-acts">
+            <button class="a-cmp-act">
+              <span class="ico"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="16" height="16"><polygon points="23 7 16 12 23 17 23 7"/><rect x="1" y="5" width="15" height="14" rx="2" ry="2"/></svg></span>
+              Video
+            </button>
+            <button class="a-cmp-act">
+              <span class="ico"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="16" height="16"><path d="M23 19a2 2 0 01-2 2H3a2 2 0 01-2-2V8a2 2 0 012-2h4l2-3h6l2 3h4a2 2 0 012 2z"/><circle cx="12" cy="13" r="4"/></svg></span>
+              Foto
+            </button>
+            <button class="a-cmp-act">
+              <span class="ico"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="16" height="16"><circle cx="12" cy="12" r="10"/><path d="M8 13s1.5 2 4 2 4-2 4-2"/><line x1="9" y1="9" x2="9.01" y2="9"/><line x1="15" y1="9" x2="15.01" y2="9"/></svg></span>
+              Sentimiento
+            </button>
+            <button class="a-cmp-act">
+              <span class="ico"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="16" height="16"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0118 0z"/><circle cx="12" cy="10" r="3"/></svg></span>
+              Lugar
+            </button>
+          </div>
+        </div>
+
+        <!-- POST 1 — imagen tipo IG -->
+        <div class="a-post">
+          <div class="a-post-head">
+            <div class="a-pav">👩‍💻</div>
+            <div class="a-pmt">
+              <div class="a-pname">Cristian García</div>
+              <div class="a-ptime">hace 2 h <span style="font-size:8px">•</span> 🌐</div>
+            </div>
+            <button class="a-post-more">···</button>
+          </div>
+          <div class="a-post-body">
+            Terminé el módulo de <strong>Diseño UX Avanzado</strong> con distinción 🎓✨<br>
+            <span class="hashtag">#UXDesign</span> <span class="hashtag">#ConnikusUX</span> <span class="hashtag">#ORBITU</span>
+          </div>
+          <div class="a-post-media wide" style="font-size:72px">🎓
+            <div class="a-post-media-overlay">
+              <div class="a-post-media-caption">Certificado · Diseño UX Avanzado · Nivel Platino</div>
+            </div>
+          </div>
+          <div class="a-post-react">
+            <div style="display:flex;align-items:center;gap:6px">
+              <div class="react-row">
+                <div class="react-ico" style="background:var(--signature)">👍</div>
+                <div class="react-ico" style="background:#E41E3F">❤️</div>
+                <div class="react-ico" style="background:#F5C518">🔥</div>
+              </div>
+              <span style="font-size:13px;color:var(--text-3)">Ana, Rodrigo y 34 más</span>
+            </div>
+            <span style="font-size:13px;color:var(--text-3)">12 comentarios · 5 compartidos</span>
+          </div>
+          <div class="a-post-acts">
+            <button class="pa-btn liked">
+              <span class="ico"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="16" height="16"><path d="M14 9V5a3 3 0 00-3-3l-4 9v11h11.28a2 2 0 002-1.7l1.38-9a2 2 0 00-2-2.3H14z"/><path d="M7 22H4a2 2 0 01-2-2v-7a2 2 0 012-2h3"/></svg></span>
+              Me gusta
+            </button>
+            <button class="pa-btn">
+              <span class="ico"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="16" height="16"><path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"/></svg></span>
+              Comentar
+            </button>
+            <button class="pa-btn">
+              <span class="ico"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="16" height="16"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/></svg></span>
+              Compartir
+            </button>
+          </div>
+          <div class="a-post-cmts">
+            <div class="ig-ring" style="flex-shrink:0"><div class="ig-ring-inner"><div class="av" style="width:28px;height:28px;font-size:9px">CG</div></div></div>
+            <div class="a-cmt-inp">Escribe un comentario… 😊</div>
+          </div>
+        </div>
+
+        <!-- POST 2 — solo texto -->
+        <div class="a-post">
+          <div class="a-post-head">
+            <div class="a-pav">👩‍💻</div>
+            <div class="a-pmt">
+              <div class="a-pname">Cristian García</div>
+              <div class="a-ptime">ayer <span style="font-size:8px">•</span> 👥 Amigos</div>
+            </div>
+            <button class="a-post-more">···</button>
+          </div>
+          <div class="a-post-body">
+            Primera entrevista técnica conseguida gracias a Conniku 🚀 El módulo de <strong>Portafolio Profesional</strong> + el tutor Athena = combinación imbatible. El sistema funciona de verdad.<br><br>
+            <span class="hashtag">#Empleo</span> <span class="hashtag">#TechJobs</span> <span class="hashtag">#ORBITU</span>
+          </div>
+          <div class="a-post-react">
+            <div style="display:flex;align-items:center;gap:6px">
+              <div class="react-row">
+                <div class="react-ico" style="background:#E41E3F">❤️</div>
+                <div class="react-ico" style="background:#F7A825">🚀</div>
+              </div>
+              <span style="font-size:13px;color:var(--text-3)">58 personas</span>
+            </div>
+            <span style="font-size:13px;color:var(--text-3)">22 comentarios</span>
+          </div>
+          <div class="a-post-acts">
+            <button class="pa-btn">
+              <span class="ico"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="16" height="16"><path d="M14 9V5a3 3 0 00-3-3l-4 9v11h11.28a2 2 0 002-1.7l1.38-9a2 2 0 00-2-2.3H14z"/><path d="M7 22H4a2 2 0 01-2-2v-7a2 2 0 012-2h3"/></svg></span>
+              Me gusta
+            </button>
+            <button class="pa-btn">
+              <span class="ico"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="16" height="16"><path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"/></svg></span>
+              Comentar
+            </button>
+            <button class="pa-btn">
+              <span class="ico"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="16" height="16"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/></svg></span>
+              Compartir
+            </button>
+          </div>
+        </div>
+
+        <!-- POST 3 — imagen cuadrada tipo IG -->
+        <div class="a-post">
+          <div class="a-post-head">
+            <div class="a-pav">👩‍💻</div>
+            <div class="a-pmt">
+              <div class="a-pname">Cristian García</div>
+              <div class="a-ptime">hace 3 d <span style="font-size:8px">•</span> 🌐</div>
+            </div>
+            <button class="a-post-more">···</button>
+          </div>
+          <div class="a-post-body">
+            Nivel <strong>Platino</strong> en el leaderboard 🥇 Semana intensa pero valió cada hora de estudio.<br>
+            <span class="hashtag">#ConnikusOBIT</span> <span class="hashtag">#Platino</span>
+          </div>
+          <div class="a-post-media sq" style="font-size:96px">🏆
+            <div class="a-post-media-overlay">
+              <div class="a-post-media-caption">Leaderboard Semanal · #1 Diseño UX</div>
+            </div>
+          </div>
+          <div class="a-post-react">
+            <div style="display:flex;align-items:center;gap:6px">
+              <div class="react-row">
+                <div class="react-ico" style="background:var(--signature)">👍</div>
+                <div class="react-ico" style="background:#F5C518">⭐</div>
+              </div>
+              <span style="font-size:13px;color:var(--text-3)">91 personas</span>
+            </div>
+            <span style="font-size:13px;color:var(--text-3)">37 comentarios · 14 compartidos</span>
+          </div>
+          <div class="a-post-acts">
+            <button class="pa-btn">
+              <span class="ico"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="16" height="16"><path d="M14 9V5a3 3 0 00-3-3l-4 9v11h11.28a2 2 0 002-1.7l1.38-9a2 2 0 00-2-2.3H14z"/><path d="M7 22H4a2 2 0 01-2-2v-7a2 2 0 012-2h3"/></svg></span>
+              Me gusta
+            </button>
+            <button class="pa-btn">
+              <span class="ico"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="16" height="16"><path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"/></svg></span>
+              Comentar
+            </button>
+            <button class="pa-btn">
+              <span class="ico"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="16" height="16"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/></svg></span>
+              Compartir
+            </button>
+          </div>
+        </div>
+
+      </div><!-- /a-feed -->
+
+      <!-- SIDEBAR -->
+      <aside class="a-sidebar">
+
+        <!-- Intro -->
+        <div class="a-card">
+          <div class="a-card-title">Introducción</div>
+          <div class="a-intro-item">
+            <span class="a-intro-ico"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><rect x="2" y="7" width="20" height="14" rx="2" ry="2"/><path d="M16 21V5a2 2 0 00-2-2h-4a2 2 0 00-2 2v16"/></svg></span>
+            <span>UX Designer · ORBIT·U</span>
+          </div>
+          <div class="a-intro-item">
+            <span class="a-intro-ico"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M22 10v6M2 10l10-5 10 5-10 5z"/><path d="M6 12v5c3 3 9 3 12 0v-5"/></svg></span>
+            <span>Estudió en <strong>Conniku Academy</strong></span>
+          </div>
+          <div class="a-intro-item">
+            <span class="a-intro-ico"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0118 0z"/><circle cx="12" cy="10" r="3"/></svg></span>
+            <span>Ciudad de México</span>
+          </div>
+          <div class="a-intro-item">
+            <span class="a-intro-ico"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M10 13a5 5 0 007.54.54l3-3a5 5 0 00-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 00-7.54-.54l-3 3a5 5 0 007.07 7.07l1.71-1.71"/></svg></span>
+            <span style="color:var(--signature);font-weight:600">conniku.com/@cristian</span>
+          </div>
+          <div class="a-intro-item">
+            <span class="a-intro-ico"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg></span>
+            <span>Se unió en enero 2024</span>
+          </div>
+          <button class="btn-ghost" style="width:100%;margin-top:10px;font-size:13px">Editar detalles</button>
+        </div>
+
+        <!-- Fotos -->
+        <div class="a-card">
+          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px">
+            <div class="a-card-title" style="margin:0">Fotos</div>
+            <span style="font-size:13px;color:var(--signature);font-weight:600;cursor:pointer">Ver todas</span>
+          </div>
+          <div class="a-photo-grid">
+            <div class="a-photo-cell">🎓</div>
+            <div class="a-photo-cell">🚀</div>
+            <div class="a-photo-cell">🏆</div>
+            <div class="a-photo-cell">📊</div>
+            <div class="a-photo-cell">💡</div>
+            <div class="a-photo-cell">🤖</div>
+          </div>
+        </div>
+
+        <!-- Amigos -->
+        <div class="a-card">
+          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:4px">
+            <div class="a-card-title" style="margin:0">Amigos</div>
+            <span style="font-size:13px;color:var(--signature);font-weight:600;cursor:pointer">Ver todos</span>
+          </div>
+          <div style="font-size:13px;color:var(--text-3);margin-bottom:12px">312 amigos · 8 en común</div>
+          <div class="a-friends-grid">
+            <div class="a-friend-item"><div class="a-friend-av">👩‍💻</div><div class="a-friend-name">Ana M.</div></div>
+            <div class="a-friend-item"><div class="a-friend-av">🧑‍🎓</div><div class="a-friend-name">Rodrigo V.</div></div>
+            <div class="a-friend-item"><div class="a-friend-av">👨‍🏫</div><div class="a-friend-name">Sofía P.</div></div>
+            <div class="a-friend-item"><div class="a-friend-av">👩‍🔬</div><div class="a-friend-name">Laura S.</div></div>
+            <div class="a-friend-item"><div class="a-friend-av">👨‍💼</div><div class="a-friend-name">Marcos R.</div></div>
+            <div class="a-friend-item"><div class="a-friend-av">👩‍🎨</div><div class="a-friend-name">Daniela V.</div></div>
+          </div>
+        </div>
+
+      </aside>
+
+    </div><!-- /a-body -->
+  </div><!-- /a-wrap -->
+
+</div><!-- /ca -->
+
+
+<!-- ═══════════════════════════════════════════════════════════
+     CONCEPTO B — Instagram profile · Facebook content
+     ═══════════════════════════════════════════════════════════ -->
+<div class="concept" id="cb">
+
+  <!-- NAV -->
+  <nav class="b-nav">
+    <div style="display:flex;align-items:center;gap:10px">
+      <!-- LOGO PENDIENTE -->
+      <span class="b-nav-logo">conniku</span>
+    </div>
+    <div class="b-nav-r">
+      <span class="b-nav-ico">🔍</span>
+      <span class="b-nav-ico">❤️<span class="b-nav-dot"></span></span>
+      <span class="b-nav-ico">💬<span class="b-nav-dot"></span></span>
+      <div class="ig-ring" style="cursor:pointer"><div class="ig-ring-inner"><div class="av" style="width:30px;height:30px;font-size:10px">CG</div></div></div>
+    </div>
+  </nav>
+
+  <!-- PROFILE SECTION -->
+  <div class="b-profile-section">
+    <div class="b-profile-top">
+      <div class="b-av-col">
+        <div class="ig-ring">
+          <div class="ig-ring-inner">
+            <div class="av" style="width:140px;height:140px;font-size:52px">CG</div>
+          </div>
+        </div>
+      </div>
+      <div class="b-info-col">
+        <div class="b-info-row1">
+          <div class="b-username">cristian.garcia</div>
+          <div class="b-actions">
+            <button class="btn-primary" style="padding:7px 16px;font-size:13px">Seguir</button>
+            <button class="btn-ghost" style="padding:7px 16px;font-size:13px">Mensaje</button>
+            <button class="btn-icon">···</button>
+          </div>
+        </div>
+        <div class="b-stats-row">
+          <div class="b-stat"><strong>48</strong> publicaciones</div>
+          <div class="b-stat"><strong>847</strong> seguidores</div>
+          <div class="b-stat"><strong>312</strong> siguiendo</div>
+        </div>
+        <div class="b-bio">
+          <div class="b-bio-title">Cristian García · UX Designer</div>
+          🎓 ORBIT·U · Diseño UX &amp; IA Aplicada<br>
+          📍 Ciudad de México<br>
+          🔗 <span class="link">conniku.com/@cristian</span><br>
+          <span class="hashtag">#UXDesign</span> <span class="hashtag">#IA</span> <span class="hashtag">#ORBITU</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Highlights -->
+    <div class="b-highlights">
+      <div class="hl-item b-hl-add">
+        <div style="width:60px;height:60px;border-radius:50%;background:var(--surface-2);border:1px dashed var(--border);display:grid;place-items:center;font-size:22px;cursor:pointer">＋</div>
+        <span class="hl-name">Nuevo</span>
+      </div>
+      <div class="hl-item">
+        <div class="ig-ring"><div class="ig-ring-inner"><div class="av" style="width:56px;height:56px;font-size:22px">📐</div></div></div>
+        <span class="hl-name">UX</span>
+      </div>
+      <div class="hl-item">
+        <div class="ig-ring"><div class="ig-ring-inner"><div class="av" style="width:56px;height:56px;font-size:22px">🤖</div></div></div>
+        <span class="hl-name">IA</span>
+      </div>
+      <div class="hl-item">
+        <div class="ig-ring"><div class="ig-ring-inner"><div class="av" style="width:56px;height:56px;font-size:22px">📊</div></div></div>
+        <span class="hl-name">Data</span>
+      </div>
+      <div class="hl-item">
+        <div class="ig-ring seen"><div class="ig-ring-inner"><div class="av" style="width:56px;height:56px;font-size:22px;background:var(--surface-3);color:var(--text-3)">🏆</div></div></div>
+        <span class="hl-name">Logros</span>
+      </div>
+      <div class="hl-item">
+        <div class="ig-ring seen"><div class="ig-ring-inner"><div class="av" style="width:56px;height:56px;font-size:22px;background:var(--surface-3);color:var(--text-3)">🚀</div></div></div>
+        <span class="hl-name">Proyectos</span>
+      </div>
+    </div>
+
+    <!-- TABS -->
+    <div class="b-tabs">
+      <div class="b-tab on">⊞ PUBLICACIONES</div>
+      <div class="b-tab">⊟ CUADRÍCULA</div>
+      <div class="b-tab">👤 ACERCA</div>
+      <div class="b-tab">👥 AMIGOS</div>
+    </div>
+  </div>
+
+  <!-- CONTENT -->
+  <div class="b-body">
+
+    <!-- Post 1 -->
+    <div class="b-post">
+      <div class="b-post-head">
+        <div class="b-pav">
+          <div class="ig-ring"><div class="ig-ring-inner"><div class="av" style="width:42px;height:42px;font-size:14px">CG</div></div></div>
+        </div>
+        <div class="b-pmt">
+          <div class="b-pname">cristian.garcia</div>
+          <div class="b-psub">hace 2 h · Ciudad de México</div>
+        </div>
+        <button style="font-size:20px;color:var(--text-3);cursor:pointer">···</button>
+      </div>
+      <div class="b-post-img r169" style="font-size:80px">🎓</div>
+      <div class="b-post-body" style="padding:12px 16px 4px">
+        Terminé el módulo de <strong>Diseño UX Avanzado</strong> con distinción 🎓✨<br>
+        <span class="hashtag">#UXDesign</span> <span class="hashtag">#ConnikusUX</span> <span class="hashtag">#ORBITU</span>
+      </div>
+      <div class="b-post-acts-row">
+        <div class="b-post-reacts">
+          <div class="react-row">
+            <div class="react-ico" style="background:var(--signature)">👍</div>
+            <div class="react-ico" style="background:#E41E3F">❤️</div>
+            <div class="react-ico" style="background:#F5C518">🔥</div>
+          </div>
+          <span style="margin-left:6px">Ana, Rodrigo y 34 más</span>
+        </div>
+        <span class="b-post-share-cnt">12 comentarios · 5 compartidos</span>
+      </div>
+      <div class="b-post-btns">
+        <button class="pa-btn liked">👍 Me gusta</button>
+        <button class="pa-btn">💬 Comentar</button>
+        <button class="pa-btn">↗️ Compartir</button>
+      </div>
+      <div class="b-post-cmt-row">
+        <div class="ig-ring" style="flex-shrink:0"><div class="ig-ring-inner"><div class="av" style="width:30px;height:30px;font-size:10px">CG</div></div></div>
+        <div class="b-cmt-inp-pill">Agrega un comentario… 😊</div>
+      </div>
+      <div class="b-cmt-row-inner">
+        <div class="b-cmt" style="flex-direction:column;gap:4px">
+          <div style="display:flex;gap:8px">
+            <div style="width:28px;height:28px;border-radius:50%;background:var(--surface-2);display:grid;place-items:center;font-size:14px;flex-shrink:0">👩‍💻</div>
+            <div class="b-cmt-bubble"><span class="b-cmt-author">ana.martinez </span>¡Felicidades! Ese módulo es brutal 🔥 <span class="b-cmt-hashtag">#UXDesign</span></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Post 2 -->
+    <div class="b-post">
+      <div class="b-post-head">
+        <div class="b-pav">
+          <div class="ig-ring"><div class="ig-ring-inner"><div class="av" style="width:42px;height:42px;font-size:14px">CG</div></div></div>
+        </div>
+        <div class="b-pmt">
+          <div class="b-pname">cristian.garcia</div>
+          <div class="b-psub">ayer · 👥 Amigos</div>
+        </div>
+        <button style="font-size:20px;color:var(--text-3);cursor:pointer">···</button>
+      </div>
+      <div class="b-post-img r45" style="font-size:96px">🚀</div>
+      <div class="b-post-body" style="padding:12px 16px 4px">
+        Primera entrevista técnica conseguida 🚀<br>
+        <span class="hashtag">#Empleo</span> <span class="hashtag">#TechJobs</span> <span class="hashtag">#ORBITU</span>
+      </div>
+      <div class="b-post-acts-row">
+        <div class="b-post-reacts">
+          <div class="react-row">
+            <div class="react-ico" style="background:#E41E3F">❤️</div>
+            <div class="react-ico" style="background:#F7A825">🔥</div>
+          </div>
+          <span style="margin-left:6px">58 personas</span>
+        </div>
+        <span class="b-post-share-cnt">22 comentarios</span>
+      </div>
+      <div class="b-post-btns">
+        <button class="pa-btn">👍 Me gusta</button>
+        <button class="pa-btn">💬 Comentar</button>
+        <button class="pa-btn">↗️ Compartir</button>
+      </div>
+      <div class="b-post-cmt-row">
+        <div class="ig-ring" style="flex-shrink:0"><div class="ig-ring-inner"><div class="av" style="width:30px;height:30px;font-size:10px">CG</div></div></div>
+        <div class="b-cmt-inp-pill">Agrega un comentario… 😊</div>
+      </div>
+    </div>
+
+    <!-- Post 3 -->
+    <div class="b-post">
+      <div class="b-post-head">
+        <div class="b-pav">
+          <div class="ig-ring"><div class="ig-ring-inner"><div class="av" style="width:42px;height:42px;font-size:14px">CG</div></div></div>
+        </div>
+        <div class="b-pmt">
+          <div class="b-pname">cristian.garcia</div>
+          <div class="b-psub">hace 3 d · 🌐 Público</div>
+        </div>
+        <button style="font-size:20px;color:var(--text-3);cursor:pointer">···</button>
+      </div>
+      <div class="b-post-img r11" style="font-size:96px">🏆</div>
+      <div class="b-post-body" style="padding:12px 16px 4px">
+        Nivel Platino en el leaderboard semanal 🥇<br>
+        <span class="hashtag">#ORBITU</span> <span class="hashtag">#Platino</span> <span class="hashtag">#Conniku</span>
+      </div>
+      <div class="b-post-acts-row">
+        <div class="b-post-reacts">
+          <div class="react-row">
+            <div class="react-ico" style="background:var(--signature)">👍</div>
+            <div class="react-ico" style="background:#F5C518">⭐</div>
+          </div>
+          <span style="margin-left:6px">91 personas</span>
+        </div>
+        <span class="b-post-share-cnt">37 comentarios</span>
+      </div>
+      <div class="b-post-btns">
+        <button class="pa-btn">👍 Me gusta</button>
+        <button class="pa-btn">💬 Comentar</button>
+        <button class="pa-btn">↗️ Compartir</button>
+      </div>
+    </div>
+
+  </div><!-- /b-body -->
+
+</div><!-- /cb -->
+
+
+<!-- ═══════════════════════════════════════════════════════════
+     CONCEPTO C — Hub 3-column · Cover + IG stories
+     ═══════════════════════════════════════════════════════════ -->
+<div class="concept" id="cc">
+
+  <!-- NAV -->
+  <nav class="c-nav">
+    <div style="display:flex;align-items:center;gap:10px;flex-shrink:0">
+      <!-- LOGO PENDIENTE -->
+      <div class="c-nav-search"><span>🔍</span><span>Buscar en Conniku</span></div>
+    </div>
+    <div class="c-ntabs">
+      <button class="c-ntab">🏠</button>
+      <button class="c-ntab on">👤</button>
+      <button class="c-ntab">🎓</button>
+      <button class="c-ntab">💬</button>
+    </div>
+    <div class="c-nav-r">
+      <button class="c-nav-btn">⚙️</button>
+      <button class="c-nav-btn">🔔<span class="c-ndot"></span></button>
+      <div class="ig-ring" style="cursor:pointer"><div class="ig-ring-inner"><div class="av" style="width:32px;height:32px;font-size:11px">CG</div></div></div>
+    </div>
+  </nav>
+
+  <!-- COVER + PROFILE -->
+  <div class="c-cover">
+    <div class="c-cover-banner"></div>
+    <!-- 3-col row for profile (aligned with body columns) -->
+    <div style="max-width:1280px;margin:0 auto;padding:0 16px">
+      <div style="display:grid;grid-template-columns:284px 1fr 300px;gap:16px">
+        <div></div><!-- spacer for left col -->
+        <div class="c-cover-profile-row" style="padding:0;grid-column:2/4;display:flex;align-items:flex-end;gap:18px;background:var(--surface);border-bottom:1px solid var(--border);padding-bottom:0">
+          <div class="c-cover-av-wrap" style="margin-left:0">
+            <div class="ig-ring" style="box-shadow:0 4px 18px rgba(0,0,0,.28)">
+              <div class="ig-ring-inner">
+                <div class="av" style="width:120px;height:120px;font-size:44px">CG</div>
+              </div>
+            </div>
+          </div>
+          <div class="c-cover-info" style="flex:1;padding-bottom:14px;padding-top:8px">
+            <div class="c-cname">Cristian García</div>
+            <div class="c-cuname">@cristian.g · UX Designer · ORBIT·U</div>
+            <div class="c-cstats">
+              <div class="c-cstat"><strong>847</strong> seguidores</div>
+              <div class="c-cstat"><strong>312</strong> siguiendo</div>
+              <div class="c-cstat"><strong>48</strong> publicaciones</div>
+            </div>
+          </div>
+          <div class="c-cta">
+            <button class="btn-primary">✚ Seguir</button>
+            <button class="btn-ghost">💬 Mensaje</button>
+            <button class="btn-icon">···</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- STORIES strip -->
+  <div class="c-stories-strip">
+    <div style="font-family:'Geist Mono',monospace;font-size:9px;color:var(--text-4);letter-spacing:.12em;text-transform:uppercase;flex-shrink:0;margin-right:4px">HISTORIAS</div>
+    <div class="c-story-item" style="flex-shrink:0">
+      <div style="width:58px;height:58px;border-radius:50%;background:var(--surface-2);border:2px dashed var(--border);display:grid;place-items:center;font-size:22px;cursor:pointer">＋</div>
+      <span class="c-story-name">Tu historia</span>
+    </div>
+    <div class="c-story-item">
+      <div class="ig-ring"><div class="ig-ring-inner"><div class="av" style="width:54px;height:54px;font-size:18px">👩‍💻</div></div></div>
+      <span class="c-story-name">Ana M.</span>
+    </div>
+    <div class="c-story-item">
+      <div class="ig-ring"><div class="ig-ring-inner"><div class="av" style="width:54px;height:54px;font-size:18px">🧑‍🎓</div></div></div>
+      <span class="c-story-name">Rodrigo V.</span>
+    </div>
+    <div class="c-story-item">
+      <div class="ig-ring"><div class="ig-ring-inner"><div class="av" style="width:54px;height:54px;font-size:18px">👨‍🏫</div></div></div>
+      <span class="c-story-name">Sofía P.</span>
+    </div>
+    <div class="c-story-item">
+      <div class="ig-ring seen"><div class="ig-ring-inner"><div class="av" style="width:54px;height:54px;font-size:18px;background:var(--surface-3);color:var(--text-3)">👩‍🔬</div></div></div>
+      <span class="c-story-name">Laura S.</span>
+    </div>
+    <div class="c-story-item">
+      <div class="ig-ring seen"><div class="ig-ring-inner"><div class="av" style="width:54px;height:54px;font-size:18px;background:var(--surface-3);color:var(--text-3)">👨‍💼</div></div></div>
+      <span class="c-story-name">Marcos R.</span>
+    </div>
+  </div>
+
+  <!-- TABS -->
+  <div class="c-tabs">
+    <div class="c-tab on">Publicaciones</div>
+    <div class="c-tab">Sobre mí</div>
+    <div class="c-tab">Amigos</div>
+    <div class="c-tab">Fotos</div>
+    <div class="c-tab">Más ▾</div>
+  </div>
+
+  <!-- 3-COL BODY -->
+  <div class="c-wrap">
+    <div class="c-body">
+
+      <!-- LEFT MENU -->
+      <aside class="c-left">
+        <div class="c-pm-row">
+          <div class="av" style="width:34px;height:34px;font-size:11px">CG</div>
+          <div class="c-pm-label">Cristian García</div>
+        </div>
+        <div class="c-msep"></div>
+        <div class="c-menu-row"><div class="c-mico">🏠</div><div class="c-mlabel">Inicio</div></div>
+        <div class="c-menu-row"><div class="c-mico">👥</div><div class="c-mlabel">Amigos</div></div>
+        <div class="c-menu-row"><div class="c-mico">🎓</div><div class="c-mlabel">Mis cursos</div></div>
+        <div class="c-menu-row"><div class="c-mico">💼</div><div class="c-mlabel">Empleo</div></div>
+        <div class="c-menu-row"><div class="c-mico">🏆</div><div class="c-mlabel">Logros</div></div>
+        <div class="c-menu-row"><div class="c-mico">🗓</div><div class="c-mlabel">Eventos</div></div>
+        <div class="c-msep"></div>
+        <div class="c-msec">Atajos</div>
+        <div class="c-menu-row"><div class="c-mico">📐</div><div class="c-mlabel">Diseño UX</div></div>
+        <div class="c-menu-row"><div class="c-mico">🤖</div><div class="c-mlabel">IA Aplicada</div></div>
+        <div class="c-menu-row"><div class="c-mico">📊</div><div class="c-mlabel">Data Analytics</div></div>
+
+        <div class="c-left-card" style="margin-top:14px">
+          <div class="c-lc-title">Intro</div>
+          <div class="c-intro-item"><span style="font-size:16px">💼</span><span>UX Designer · ORBIT·U</span></div>
+          <div class="c-intro-item"><span style="font-size:16px">🎓</span><span>Conniku Academy</span></div>
+          <div class="c-intro-item"><span style="font-size:16px">📍</span><span>Ciudad de México</span></div>
+          <div class="c-intro-item"><span style="font-size:16px">🔗</span><span style="color:var(--signature);font-weight:600">conniku.com/@cristian</span></div>
+        </div>
+      </aside>
+
+      <!-- FEED CENTER -->
+      <main class="c-feed">
+
+        <!-- Composer -->
+        <div class="c-composer">
+          <div class="c-cmp-top">
+            <div class="ig-ring" style="flex-shrink:0"><div class="ig-ring-inner"><div class="av" style="width:40px;height:40px;font-size:14px">CG</div></div></div>
+            <div class="c-cmp-pill">¿Qué estás pensando, Cristian?</div>
+          </div>
+          <div class="c-cmp-div"></div>
+          <div class="c-cmp-acts">
+            <button class="c-cmp-act">🎬 Video</button>
+            <button class="c-cmp-act">📷 Foto</button>
+            <button class="c-cmp-act">😊 Sentimiento</button>
+          </div>
+        </div>
+
+        <!-- Post 1 -->
+        <div class="c-post">
+          <div class="c-ph">
+            <div class="c-pav">👩‍💻</div>
+            <div class="c-pmt">
+              <div class="c-pname">Cristian García</div>
+              <div class="c-ptime">hace 2 h · 🌐</div>
+            </div>
+            <button style="width:36px;height:36px;border-radius:50%;display:grid;place-items:center;font-size:18px;color:var(--text-3);cursor:pointer">···</button>
+          </div>
+          <div class="c-pbody">
+            Terminé el módulo de <strong>Diseño UX Avanzado</strong> con distinción 🎓<br>
+            <span class="hashtag">#UXDesign</span> <span class="hashtag">#ORBITU</span>
+          </div>
+          <div class="c-pmedia r169" style="font-size:72px">🎓</div>
+          <div class="c-preact">
+            <div style="display:flex;align-items:center;gap:6px">
+              <div class="react-row">
+                <div class="react-ico" style="background:var(--signature)">👍</div>
+                <div class="react-ico" style="background:#E41E3F">❤️</div>
+              </div>
+              <span>Ana, Rodrigo y 34 más</span>
+            </div>
+            <span>12 comentarios</span>
+          </div>
+          <div class="c-pacts">
+            <button class="pa-btn liked">👍 Me gusta</button>
+            <button class="pa-btn">💬 Comentar</button>
+            <button class="pa-btn">↗️ Compartir</button>
+          </div>
+        </div>
+
+        <!-- Post 2 -->
+        <div class="c-post">
+          <div class="c-ph">
+            <div class="c-pav">🧑‍🎓</div>
+            <div class="c-pmt">
+              <div class="c-pname">Cristian García</div>
+              <div class="c-ptime">ayer · 👥</div>
+            </div>
+            <button style="width:36px;height:36px;border-radius:50%;display:grid;place-items:center;font-size:18px;color:var(--text-3);cursor:pointer">···</button>
+          </div>
+          <div class="c-pbody">
+            Primera entrevista técnica conseguida gracias a Conniku 🚀 El módulo de <strong>Portafolio Profesional</strong> + Athena = imbatible.<br>
+            <span class="hashtag">#Empleo</span> <span class="hashtag">#TechJobs</span>
+          </div>
+          <div class="c-preact">
+            <div style="display:flex;align-items:center;gap:6px">
+              <div class="react-row">
+                <div class="react-ico" style="background:#E41E3F">❤️</div>
+                <div class="react-ico" style="background:#F7A825">🔥</div>
+              </div>
+              <span>58 personas</span>
+            </div>
+            <span>22 comentarios</span>
+          </div>
+          <div class="c-pacts">
+            <button class="pa-btn">👍 Me gusta</button>
+            <button class="pa-btn">💬 Comentar</button>
+            <button class="pa-btn">↗️ Compartir</button>
+          </div>
+        </div>
+
+        <!-- Post 3 - imagen cuadrada -->
+        <div class="c-post">
+          <div class="c-ph">
+            <div class="c-pav">👩‍💻</div>
+            <div class="c-pmt">
+              <div class="c-pname">Cristian García</div>
+              <div class="c-ptime">hace 3 d · 🌐</div>
+            </div>
+            <button style="width:36px;height:36px;border-radius:50%;display:grid;place-items:center;font-size:18px;color:var(--text-3);cursor:pointer">···</button>
+          </div>
+          <div class="c-pbody">
+            Nivel <strong>Platino</strong> en el leaderboard 🥇<br>
+            <span class="hashtag">#Platino</span> <span class="hashtag">#Conniku</span>
+          </div>
+          <div class="c-pmedia r45" style="font-size:96px">🏆</div>
+          <div class="c-preact">
+            <div style="display:flex;align-items:center;gap:6px">
+              <div class="react-row">
+                <div class="react-ico" style="background:var(--signature)">👍</div>
+                <div class="react-ico" style="background:#F5C518">⭐</div>
+              </div>
+              <span>91 personas</span>
+            </div>
+            <span>37 comentarios</span>
+          </div>
+          <div class="c-pacts">
+            <button class="pa-btn">👍 Me gusta</button>
+            <button class="pa-btn">💬 Comentar</button>
+            <button class="pa-btn">↗️ Compartir</button>
+          </div>
+        </div>
+
+      </main>
+
+      <!-- RIGHT PANEL -->
+      <aside class="c-right">
+
+        <!-- Patrocinado -->
+        <div class="c-rcard">
+          <div class="c-sp-img">🎓</div>
+          <div class="c-rcard-body">
+            <div style="font-size:13px;font-weight:700;color:var(--text);margin-bottom:3px">Conniku · ORBIT·U</div>
+            <div style="font-size:12px;color:var(--text-3);margin-bottom:10px">Aprende IA, UX y más con tutores especializados</div>
+            <button class="btn-ghost" style="width:100%;font-size:13px">Más información</button>
+          </div>
+        </div>
+
+        <!-- Fotos -->
+        <div class="c-rcard">
+          <div class="c-rcard-body">
+            <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:2px">
+              <div class="c-rcard-title" style="margin:0">Fotos</div>
+              <span class="c-rcard-link" style="cursor:pointer">Ver todas</span>
+            </div>
+            <div class="c-rphoto-grid">
+              <div class="c-rphoto">🎓</div>
+              <div class="c-rphoto">🚀</div>
+              <div class="c-rphoto">🏆</div>
+              <div class="c-rphoto">📊</div>
+              <div class="c-rphoto">💡</div>
+              <div class="c-rphoto">🤖</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Eventos + Cumpleaños -->
+        <div class="c-rcard">
+          <div class="c-rcard-body">
+            <div class="c-event"><div class="c-event-ico">🎂</div><div class="c-event-txt"><span>Laura Soto</span> cumple años hoy</div></div>
+            <div class="c-event" style="border:none"><div class="c-event-ico">🗓</div><div class="c-event-txt">Reto de <span>Data Analytics</span> empieza mañana</div></div>
+          </div>
+        </div>
+
+        <!-- Contactos -->
+        <div class="c-rcard">
+          <div class="c-rcard-body" style="padding-bottom:6px">
+            <div style="display:flex;justify-content:space-between;margin-bottom:8px">
+              <div class="c-rcard-title" style="margin:0">Contactos</div>
+              <span class="c-rcard-link" style="cursor:pointer">🔍</span>
+            </div>
+          </div>
+          <div class="c-contact">
+            <div class="c-ctav" style="font-size:16px">👩‍🔬<span class="online-dot"></span></div>
+            <div class="c-ctname">Laura Soto</div>
+          </div>
+          <div class="c-contact">
+            <div class="c-ctav" style="font-size:16px">👨‍💼<span class="online-dot"></span></div>
+            <div class="c-ctname">Marcos Ruiz</div>
+          </div>
+          <div class="c-contact">
+            <div class="c-ctav" style="font-size:16px">👩‍🎨<span class="online-dot"></span></div>
+            <div class="c-ctname">Daniela V.</div>
+          </div>
+          <div class="c-contact">
+            <div class="c-ctav" style="font-size:16px">👩‍💻</div>
+            <div class="c-ctname">Ana Martínez</div>
+          </div>
+          <div style="height:8px"></div>
+        </div>
+
+        <!-- Footer -->
+        <div style="display:flex;flex-wrap:wrap;gap:4px 8px;padding:4px 0">
+          <span style="font-size:11px;color:var(--text-4);cursor:pointer">Privacidad</span>
+          <span style="font-size:11px;color:var(--text-4);cursor:pointer">Términos</span>
+          <span style="font-size:11px;color:var(--text-4);cursor:pointer">Cookies</span>
+          <span style="font-size:11px;color:var(--text-4);cursor:pointer">Soporte</span>
+          <span style="font-size:11px;color:var(--text-4);cursor:pointer">Prensa</span>
+        </div>
+        <div style="font-size:11px;color:var(--text-4);margin-top:4px">Conniku © 2026</div>
+
+      </aside>
+
+    </div><!-- /c-body -->
+  </div><!-- /c-wrap -->
+
+</div><!-- /cc -->
+
+
+<!-- ═══════════════════════════════════════════════════════════
+     CONCEPTO D — FaceGram · Referencia externa adaptada
+     ═══════════════════════════════════════════════════════════ -->
+<div class="concept" id="cd">
+
+  <!-- NAV -->
+  <nav class="d-topnav">
+    <div class="d-logo">facegram</div>
+    <div class="d-search">
+      <span class="ico"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="14" height="14"><circle cx="11" cy="11" r="7"/><line x1="16.5" y1="16.5" x2="21" y2="21"/></svg></span>
+      <span>Buscar en FaceGram</span>
+    </div>
+    <div class="d-nav-icons">
+      <div class="d-nav-icon">
+        <span class="ico"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg></span>
+      </div>
+      <div class="d-nav-icon">
+        <span class="ico"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 00-3-3.87"/><path d="M16 3.13a4 4 0 010 7.75"/></svg></span>
+      </div>
+      <div class="d-nav-icon">
+        <span class="ico"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><polygon points="23 7 16 12 23 17 23 7"/><rect x="1" y="5" width="15" height="14" rx="2" ry="2"/></svg></span>
+      </div>
+      <div class="d-nav-icon">
+        <span class="ico"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M6 2L3 6v14a2 2 0 002 2h14a2 2 0 002-2V6l-3-4z"/><line x1="3" y1="6" x2="21" y2="6"/><path d="M16 10a4 4 0 01-8 0"/></svg></span>
+      </div>
+      <div class="d-nav-icon">
+        <span class="ico dot-glow"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"/></svg></span>
+      </div>
+      <div class="d-nav-icon">
+        <span class="ico dot-glow"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M18 8A6 6 0 006 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 01-3.46 0"/></svg></span>
+      </div>
+    </div>
+  </nav>
+
+  <!-- COVER + PROFILE -->
+  <div class="d-cover-wrap">
+    <div class="d-cover">
+      <button class="d-edit-cover">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M23 19a2 2 0 01-2 2H3a2 2 0 01-2-2V8a2 2 0 012-2h4l2-3h6l2 3h4a2 2 0 012 2z"/><circle cx="12" cy="13" r="4"/></svg>
+        Editar portada
+      </button>
+    </div>
+    <div class="d-profile-header">
+      <div class="d-avatar-ring">
+        <div class="d-avatar">LM</div>
+      </div>
+      <div class="d-profile-info">
+        <div class="d-profile-name">
+          Lucía Mendoza
+          <span class="d-verified">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+          </span>
+        </div>
+        <div class="d-profile-handle">@lucia.mendoza · Diseñadora · Vive en Madrid</div>
+        <div class="d-friends-preview">
+          <div class="d-friend-thumbs">
+            <span class="fc1">A</span><span class="fc2">M</span><span class="fc3">R</span><span class="fc4">S</span><span class="fc5">+</span>
+          </div>
+          847 amigos · 12.4K seguidores
+        </div>
+      </div>
+      <div class="d-profile-actions">
+        <button class="d-btn d-btn-primary">
+          <span class="ico"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg></span>
+          Agregar a historia
+        </button>
+        <button class="d-btn d-btn-secondary">
+          <span class="ico"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z"/></svg></span>
+          Editar perfil
+        </button>
+        <button class="d-btn d-btn-secondary">···</button>
+      </div>
+    </div>
+    <!-- TABS -->
+    <div class="d-tabs">
+      <div class="d-tab on">Publicaciones</div>
+      <div class="d-tab">Información</div>
+      <div class="d-tab">Amigos</div>
+      <div class="d-tab">Módulos</div>
+      <div class="d-tab">Reels</div>
+      <div class="d-tab">Videos</div>
+      <div class="d-tab">Más ▾</div>
+    </div>
+  </div>
+
+  <!-- MAIN 2-COL -->
+  <div class="d-main">
+
+    <!-- SIDEBAR -->
+    <aside>
+      <!-- Intro -->
+      <div class="d-card">
+        <div class="d-card-title">Introducción</div>
+        <div class="d-intro-row">
+          <span class="d-intro-ico"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><rect x="2" y="7" width="20" height="14" rx="2" ry="2"/><path d="M16 21V5a2 2 0 00-2-2h-4a2 2 0 00-2 2v16"/></svg></span>
+          Diseñadora de producto @ Kinto Studio
+        </div>
+        <div class="d-intro-row">
+          <span class="d-intro-ico"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M22 10v6M2 10l10-5 10 5-10 5z"/><path d="M6 12v5c3 3 9 3 12 0v-5"/></svg></span>
+          Estudió en Escuela de Arte La Palma
+        </div>
+        <div class="d-intro-row">
+          <span class="d-intro-ico"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg></span>
+          Vive en Madrid
+        </div>
+        <div class="d-intro-row">
+          <span class="d-intro-ico"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0118 0z"/><circle cx="12" cy="10" r="3"/></svg></span>
+          De Valencia
+        </div>
+        <div class="d-intro-row">
+          <span class="d-intro-ico"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20.84 4.61a5.5 5.5 0 00-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 00-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 000-7.78z"/></svg></span>
+          Soltera
+        </div>
+        <div class="d-intro-row">
+          <span class="d-intro-ico"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M10 13a5 5 0 007.54.54l3-3a5 5 0 00-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 00-7.54-.54l-3 3a5 5 0 007.07 7.07l1.71-1.71"/></svg></span>
+          lucia.design · @lucia.mendoza
+        </div>
+        <button class="d-btn d-btn-secondary" style="width:100%;justify-content:center;margin-top:12px">Editar detalles</button>
+      </div>
+
+      <!-- Fotos IG -->
+      <div class="d-card">
+        <div class="d-card-head">
+          <div class="d-card-title" style="margin:0">Módulos</div>
+          <span class="d-see-all">Ver todos</span>
+        </div>
+        <div class="d-mod-grid">
+
+          <!-- Workspaces -->
+          <div class="d-mod-tile">
+            <div class="d-mod-ico">
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
+                <path d="M5 3h10l4 4v14H5z"/><path d="M15 3v4h4"/><path d="M9 12h6"/><path d="M9 16h4"/>
+              </svg>
+            </div>
+            <div class="d-mod-name">Workspaces</div>
+          </div>
+
+          <!-- Mensajes -->
+          <div class="d-mod-tile">
+            <div class="d-mod-ico">
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
+                <path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"/>
+              </svg>
+            </div>
+            <div class="d-mod-name">Mensajes</div>
+          </div>
+
+          <!-- Amigos -->
+          <div class="d-mod-tile">
+            <div class="d-mod-ico">
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
+                <path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/>
+                <circle cx="9" cy="7" r="4"/>
+                <path d="M23 21v-2a4 4 0 00-3-3.87"/>
+                <path d="M16 3.13a4 4 0 010 7.75"/>
+              </svg>
+            </div>
+            <div class="d-mod-name">Amigos</div>
+          </div>
+
+          <!-- Cursos -->
+          <div class="d-mod-tile">
+            <div class="d-mod-ico">
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
+                <path d="M22 10v6M2 10l10-5 10 5-10 5z"/>
+                <path d="M6 12v5c3 3 9 3 12 0v-5"/>
+              </svg>
+            </div>
+            <div class="d-mod-name">Cursos</div>
+          </div>
+
+          <!-- Tutores -->
+          <div class="d-mod-tile">
+            <div class="d-mod-ico">
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
+                <circle cx="12" cy="8" r="4"/>
+                <path d="M4 21c0-4.5 3.5-7 8-7s8 2.5 8 7"/>
+              </svg>
+            </div>
+            <div class="d-mod-name">Tutores</div>
+          </div>
+
+          <!-- Biblioteca -->
+          <div class="d-mod-tile">
+            <div class="d-mod-ico">
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
+                <rect x="2" y="6" width="20" height="14" rx="2"/>
+                <path d="M2 11h20"/><path d="M6 16h4"/>
+              </svg>
+            </div>
+            <div class="d-mod-name">Biblioteca</div>
+          </div>
+
+          <!-- Calendario -->
+          <div class="d-mod-tile">
+            <div class="d-mod-ico">
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
+                <rect x="3" y="4" width="18" height="18" rx="2" ry="2"/>
+                <line x1="16" y1="2" x2="16" y2="6"/>
+                <line x1="8" y1="2" x2="8" y2="6"/>
+                <line x1="3" y1="10" x2="21" y2="10"/>
+              </svg>
+            </div>
+            <div class="d-mod-name">Calendario</div>
+          </div>
+
+          <!-- Empleo -->
+          <div class="d-mod-tile">
+            <div class="d-mod-ico">
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
+                <rect x="2" y="7" width="20" height="14" rx="2" ry="2"/>
+                <path d="M16 21V5a2 2 0 00-2-2h-4a2 2 0 00-2 2v16"/>
+              </svg>
+            </div>
+            <div class="d-mod-name">Empleo</div>
+          </div>
+
+          <!-- Comunidades -->
+          <div class="d-mod-tile">
+            <div class="d-mod-ico">
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
+                <circle cx="12" cy="12" r="9"/>
+                <path d="M3 12h18"/>
+                <path d="M12 3a13 13 0 010 18"/>
+                <path d="M12 3a13 13 0 000 18"/>
+              </svg>
+            </div>
+            <div class="d-mod-name">Comunidades</div>
+          </div>
+
+        </div>
+      </div>
+
+      <!-- Amigos -->
+      <div class="d-card">
+        <div class="d-card-head">
+          <div class="d-card-title" style="margin:0">Amigos</div>
+          <span class="d-see-all">Ver todos</span>
+        </div>
+        <div style="color:var(--text-3);font-size:13px;margin-top:-8px;margin-bottom:12px">847 amigos</div>
+        <div class="d-friends-grid">
+          <div class="d-friend-card"><div class="d-friend-thumb fc1">A</div><div class="d-friend-name">Andrea Gil</div></div>
+          <div class="d-friend-card"><div class="d-friend-thumb fc2">M</div><div class="d-friend-name">Marco Díaz</div></div>
+          <div class="d-friend-card"><div class="d-friend-thumb fc3">R</div><div class="d-friend-name">Rocío Paz</div></div>
+          <div class="d-friend-card"><div class="d-friend-thumb fc4">S</div><div class="d-friend-name">Sergio Núñez</div></div>
+          <div class="d-friend-card"><div class="d-friend-thumb fc5">E</div><div class="d-friend-name">Elena Vega</div></div>
+          <div class="d-friend-card"><div class="d-friend-thumb fc6">P</div><div class="d-friend-name">Pablo Rincón</div></div>
+        </div>
+      </div>
+    </aside>
+
+    <!-- FEED -->
+    <section>
+      <!-- Stories -->
+      <div class="d-card">
+        <div class="d-card-title">Tus historias</div>
+        <div class="d-stories">
+          <div class="d-story">
+            <div class="d-story-ring add"><div class="d-story-inner" style="background:var(--surface);color:var(--signature);font-size:22px">＋</div></div>
+            <div class="d-story-label">Nueva</div>
+          </div>
+          <div class="d-story"><div class="d-story-ring"><div class="d-story-inner fc1">A</div></div><div class="d-story-label">Andrea</div></div>
+          <div class="d-story"><div class="d-story-ring"><div class="d-story-inner fc2">M</div></div><div class="d-story-label">Marco</div></div>
+          <div class="d-story"><div class="d-story-ring seen"><div class="d-story-inner fc3">R</div></div><div class="d-story-label">Rocío</div></div>
+          <div class="d-story"><div class="d-story-ring"><div class="d-story-inner fc4">S</div></div><div class="d-story-label">Sergio</div></div>
+          <div class="d-story"><div class="d-story-ring seen"><div class="d-story-inner fc5">E</div></div><div class="d-story-label">Elena</div></div>
+          <div class="d-story"><div class="d-story-ring"><div class="d-story-inner fc6">P</div></div><div class="d-story-label">Pablo</div></div>
+        </div>
+      </div>
+
+      <!-- Composer -->
+      <div class="d-card" style="padding:12px 0 4px">
+        <div class="d-composer">
+          <div class="d-composer-avatar"></div>
+          <div class="d-composer-pill">¿Qué estás pensando, Lucía?</div>
+        </div>
+        <div class="d-composer-acts">
+          <div class="d-composer-act">
+            <span class="ico"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><polygon points="23 7 16 12 23 17 23 7"/><rect x="1" y="5" width="15" height="14" rx="2" ry="2"/></svg></span>
+            Reel
+          </div>
+          <div class="d-composer-act">
+            <span class="ico"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M23 19a2 2 0 01-2 2H3a2 2 0 01-2-2V8a2 2 0 012-2h4l2-3h6l2 3h4a2 2 0 012 2z"/><circle cx="12" cy="13" r="4"/></svg></span>
+            Foto/video
+          </div>
+          <div class="d-composer-act">
+            <span class="ico"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="M8 13s1.5 2 4 2 4-2 4-2"/><line x1="9" y1="9" x2="9.01" y2="9"/><line x1="15" y1="9" x2="15.01" y2="9"/></svg></span>
+            Sentimiento
+          </div>
+        </div>
+      </div>
+
+      <!-- POST 1 — FB style -->
+      <div class="d-post">
+        <div class="d-post-header">
+          <div class="d-pav"></div>
+          <div>
+            <div class="d-post-author">Lucía Mendoza</div>
+            <div class="d-post-meta">hace 3 h · 🌎</div>
+          </div>
+          <div class="d-post-menu">···</div>
+        </div>
+        <div class="d-post-text">
+          Terminé el rediseño del sistema de componentes después de 4 meses. Compartir con el equipo es la mejor parte. 💜
+        </div>
+        <div class="d-post-media wide"></div>
+        <div class="d-post-stats">
+          <div class="d-reactions">
+            <div class="d-react-row">
+              <span style="background:var(--signature)">👍</span>
+              <span style="background:#f33e58">❤</span>
+              <span style="background:#f7b125">😮</span>
+            </div>
+            <span>Tú y 284 personas más</span>
+          </div>
+          <span>42 comentarios · 7 compartidos</span>
+        </div>
+        <div class="d-post-acts">
+          <div class="d-post-act liked">
+            <span class="ico"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M14 9V5a3 3 0 00-3-3l-4 9v11h11.28a2 2 0 002-1.7l1.38-9a2 2 0 00-2-2.3H14z"/><path d="M7 22H4a2 2 0 01-2-2v-7a2 2 0 012-2h3"/></svg></span>
+            Me gusta
+          </div>
+          <div class="d-post-act">
+            <span class="ico"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"/></svg></span>
+            Comentar
+          </div>
+          <div class="d-post-act">
+            <span class="ico"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/></svg></span>
+            Compartir
+          </div>
+        </div>
+      </div>
+
+      <!-- POST 2 — IG post cruzado -->
+      <div class="d-post">
+        <div class="d-post-header">
+          <div class="d-ig-pav"><div class="d-ig-pav-inner"></div></div>
+          <div>
+            <div class="d-post-author">
+              Lucía Mendoza
+              <span class="d-ig-badge">
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.2" stroke-linecap="round" style="width:8px;height:8px"><path d="M18 13v6a2 2 0 01-2 2H5a2 2 0 01-2-2V8a2 2 0 012-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>
+                Instagram
+              </span>
+            </div>
+            <div class="d-post-meta">ayer · 🌎</div>
+          </div>
+          <div class="d-post-menu">···</div>
+        </div>
+        <div class="d-post-media sq">
+          <div class="d-carousel-idx">1 / 4</div>
+          <div class="d-carousel-dots">
+            <span class="active"></span><span></span><span></span><span></span>
+          </div>
+        </div>
+        <div class="d-post-text">
+          Fin de semana en la sierra 🏔️ <span style="color:var(--signature)">#escapada</span> <span style="color:var(--signature)">#naturaleza</span> <span style="color:var(--signature)">#finde</span>
+        </div>
+        <div class="d-post-stats">
+          <div class="d-reactions">
+            <div class="d-react-row">
+              <span style="background:#f33e58">❤</span>
+              <span style="background:var(--signature)">👍</span>
+            </div>
+            <span>1,204 me gusta</span>
+          </div>
+          <span>38 comentarios</span>
+        </div>
+        <div class="d-post-acts">
+          <div class="d-post-act">
+            <span class="ico"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20.84 4.61a5.5 5.5 0 00-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 00-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 000-7.78z"/></svg></span>
+            Me gusta
+          </div>
+          <div class="d-post-act">
+            <span class="ico"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"/></svg></span>
+            Comentar
+          </div>
+          <div class="d-post-act">
+            <span class="ico"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg></span>
+            Enviar
+          </div>
+        </div>
+      </div>
+
+    </section>
+  </div><!-- /d-main -->
+
+</div><!-- /cd -->
+
+
+<script src="../shared/hex-tide/hex-tide.js"></script>
+<script>
+/* ═══ THEMES — con config HexTide por tema ═══ */
+const THEMES = [
+  { id:'official-01', sig:'#1877F2', bg:'#F0F2F5', op:0.32, vig:0.20 },
+  { id:'official-02', sig:'#2D88FF', bg:'#18191A', op:0.34, vig:0.26 },
+  { id:'official-03', sig:'#0095F6', bg:'#FAFAFA', op:0.30, vig:0.18 },
+  { id:'official-04', sig:'#0095F6', bg:'#000000', op:0.32, vig:0.28 },
+  { id:'ember-dk',    sig:'#FF4A1C', bg:'#10141E', op:0.36, vig:0.24 },
+  { id:'cosmos-dk',   sig:'#8B6FFF', bg:'#1A1510', op:0.36, vig:0.24 },
+  { id:'forest-dk',   sig:'#00C87A', bg:'#181210', op:0.36, vig:0.24 },
+  { id:'ocean-dk',    sig:'#00C2FF', bg:'#1A1710', op:0.36, vig:0.24 },
+  { id:'amber-dk',    sig:'#E8A820', bg:'#0E1220', op:0.36, vig:0.24 },
+  { id:'navy-dk',     sig:'#4A80FF', bg:'#181410', op:0.36, vig:0.24 },
+  { id:'ember-c',     sig:'#FF4A1C', bg:'#F4F4F2', op:0.44, vig:0.26 },
+  { id:'cosmos-c',    sig:'#6B4EFF', bg:'#FAF6EE', op:0.44, vig:0.26 },
+  { id:'forest-c',    sig:'#00A866', bg:'#F5F3EE', op:0.44, vig:0.24 },
+  { id:'ocean-c',     sig:'#0098CC', bg:'#F7F4F0', op:0.42, vig:0.24 },
+  { id:'amber-c',     sig:'#C8961C', bg:'#EFF2F6', op:0.44, vig:0.26 },
+  { id:'navy-l',      sig:'#0A2878', bg:'#E8EEF8', op:0.42, vig:0.24 },
+];
+
+const strip = document.querySelector('.theme-strip');
+const html  = document.documentElement;
+
+THEMES.forEach(t => {
+  const d = document.createElement('div');
+  d.className = 't-dot' + (t.id === 'navy-l' ? ' on' : '');
+  d.style.background = t.sig;
+  d.title = t.id;
+  d.addEventListener('click', () => {
+    document.querySelectorAll('.t-dot').forEach(x => x.classList.remove('on'));
+    d.classList.add('on');
+    html.setAttribute('data-theme', t.id);
+    applyHexTheme(t);
+  });
+  strip.appendChild(d);
+});
+
+/* ═══ CONCEPT SWITCHER ═══ */
+const conBtns = document.querySelectorAll('.con-btn');
+const concepts = document.querySelectorAll('.concept');
+conBtns.forEach(b => {
+  b.addEventListener('click', () => {
+    conBtns.forEach(x => x.classList.remove('on'));
+    b.classList.add('on');
+    const c = b.dataset.c;
+    concepts.forEach(x => {
+      x.classList.toggle('on', x.id === 'c' + c);
+    });
+  });
+});
+
+/* ═══ TAB INTERACTIVITY ═══ */
+document.querySelectorAll('.a-tab, .b-tab, .c-tab, .d-tab').forEach(t => {
+  t.addEventListener('click', () => {
+    const parent = t.parentElement;
+    parent.querySelectorAll('.a-tab, .b-tab, .c-tab, .d-tab').forEach(x => x.classList.remove('on'));
+    t.classList.add('on');
+  });
+});
+document.querySelectorAll('.a-nav-tab').forEach(t => {
+  t.addEventListener('click', () => {
+    document.querySelectorAll('.a-nav-tab').forEach(x => x.classList.remove('on'));
+    t.classList.add('on');
+  });
+});
+
+/* ═══ HEXTIDE ═══ */
+const initTheme = THEMES.find(t => t.id === 'navy-l');
+function applyHexTheme(t) {
+  if (window._hx) window._hx.setOptions({ background: t.bg, maxOpacity: t.op, vignette: t.vig });
+}
+try {
+  window._hx = HexTide.mount('#hexTide', {
+    variant: 'whisper',
+    background: initTheme.bg,
+    hexSize: 32,
+    maxOpacity: initTheme.op,
+    mouseReactive: true,
+    vignette: initTheme.vig,
+  });
+} catch(e) { console.warn('HexTide no disponible', e); }
+</script>
+</body>
+</html>

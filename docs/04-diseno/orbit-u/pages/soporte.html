@@ -1,0 +1,350 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Soporte · Conniku</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Funnel+Display:wght@400;600;700;800;900&family=Inter:wght@400;500;600;700&family=Geist+Mono:wght@400;500;600&display=swap" />
+<link rel="stylesheet" href="../shared/tokens.css" />
+<link rel="stylesheet" href="../shared/base.css" />
+<link rel="stylesheet" href="../shared/logo-oficial/handoff/ConnikuWordmark.css" />
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+#bg-nebula { position: fixed; inset: 0; width: 100vw; height: 100vh; z-index: -1; pointer-events: none; display: block; }
+html { background: var(--bg); }
+body { background: transparent; color: var(--text); font-family: 'Inter', sans-serif; font-size: 15px; line-height: 1.7; min-height: 100vh; }
+.topbar { position:sticky;top:0;z-index:100;background:rgba(5,6,8,0.92);backdrop-filter:blur(12px);border-bottom:1px solid var(--border);padding:14px 32px;display:flex;align-items:center;gap:20px; }
+.back-link { display:flex;align-items:center;gap:6px;font-size:12px;color:var(--text-4);text-decoration:none;transition:color .15s; }
+.back-link:hover { color:var(--text-2); }
+.back-link svg { width:14px;height:14px;flex-shrink:0; }
+.topbar-sep { width:1px;height:16px;background:var(--border); }
+.topbar-title { font-family:'Geist Mono',monospace;font-size:11px;color:var(--text-4);letter-spacing:.06em; }
+
+.page-wrap { max-width: 800px; margin: 0 auto; padding: 56px 32px; }
+
+.page-badge { display:inline-flex;align-items:center;gap:6px;padding:3px 10px;border-radius:999px;background:rgba(0,194,122,0.08);border:1px solid rgba(0,194,122,0.2);font-family:'Geist Mono',monospace;font-size:10px;color:var(--green-3);letter-spacing:.08em;margin-bottom:16px; }
+.page-badge::before { content:"";width:5px;height:5px;border-radius:50%;background:var(--green); }
+.page-title { font-family:'Funnel Display',sans-serif;font-weight:900;font-size:clamp(32px,5vw,48px);letter-spacing:-.04em;color:var(--text);margin-bottom:10px; }
+.page-sub { font-size:15px;color:var(--text-3);margin-bottom:48px;max-width:520px;line-height:1.7; }
+
+/* search */
+.search-wrap { position:relative; margin-bottom:48px; }
+.search-input { width:100%;padding:14px 48px 14px 48px;border-radius:12px;background:var(--surface);border:1px solid var(--border);color:var(--text);font-size:14px;font-family:'Inter',sans-serif;outline:none;transition:all .15s; }
+.search-input::placeholder { color:var(--text-4); }
+.search-input:focus { border-color:var(--green);box-shadow:0 0 0 3px rgba(0,194,122,0.08); }
+.search-icon { position:absolute;left:16px;top:50%;transform:translateY(-50%);color:var(--text-4);pointer-events:none; }
+.search-icon svg { width:16px;height:16px; }
+
+/* categories */
+.cat-tabs { display:flex;flex-wrap:wrap;gap:8px;margin-bottom:32px; }
+.cat-tab { padding:6px 14px;border-radius:8px;background:var(--surface);border:1px solid var(--border);font-size:12px;font-weight:600;color:var(--text-3);cursor:pointer;transition:all .15s; }
+.cat-tab:hover { color:var(--text-2);border-color:var(--border-2); }
+.cat-tab.active { background:rgba(0,194,122,0.1);border-color:rgba(0,194,122,0.3);color:var(--green-3); }
+
+/* faq */
+.faq-section { margin-bottom: 40px; }
+.faq-section-title { font-family:'Funnel Display',sans-serif;font-weight:800;font-size:16px;color:var(--text);margin-bottom:14px;display:flex;align-items:center;gap:8px; }
+.faq-item { border: 1px solid var(--border); border-radius: 10px; overflow: hidden; margin-bottom: 8px; }
+.faq-q {
+  width:100%;padding:14px 18px;background:var(--surface);border:none;
+  color:var(--text-2);font-size:13px;font-weight:600;text-align:left;
+  cursor:pointer;transition:all .15s;display:flex;justify-content:space-between;align-items:center;gap:12px;
+}
+.faq-q:hover { color:var(--text);background:var(--surface-2); }
+.faq-q.open { color:var(--text);background:var(--surface-2); }
+.faq-q svg { width:14px;height:14px;flex-shrink:0;transition:transform .2s; }
+.faq-q.open svg { transform:rotate(180deg); }
+.faq-a { display:none;padding:14px 18px;background:var(--surface-3);font-size:13px;color:var(--text-3);line-height:1.7;border-top:1px solid var(--border); }
+.faq-a.open { display:block; }
+.faq-a a { color:var(--green); text-decoration:none; }
+.faq-a a:hover { color:var(--green-3); }
+
+/* contact cta */
+.cta-box { padding:28px;background:var(--surface);border:1px solid var(--border);border-radius:16px;text-align:center;margin-top:56px; }
+.cta-box h2 { font-family:'Funnel Display',sans-serif;font-weight:800;font-size:20px;color:var(--text);margin-bottom:8px; }
+.cta-box p { font-size:13px;color:var(--text-3);margin-bottom:20px; }
+.cta-btn { display:inline-block;padding:12px 28px;border-radius:10px;background:var(--green);color:#0B0C0E;font-size:13px;font-weight:800;text-decoration:none;transition:all .2s; }
+.cta-btn:hover { background:var(--green-3);box-shadow:0 0 20px rgba(0,194,122,0.3); }
+.section-sep { height:1px;background:var(--border);margin:40px 0; }
+</style>
+</head>
+<body>
+
+<canvas id="bg-nebula"></canvas>
+
+<div class="topbar">
+  <a href="../index.html" class="back-link">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>
+    Volver
+  </a>
+  <div class="topbar-sep"></div>
+  <a href="../index.html" class="brand on-dark" style="font-size:16px" aria-label="Conniku">conn<span>i</span><span class="k-letter">k</span><span class="u-pack"><span class="u-letter">u</span><span class="dot"></span></span></a>
+  <div class="topbar-sep"></div>
+  <span class="topbar-title">CENTRO DE SOPORTE</span>
+</div>
+
+<div class="page-wrap">
+
+  <div class="page-badge">SOPORTE Y AYUDA</div>
+  <h1 class="page-title">¿En qué podemos ayudarte?</h1>
+  <p class="page-sub">Encuentra respuestas a las preguntas más frecuentes. Si no encuentras lo que buscas, escríbenos directamente.</p>
+
+  <!-- Search -->
+  <div class="search-wrap">
+    <span class="search-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="M21 21l-4.35-4.35"/></svg></span>
+    <input class="search-input" type="text" placeholder="Busca tu pregunta…" oninput="filterFAQ(this.value)" />
+  </div>
+
+  <!-- Category tabs -->
+  <div class="cat-tabs">
+    <button class="cat-tab active" onclick="filterCat('all',this)">Todo</button>
+    <button class="cat-tab" onclick="filterCat('cuenta',this)">Cuenta</button>
+    <button class="cat-tab" onclick="filterCat('pagos',this)">Pagos</button>
+    <button class="cat-tab" onclick="filterCat('plataforma',this)">Plataforma</button>
+    <button class="cat-tab" onclick="filterCat('privacidad',this)">Privacidad</button>
+    <button class="cat-tab" onclick="filterCat('tutores',this)">Tutores</button>
+  </div>
+
+  <!-- FAQ: Cuenta -->
+  <div class="faq-section" data-cat="cuenta">
+    <div class="faq-section-title">Cuenta y acceso</div>
+
+    <div class="faq-item">
+      <button class="faq-q" onclick="toggleFaq(this)">
+        ¿Cómo creo mi cuenta?
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 9l6 6 6-6"/></svg>
+      </button>
+      <div class="faq-a">Visita <a href="registro.html">conniku.com/registro</a> e ingresa tu nombre, correo institucional (recomendado) o personal, y una contraseña de al menos 8 caracteres. También puedes registrarte con tu cuenta Google. El registro es completamente gratuito.</div>
+    </div>
+
+    <div class="faq-item">
+      <button class="faq-q" onclick="toggleFaq(this)">
+        ¿Qué edad mínima se requiere?
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 9l6 6 6-6"/></svg>
+      </button>
+      <div class="faq-a">Conniku está dirigido exclusivamente a personas <strong>mayores de 18 años</strong>. Si eres menor de edad, no puedes crear una cuenta. Las cuentas de menores serán eliminadas de forma inmediata al ser detectadas.</div>
+    </div>
+
+    <div class="faq-item">
+      <button class="faq-q" onclick="toggleFaq(this)">
+        Olvidé mi contraseña. ¿Cómo la recupero?
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 9l6 6 6-6"/></svg>
+      </button>
+      <div class="faq-a">En la pantalla de inicio de sesión, haz clic en "¿Olvidaste tu contraseña?". Recibirás un correo con un enlace para restablecer tu contraseña. El enlace expira en 30 minutos. Si no recibes el correo, revisa tu carpeta de spam o escribe a <a href="mailto:soporte@conniku.com">soporte@conniku.com</a>.</div>
+    </div>
+
+    <div class="faq-item">
+      <button class="faq-q" onclick="toggleFaq(this)">
+        ¿Cómo cambio mi correo electrónico?
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 9l6 6 6-6"/></svg>
+      </button>
+      <div class="faq-a">Puedes modificar tu correo desde Configuración → Perfil → Editar correo. Se enviará un correo de verificación a la nueva dirección. Si tienes problemas, escribe a <a href="mailto:soporte@conniku.com">soporte@conniku.com</a> desde el correo actualmente registrado.</div>
+    </div>
+
+    <div class="faq-item">
+      <button class="faq-q" onclick="toggleFaq(this)">
+        ¿Cómo elimino mi cuenta?
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 9l6 6 6-6"/></svg>
+      </button>
+      <div class="faq-a">Ve a Configuración → Cuenta → Eliminar cuenta. La eliminación es <strong>irreversible</strong>. Se borrarán todos tus datos personales, excepto aquellos que Conniku esté obligada a retener por ley (registros de consentimiento por 5 años, datos de facturación por 6 años). Si tienes una suscripción activa, primero cáncela para evitar cobros.</div>
+    </div>
+  </div>
+
+  <div class="section-sep"></div>
+
+  <!-- FAQ: Pagos -->
+  <div class="faq-section" data-cat="pagos">
+    <div class="faq-section-title">Planes y pagos</div>
+
+    <div class="faq-item">
+      <button class="faq-q" onclick="toggleFaq(this)">
+        ¿Conniku es gratis?
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 9l6 6 6-6"/></svg>
+      </button>
+      <div class="faq-a">Sí. Conniku tiene un plan gratuito permanente con acceso a las funcionalidades esenciales de la plataforma. Algunos módulos avanzados pueden requerir un plan de pago, que se informará de forma clara antes de la contratación.</div>
+    </div>
+
+    <div class="faq-item">
+      <button class="faq-q" onclick="toggleFaq(this)">
+        ¿Tengo derecho a retracto si pago un plan?
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 9l6 6 6-6"/></svg>
+      </button>
+      <div class="faq-a">Sí. Conforme al Art. 3 bis de la Ley 19.496 (Chile), tienes derecho a retractarte dentro de los <strong>10 días corridos</strong> desde la contratación, siempre que no hayas comenzado a utilizar el servicio contratado. Para ejercerlo, escribe a <a href="mailto:soporte@conniku.com">soporte@conniku.com</a>.</div>
+    </div>
+
+    <div class="faq-item">
+      <button class="faq-q" onclick="toggleFaq(this)">
+        ¿Cómo cancelo mi suscripción?
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 9l6 6 6-6"/></svg>
+      </button>
+      <div class="faq-a">Ve a Configuración → Facturación → Cancelar plan. Si cancelas antes del vencimiento del período actual, mantendrás acceso hasta que este finalice. No se realizan cobros adicionales. Para asistencia, escribe a <a href="mailto:soporte@conniku.com">soporte@conniku.com</a>.</div>
+    </div>
+
+    <div class="faq-item">
+      <button class="faq-q" onclick="toggleFaq(this)">
+        ¿Conniku guarda los datos de mi tarjeta?
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 9l6 6 6-6"/></svg>
+      </button>
+      <div class="faq-a">No. Conniku no almacena datos de tarjetas de crédito ni débito. Los pagos se procesan de forma segura a través de MercadoPago o PayPal, quienes son responsables del tratamiento de esa información conforme a sus propias políticas de seguridad.</div>
+    </div>
+  </div>
+
+  <div class="section-sep"></div>
+
+  <!-- FAQ: Plataforma -->
+  <div class="faq-section" data-cat="plataforma">
+    <div class="faq-section-title">Plataforma y módulos</div>
+
+    <div class="faq-item">
+      <button class="faq-q" onclick="toggleFaq(this)">
+        ¿La plataforma funciona en el teléfono?
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 9l6 6 6-6"/></svg>
+      </button>
+      <div class="faq-a">Sí. Conniku está disponible como Progressive Web App (PWA) instalable desde el navegador en Android e iOS, y como aplicación nativa. La interfaz es completamente responsiva y adaptada para uso móvil.</div>
+    </div>
+
+    <div class="faq-item">
+      <button class="faq-q" onclick="toggleFaq(this)">
+        ¿Qué es el módulo Athena?
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 9l6 6 6-6"/></svg>
+      </button>
+      <div class="faq-a">Athena es el asistente académico integrado en Conniku. Puede ayudarte con resúmenes, explicaciones de conceptos, revisión de textos y apoyo en tareas académicas. Utiliza tecnología de Anthropic (Claude) bajo los términos de uso correspondientes.</div>
+    </div>
+
+    <div class="faq-item">
+      <button class="faq-q" onclick="toggleFaq(this)">
+        ¿Cómo reporto un contenido inapropiado?
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 9l6 6 6-6"/></svg>
+      </button>
+      <div class="faq-a">Puedes usar el botón "Reportar" disponible en cualquier publicación, comentario o perfil. También puedes escribir a <a href="mailto:soporte@conniku.com">soporte@conniku.com</a> con el enlace al contenido y una descripción del motivo del reporte. Revisamos todos los reportes.</div>
+    </div>
+
+    <div class="faq-item">
+      <button class="faq-q" onclick="toggleFaq(this)">
+        Apelé una suspensión. ¿Cómo procedo?
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 9l6 6 6-6"/></svg>
+      </button>
+      <div class="faq-a">Las apelaciones a decisiones de moderación deben enviarse a <a href="mailto:moderacion@conniku.com">moderacion@conniku.com</a> dentro de los 14 días corridos siguientes a la notificación. Incluye tu nombre, correo registrado y los argumentos por los que impugnas la decisión. Recibirás respuesta dentro de 5 días hábiles.</div>
+    </div>
+  </div>
+
+  <div class="section-sep"></div>
+
+  <!-- FAQ: Privacidad -->
+  <div class="faq-section" data-cat="privacidad">
+    <div class="faq-section-title">Privacidad y datos</div>
+
+    <div class="faq-item">
+      <button class="faq-q" onclick="toggleFaq(this)">
+        ¿Cómo solicito una copia de mis datos?
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 9l6 6 6-6"/></svg>
+      </button>
+      <div class="faq-a">Escribe a <a href="mailto:privacidad@conniku.com">privacidad@conniku.com</a> indicando tu nombre, correo registrado y que deseas ejercer el derecho de acceso/portabilidad. Recibirás una copia de tus datos en formato JSON o CSV. Respondemos en máximo 15 días hábiles (Chile) o 30 días calendario (GDPR).</div>
+    </div>
+
+    <div class="faq-item">
+      <button class="faq-q" onclick="toggleFaq(this)">
+        ¿Conniku vende mis datos?
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 9l6 6 6-6"/></svg>
+      </button>
+      <div class="faq-a">No. Conniku no vende, alquila ni cede datos personales de usuarios a terceros con fines comerciales propios de esos terceros. Puedes consultar los proveedores con los que compartimos datos necesarios para operar el servicio en nuestra <a href="privacidad.html">Política de Privacidad §4</a>.</div>
+    </div>
+
+    <div class="faq-item">
+      <button class="faq-q" onclick="toggleFaq(this)">
+        ¿Conniku usa Google Analytics u otras herramientas de análisis?
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 9l6 6 6-6"/></svg>
+      </button>
+      <div class="faq-a">No actualmente. Conniku no utiliza cookies ni scripts de analítica de terceros (Google Analytics, Mixpanel, Hotjar u otros). Si en el futuro incorporamos herramientas de análisis, lo notificaremos y actualizaremos nuestra <a href="cookies.html">Política de Cookies</a>.</div>
+    </div>
+  </div>
+
+  <div class="section-sep"></div>
+
+  <!-- FAQ: Tutores -->
+  <div class="faq-section" data-cat="tutores">
+    <div class="faq-section-title">Tutorías</div>
+
+    <div class="faq-item">
+      <button class="faq-q" onclick="toggleFaq(this)">
+        ¿Cómo me convierto en tutor?
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 9l6 6 6-6"/></svg>
+      </button>
+      <div class="faq-a">En el módulo de Tutores encontrarás la opción "Ofrecer tutorías". Completa tu perfil académico, las materias que puedes enseñar y tu disponibilidad horaria. Tu perfil será revisado por el equipo de Conniku antes de activarse. Para consultas, escribe a <a href="mailto:tutores@conniku.com">tutores@conniku.com</a>.</div>
+    </div>
+
+    <div class="faq-item">
+      <button class="faq-q" onclick="toggleFaq(this)">
+        ¿Los tutores son empleados de Conniku?
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 9l6 6 6-6"/></svg>
+      </button>
+      <div class="faq-a">No. Los tutores que prestan servicios en la plataforma son usuarios independientes. Conniku actúa como intermediario tecnológico. La evaluación de la idoneidad de cada tutor es responsabilidad del usuario que contrata la tutoría, aunque Conniku establece requisitos de acceso al módulo.</div>
+    </div>
+
+    <div class="faq-item">
+      <button class="faq-q" onclick="toggleFaq(this)">
+        Tuve un problema con un tutor. ¿Qué hago?
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 9l6 6 6-6"/></svg>
+      </button>
+      <div class="faq-a">Repórtalo a <a href="mailto:tutores@conniku.com">tutores@conniku.com</a> con el nombre del tutor, fecha de la sesión y descripción del incidente. Para casos de acoso o conducta inapropiada, escribe a <a href="mailto:seguridad@conniku.com">seguridad@conniku.com</a>. Investigamos todos los reportes con confidencialidad.</div>
+    </div>
+  </div>
+
+  <!-- CTA -->
+  <div class="cta-box">
+    <h2>¿No encontraste lo que buscabas?</h2>
+    <p>Nuestro equipo de soporte está disponible para ayudarte. Respondemos dentro de 24–48 horas hábiles.</p>
+    <a href="contacto.html" class="cta-btn">Contactar soporte →</a>
+  </div>
+
+</div>
+
+<footer style="border-top:1px solid var(--border);padding:24px 32px;display:flex;flex-wrap:wrap;justify-content:space-between;align-items:center;gap:12px;max-width:800px;margin:0 auto;">
+  <span style="font-size:11px;color:var(--text-4);font-family:'Geist Mono',monospace;">© 2026 Conniku SpA · Antofagasta, Chile</span>
+  <nav style="display:flex;flex-wrap:wrap;gap:16px;">
+    <a href="terminos.html" style="font-size:11px;color:var(--text-4);text-decoration:none;" onmouseover="this.style.color='var(--text-2)'" onmouseout="this.style.color='var(--text-4)'">Términos</a>
+    <a href="privacidad.html" style="font-size:11px;color:var(--text-4);text-decoration:none;" onmouseover="this.style.color='var(--text-2)'" onmouseout="this.style.color='var(--text-4)'">Privacidad</a>
+    <a href="cookies.html" style="font-size:11px;color:var(--text-4);text-decoration:none;" onmouseover="this.style.color='var(--text-2)'" onmouseout="this.style.color='var(--text-4)'">Cookies</a>
+    <a href="soporte.html" style="font-size:11px;color:var(--green);text-decoration:none;">Soporte</a>
+    <a href="contacto.html" style="font-size:11px;color:var(--text-4);text-decoration:none;" onmouseover="this.style.color='var(--text-2)'" onmouseout="this.style.color='var(--text-4)'">Contacto</a>
+    <a href="prensa.html" style="font-size:11px;color:var(--text-4);text-decoration:none;" onmouseover="this.style.color='var(--text-2)'" onmouseout="this.style.color='var(--text-4)'">Prensa</a>
+    <a href="empleo-conniku.html" style="font-size:11px;color:var(--text-4);text-decoration:none;" onmouseover="this.style.color='var(--text-2)'" onmouseout="this.style.color='var(--text-4)'">Trabaja con nosotros</a>
+  </nav>
+</footer>
+
+<script>
+function toggleFaq(btn) {
+  var a = btn.nextElementSibling;
+  var isOpen = a.classList.contains('open');
+  document.querySelectorAll('.faq-a.open').forEach(el => { el.classList.remove('open'); el.previousElementSibling.classList.remove('open'); });
+  if (!isOpen) { a.classList.add('open'); btn.classList.add('open'); }
+}
+function filterFAQ(q) {
+  var term = q.toLowerCase();
+  document.querySelectorAll('.faq-item').forEach(item => {
+    var text = item.textContent.toLowerCase();
+    item.style.display = (!term || text.includes(term)) ? '' : 'none';
+  });
+}
+function filterCat(cat, tab) {
+  document.querySelectorAll('.cat-tab').forEach(t => t.classList.remove('active'));
+  tab.classList.add('active');
+  document.querySelectorAll('.faq-section').forEach(s => {
+    s.style.display = (cat === 'all' || s.dataset.cat === cat) ? '' : 'none';
+  });
+  document.querySelectorAll('.section-sep').forEach(sep => sep.style.display = cat === 'all' ? '' : 'none');
+}
+</script>
+<script src="../shared/theme-loader.js"></script>
+<script src="../shared/hex-nebula/hex-nebula.js"></script>
+<script>
+  HexNebula.mount(document.getElementById('bg-nebula'), {
+    hexSize: 34,
+    intensity: 0.5,
+    bgColor: '#0A0C12'
+  });
+</script>
+</body>
+</html>

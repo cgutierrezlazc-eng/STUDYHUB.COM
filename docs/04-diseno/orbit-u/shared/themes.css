@@ -1,0 +1,580 @@
+/**
+ * Conniku · 12 Themes (6 dark + 6 light pairs)
+ * =============================================
+ *
+ * Estructura: cada tema se aplica con data-theme="<id>" en <html> o <body>.
+ * Los acentos de marca (green, lime, orange, violet, cyan, cream, pink) son
+ * consistentes entre temas; sólo cambian fondos/superficies/textos.
+ *
+ * Uso:
+ *   <html data-theme="ember-dark">
+ *   <html data-theme="punk-light">
+ *   ...
+ *
+ * Toggle dark/light: cambiar el sufijo -dark ↔ -light manteniendo la familia.
+ */
+
+:root {
+  /* ── Acentos de marca · CONSTANTES · no cambian entre temas ── */
+  --green:    #00C27A;
+  --green-2:  #006E4A;
+  --green-3:  #8AEAC0;
+  --lime:     #D9FF3A;
+  --orange:   #FF4A1C;
+  --orange-2: #FF9787;
+  --violet:   #6B4EFF;
+  --violet-2: #B8A6FF;
+  --cyan:     #00C2FF;
+  --cyan-2:   #7FDAFF;
+  --cream:    #FFE9B8;
+  --cream-2:  #E8C770;
+  --pink:     #FF4D3A;
+  --paper:    #F5F4EF;
+  --ink:      #0D0F10;
+}
+
+/* ══════════════════════════════════════════════════════
+   DARK THEMES
+   ══════════════════════════════════════════════════════ */
+
+/* D1 · EMBER · naranja cálido ------------------------ */
+[data-theme="ember-dark"] {
+  --bg:        #1F1A1A;
+  --surface:   #26211F;
+  --surface-2: #332B27;
+  --surface-3: #473C36;
+  --border:    rgba(255,142,80,.18);
+  --border-2:  rgba(255,142,80,.08);
+  --text:      #EFE7DC;
+  --text-2:    #C9BDB0;
+  --text-3:    #A89890;
+  --text-4:    #6E5F55;
+  --signature: var(--orange);
+  --banner-g1: rgba(255,74,28,.35);
+  --banner-g2: rgba(217,255,58,.15);
+}
+
+/* D2 · COSMOS · violet + cyan ------------------------ */
+[data-theme="cosmos-dark"] {
+  --bg:        #1A1A28;
+  --surface:   #222236;
+  --surface-2: #2C2C46;
+  --surface-3: #3D3D5C;
+  --border:    rgba(140,120,255,.18);
+  --border-2:  rgba(140,120,255,.08);
+  --text:      #E8E5F2;
+  --text-2:    #BCB6D0;
+  --text-3:    #9590B8;
+  --text-4:    #5A5578;
+  --signature: var(--violet);
+  --banner-g1: rgba(107,78,255,.40);
+  --banner-g2: rgba(0,194,255,.25);
+}
+
+/* D3 · FOREST · verde + lime ------------------------- */
+[data-theme="forest-dark"] {
+  --bg:        #16201C;
+  --surface:   #1E2A26;
+  --surface-2: #283832;
+  --surface-3: #3A4F46;
+  --border:    rgba(0,194,122,.20);
+  --border-2:  rgba(0,194,122,.08);
+  --text:      #E0E8E2;
+  --text-2:    #A3B8AB;
+  --text-3:    #7E9087;
+  --text-4:    #4F5E55;
+  --signature: var(--green);
+  --banner-g1: rgba(0,194,122,.35);
+  --banner-g2: rgba(217,255,58,.20);
+}
+
+/* D4 · NEON PUNK · lime signature -------------------- */
+[data-theme="punk-dark"] {
+  --bg:        #181A22;
+  --surface:   #21242E;
+  --surface-2: #2C303C;
+  --surface-3: #3D4150;
+  --border:    rgba(217,255,58,.22);
+  --border-2:  rgba(217,255,58,.08);
+  --text:      #E8E8E6;
+  --text-2:    #B5B7C2;
+  --text-3:    #8C8E9A;
+  --text-4:    #5A5C68;
+  --signature: var(--lime);
+  --banner-g1: rgba(255,77,58,.30);
+  --banner-g2: rgba(217,255,58,.30);
+}
+
+/* D5 · OCEAN · cyan + green -------------------------- */
+[data-theme="ocean-dark"] {
+  --bg:        #161E26;
+  --surface:   #1E2A36;
+  --surface-2: #283848;
+  --surface-3: #3A4D60;
+  --border:    rgba(0,194,255,.20);
+  --border-2:  rgba(0,194,255,.08);
+  --text:      #DEE8F0;
+  --text-2:    #A8B8C8;
+  --text-3:    #8090A0;
+  --text-4:    #525F6E;
+  --signature: var(--cyan);
+  --banner-g1: rgba(0,194,255,.35);
+  --banner-g2: rgba(0,194,122,.25);
+}
+
+/* D6 · AMBER · cream + orange ------------------------ */
+[data-theme="amber-dark"] {
+  --bg:        #1E1B16;
+  --surface:   #2A261E;
+  --surface-2: #36322A;
+  --surface-3: #4A4338;
+  --border:    rgba(255,233,184,.22);
+  --border-2:  rgba(255,233,184,.08);
+  --text:      #EFE7D5;
+  --text-2:    #C8B898;
+  --text-3:    #A89A80;
+  --text-4:    #6B6050;
+  --signature: var(--cream);
+  --banner-g1: rgba(255,233,184,.30);
+  --banner-g2: rgba(255,74,28,.20);
+}
+
+/* ══════════════════════════════════════════════════════
+   LIGHT THEMES · cada una pareja de su dark
+   ══════════════════════════════════════════════════════ */
+
+/* L1 · EMBER LIGHT ----------------------------------- */
+[data-theme="ember-light"] {
+  --bg:        #F5EFE8;
+  --surface:   #FFFAF2;
+  --surface-2: #EBE3D8;
+  --surface-3: #D6CCBC;
+  --border:    rgba(255,74,28,.18);
+  --border-2:  rgba(255,74,28,.08);
+  --text:      #1F1A1A;
+  --text-2:    #3D3530;
+  --text-3:    #7A6855;
+  --text-4:    #A89890;
+  --signature: var(--orange);
+  --banner-g1: rgba(255,151,135,.45);
+  --banner-g2: rgba(217,255,58,.30);
+}
+
+/* L2 · LAVENDER -------------------------------------- */
+[data-theme="cosmos-light"] {
+  --bg:        #F0EEF7;
+  --surface:   #FAF8FF;
+  --surface-2: #E5E1F0;
+  --surface-3: #CFC8E0;
+  --border:    rgba(107,78,255,.18);
+  --border-2:  rgba(107,78,255,.08);
+  --text:      #1A1A28;
+  --text-2:    #3D3D58;
+  --text-3:    #7878A0;
+  --text-4:    #9590B8;
+  --signature: var(--violet);
+  --banner-g1: rgba(184,166,255,.50);
+  --banner-g2: rgba(127,218,255,.40);
+}
+
+/* L3 · MINT ------------------------------------------ */
+[data-theme="forest-light"] {
+  --bg:        #EBF2EE;
+  --surface:   #F8FCF9;
+  --surface-2: #DBE8E0;
+  --surface-3: #BFD0C5;
+  --border:    rgba(0,194,122,.20);
+  --border-2:  rgba(0,194,122,.08);
+  --text:      #16201C;
+  --text-2:    #2D3D33;
+  --text-3:    #5F7A6A;
+  --text-4:    #7E9087;
+  --signature: var(--green);
+  --banner-g1: rgba(138,234,192,.50);
+  --banner-g2: rgba(217,255,58,.35);
+}
+
+/* L4 · PUNK LIGHT ------------------------------------ */
+[data-theme="punk-light"] {
+  --bg:        #F0F0EE;
+  --surface:   #FAFAF8;
+  --surface-2: #E1E1DD;
+  --surface-3: #C8C8C2;
+  --border:    rgba(217,255,58,.40);
+  --border-2:  rgba(217,255,58,.15);
+  --text:      #1A1D24;
+  --text-2:    #3D4150;
+  --text-3:    #6B7080;
+  --text-4:    #8C8E9A;
+  --signature: var(--lime);
+  --banner-g1: rgba(255,77,58,.30);
+  --banner-g2: rgba(217,255,58,.50);
+}
+
+/* L5 · SKY ------------------------------------------- */
+[data-theme="ocean-light"] {
+  --bg:        #EBF1F5;
+  --surface:   #F8FBFD;
+  --surface-2: #DBE5ED;
+  --surface-3: #BFCDDB;
+  --border:    rgba(0,194,255,.20);
+  --border-2:  rgba(0,194,255,.08);
+  --text:      #161E26;
+  --text-2:    #2D3D50;
+  --text-3:    #5F7080;
+  --text-4:    #8090A0;
+  --signature: var(--cyan);
+  --banner-g1: rgba(127,218,255,.55);
+  --banner-g2: rgba(138,234,192,.40);
+}
+
+/* L6 · BUTTER ---------------------------------------- */
+[data-theme="amber-light"] {
+  --bg:        #F5EFE0;
+  --surface:   #FFFCF2;
+  --surface-2: #EBE3CE;
+  --surface-3: #D6CBAE;
+  --border:    rgba(232,199,112,.40);
+  --border-2:  rgba(232,199,112,.15);
+  --text:      #1E1B16;
+  --text-2:    #3D3520;
+  --text-3:    #7A6F50;
+  --text-4:    #A89A80;
+  --signature: var(--cream-2);
+  --banner-g1: rgba(255,233,184,.60);
+  --banner-g2: rgba(255,74,28,.30);
+}
+
+/* D7 · PROFUNDO · azul marino profundo (ORBIT·U) ------- */
+[data-theme="profundo-dark"] {
+  --bg:        #142040;
+  --surface:   #1a2a52;
+  --surface-2: #1f3260;
+  --surface-3: #253a70;
+  --border:    rgba(165,195,240,.13);
+  --border-2:  rgba(165,195,240,.065);
+  --text:      #D0E2F5;
+  --text-2:    #7898C0;
+  --text-3:    #425875;
+  --text-4:    #2e3f58;
+  --signature: var(--green);
+  --banner-g1: rgba(20,50,100,.60);
+  --banner-g2: rgba(0,194,122,.18);
+}
+
+/* ══════════════════════════════════════════════════════
+   LIGHT THEMES V2 · fondos contrastantes (aprobados)
+   ══════════════════════════════════════════════════════ */
+
+/* L·C1 · EMBER CONTRAST · fondo gris frío, signature naranja */
+[data-theme="ember-c"] {
+  --bg:        #F4F4F2;
+  --surface:   #FFFFFF;
+  --surface-2: #EFEFED;
+  --surface-3: #E2E2DF;
+  --border:    rgba(0,0,0,.09);
+  --border-2:  rgba(0,0,0,.05);
+  --text:      #1A1814;
+  --text-2:    #4A4640;
+  --text-3:    #8A8680;
+  --text-4:    #BFBBB5;
+  --signature: #FF4A1C;
+  --banner-g1: rgba(255,74,28,.18);
+  --banner-g2: rgba(255,74,28,.06);
+}
+
+/* L·C2 · COSMOS CONTRAST · fondo crema cálido, signature violeta */
+[data-theme="cosmos-c"] {
+  --bg:        #FAF6EE;
+  --surface:   #FFFFFF;
+  --surface-2: #F4EFE5;
+  --surface-3: #E8E0CE;
+  --border:    rgba(0,0,0,.09);
+  --border-2:  rgba(0,0,0,.05);
+  --text:      #1A1624;
+  --text-2:    #4A4055;
+  --text-3:    #8A8095;
+  --text-4:    #C0B8CC;
+  --signature: #6B4EFF;
+  --banner-g1: rgba(107,78,255,.18);
+  --banner-g2: rgba(107,78,255,.06);
+}
+
+/* L·C3 · FOREST CONTRAST · fondo beige neutro, signature verde */
+[data-theme="forest-c"] {
+  --bg:        #F5F3EE;
+  --surface:   #FFFFFF;
+  --surface-2: #EEEAE3;
+  --surface-3: #E0DCD4;
+  --border:    rgba(0,0,0,.09);
+  --border-2:  rgba(0,0,0,.05);
+  --text:      #141A16;
+  --text-2:    #404840;
+  --text-3:    #80908A;
+  --text-4:    #B8C4BE;
+  --signature: #00A866;
+  --banner-g1: rgba(0,168,102,.18);
+  --banner-g2: rgba(0,168,102,.06);
+}
+
+/* L·C4 · OCEAN CONTRAST · fondo crema suave, signature cyan profundo */
+[data-theme="ocean-c"] {
+  --bg:        #F7F4F0;
+  --surface:   #FFFFFF;
+  --surface-2: #F0EDE8;
+  --surface-3: #E4DED6;
+  --border:    rgba(0,0,0,.09);
+  --border-2:  rgba(0,0,0,.05);
+  --text:      #141820;
+  --text-2:    #404858;
+  --text-3:    #7888A0;
+  --text-4:    #B0BCC8;
+  --signature: #0098CC;
+  --banner-g1: rgba(0,152,204,.18);
+  --banner-g2: rgba(0,152,204,.06);
+}
+
+/* L·C5 · AMBER CONTRAST · fondo azul grisáceo frío, signature dorado */
+[data-theme="amber-c"] {
+  --bg:        #EFF2F6;
+  --surface:   #FFFFFF;
+  --surface-2: #E6EAF0;
+  --surface-3: #D8DEE8;
+  --border:    rgba(0,0,0,.09);
+  --border-2:  rgba(0,0,0,.05);
+  --text:      #18181E;
+  --text-2:    #464658;
+  --text-3:    #86889A;
+  --text-4:    #B8BAC8;
+  --signature: #C8961C;
+  --banner-g1: rgba(200,150,28,.18);
+  --banner-g2: rgba(200,150,28,.06);
+}
+
+/* L·C6 · NAVY LIGHT · fondo azul claro, signature azul profundo */
+[data-theme="navy-l"] {
+  --bg:        #E8EEF8;
+  --surface:   #FFFFFF;
+  --surface-2: #DCE4F4;
+  --surface-3: #C8D4EC;
+  --border:    rgba(10,38,100,.12);
+  --border-2:  rgba(10,38,100,.07);
+  --text:      #060E24;
+  --text-2:    #1C2E58;
+  --text-3:    #4A5C88;
+  --text-4:    #8A9DC0;
+  --signature: #0A2878;
+  --banner-g1: rgba(10,40,120,.18);
+  --banner-g2: rgba(10,40,120,.06);
+}
+
+/* ══════════════════════════════════════════════════════
+   DARK THEMES V2 · fondos contrastantes (aprobados)
+   Misma lógica que light: bg contrasta con signature.
+   Fondo oscuro con hue opuesto al color signature.
+   ══════════════════════════════════════════════════════ */
+
+/* D·C1 · EMBER DARK · bg slate azul frío, signature naranja */
+[data-theme="ember-dk"] {
+  --bg:        #10141E;
+  --surface:   #1E2538;
+  --surface-2: #28304A;
+  --surface-3: #333D5A;
+  --border:    rgba(255,255,255,.11);
+  --border-2:  rgba(255,255,255,.07);
+  --text:      #F0EAE2;
+  --text-2:    #CCB8A0;
+  --text-3:    #7A6A58;
+  --text-4:    #48382C;
+  --signature: #FF4A1C;
+  --banner-g1: rgba(255,74,28,.22);
+  --banner-g2: rgba(255,74,28,.07);
+}
+
+/* D·C2 · COSMOS DARK · bg marrón cálido, signature violeta */
+[data-theme="cosmos-dk"] {
+  --bg:        #1A1510;
+  --surface:   #2C2218;
+  --surface-2: #382C22;
+  --surface-3: #46382E;
+  --border:    rgba(255,255,255,.11);
+  --border-2:  rgba(255,255,255,.07);
+  --text:      #EEE4FF;
+  --text-2:    #C0AADC;
+  --text-3:    #7060A0;
+  --text-4:    #443858;
+  --signature: #8B6FFF;
+  --banner-g1: rgba(139,111,255,.22);
+  --banner-g2: rgba(139,111,255,.07);
+}
+
+/* D·C3 · FOREST DARK · bg rojo-café cálido, signature verde */
+[data-theme="forest-dk"] {
+  --bg:        #181210;
+  --surface:   #28201E;
+  --surface-2: #342A28;
+  --surface-3: #403632;
+  --border:    rgba(255,255,255,.11);
+  --border-2:  rgba(255,255,255,.07);
+  --text:      #E4F4E8;
+  --text-2:    #AACCA0;
+  --text-3:    #587858;
+  --text-4:    #304030;
+  --signature: #00C87A;
+  --banner-g1: rgba(0,200,122,.20);
+  --banner-g2: rgba(0,200,122,.06);
+}
+
+/* D·C4 · OCEAN DARK · bg ámbar cálido, signature cyan */
+[data-theme="ocean-dk"] {
+  --bg:        #1A1710;
+  --surface:   #2C2618;
+  --surface-2: #383022;
+  --surface-3: #463C2C;
+  --border:    rgba(255,255,255,.11);
+  --border-2:  rgba(255,255,255,.07);
+  --text:      #DCEEFA;
+  --text-2:    #A0C0DC;
+  --text-3:    #587090;
+  --text-4:    #344458;
+  --signature: #00C2FF;
+  --banner-g1: rgba(0,194,255,.20);
+  --banner-g2: rgba(0,194,255,.06);
+}
+
+/* D·C5 · AMBER DARK · bg azul-pizarra frío, signature dorado */
+[data-theme="amber-dk"] {
+  --bg:        #0E1220;
+  --surface:   #1C2440;
+  --surface-2: #263050;
+  --surface-3: #303C62;
+  --border:    rgba(255,255,255,.11);
+  --border-2:  rgba(255,255,255,.07);
+  --text:      #F4ECD4;
+  --text-2:    #D4BC88;
+  --text-3:    #787050;
+  --text-4:    #444028;
+  --signature: #E8A820;
+  --banner-g1: rgba(232,168,32,.20);
+  --banner-g2: rgba(232,168,32,.06);
+}
+
+/* D·C6 · NAVY DARK · bg carbón cálido, signature azul eléctrico */
+[data-theme="navy-dk"] {
+  --bg:        #181410;
+  --surface:   #282018;
+  --surface-2: #342A22;
+  --surface-3: #40342C;
+  --border:    rgba(255,255,255,.11);
+  --border-2:  rgba(255,255,255,.07);
+  --text:      #DCE8FC;
+  --text-2:    #A0BADC;
+  --text-3:    #587090;
+  --text-4:    #344460;
+  --signature: #4A80FF;
+  --banner-g1: rgba(74,128,255,.22);
+  --banner-g2: rgba(74,128,255,.07);
+}
+
+/* ══════════════════════════════════════════════════════
+   TEMAS OFICIALES · aprobados para producción
+   ══════════════════════════════════════════════════════ */
+
+/* OFICIAL 01 · FACEBOOK LIGHT */
+[data-theme="official-01"] {
+  --bg:        #F0F2F5;
+  --surface:   #FFFFFF;
+  --surface-2: #F0F2F5;
+  --surface-3: #E4E6EB;
+  --border:    #CED0D4;
+  --border-2:  #E4E6EB;
+  --text:      #050505;
+  --text-2:    #1C1E21;
+  --text-3:    #65676B;
+  --text-4:    #8A8D91;
+  --signature: #1877F2;
+  --banner-g1: rgba(24,119,242,.12);
+  --banner-g2: rgba(24,119,242,.05);
+}
+
+/* OFICIAL 03 · INSTAGRAM LIGHT */
+[data-theme="official-03"] {
+  --bg:        #FAFAFA;
+  --surface:   #FFFFFF;
+  --surface-2: #F5F5F5;
+  --surface-3: #EFEFEF;
+  --border:    #DBDBDB;
+  --border-2:  #EFEFEF;
+  --text:      #262626;
+  --text-2:    #737373;
+  --text-3:    #A8A8A8;
+  --text-4:    #C7C7C7;
+  --signature: #0095F6;
+  --banner-g1: rgba(0,149,246,.10);
+  --banner-g2: rgba(0,149,246,.04);
+}
+
+/* OFICIAL 04 · INSTAGRAM DARK */
+[data-theme="official-04"] {
+  --bg:        #000000;
+  --surface:   #121212;
+  --surface-2: #1C1C1C;
+  --surface-3: #262626;
+  --border:    #262626;
+  --border-2:  #1C1C1C;
+  --text:      #F5F5F5;
+  --text-2:    #A8A8A8;
+  --text-3:    #737373;
+  --text-4:    #3C3C3C;
+  --signature: #0095F6;
+  --banner-g1: rgba(0,149,246,.18);
+  --banner-g2: rgba(0,149,246,.06);
+}
+
+/* OFICIAL 02 · FACEBOOK DARK */
+[data-theme="official-02"] {
+  --bg:        #18191A;
+  --surface:   #242526;
+  --surface-2: #3A3B3C;
+  --surface-3: #4E4F50;
+  --border:    #3E4042;
+  --border-2:  #3A3B3C;
+  --text:      #E4E6EB;
+  --text-2:    #B0B3B8;
+  --text-3:    #8A8D91;
+  --text-4:    #5A5C61;
+  --signature: #2D88FF;
+  --banner-g1: rgba(45,136,255,.20);
+  --banner-g2: rgba(45,136,255,.07);
+}
+
+/* ══════════════════════════════════════════════════════
+   USO EN COMPONENTES (ejemplo)
+   ══════════════════════════════════════════════════════ */
+
+body {
+  background: var(--bg);
+  color: var(--text);
+}
+
+.card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  color: var(--text);
+}
+
+.card-muted-text {
+  color: var(--text-2);
+}
+
+.cover-banner {
+  background:
+    radial-gradient(circle at 20% 50%, var(--banner-g1), transparent 50%),
+    radial-gradient(circle at 80% 30%, var(--banner-g2), transparent 50%),
+    var(--surface);
+}
+
+.btn-primary {
+  background: var(--signature);
+  color: var(--ink); /* o var(--paper) si el signature es oscuro */
+}

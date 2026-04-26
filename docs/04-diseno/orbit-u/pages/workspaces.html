@@ -1,0 +1,356 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Workspaces · Conniku</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Funnel+Display:wght@400;600;700;800;900&family=Inter:wght@400;500;600;700&family=Geist+Mono:wght@400;500;600&display=swap" />
+<link rel="stylesheet" href="../shared/tokens.css" />
+<link rel="stylesheet" href="../shared/base.css" />
+<link rel="stylesheet" href="../shared/nav.css" />
+<link rel="stylesheet" href="../shared/sidebar.css" />
+<style>
+  /* ── accent del módulo ── */
+  :root { --mod: #6B4EFF; --mod-2: rgba(107,78,255,0.12); --mod-3: #B8A6FF; }
+
+  .layout {
+    max-width: 1280px; margin: 0 auto;
+    display: grid;
+    grid-template-columns: 260px 1fr;
+    height: calc(100vh - 57px);
+  }
+
+  /* ── Sidebar de workspaces ── */
+  .ws-sidebar {
+    background: var(--surface);
+    border-right: 1px solid var(--border);
+    display: flex; flex-direction: column;
+    overflow: hidden;
+  }
+  .ws-sidebar-top {
+    padding: 16px 16px 10px;
+    border-bottom: 1px solid var(--border);
+    display: flex; flex-direction: column; gap: 10px;
+  }
+  .ws-label {
+    font-family: 'Geist Mono', monospace; font-size: 10px;
+    font-weight: 600; letter-spacing: .1em; text-transform: uppercase;
+    color: var(--text-4);
+  }
+  .ws-new-btn {
+    display: inline-flex; align-items: center; gap: 6px;
+    padding: 8px 12px;
+    background: var(--mod-2); border: 1px solid var(--mod);
+    border-radius: 8px; font-size: 12px; font-weight: 600;
+    color: var(--mod-3); cursor: pointer; transition: all .18s;
+  }
+  .ws-new-btn:hover { background: rgba(107,78,255,0.20); }
+  .ws-new-btn svg { width: 14px; height: 14px; }
+
+  .ws-list { flex: 1; overflow-y: auto; padding: 8px; }
+  .ws-item {
+    padding: 10px 12px; border-radius: 8px; cursor: pointer;
+    display: flex; flex-direction: column; gap: 3px;
+    transition: background .15s;
+    border: 1px solid transparent;
+  }
+  .ws-item:hover { background: var(--surface-2); }
+  .ws-item.active {
+    background: var(--mod-2);
+    border-color: rgba(107,78,255,0.25);
+  }
+  .ws-item-title {
+    font-size: 13px; font-weight: 500; color: var(--text);
+    display: flex; align-items: center; gap: 6px;
+  }
+  .ws-item-title svg { width: 13px; height: 13px; color: var(--mod-3); opacity: .7; flex-shrink: 0; }
+  .ws-item.active .ws-item-title svg { opacity: 1; }
+  .ws-item-meta {
+    font-family: 'Geist Mono', monospace; font-size: 9.5px;
+    color: var(--text-4); padding-left: 19px;
+  }
+  .ws-item-tag {
+    display: inline-flex; align-items: center;
+    font-size: 9px; font-weight: 600; letter-spacing: .06em; text-transform: uppercase;
+    padding: 1px 6px; border-radius: 4px;
+    background: rgba(107,78,255,0.15); color: var(--mod-3);
+    margin-left: auto; flex-shrink: 0;
+  }
+  .ws-item-tag.green { background: rgba(0,194,122,0.12); color: var(--green-3); }
+  .ws-item-tag.cream { background: rgba(255,233,184,0.12); color: var(--cream); }
+
+  /* ── Editor ── */
+  .editor {
+    display: flex; flex-direction: column;
+    background: var(--bg); overflow: hidden;
+  }
+  .editor-toolbar {
+    padding: 10px 24px;
+    border-bottom: 1px solid var(--border);
+    display: flex; align-items: center; gap: 6px;
+    background: var(--surface);
+  }
+  .tb-btn {
+    width: 28px; height: 28px; border-radius: 6px;
+    background: transparent; border: 1px solid transparent;
+    display: grid; place-items: center;
+    color: var(--text-3); cursor: pointer; transition: all .15s;
+    font-size: 12px; font-weight: 700;
+  }
+  .tb-btn:hover { background: var(--surface-2); color: var(--text); border-color: var(--border); }
+  .tb-sep { width: 1px; height: 16px; background: var(--border); margin: 0 4px; }
+  .tb-athena {
+    margin-left: auto;
+    display: inline-flex; align-items: center; gap: 6px;
+    padding: 5px 12px;
+    background: var(--mod-2); border: 1px solid var(--mod);
+    border-radius: 6px; font-size: 11px; font-weight: 600;
+    color: var(--mod-3); cursor: pointer; transition: all .18s;
+    font-family: 'Geist Mono', monospace; letter-spacing: .04em;
+  }
+  .tb-athena:hover { background: rgba(107,78,255,0.22); }
+  .tb-athena svg { width: 13px; height: 13px; }
+
+  .editor-body {
+    flex: 1; overflow-y: auto;
+    padding: 48px 64px;
+  }
+  .doc-breadcrumb {
+    font-family: 'Geist Mono', monospace; font-size: 10px;
+    color: var(--text-4); margin-bottom: 24px;
+    display: flex; align-items: center; gap: 6px;
+  }
+  .doc-breadcrumb span { color: var(--text-3); }
+  .doc-h1 {
+    font-family: 'Funnel Display', sans-serif;
+    font-weight: 800; font-size: clamp(28px, 3vw, 42px);
+    color: var(--text); letter-spacing: -.03em;
+    margin-bottom: 8px; line-height: 1.1;
+  }
+  .doc-meta {
+    display: flex; align-items: center; gap: 12px;
+    margin-bottom: 32px;
+    font-family: 'Geist Mono', monospace; font-size: 10px;
+    color: var(--text-4);
+  }
+  .doc-meta .tag {
+    padding: 2px 8px; border-radius: 4px;
+    background: var(--mod-2); color: var(--mod-3);
+    font-weight: 600; letter-spacing: .06em; text-transform: uppercase;
+    font-size: 9px;
+  }
+  .doc-p {
+    color: var(--text-2); font-size: 15px; line-height: 1.75;
+    max-width: 680px; margin-bottom: 20px;
+  }
+  .doc-h2 {
+    font-weight: 700; font-size: 20px; color: var(--text);
+    margin: 32px 0 12px; letter-spacing: -.02em;
+  }
+  .doc-callout {
+    background: var(--mod-2);
+    border-left: 3px solid var(--mod);
+    border-radius: 0 8px 8px 0;
+    padding: 14px 18px; margin: 20px 0;
+    max-width: 680px;
+    display: flex; gap: 10px; align-items: flex-start;
+  }
+  .doc-callout svg { width: 16px; height: 16px; color: var(--mod-3); flex-shrink: 0; margin-top: 2px; }
+  .doc-callout p { font-size: 13px; color: var(--mod-3); line-height: 1.6; }
+  .doc-cursor {
+    display: inline-block; width: 2px; height: 18px;
+    background: var(--mod); vertical-align: middle;
+    animation: blink 1.1s step-end infinite;
+  }
+  @keyframes blink { 0%,100%{opacity:1} 50%{opacity:0} }
+
+  /* Athena chip flotante */
+  .athena-float {
+    position: fixed; bottom: 28px; right: 28px;
+    display: inline-flex; align-items: center; gap: 8px;
+    padding: 10px 18px;
+    background: var(--surface);
+    border: 1px solid var(--mod);
+    box-shadow: 0 4px 20px rgba(107,78,255,0.25), 0 0 0 4px rgba(107,78,255,0.08);
+    border-radius: 999px;
+    font-size: 12px; font-weight: 600; color: var(--mod-3);
+    cursor: pointer; transition: all .2s;
+    font-family: 'Geist Mono', monospace;
+  }
+  .athena-float:hover {
+    background: var(--mod-2);
+    box-shadow: 0 6px 28px rgba(107,78,255,0.40), 0 0 0 6px rgba(107,78,255,0.12);
+  }
+  .athena-dot { width: 7px; height: 7px; border-radius: 50%; background: var(--mod); box-shadow: 0 0 8px var(--mod); animation: pulse-v 1.8s infinite; }
+  @keyframes pulse-v {
+    0%,100%{ box-shadow: 0 0 6px var(--mod); }
+    50%     { box-shadow: 0 0 14px var(--mod), 0 0 28px rgba(107,78,255,.3); }
+  }
+</style>
+</head>
+<body>
+
+<nav class="nav">
+  <div class="nav-inner">
+    <div class="nav-brand">
+      <a href="orbit-u.html" class="nav-back">
+        <span class="orbit-ico" aria-hidden="true"></span>
+        Orbit<span class="nav-back-u">·U</span>
+      </a>
+      <span class="nav-sep" aria-hidden="true"></span>
+      <a href="orbit-u.html" class="brand" aria-label="Conniku inicio">conn<span>i</span>k<span class="u-pack">u<span class="dot">.</span></span></a>
+    </div>
+    <span class="nav-mod-name">Workspaces</span>
+    <div class="nav-right">
+      <button class="nav-ico has-badge" aria-label="Notificaciones">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" width="18" height="18"><path d="M18 8A6 6 0 006 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 01-3.46 0"/></svg>
+      </button>
+      <div class="nav-av" aria-label="Mi perfil">CG</div>
+    </div>
+  </div>
+</nav>
+
+<div class="layout">
+
+  <aside class="ws-sidebar">
+    <div class="ws-sidebar-top">
+      <span class="ws-label">Mis apuntes</span>
+      <button class="ws-new-btn">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 5v14M5 12h14"/></svg>
+        Nuevo workspace
+      </button>
+    </div>
+
+    <div class="ws-list">
+      <!-- Activo -->
+      <div class="ws-item active">
+        <div class="ws-item-title">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M5 3h10l4 4v14H5z"/><path d="M15 3v4h4"/><path d="M9 12h6M9 16h4"/></svg>
+          Cálculo III · Resumen
+          <span class="ws-item-tag">Activo</span>
+        </div>
+        <div class="ws-item-meta">Modificado hace 10 min</div>
+      </div>
+
+      <div class="ws-item">
+        <div class="ws-item-title">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M5 3h10l4 4v14H5z"/><path d="M15 3v4h4"/><path d="M9 12h6M9 16h4"/></svg>
+          Ensayo Epistemología
+          <span class="ws-item-tag green">Entregado</span>
+        </div>
+        <div class="ws-item-meta">Hace 2 días · 1.240 palabras</div>
+      </div>
+
+      <div class="ws-item">
+        <div class="ws-item-title">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M5 3h10l4 4v14H5z"/><path d="M15 3v4h4"/><path d="M9 12h6M9 16h4"/></svg>
+          Apuntes Redes Comp.
+        </div>
+        <div class="ws-item-meta">Hace 4 días · 3 secciones</div>
+      </div>
+
+      <div class="ws-item">
+        <div class="ws-item-title">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M5 3h10l4 4v14H5z"/><path d="M15 3v4h4"/><path d="M9 12h6M9 16h4"/></svg>
+          Informe Laboratorio Q.
+          <span class="ws-item-tag cream">Borrador</span>
+        </div>
+        <div class="ws-item-meta">Hace 1 semana</div>
+      </div>
+
+      <div class="ws-item">
+        <div class="ws-item-title">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M5 3h10l4 4v14H5z"/><path d="M15 3v4h4"/><path d="M9 12h6M9 16h4"/></svg>
+          Tesis · Capítulo 1
+        </div>
+        <div class="ws-item-meta">Hace 2 semanas · 4.800 palabras</div>
+      </div>
+    </div>
+  </aside>
+
+  <main class="editor">
+    <div class="editor-toolbar">
+      <button class="tb-btn" title="Negrita"><b>B</b></button>
+      <button class="tb-btn" title="Cursiva"><i>I</i></button>
+      <button class="tb-btn" title="Subrayar"><u>U</u></button>
+      <span class="tb-sep" aria-hidden="true"></span>
+      <button class="tb-btn" title="H1" style="font-size:11px;letter-spacing:-.02em;">H1</button>
+      <button class="tb-btn" title="H2" style="font-size:11px;letter-spacing:-.02em;">H2</button>
+      <button class="tb-btn" title="Lista">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="13" height="13"><path d="M8 6h13M8 12h13M8 18h13M3 6h.01M3 12h.01M3 18h.01"/></svg>
+      </button>
+      <button class="tb-btn" title="Cita">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="13" height="13"><path d="M3 21c3 0 7-1 7-8V5c0-1.25-.756-2.017-2-2H4c-1.25 0-2 .75-2 1.972V11c0 1.25.75 2 2 2 1 0 1 0 1 1v1c0 1-1 2-2 2s-1 .008-1 1.031V20c0 1 0 1 1 1z"/><path d="M15 21c3 0 7-1 7-8V5c0-1.25-.757-2.017-2-2h-4c-1.25 0-2 .75-2 1.972V11c0 1.25.75 2 2 2h.75c0 2.25.25 4-2.75 4v3c0 1 0 1 1 1z"/></svg>
+      </button>
+      <span class="tb-sep" aria-hidden="true"></span>
+      <button class="tb-btn" title="Imagen">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" width="13" height="13"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><path d="M21 15l-5-5L5 21"/></svg>
+      </button>
+      <button class="tb-btn" title="Tabla">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" width="13" height="13"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M3 9h18M3 15h18M9 3v18"/></svg>
+      </button>
+      <button class="tb-athena" aria-label="Abrir Athena">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" width="13" height="13"><circle cx="12" cy="12" r="3"/><path d="M12 2v3M12 19v3M4.22 4.22l2.12 2.12M17.66 17.66l2.12 2.12M2 12h3M19 12h3M4.22 19.78l2.12-2.12M17.66 6.34l2.12-2.12"/></svg>
+        Athena
+      </button>
+    </div>
+
+    <div class="editor-body">
+      <div class="doc-breadcrumb">
+        Workspaces <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="10" height="10"><path d="M9 18l6-6-6-6"/></svg>
+        <span>Cálculo III · Resumen</span>
+      </div>
+
+      <h1 class="doc-h1">Cálculo III · Resumen final<span class="doc-cursor"></span></h1>
+      <div class="doc-meta">
+        <span class="tag">Matemáticas</span>
+        <span>Actualizado hoy 09:48</span>
+        <span>·</span>
+        <span>843 palabras</span>
+      </div>
+
+      <p class="doc-p">
+        Las <strong>series de potencias</strong> son una herramienta fundamental en el análisis matemático.
+        Una serie de potencias centrada en <em>a</em> tiene la forma Σ cₙ(x−a)ⁿ, donde los cₙ son los
+        coeficientes y el radio de convergencia <em>R</em> determina el intervalo en que la serie converge.
+      </p>
+
+      <div class="doc-callout">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="12" r="3"/><path d="M12 2v3M12 19v3M4.22 4.22l2.12 2.12M17.66 17.66l2.12 2.12M2 12h3M19 12h3"/></svg>
+        <p><strong>Athena dice:</strong> Para el examen, enfócate en el criterio de la razón y el teorema de Taylor. Hay 4 preguntas de práctica generadas desde tus apuntes anteriores.</p>
+      </div>
+
+      <h2 class="doc-h2">Criterio de convergencia</h2>
+      <p class="doc-p">
+        El <strong>criterio de la razón</strong> (o criterio de D'Alembert) establece que si el límite
+        |aₙ₊₁/aₙ| → L cuando n→∞, entonces la serie converge absolutamente si L &lt; 1, diverge si L &gt; 1,
+        y el criterio no es concluyente si L = 1.
+      </p>
+
+      <p class="doc-p">
+        Para series de potencias, el <strong>radio de convergencia</strong> se calcula como R = 1/limsup|cₙ|^(1/n)
+        (fórmula de Cauchy-Hadamard). En los extremos x = a±R se debe analizar caso por caso.
+      </p>
+
+      <h2 class="doc-h2">Series de Taylor y Maclaurin</h2>
+      <p class="doc-p">
+        La serie de Taylor de f centrada en a es f(x) = Σ f⁽ⁿ⁾(a)/n! · (x−a)ⁿ.
+        Cuando a = 0 se llama serie de Maclaurin. Casos importantes a memorizar:
+        eˣ, sen(x), cos(x), ln(1+x), (1+x)^α.
+      </p>
+    </div>
+  </main>
+
+</div>
+
+<button class="athena-float" aria-label="Abrir Athena">
+  <span class="athena-dot" aria-hidden="true"></span>
+  Athena · Preguntar sobre este doc
+</button>
+
+<script src="../shared/sidebar.js"></script>
+<script src="../shared/theme-loader.js"></script>
+</body>
+</html>

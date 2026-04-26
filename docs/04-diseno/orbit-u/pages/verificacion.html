@@ -1,0 +1,242 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Verificación · Conniku</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Funnel+Display:wght@400;600;700;800;900&family=Inter:wght@400;500;600;700&family=Geist+Mono:wght@400;500;600&display=swap" />
+<link rel="stylesheet" href="../shared/tokens.css" />
+<link rel="stylesheet" href="../shared/base.css" />
+<style>
+body {
+  min-height: 100vh;
+  display: flex; flex-direction: column;
+  align-items: center; justify-content: center;
+  background: var(--bg); padding: 24px;
+  position: relative; overflow: hidden;
+}
+/* ambient orbits */
+.ambient-orbits { position:fixed;inset:0;pointer-events:none;overflow:hidden;z-index:0; }
+.ao { position:absolute;border-radius:50%;border:1px solid rgba(232,232,230,0.04);transform:translate(-50%,-50%);left:50%;top:50%; }
+.ao.a1  { width:280px; height:280px; border-color:rgba(0,194,122,0.22); }
+.ao.a2  { width:480px; height:480px; border-style:dashed; border-color:rgba(255,74,28,0.16); }
+.ao.a3  { width:680px; height:680px; border-style:dotted; border-color:rgba(0,194,122,0.13); opacity:.8; }
+.ao.a4  { width:880px; height:880px; border-color:rgba(245,244,239,0.07); opacity:.65; }
+.ao.a5  { width:1080px;height:1080px;border-style:dashed;border-color:rgba(255,74,28,0.07);opacity:.5; }
+.ao.a6  { width:1280px;height:1280px;border-style:dotted;border-color:rgba(0,194,122,0.05);opacity:.4; }
+.ao.a7  { width:1480px;height:1480px;border-color:rgba(245,244,239,0.03);opacity:.3; }
+.ao.glow { width:500px;height:500px;border:none;background:radial-gradient(circle,rgba(0,194,122,0.08) 0%,transparent 65%); }
+.star { position:absolute;border-radius:50%;background:rgba(245,244,239,0.7);animation:twinkle var(--dur,3s) ease-in-out infinite;animation-delay:var(--delay,0s); }
+.star.s  { width:1.5px;height:1.5px; }
+.star.m  { width:2px;height:2px; }
+.star.l  { width:3px;height:3px;box-shadow:0 0 6px rgba(245,244,239,0.5); }
+.star.green  { background:rgba(0,194,122,0.8); box-shadow:0 0 5px rgba(0,194,122,0.5); }
+.star.orange { background:rgba(255,74,28,0.8); box-shadow:0 0 5px rgba(255,74,28,0.5); }
+.star.cyan   { background:rgba(138,234,192,0.7);box-shadow:0 0 5px rgba(138,234,192,0.4); }
+@keyframes twinkle { 0%,100%{opacity:1;transform:scale(1);}50%{opacity:.2;transform:scale(.7);} }
+
+
+.auth-card {
+  width: 100%; max-width: 420px;
+  background: var(--surface); border: 1px solid var(--border);
+  border-radius: 20px; padding: 40px 36px;
+  position: relative; z-index: 1; text-align: center;
+}
+
+.auth-logo { margin-bottom: 32px; }
+.auth-logo .brand { font-size: 22px; }
+
+/* Email icon */
+.veri-icon {
+  width: 72px; height: 72px; border-radius: 50%;
+  background: rgba(0,194,122,0.1); border: 1px solid rgba(0,194,122,0.25);
+  display: grid; place-items: center;
+  margin: 0 auto 24px;
+  position: relative;
+}
+.veri-icon svg { width: 32px; height: 32px; color: var(--green); }
+.veri-icon::after {
+  content: ""; position: absolute; inset: -6px; border-radius: 50%;
+  border: 1px dashed rgba(0,194,122,0.2);
+}
+
+.auth-title {
+  font-family: 'Funnel Display', sans-serif; font-weight: 800;
+  font-size: 22px; letter-spacing: -.03em; color: var(--text); margin-bottom: 8px;
+}
+.auth-sub {
+  font-size: 13px; color: var(--text-3); margin-bottom: 32px; line-height: 1.6;
+}
+.auth-sub strong { color: var(--text-2); font-weight: 600; }
+
+/* Code input */
+.code-row {
+  display: flex; gap: 10px; justify-content: center; margin-bottom: 24px;
+}
+.code-box {
+  width: 52px; height: 60px; border-radius: 12px;
+  background: var(--surface-2); border: 1px solid var(--border);
+  font-family: 'Geist Mono', monospace; font-size: 22px; font-weight: 700;
+  color: var(--text); text-align: center;
+  transition: all .15s; outline: none;
+}
+.code-box:focus { border-color: var(--green); box-shadow: 0 0 0 3px rgba(0,194,122,0.12); }
+
+.btn-submit {
+  width: 100%; padding: 13px; border-radius: 10px;
+  background: var(--green); color: #0B0C0E;
+  font-size: 14px; font-weight: 700; border: none; cursor: pointer;
+  transition: all .2s;
+}
+.btn-submit:hover { background: var(--green-3); box-shadow: 0 0 20px rgba(0,194,122,0.3); }
+.btn-submit:disabled { opacity: .45; cursor: default; }
+
+.veri-resend {
+  margin-top: 20px; font-size: 12px; color: var(--text-4);
+}
+.veri-resend button {
+  background: none; border: none; color: var(--green);
+  font-weight: 600; font-size: 12px; cursor: pointer;
+}
+.veri-resend button:hover { color: var(--green-3); }
+
+.veri-countdown {
+  font-family: 'Geist Mono', monospace; font-size: 10px; color: var(--text-4);
+  margin-top: 8px;
+}
+
+.back-link {
+  position: fixed; top: 20px; left: 24px;
+  display: flex; align-items: center; gap: 6px;
+  font-size: 12px; color: var(--text-4); z-index: 10; transition: color .15s;
+}
+.back-link:hover { color: var(--text-2); }
+.back-link svg { width: 14px; height: 14px; }
+
+/* Step indicator */
+.steps {
+  display: flex; gap: 6px; justify-content: center; margin-bottom: 32px;
+}
+.step-dot {
+  width: 6px; height: 6px; border-radius: 50%;
+  background: var(--border);
+}
+.step-dot.done { background: rgba(0,194,122,0.4); }
+.step-dot.active { background: var(--green); width: 20px; border-radius: 3px; }
+</style>
+</head>
+<body>
+
+<div class="ambient-orbits">
+  <div class="ao a1"></div><div class="ao a2"></div><div class="ao a3"></div>
+  <div class="ao a4"></div><div class="ao a5"></div><div class="ao a6"></div>
+  <div class="ao a7"></div><div class="ao glow"></div>
+  <span class="star l green"  style="top:8%;left:15%;--dur:3.4s;--delay:0s"></span>
+  <span class="star m"        style="top:12%;left:78%;--dur:2.8s;--delay:.6s"></span>
+  <span class="star s orange" style="top:25%;left:90%;--dur:3.2s;--delay:.4s"></span>
+  <span class="star l"        style="top:65%;left:5%;--dur:3.6s;--delay:.3s"></span>
+  <span class="star m cyan"   style="top:78%;left:82%;--dur:4s;--delay:.2s"></span>
+  <span class="star s green"  style="top:88%;left:45%;--dur:2.4s;--delay:1.4s"></span>
+  <span class="star l orange" style="top:45%;left:96%;--dur:3.8s;--delay:.8s"></span>
+  <span class="star m"        style="top:55%;left:2%;--dur:2.9s;--delay:.1s"></span>
+</div>
+
+<a href="registro.html" class="back-link">
+  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>
+  Volver
+</a>
+
+<div class="auth-card">
+  <div class="auth-logo">
+    <a href="../landing.html" class="brand">conn<span>i</span>k<span class="u-pack">u<span class="dot">.</span></span></a>
+  </div>
+
+  <div class="steps">
+    <div class="step-dot done"></div>
+    <div class="step-dot active"></div>
+    <div class="step-dot"></div>
+    <div class="step-dot"></div>
+  </div>
+
+  <div class="veri-icon">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6">
+      <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/>
+      <polyline points="22,6 12,13 2,6"/>
+    </svg>
+  </div>
+
+  <div class="auth-title">Revisa tu correo</div>
+  <div class="auth-sub">Enviamos un código de 6 dígitos a<br><strong>tu@universidad.cl</strong></div>
+
+  <form onsubmit="handleVerify(event)">
+    <div class="code-row">
+      <input class="code-box" type="text" maxlength="1" inputmode="numeric" pattern="[0-9]" />
+      <input class="code-box" type="text" maxlength="1" inputmode="numeric" pattern="[0-9]" />
+      <input class="code-box" type="text" maxlength="1" inputmode="numeric" pattern="[0-9]" />
+      <input class="code-box" type="text" maxlength="1" inputmode="numeric" pattern="[0-9]" />
+      <input class="code-box" type="text" maxlength="1" inputmode="numeric" pattern="[0-9]" />
+      <input class="code-box" type="text" maxlength="1" inputmode="numeric" pattern="[0-9]" />
+    </div>
+    <button type="submit" class="btn-submit" id="verify-btn" disabled>Verificar correo →</button>
+  </form>
+
+  <div class="veri-resend">
+    ¿No llegó? <button onclick="resend()">Reenviar código</button>
+  </div>
+  <div class="veri-countdown" id="countdown">Reenvío disponible en 00:59</div>
+</div>
+
+<script>
+var boxes = document.querySelectorAll('.code-box');
+var btn = document.getElementById('verify-btn');
+var countEl = document.getElementById('countdown');
+
+boxes.forEach(function(box, i) {
+  box.addEventListener('input', function() {
+    this.value = this.value.replace(/\D/g, '');
+    if (this.value && i < boxes.length - 1) boxes[i+1].focus();
+    checkFull();
+  });
+  box.addEventListener('keydown', function(e) {
+    if (e.key === 'Backspace' && !this.value && i > 0) boxes[i-1].focus();
+  });
+  box.addEventListener('paste', function(e) {
+    e.preventDefault();
+    var text = (e.clipboardData || window.clipboardData).getData('text').replace(/\D/g,'');
+    boxes.forEach(function(b, j) { b.value = text[j] || ''; });
+    checkFull();
+  });
+});
+
+function checkFull() {
+  var full = Array.from(boxes).every(function(b){ return b.value; });
+  btn.disabled = !full;
+}
+
+function handleVerify(e) {
+  e.preventDefault();
+  window.location.href = 'onboarding.html';
+}
+
+var secs = 59;
+var timer = setInterval(function() {
+  secs--;
+  if (secs <= 0) { clearInterval(timer); countEl.style.display = 'none'; return; }
+  countEl.textContent = 'Reenvío disponible en 00:' + (secs < 10 ? '0' : '') + secs;
+}, 1000);
+
+function resend() {
+  secs = 59; clearInterval(timer);
+  countEl.style.display = '';
+  timer = setInterval(function() {
+    secs--;
+    if (secs <= 0) { clearInterval(timer); countEl.style.display = 'none'; return; }
+    countEl.textContent = 'Reenvío disponible en 00:' + (secs < 10 ? '0' : '') + secs;
+  }, 1000);
+}
+</script>
+<script src="../shared/theme-loader.js"></script>
+</body>
+</html>

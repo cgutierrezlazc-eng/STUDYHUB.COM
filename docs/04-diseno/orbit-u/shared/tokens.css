@@ -1,0 +1,25 @@
+/* ═══ ORBIT-U · Design Tokens · Orbit Dark (default) ═══
+   Sobreescribibles por theme-loader.js vía inline style en :root
+   orbit-u.html NO carga theme-loader.js → estos valores son fijos allá */
+:root {
+  --bg:        #050608;
+  --surface:   #0D0E11;
+  --surface-2: #15181D;
+  --surface-3: #1A1D23;
+  --border:    #262A32;
+  --border-2:  #1F2229;
+  --text:      #E8E8E6;
+  --text-2:    #B8B8B4;
+  --text-3:    #8A8A86;
+  --text-4:    #5C5F65;
+  --green:     #00C27A;
+  --green-2:   #006E4A;
+  --green-3:   #8AEAC0;
+  --lime:      #D9FF3A;
+  --orange:    #FF4A1C;
+  --violet:    #6B4EFF;
+  --cyan:      #00C2FF;
+  --cream:     #FFE9B8;
+  --pink:      #FF4D3A;
+  --paper:     #F5F4EF;
+}

@@ -1,0 +1,403 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Trabaja con nosotros · Conniku</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Funnel+Display:wght@400;600;700;800;900&family=Inter:wght@400;500;600;700&family=Geist+Mono:wght@400;500;600&display=swap" />
+<link rel="stylesheet" href="../shared/tokens.css" />
+<link rel="stylesheet" href="../shared/base.css" />
+<link rel="stylesheet" href="../shared/logo-oficial/handoff/ConnikuWordmark.css" />
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+#bg-nebula { position: fixed; inset: 0; width: 100vw; height: 100vh; z-index: -1; pointer-events: none; display: block; }
+html { background: var(--bg); }
+body { background: transparent; color: var(--text); font-family: 'Inter', sans-serif; font-size: 15px; line-height: 1.7; min-height: 100vh; overflow-x: hidden; }
+.topbar { position:sticky;top:0;z-index:100;background:rgba(5,6,8,0.92);backdrop-filter:blur(12px);border-bottom:1px solid var(--border);padding:14px 32px;display:flex;align-items:center;gap:20px; }
+.back-link { display:flex;align-items:center;gap:6px;font-size:12px;color:var(--text-4);text-decoration:none;transition:color .15s; }
+.back-link:hover { color:var(--text-2); }
+.back-link svg { width:14px;height:14px;flex-shrink:0; }
+.topbar-sep { width:1px;height:16px;background:var(--border); }
+.topbar-title { font-family:'Geist Mono',monospace;font-size:11px;color:var(--text-4);letter-spacing:.06em; }
+
+/* hero */
+.hero {
+  position: relative; overflow: hidden;
+  padding: 80px 32px 64px;
+  text-align: center;
+  display: flex; flex-direction: column; align-items: center;
+}
+.hero-orbits { position:absolute;inset:0;pointer-events:none; }
+.h-ao { position:absolute;border-radius:50%;border:1px solid rgba(0,194,122,0.08);transform:translate(-50%,-50%);left:50%;top:50%; }
+.h-ao.a1 { width:300px;height:300px;border-color:rgba(0,194,122,0.14); }
+.h-ao.a2 { width:500px;height:500px;border-style:dashed;border-color:rgba(0,194,122,0.08); }
+.h-ao.a3 { width:700px;height:700px;border-style:dotted;border-color:rgba(0,194,122,0.05); }
+
+.planet-vis {
+  position: relative; width: 120px; height: 120px; margin-bottom: 32px;
+}
+.planet-core {
+  width: 72px; height: 72px; border-radius: 50%;
+  background: rgba(0,194,122,0.06);
+  border: 1px solid rgba(0,194,122,0.2);
+  display: grid; place-items: center;
+  position: absolute; top: 50%; left: 50%; transform: translate(-50%,-50%);
+  box-shadow: 0 0 32px rgba(0,194,122,0.2), 0 0 64px rgba(0,194,122,0.08);
+  animation: core-pulse 3s ease-in-out infinite;
+}
+/* App icon oficial */
+.hero-app-icon { width: 64px; height: 64px; display: block; }
+.planet-ring {
+  position: absolute; border-radius: 50%; border: 1px solid rgba(0,194,122,0.25);
+  top: 50%; left: 50%; transform: translate(-50%,-50%);
+  animation: ring-pulse 3s ease-in-out infinite;
+}
+.planet-ring.r1 { width: 88px; height: 88px; animation-delay: .3s; }
+.planet-ring.r2 { width: 112px; height: 112px; border-style: dashed; animation-delay: .7s; }
+@keyframes core-pulse { 0%,100%{box-shadow:0 0 32px rgba(0,194,122,0.4),0 0 64px rgba(0,194,122,0.15);}50%{box-shadow:0 0 48px rgba(0,194,122,0.6),0 0 96px rgba(0,194,122,0.25);} }
+@keyframes ring-pulse { 0%,100%{opacity:1;transform:translate(-50%,-50%) scale(1);}50%{opacity:.4;transform:translate(-50%,-50%) scale(1.04);} }
+
+.hero-eyebrow { font-family:'Geist Mono',monospace;font-size:10px;color:var(--green-3);letter-spacing:.12em;text-transform:uppercase;margin-bottom:12px;position:relative;z-index:1; }
+.hero-title { font-family:'Funnel Display',sans-serif;font-weight:900;font-size:clamp(36px,6vw,64px);letter-spacing:-.04em;color:var(--text);margin-bottom:12px;position:relative;z-index:1; }
+.hero-title span { color: var(--green); }
+.hero-sub { font-size:16px;color:var(--text-3);max-width:520px;line-height:1.7;position:relative;z-index:1;margin-bottom:40px; }
+
+.hero-cta-row { display:flex;gap:12px;flex-wrap:wrap;justify-content:center;position:relative;z-index:1; }
+.btn-primary { padding:14px 32px;border-radius:12px;background:var(--green);color:#0B0C0E;font-size:14px;font-weight:800;text-decoration:none;transition:all .2s;border:none;cursor:pointer; }
+.btn-primary:hover { background:var(--green-3);box-shadow:0 0 24px rgba(0,194,122,0.3);transform:translateY(-1px); }
+.btn-secondary { padding:14px 32px;border-radius:12px;background:var(--surface);border:1px solid var(--border);color:var(--text-2);font-size:14px;font-weight:700;text-decoration:none;transition:all .2s; }
+.btn-secondary:hover { border-color:var(--border-2);color:var(--text);transform:translateY(-1px); }
+
+/* content */
+.content-wrap { max-width: 840px; margin: 0 auto; padding: 0 32px 80px; }
+.section-label { font-family:'Geist Mono',monospace;font-size:10px;color:var(--text-4);letter-spacing:.1em;text-transform:uppercase;margin-bottom:16px; }
+
+/* profiles */
+.profiles-grid { display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:56px; }
+@media(max-width:640px) { .profiles-grid { grid-template-columns: 1fr; } }
+
+.profile-card {
+  padding: 24px; border-radius: 14px; border: 1px solid var(--border);
+  background: var(--surface); display: flex; flex-direction: column; gap: 12px;
+  transition: all .2s; cursor: pointer; position: relative; overflow: hidden;
+}
+.profile-card:hover { border-color: var(--border-2); }
+.profile-card.highlighted { border-color: rgba(0,194,122,0.35); background: rgba(0,194,122,0.04); }
+.profile-card.highlighted::after { content:"Recomendado";position:absolute;top:14px;right:14px;font-family:'Geist Mono',monospace;font-size:9px;font-weight:600;color:var(--green-3);letter-spacing:.08em;padding:2px 8px;background:rgba(0,194,122,0.1);border:1px solid rgba(0,194,122,0.2);border-radius:4px; }
+.profile-name { font-family:'Funnel Display',sans-serif;font-weight:800;font-size:18px;color:var(--text);letter-spacing:-.03em; }
+.profile-pitch { font-size:13px;color:var(--text-3);line-height:1.6; }
+.profile-features { list-style:none; display:flex; flex-direction:column; gap:5px; }
+.profile-features li { font-size:12px;color:var(--text-4);display:flex;gap:6px;align-items:flex-start; }
+.profile-features li::before { content:"→";color:var(--green);flex-shrink:0;font-size:11px;margin-top:1px; }
+.profile-tag { display:inline-block;padding:3px 8px;border-radius:4px;font-family:'Geist Mono',monospace;font-size:10px;font-weight:600;margin-top:auto;width:fit-content; }
+.tag-lite { background:rgba(0,150,204,0.1);color:#5BB8E0;border:1px solid rgba(0,150,204,0.2); }
+.tag-full { background:rgba(0,194,122,0.1);color:var(--green-3);border:1px solid rgba(0,194,122,0.2); }
+
+/* open positions */
+.open-box { padding:32px;background:var(--surface);border:1px solid var(--border);border-radius:14px;text-align:center;margin-bottom:56px; }
+.open-box-icon { margin-bottom:12px; color:var(--text-4); display:flex; justify-content:center; }
+.open-box h3 { font-family:'Funnel Display',sans-serif;font-weight:800;font-size:20px;color:var(--text);margin-bottom:8px; }
+.open-box p { font-size:14px;color:var(--text-3);line-height:1.7;max-width:460px;margin:0 auto 20px; }
+
+/* values */
+.values-grid { display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:12px;margin-bottom:56px; }
+.value-card { padding:18px 20px;background:var(--surface);border:1px solid var(--border);border-radius:10px; }
+.value-name { font-size:13px;font-weight:700;color:var(--text-2);margin-bottom:4px; }
+.value-desc { font-size:12px;color:var(--text-4);line-height:1.6; }
+
+/* process */
+.process { display:flex;flex-direction:column;gap:0;margin-bottom:56px; }
+.process-step { display:flex;gap:20px;align-items:flex-start;padding:20px 0; }
+.process-step + .process-step { border-top:1px solid var(--border); }
+.step-num { width:32px;height:32px;border-radius:50%;background:var(--surface);border:1px solid var(--border);display:grid;place-items:center;font-family:'Geist Mono',monospace;font-size:11px;font-weight:700;color:var(--text-4);flex-shrink:0;margin-top:2px; }
+.step-body h4 { font-size:14px;font-weight:700;color:var(--text);margin-bottom:4px; }
+.step-body p { font-size:13px;color:var(--text-3);line-height:1.6; }
+
+/* modal */
+.modal-backdrop { display:none;position:fixed;inset:0;background:rgba(0,0,0,0.7);backdrop-filter:blur(4px);z-index:1000;align-items:center;justify-content:center;padding:24px; }
+.modal-backdrop.open { display:flex; }
+.modal {
+  background:var(--surface);border:1px solid var(--border);border-radius:20px;
+  padding:32px;width:100%;max-width:500px;position:relative;
+  max-height:90vh;overflow-y:auto;
+}
+.modal-close { position:absolute;top:16px;right:16px;background:none;border:none;color:var(--text-4);cursor:pointer;font-size:18px;transition:color .15s; }
+.modal-close:hover { color:var(--text); }
+.modal-type { font-family:'Geist Mono',monospace;font-size:10px;color:var(--green-3);letter-spacing:.1em;text-transform:uppercase;margin-bottom:10px; }
+.modal-title { font-family:'Funnel Display',sans-serif;font-weight:800;font-size:22px;color:var(--text);margin-bottom:6px; }
+.modal-sub { font-size:13px;color:var(--text-3);margin-bottom:24px; }
+.form-group { display:flex;flex-direction:column;gap:6px;margin-bottom:14px; }
+.form-label { font-family:'Geist Mono',monospace;font-size:10px;font-weight:600;color:var(--text-4);text-transform:uppercase;letter-spacing:.07em; }
+.form-input,.form-select,.form-textarea { padding:11px 14px;border-radius:10px;background:var(--surface-2);border:1px solid var(--border);color:var(--text);font-size:14px;font-family:'Inter',sans-serif;outline:none;transition:all .15s;width:100%; }
+.form-input:focus,.form-select:focus,.form-textarea:focus { border-color:var(--green);box-shadow:0 0 0 3px rgba(0,194,122,0.08); }
+.form-input::placeholder,.form-textarea::placeholder { color:var(--text-4); }
+.form-select { appearance:none;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%235C5F65' stroke-width='2'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 14px center;padding-right:36px;cursor:pointer; }
+.form-textarea { resize:vertical;min-height:100px; }
+.btn-submit { width:100%;padding:13px;border-radius:10px;background:var(--green);color:#0B0C0E;font-size:14px;font-weight:800;border:none;cursor:pointer;transition:all .2s;margin-top:4px; }
+.btn-submit:hover { background:var(--green-3);box-shadow:0 0 20px rgba(0,194,122,0.3); }
+.modal-success { display:none;padding:24px;background:rgba(0,194,122,0.06);border:1px solid rgba(0,194,122,0.2);border-radius:12px;color:var(--green-3);font-size:14px;text-align:center;margin-top:8px; }
+</style>
+</head>
+<body>
+
+<canvas id="bg-nebula"></canvas>
+
+<div class="topbar">
+  <a href="../index.html" class="back-link">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>
+    Volver
+  </a>
+  <div class="topbar-sep"></div>
+  <a href="../index.html" class="brand on-dark" style="font-size:16px" aria-label="Conniku">conn<span>i</span><span class="k-letter">k</span><span class="u-pack"><span class="u-letter">u</span><span class="dot"></span></span></a>
+  <div class="topbar-sep"></div>
+  <span class="topbar-title">TRABAJA CON NOSOTROS</span>
+</div>
+
+<!-- Hero -->
+<div class="hero">
+  <div class="hero-orbits">
+    <div class="h-ao a1"></div><div class="h-ao a2"></div><div class="h-ao a3"></div>
+  </div>
+
+  <div class="planet-vis">
+    <div class="planet-ring r1"></div>
+    <div class="planet-ring r2"></div>
+    <div class="planet-core">
+      <img class="hero-app-icon" src="../shared/logo-oficial/handoff/app-icon.svg" alt="Conniku" />
+    </div>
+  </div>
+
+  <div class="hero-eyebrow">Conniku · Equipo</div>
+  <h1 class="hero-title">Construye el futuro<br>de la <span>educación</span></h1>
+  <p class="hero-sub">No hay posiciones abiertas en este momento, pero si compartes la misión, queremos conocerte. Deja tu perfil y te contactaremos cuando surja la oportunidad correcta para ti.</p>
+
+  <div class="hero-cta-row">
+    <button class="btn-primary" onclick="openModal('conniku')">Perfil Conniku completo</button>
+    <button class="btn-secondary" onclick="openModal('laboral')">Solo módulo laboral</button>
+  </div>
+</div>
+
+<!-- Content -->
+<div class="content-wrap">
+
+  <!-- Perfiles -->
+  <div class="section-label">Elige cómo quieres vincularte</div>
+  <div class="profiles-grid">
+
+    <div class="profile-card" onclick="openModal('laboral')">
+      <div class="profile-name">Perfil Laboral</div>
+      <p class="profile-pitch">Para quienes quieren visibilidad ante el equipo de Conniku en el contexto laboral, sin necesidad de usar la plataforma completa.</p>
+      <ul class="profile-features">
+        <li>Acceso únicamente al módulo de Empleo</li>
+        <li>Tu perfil visible en postulaciones a Conniku</li>
+        <li>CV, áreas de interés y disponibilidad</li>
+        <li>Sin compromiso de uso de la plataforma</li>
+      </ul>
+      <span class="profile-tag tag-lite">Lite · Solo módulo laboral</span>
+    </div>
+
+    <a class="profile-card highlighted" href="bienvenida.html" style="text-decoration:none;color:inherit;">
+      <div class="profile-name">Perfil <span class="brand on-dark" style="font-size:1em" aria-label="Conniku">conn<span>i</span><span class="k-letter">k</span><span class="u-pack"><span class="u-letter">u</span><span class="dot"></span></span></span></div>
+      <p class="profile-pitch">Acceso completo a la plataforma. Vívela desde adentro: así conocemos tu forma de trabajar y colaborar antes de cualquier entrevista.</p>
+      <ul class="profile-features">
+        <li>Acceso completo a todos los módulos</li>
+        <li>Perfil visible ante el equipo de Conniku</li>
+        <li>Puedes mostrar tu trabajo real en la plataforma</li>
+        <li>Prioridad en notificación de nuevas posiciones</li>
+        <li>Comunidad de early adopters y colaboradores</li>
+      </ul>
+      <span class="profile-tag tag-full">Completo · Plataforma entera</span>
+    </a>
+
+  </div>
+
+  <!-- Posiciones abiertas -->
+  <div class="section-label">Posiciones abiertas</div>
+  <div class="open-box">
+    <div class="open-box-icon"><svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg></div>
+    <h3>Sin posiciones activas por ahora</h3>
+    <p>Estamos en etapa de construcción. No hay posiciones formales abiertas en este momento, pero eso cambiará. Deja tu perfil para ser de los primeros en saber cuándo surja algo.</p>
+    <button class="btn-primary" onclick="openModal('conniku')">Dejar mi perfil →</button>
+  </div>
+
+  <!-- Valores -->
+  <div class="section-label">Lo que nos importa en el equipo</div>
+  <div class="values-grid">
+    <div class="value-card">
+      <div class="value-name">Estudiante primero</div>
+      <div class="value-desc">Entendemos la vida universitaria porque la vivimos. Todo lo que hacemos parte desde ahí.</div>
+    </div>
+    <div class="value-card">
+      <div class="value-name">Hacedores</div>
+      <div class="value-desc">Preferimos lanzar, iterar y mejorar. La parálisis por perfeccionismo no tiene lugar aquí.</div>
+    </div>
+    <div class="value-card">
+      <div class="value-name">Honestidad radical</div>
+      <div class="value-desc">Decimos lo que pensamos con respeto. La retroalimentación directa acelera el crecimiento.</div>
+    </div>
+    <div class="value-card">
+      <div class="value-name">Latinoamérica</div>
+      <div class="value-desc">Construimos para la realidad universitaria latinoamericana, no para un mercado abstracto.</div>
+    </div>
+    <div class="value-card">
+      <div class="value-name">Privacidad por diseño</div>
+      <div class="value-desc">Nos tomamos en serio la protección de datos. No es compliance, es parte de quiénes somos.</div>
+    </div>
+    <div class="value-card">
+      <div class="value-name">Velocidad con criterio</div>
+      <div class="value-desc">Nos movemos rápido, pero con intención. Calidad y velocidad no son opuestos.</div>
+    </div>
+  </div>
+
+  <!-- Proceso -->
+  <div class="section-label">Cómo funciona el proceso cuando haya posiciones</div>
+  <div class="process">
+    <div class="process-step">
+      <div class="step-num">01</div>
+      <div class="step-body">
+        <h4>Deja tu perfil ahora</h4>
+        <p>Completa el formulario con tu información, áreas de interés y qué tipo de rol te gustaría tener. No hay cargos específicos: cuéntanos quién eres y qué podrías aportar.</p>
+      </div>
+    </div>
+    <div class="process-step">
+      <div class="step-num">02</div>
+      <div class="step-body">
+        <h4>Te notificamos cuando surja algo</h4>
+        <p>Cuando tengamos una posición que encaje con tu perfil, serás de los primeros en saberlo. Sin spam, sin boletines innecesarios.</p>
+      </div>
+    </div>
+    <div class="process-step">
+      <div class="step-num">03</div>
+      <div class="step-body">
+        <h4>Conversación inicial (30 min)</h4>
+        <p>Una llamada sin presión para conocernos. Sin pruebas técnicas sorpresa ni preguntas de pizarrón. Queremos entender cómo piensas y qué te mueve.</p>
+      </div>
+    </div>
+    <div class="process-step">
+      <div class="step-num">04</div>
+      <div class="step-body">
+        <h4>Proyecto pequeño y conversación técnica</h4>
+        <p>Un desafío acotado (máximo 3 horas) relevante para el rol, pagado si aplica. Sin evaluaciones de whiteboard desconectadas de la realidad.</p>
+      </div>
+    </div>
+    <div class="process-step">
+      <div class="step-num">05</div>
+      <div class="step-body">
+        <h4>Oferta y bienvenida</h4>
+        <p>Si hay fit mutuo, hacemos una oferta transparente. Sin negociaciones opacas.</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- Legal note -->
+  <div style="padding:20px 24px;background:var(--surface);border:1px solid var(--border);border-radius:12px;font-size:12px;color:var(--text-4);">
+    <strong style="color:var(--text-3);display:block;margin-bottom:6px;font-family:'Geist Mono',monospace;font-size:10px;letter-spacing:.08em;text-transform:uppercase;">Nota legal — Ley Karin</strong>
+    Conniku es una empresa comprometida con ambientes laborales seguros y libres de acoso. Cumplimos íntegramente la <strong style="color:var(--text-3)">Ley N° 21.643 (Ley Karin)</strong>, vigente desde el 1 de agosto de 2024. Todo proceso de selección se realiza con respeto, equidad y sin discriminación. Denuncias: <a href="mailto:seguridad@conniku.com" style="color:var(--green);">seguridad@conniku.com</a>.
+  </div>
+
+</div>
+
+<!-- Modal -->
+<div class="modal-backdrop" id="modal">
+  <div class="modal">
+    <button class="modal-close" onclick="closeModal()">✕</button>
+    <div class="modal-type" id="modal-type">PERFIL</div>
+    <div class="modal-title" id="modal-title">Crea tu perfil</div>
+    <div class="modal-sub" id="modal-sub">Te contactaremos cuando surja la posición correcta.</div>
+
+    <form onsubmit="handleProfileSubmit(event)">
+      <input type="hidden" id="profile-type" name="tipo" value="" />
+      <div class="form-group">
+        <label class="form-label">Nombre completo</label>
+        <input class="form-input" type="text" placeholder="Tu nombre" required />
+      </div>
+      <div class="form-group">
+        <label class="form-label">Correo electrónico</label>
+        <input class="form-input" type="email" placeholder="tu@correo.com" required />
+      </div>
+      <div class="form-group">
+        <label class="form-label">¿En qué área te ves aportando?</label>
+        <select class="form-select" required>
+          <option value="" disabled selected>Selecciona un área</option>
+          <option>Ingeniería y desarrollo</option>
+          <option>Diseño de producto y UX</option>
+          <option>Marketing y crecimiento</option>
+          <option>Operaciones y gestión</option>
+          <option>Educación y contenidos</option>
+          <option>Datos y analítica</option>
+          <option>Legal y cumplimiento</option>
+          <option>Otro</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label class="form-label">¿Por qué Conniku?</label>
+        <textarea class="form-textarea" placeholder="Cuéntanos brevemente qué te atrae de construir Conniku." required></textarea>
+      </div>
+      <div class="form-group">
+        <label class="form-label">LinkedIn u otro perfil (opcional)</label>
+        <input class="form-input" type="url" placeholder="linkedin.com/in/tu-perfil" />
+      </div>
+      <button type="submit" class="btn-submit">Enviar mi perfil →</button>
+    </form>
+
+    <div class="modal-success" id="modal-success">
+      ✓ Perfil recibido. Te contactaremos cuando surja algo que encaje contigo. ¡Gracias por el interés en Conniku!
+    </div>
+  </div>
+</div>
+
+<footer style="border-top:1px solid var(--border);padding:24px 32px;display:flex;flex-wrap:wrap;justify-content:space-between;align-items:center;gap:12px;max-width:840px;margin:0 auto;">
+  <span style="font-size:11px;color:var(--text-4);font-family:'Geist Mono',monospace;">© 2026 Conniku SpA · RUT 78.395.702-7 · Antofagasta, Chile</span>
+  <nav style="display:flex;flex-wrap:wrap;gap:16px;">
+    <a href="terminos.html" style="font-size:11px;color:var(--text-4);text-decoration:none;" onmouseover="this.style.color='var(--text-2)'" onmouseout="this.style.color='var(--text-4)'">Términos</a>
+    <a href="privacidad.html" style="font-size:11px;color:var(--text-4);text-decoration:none;" onmouseover="this.style.color='var(--text-2)'" onmouseout="this.style.color='var(--text-4)'">Privacidad</a>
+    <a href="cookies.html" style="font-size:11px;color:var(--text-4);text-decoration:none;" onmouseover="this.style.color='var(--text-2)'" onmouseout="this.style.color='var(--text-4)'">Cookies</a>
+    <a href="soporte.html" style="font-size:11px;color:var(--text-4);text-decoration:none;" onmouseover="this.style.color='var(--text-2)'" onmouseout="this.style.color='var(--text-4)'">Soporte</a>
+    <a href="contacto.html" style="font-size:11px;color:var(--text-4);text-decoration:none;" onmouseover="this.style.color='var(--text-2)'" onmouseout="this.style.color='var(--text-4)'">Contacto</a>
+    <a href="prensa.html" style="font-size:11px;color:var(--text-4);text-decoration:none;" onmouseover="this.style.color='var(--text-2)'" onmouseout="this.style.color='var(--text-4)'">Prensa</a>
+    <a href="empleo-conniku.html" style="font-size:11px;color:var(--green);text-decoration:none;">Trabaja con nosotros</a>
+  </nav>
+</footer>
+
+<script>
+function openModal(type) {
+  var modal = document.getElementById('modal');
+  document.getElementById('profile-type').value = type;
+  if (type === 'conniku') {
+    document.getElementById('modal-type').textContent = 'PERFIL CONNIKU COMPLETO';
+    document.getElementById('modal-title').textContent = 'Crea tu perfil Conniku';
+    document.getElementById('modal-sub').textContent = 'Acceso completo a la plataforma + visibilidad ante el equipo para futuras posiciones.';
+  } else {
+    document.getElementById('modal-type').textContent = 'PERFIL LABORAL';
+    document.getElementById('modal-title').textContent = 'Crea tu perfil laboral';
+    document.getElementById('modal-sub').textContent = 'Solo módulo de empleo. Tu perfil visible ante Conniku sin necesidad de usar la plataforma completa.';
+  }
+  document.getElementById('modal-success').style.display = 'none';
+  modal.querySelector('form').style.display = '';
+  modal.classList.add('open');
+}
+function closeModal() {
+  document.getElementById('modal').classList.remove('open');
+}
+function handleProfileSubmit(e) {
+  e.preventDefault();
+  e.target.style.display = 'none';
+  document.getElementById('modal-success').style.display = 'block';
+}
+document.getElementById('modal').addEventListener('click', function(e) {
+  if (e.target === this) closeModal();
+});
+</script>
+<script src="../shared/theme-loader.js"></script>
+<script src="../shared/hex-nebula/hex-nebula.js"></script>
+<script>
+  HexNebula.mount(document.getElementById('bg-nebula'), {
+    hexSize: 34,
+    intensity: 0.5,
+    bgColor: '#0A0C12'
+  });
+</script>
+</body>
+</html>

@@ -1,0 +1,332 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>Hex · Estilos de Módulo · Conniku</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"/>
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Funnel+Display:wght@800;900&family=Inter:wght@400;500;600&family=Geist+Mono:wght@400;500;600&display=swap"/>
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+html,body{width:100%;height:100%;overflow:hidden;background:#050608}
+canvas{position:fixed;inset:0;display:block}
+
+.engine{
+  position:fixed;left:50%;top:50%;transform:translate(-50%,-50%);
+  width:84px;height:84px;border-radius:50%;z-index:20;pointer-events:none;
+  background:radial-gradient(circle at 38% 30%,#001810,#060809);
+  border:1.5px solid rgba(0,194,122,.5);
+  display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;
+  box-shadow:0 0 22px rgba(0,194,122,.18),0 0 44px rgba(0,194,122,.07),inset 0 1px 0 rgba(0,194,122,.15);
+}
+.engine::before{content:'';position:absolute;inset:-9px;border-radius:50%;border:1px solid rgba(0,194,122,.12);animation:br 3.5s ease-in-out infinite;}
+.engine::after{content:'';position:absolute;inset:-18px;border-radius:50%;border:1px dashed rgba(0,194,122,.07);animation:br 3.5s .7s ease-in-out infinite;}
+@keyframes br{0%,100%{opacity:.5;transform:scale(1);}50%{opacity:1;transform:scale(1.02);}}
+.u-icon{width:32px;height:32px;border-radius:7px;background:linear-gradient(135deg,#8AEAC0,#006E4A);display:grid;place-items:center;transform:rotate(-12deg);box-shadow:0 2px 8px rgba(0,0,0,.5);}
+.u-letter{font-family:'Funnel Display',sans-serif;font-weight:900;font-size:16px;color:#0D0F10;letter-spacing:-.055em;transform:rotate(12deg);display:flex;align-items:baseline;}
+.u-dot{color:#FF4A1C}
+.eng-sub{font-family:'Geist Mono',monospace;font-size:7px;color:rgba(0,194,122,.65);letter-spacing:.2em}
+
+/* UI */
+.ui{position:fixed;inset:0;pointer-events:none;z-index:30;display:flex;flex-direction:column;justify-content:space-between;padding:22px 30px}
+.top{display:flex;justify-content:space-between;align-items:flex-start;gap:16px}
+.cid{display:flex;flex-direction:column;gap:5px}
+.ccode{font-family:'Geist Mono',monospace;font-size:9px;letter-spacing:.18em;color:rgba(0,194,122,.6);background:rgba(0,194,122,.07);border:1px solid rgba(0,194,122,.2);padding:3px 8px;border-radius:4px;width:fit-content}
+.cname{font-family:'Funnel Display',sans-serif;font-weight:900;font-size:26px;color:#F5F4EF;letter-spacing:-.04em;line-height:1}
+.ctag{font-family:'Geist Mono',monospace;font-size:9px;color:rgba(245,244,239,.26);letter-spacing:.06em}
+.tabs{display:flex;gap:5px;pointer-events:all;flex-wrap:wrap;justify-content:flex-end}
+.tab{background:rgba(5,6,8,.75);border:1px solid rgba(245,244,239,.1);color:rgba(245,244,239,.32);font-family:'Geist Mono',monospace;font-size:9px;letter-spacing:.1em;padding:8px 14px;border-radius:7px;cursor:pointer;transition:all .18s;backdrop-filter:blur(8px)}
+.tab:hover{border-color:rgba(0,194,122,.35);color:rgba(0,194,122,.7)}
+.tab.active{border-color:rgba(0,194,122,.65);color:#00C27A;background:rgba(0,194,122,.09)}
+.bottom{display:flex;justify-content:space-between;align-items:flex-end;gap:16px}
+.legend{display:flex;gap:14px;flex-wrap:wrap}
+.li{display:flex;align-items:center;gap:5px;font-family:'Geist Mono',monospace;font-size:9px;letter-spacing:.04em}
+.ld{width:7px;height:7px;border-radius:50%}
+.meta{font-family:'Geist Mono',monospace;font-size:9px;color:rgba(245,244,239,.14);text-align:right}
+.meta span{display:block;margin-bottom:2px}
+.meta b{color:rgba(0,194,122,.38)}
+#fade{position:fixed;inset:0;background:#050608;z-index:99;pointer-events:none;opacity:0;transition:opacity .22s}
+</style>
+</head>
+<body>
+<canvas id="cvs"></canvas>
+
+<div class="engine">
+  <div class="u-icon"><span class="u-letter">u<span class="u-dot">.</span></span></div>
+  <span class="eng-sub">ORBIT</span>
+</div>
+<div id="fade"></div>
+
+<div class="ui">
+  <div class="top">
+    <div class="cid">
+      <span class="ccode" id="cCode">1</span>
+      <span class="cname" id="cName">HEXÁGONO</span>
+      <span class="ctag" id="cTag">Módulos como celdas de la cuadrícula — coherencia total con el fondo</span>
+    </div>
+    <div class="tabs">
+      <button class="tab active" onclick="sw(0,this)">1 · HEXÁGONO</button>
+      <button class="tab" onclick="sw(1,this)">2 · CHIP</button>
+      <button class="tab" onclick="sw(2,this)">3 · RETÍCULA</button>
+      <button class="tab" onclick="sw(3,this)">4 · ETIQUETA</button>
+    </div>
+  </div>
+  <div class="bottom">
+    <div class="legend" id="leg"></div>
+    <div class="meta">
+      <span><b>conn</b> · conexión</span>
+      <span><b>iku</b> · 行く · movimiento</span>
+    </div>
+  </div>
+</div>
+
+<script>
+const cvs=document.getElementById('cvs');
+const ctx=cvs.getContext('2d');
+let W,H,raf=null,cur=0;
+function resize(){W=cvs.width=innerWidth;H=cvs.height=innerHeight;}
+resize(); window.addEventListener('resize',()=>{resize();boot();});
+
+const PLANETS=[
+  {name:'conniku.',  short:'u.',r: 95, spd:.020, a:0.5, col:[0,194,122],  lc:'#8AEAC0'},
+  {name:'tutores',   short:'T', r:158, spd:.013,  a:1.8, col:[196,154,58], lc:'#FFD87A'},
+  {name:'empleos',   short:'E', r:221, spd:.0085, a:3.2, col:[0,150,204],  lc:'#67E8F9'},
+  {name:'entrar',    short:'→', r:284, spd:.0062, a:4.7, col:[107,78,255], lc:'#C4B5FD'},
+  {name:'crear',     short:'+', r:347, spd:.0045, a:6.1, col:[255,74,28],  lc:'#FFBDAB'},
+];
+
+const STYLES=[
+  {code:'1',name:'HEXÁGONO', tag:'Módulos como celdas de la cuadrícula — coherencia total con el fondo'},
+  {code:'2',name:'CHIP',     tag:'Pastilla tecnológica con abreviatura — compacto y legible'},
+  {code:'3',name:'RETÍCULA', tag:'Punto de mira — precisión, enfoque, sistema de targeting'},
+  {code:'4',name:'ETIQUETA', tag:'Texto flotante con indicador de color — máxima legibilidad'},
+];
+
+// Build legend
+const leg=document.getElementById('leg');
+PLANETS.forEach(p=>{
+  const d=document.createElement('div'); d.className='li';
+  d.innerHTML=`<div class="ld" style="background:rgb(${p.col})"></div><span style="color:${p.lc}">${p.name}</span>`;
+  leg.appendChild(d);
+});
+
+function sw(idx,btn){
+  const f=document.getElementById('fade'); f.style.opacity='1';
+  setTimeout(()=>{
+    cur=idx; document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active')); btn.classList.add('active');
+    const s=STYLES[idx];
+    document.getElementById('cCode').textContent=s.code;
+    document.getElementById('cName').textContent=s.name;
+    document.getElementById('cTag').textContent=s.tag;
+    boot(); setTimeout(()=>{f.style.opacity='0';},80);
+  },220);
+}
+
+function boot(){cancelAnimationFrame(raf); ctx.fillStyle='#050608'; ctx.fillRect(0,0,W,H); run();}
+
+/* ── Hex background (shared) ── */
+const HS=28; const SQ3=Math.sqrt(3);
+let hexes=[];
+function buildHexes(){
+  hexes=[];
+  const cols=Math.ceil(W/(HS*SQ3))+3, rows=Math.ceil(H/(HS*1.5))+3;
+  for(let r=0;r<rows;r++) for(let c=0;c<cols;c++){
+    const ox=(r%2)*HS*SQ3*.5;
+    hexes.push({cx:c*HS*SQ3+ox-HS*SQ3, cy:r*HS*1.5-HS*1.5, glow:0, cr:0,cg:194,cb:122});
+  }
+}
+buildHexes();
+window.addEventListener('resize',buildHexes);
+
+function hexPath(cx,cy,s){
+  ctx.beginPath();
+  for(let i=0;i<6;i++){const a=Math.PI/180*(60*i-30); i===0?ctx.moveTo(cx+s*Math.cos(a),cy+s*Math.sin(a)):ctx.lineTo(cx+s*Math.cos(a),cy+s*Math.sin(a));}
+  ctx.closePath();
+}
+
+function drawHexBg(){
+  for(const h of hexes){
+    h.glow=Math.max(0,h.glow-.018);
+    for(const p of PLANETS){
+      const d=Math.hypot(h.cx-p.x,h.cy-p.y), rng=HS*4;
+      if(d<rng){const s=(1-d/rng); if(s>h.glow){h.glow=s;h.cr=p.col[0];h.cg=p.col[1];h.cb=p.col[2];}}
+    }
+    hexPath(h.cx,h.cy,HS*.88);
+    ctx.fillStyle=`rgba(${h.cr},${h.cg},${h.cb},${h.glow*.07})`; ctx.fill();
+    ctx.strokeStyle=`rgba(${h.cr},${h.cg},${h.cb},${.038+h.glow*.24})`; ctx.lineWidth=.65; ctx.stroke();
+    if(h.glow>.22){ctx.beginPath();ctx.arc(h.cx,h.cy,1+h.glow*1.8,0,Math.PI*2);ctx.fillStyle=`rgba(${h.cr},${h.cg},${h.cb},${h.glow*.65})`;ctx.fill();}
+  }
+  // Centre glow
+  const cg=ctx.createRadialGradient(W/2,H/2,0,W/2,H/2,90);
+  cg.addColorStop(0,'rgba(0,194,122,.10)');cg.addColorStop(1,'rgba(0,194,122,0)');
+  ctx.fillStyle=cg;ctx.beginPath();ctx.arc(W/2,H/2,90,0,Math.PI*2);ctx.fill();
+}
+
+function drawRings(){
+  PLANETS.forEach((p,i)=>{
+    ctx.beginPath();ctx.arc(W/2,H/2,p.r,0,Math.PI*2);
+    const[r,g,b]=p.col;
+    ctx.strokeStyle=`rgba(${r},${g},${b},0.10)`;ctx.lineWidth=.7;
+    ctx.setLineDash(i%2===0?[]:[ 3,5]);ctx.stroke();ctx.setLineDash([]);
+  });
+}
+
+function stepPlanets(){PLANETS.forEach(p=>{p.a+=p.spd;p.x=W/2+Math.cos(p.a)*p.r;p.y=H/2+Math.sin(p.a)*p.r;});}
+
+/* ── Label chip ── */
+function drawLabel(x,y,text,col){
+  ctx.save();
+  ctx.font='500 9.5px "Geist Mono",monospace';
+  const tw=ctx.measureText(text).width, pw=tw+14, ph=15, rd=3;
+  const px=x-pw/2, py=y;
+  ctx.beginPath();ctx.moveTo(px+rd,py);ctx.lineTo(px+pw-rd,py);
+  ctx.arcTo(px+pw,py,px+pw,py+ph/2,rd);ctx.arcTo(px+pw,py+ph,px+pw-rd,py+ph,rd);
+  ctx.lineTo(px+rd,py+ph);ctx.arcTo(px,py+ph,px,py+ph/2,rd);ctx.arcTo(px,py,px+rd,py,rd);
+  ctx.closePath();
+  ctx.fillStyle='rgba(4,5,7,.82)';ctx.fill();
+  ctx.fillStyle=col;ctx.textAlign='center';ctx.fillText(text,x,py+10.5);
+  ctx.restore();
+}
+
+/* ══ MODULE STYLE 1 · HEXÁGONO ══ */
+function drawHexModule(p){
+  const[r,g,b]=p.col, S=16;
+  ctx.save(); ctx.translate(p.x,p.y);
+  hexPath(0,0,S);
+  ctx.fillStyle=`rgba(${r},${g},${b},.10)`;ctx.fill();
+  ctx.strokeStyle=`rgba(${r},${g},${b},.80)`;ctx.lineWidth=1.1;ctx.stroke();
+  // subtle inner hex
+  hexPath(0,0,S*.55);
+  ctx.strokeStyle=`rgba(${r},${g},${b},.22)`;ctx.lineWidth=.7;ctx.stroke();
+  // centre dot
+  ctx.beginPath();ctx.arc(0,0,2.2,0,Math.PI*2);
+  ctx.fillStyle=`rgba(${r},${g},${b},1)`;ctx.fill();
+  // glow
+  ctx.shadowColor=`rgb(${r},${g},${b})`;ctx.shadowBlur=10;
+  ctx.strokeStyle=`rgba(${r},${g},${b},.55)`;ctx.lineWidth=1.1;
+  hexPath(0,0,S); ctx.stroke(); ctx.shadowBlur=0;
+  ctx.restore();
+  drawLabel(p.x,p.y+S+6,p.name,p.lc);
+}
+
+/* ══ MODULE STYLE 2 · CHIP ══ */
+function drawChipModule(p){
+  const[r,g,b]=p.col, CW=28, CH=22, RD=4;
+  ctx.save(); ctx.translate(p.x,p.y); ctx.rotate(-.06);
+  const x=-CW/2, y=-CH/2;
+  // Rounded rect
+  ctx.beginPath();ctx.moveTo(x+RD,y);ctx.lineTo(x+CW-RD,y);
+  ctx.arcTo(x+CW,y,x+CW,y+RD,RD);ctx.lineTo(x+CW,y+CH-RD);
+  ctx.arcTo(x+CW,y+CH,x+CW-RD,y+CH,RD);ctx.lineTo(x+RD,y+CH);
+  ctx.arcTo(x,y+CH,x,y+CH-RD,RD);ctx.lineTo(x,y+RD);
+  ctx.arcTo(x,y,x+RD,y,RD);ctx.closePath();
+  ctx.fillStyle=`rgba(${r},${g},${b},.10)`;ctx.fill();
+  ctx.strokeStyle=`rgba(${r},${g},${b},.75)`;ctx.lineWidth=1;ctx.stroke();
+  // Top-left indicator corner
+  ctx.beginPath();ctx.moveTo(x,y+6);ctx.lineTo(x,y+RD);ctx.arcTo(x,y,x+RD,y,RD);ctx.lineTo(x+6,y);
+  ctx.strokeStyle=`rgba(${r},${g},${b},1)`;ctx.lineWidth=1.4;ctx.stroke();
+  // Glow on border
+  ctx.shadowColor=`rgb(${r},${g},${b})`;ctx.shadowBlur=8;
+  ctx.strokeStyle=`rgba(${r},${g},${b},.4)`;ctx.lineWidth=1;
+  ctx.beginPath();ctx.moveTo(x+RD,y);ctx.lineTo(x+CW-RD,y);ctx.arcTo(x+CW,y,x+CW,y+RD,RD);ctx.lineTo(x+CW,y+CH-RD);ctx.arcTo(x+CW,y+CH,x+CW-RD,y+CH,RD);ctx.lineTo(x+RD,y+CH);ctx.arcTo(x,y+CH,x,y+CH-RD,RD);ctx.lineTo(x,y+RD);ctx.arcTo(x,y,x+RD,y,RD);ctx.closePath();
+  ctx.stroke(); ctx.shadowBlur=0;
+  ctx.restore();
+  // Abbreviation
+  ctx.save();ctx.font='700 10px "Geist Mono",monospace';ctx.textAlign='center';
+  ctx.fillStyle=p.lc;ctx.fillText(p.short,p.x,p.y+3.5);ctx.restore();
+  drawLabel(p.x,p.y+CH/2+6,p.name,p.lc);
+}
+
+/* ══ MODULE STYLE 3 · RETÍCULA ══ */
+function drawReticleModule(p){
+  const[r,g,b]=p.col, OR=15, IR=OR*.52, TL=5;
+  ctx.save();ctx.translate(p.x,p.y);
+  // Outer ring
+  ctx.beginPath();ctx.arc(0,0,OR,0,Math.PI*2);
+  ctx.strokeStyle=`rgba(${r},${g},${b},.78)`;ctx.lineWidth=1;ctx.stroke();
+  // Inner ring
+  ctx.beginPath();ctx.arc(0,0,IR,0,Math.PI*2);
+  ctx.strokeStyle=`rgba(${r},${g},${b},.30)`;ctx.lineWidth=.7;ctx.stroke();
+  // Centre dot
+  ctx.beginPath();ctx.arc(0,0,2,0,Math.PI*2);
+  ctx.fillStyle=`rgba(${r},${g},${b},1)`;ctx.fill();
+  // Compass ticks outside ring
+  [0,Math.PI/2,Math.PI,Math.PI*3/2].forEach(a=>{
+    ctx.beginPath();ctx.moveTo(Math.cos(a)*(OR+2),Math.sin(a)*(OR+2));
+    ctx.lineTo(Math.cos(a)*(OR+TL),Math.sin(a)*(OR+TL));
+    ctx.strokeStyle=`rgba(${r},${g},${b},.65)`;ctx.lineWidth=1;ctx.stroke();
+  });
+  // Crosshairs (very faint inside)
+  ctx.strokeStyle=`rgba(${r},${g},${b},.14)`;ctx.lineWidth=.6;ctx.setLineDash([2,3]);
+  ctx.beginPath();ctx.moveTo(-OR*.8,0);ctx.lineTo(OR*.8,0);ctx.stroke();
+  ctx.beginPath();ctx.moveTo(0,-OR*.8);ctx.lineTo(0,OR*.8);ctx.stroke();
+  ctx.setLineDash([]);
+  // Glow
+  ctx.shadowColor=`rgb(${r},${g},${b})`;ctx.shadowBlur=9;
+  ctx.beginPath();ctx.arc(0,0,OR,0,Math.PI*2);
+  ctx.strokeStyle=`rgba(${r},${g},${b},.35)`;ctx.lineWidth=1;ctx.stroke();
+  ctx.shadowBlur=0;
+  ctx.restore();
+  drawLabel(p.x,p.y+OR+6,p.name,p.lc);
+}
+
+/* ══ MODULE STYLE 4 · ETIQUETA ══ */
+function drawTagModule(p){
+  const[r,g,b]=p.col;
+  const DR=4.5;
+  ctx.save();
+  ctx.font='600 10px "Geist Mono",monospace';
+  const tw=ctx.measureText(p.name).width;
+  const PAD=9, H2=20, GAP=7, RD=H2/2;
+  const pw=DR*2+GAP+tw+PAD*2;
+  const px=p.x-pw/2, py=p.y-H2/2;
+  // Pill
+  ctx.beginPath();
+  ctx.moveTo(px+RD,py);ctx.lineTo(px+pw-RD,py);
+  ctx.arcTo(px+pw,py,px+pw,py+H2/2,RD);ctx.arcTo(px+pw,py+H2,px+pw-RD,py+H2,RD);
+  ctx.lineTo(px+RD,py+H2);ctx.arcTo(px,py+H2,px,py+H2/2,RD);ctx.arcTo(px,py,px+RD,py,RD);
+  ctx.closePath();
+  ctx.fillStyle='rgba(4,5,7,.80)';ctx.fill();
+  ctx.strokeStyle=`rgba(${r},${g},${b},.48)`;ctx.lineWidth=.9;ctx.stroke();
+  // Glow border
+  ctx.shadowColor=`rgb(${r},${g},${b})`;ctx.shadowBlur=7;
+  ctx.strokeStyle=`rgba(${r},${g},${b},.22)`;ctx.lineWidth=.9;ctx.stroke();
+  ctx.shadowBlur=0;
+  // Dot
+  ctx.beginPath();ctx.arc(px+PAD+DR,py+H2/2,DR,0,Math.PI*2);
+  ctx.fillStyle=`rgba(${r},${g},${b},1)`;ctx.fill();
+  // Separator line
+  ctx.beginPath();ctx.moveTo(px+PAD+DR*2+GAP/2,py+4);ctx.lineTo(px+PAD+DR*2+GAP/2,py+H2-4);
+  ctx.strokeStyle=`rgba(${r},${g},${b},.2)`;ctx.lineWidth=.8;ctx.stroke();
+  // Text
+  ctx.fillStyle=p.lc;ctx.textAlign='left';
+  ctx.fillText(p.name,px+PAD+DR*2+GAP,py+H2/2+3.5);
+  ctx.restore();
+}
+
+/* ── Main render loop ── */
+const drawFns=[drawHexModule,drawChipModule,drawReticleModule,drawTagModule];
+
+function run(){
+  function frame(){
+    ctx.fillStyle='rgba(5,6,8,.15)';ctx.fillRect(0,0,W,H);
+    stepPlanets();
+    drawHexBg();
+    drawRings();
+    // Orbit trail arcs
+    PLANETS.forEach(p=>{
+      const[r,g,b]=p.col;
+      ctx.beginPath();ctx.arc(W/2,H/2,p.r,p.a-.18,p.a);
+      ctx.strokeStyle=`rgba(${r},${g},${b},.22)`;ctx.lineWidth=1.4;ctx.stroke();
+    });
+    PLANETS.forEach(p=>drawFns[cur](p));
+    raf=requestAnimationFrame(frame);
+  }
+  raf=requestAnimationFrame(frame);
+}
+
+boot();
+</script>
+</body>
+</html>

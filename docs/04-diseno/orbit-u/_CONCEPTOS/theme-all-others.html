@@ -1,0 +1,687 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>Todos los temas · Conniku</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"/>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Funnel+Display:wght@700;800;900&family=Inter:wght@400;500;600;700&family=Geist+Mono:wght@400;500;600&display=swap"/>
+<link rel="stylesheet" href="../shared/themes.css"/>
+<style>
+* { box-sizing: border-box; margin: 0; padding: 0; }
+
+body {
+  background: #0A0E18;
+  font-family: 'Inter', sans-serif;
+  font-size: 13px;
+  -webkit-font-smoothing: antialiased;
+  color: #C8D4E8;
+  min-height: 100vh;
+}
+
+/* ══ HEADER ══ */
+.header {
+  background: #0D1220;
+  border-bottom: 1px solid rgba(165,195,240,.10);
+  padding: 18px 32px;
+  position: sticky; top: 0; z-index: 100;
+  display: flex; align-items: center; gap: 16px;
+}
+.header-title { font-family: 'Funnel Display', sans-serif; font-weight: 900; font-size: 18px; color: #E0EAF8; letter-spacing: -.3px; }
+.header-sub { font-family: 'Geist Mono', monospace; font-size: 10px; color: rgba(165,195,240,.4); letter-spacing: .14em; text-transform: uppercase; margin-left: 4px; }
+.header-count { margin-left: auto; font-family: 'Geist Mono', monospace; font-size: 11px; color: rgba(165,195,240,.35); }
+
+/* ══ FILTER TABS ══ */
+.filters {
+  background: #0D1220;
+  border-bottom: 1px solid rgba(165,195,240,.07);
+  padding: 10px 32px;
+  display: flex; gap: 6px; flex-wrap: wrap;
+  position: sticky; top: 61px; z-index: 99;
+}
+.ftab {
+  padding: 5px 14px; border-radius: 20px; cursor: pointer;
+  font-family: 'Geist Mono', monospace; font-size: 10px; font-weight: 600;
+  background: rgba(255,255,255,.05); border: 1px solid rgba(255,255,255,.08);
+  color: rgba(165,195,240,.5); transition: all .18s; letter-spacing: .04em;
+}
+.ftab:hover { background: rgba(255,255,255,.09); color: rgba(165,195,240,.8); }
+.ftab.on    { background: #00C27A; color: #0D0F10; border-color: transparent; }
+
+/* ══ SECTION ══ */
+.section { padding: 28px 32px 8px; }
+.section-title {
+  font-family: 'Geist Mono', monospace; font-size: 9px;
+  letter-spacing: .20em; text-transform: uppercase;
+  color: rgba(165,195,240,.30); margin-bottom: 18px;
+  padding-bottom: 10px; border-bottom: 1px solid rgba(165,195,240,.06);
+  display: flex; align-items: center; gap: 10px;
+}
+.section-title span { color: rgba(165,195,240,.15); }
+
+/* ══ GRID ══ */
+.theme-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(306px, 1fr));
+  gap: 20px;
+  margin-bottom: 44px;
+}
+
+/* ══ THEME CARD ══ */
+.tc {
+  border-radius: 14px; overflow: hidden; cursor: pointer;
+  border: 2px solid rgba(255,255,255,.06);
+  transition: all .22s; position: relative;
+  background: #0D1220;
+}
+.tc:hover { transform: translateY(-4px); box-shadow: 0 14px 44px rgba(0,0,0,.55); border-color: rgba(255,255,255,.18); }
+
+/* Swatch strip */
+.tc-swatch { height: 4px; }
+
+/* Preview container — clipping box */
+.tc-preview {
+  height: 232px;
+  overflow: hidden;
+  position: relative;
+}
+.tc-bg { position: absolute; inset: 0; background: var(--bg); }
+
+/* ════════════════════════════════════════════════
+   FB-MINI  —  Facebook layout escalado
+   Natural: 820px × ~620px  |  Scale: 0.373
+   Rendered: ~306px × ~231px
+   ════════════════════════════════════════════════ */
+.fb-mini {
+  width: 820px;
+  transform: scale(0.373);
+  transform-origin: top left;
+  position: relative; z-index: 2;
+  pointer-events: none;
+  user-select: none;
+}
+
+/* ── NAV ── */
+.fb-nav {
+  height: 48px; display: flex; align-items: center;
+  padding: 0 16px; gap: 12px;
+  background: var(--surface);
+  border-bottom: 2px solid var(--border);
+  box-shadow: 0 2px 6px rgba(0,0,0,.12);
+}
+.fb-logo {
+  width: 36px; height: 36px; border-radius: 9px;
+  background: #D9FF3A; flex-shrink: 0;
+  display: flex; align-items: center; justify-content: center;
+  font-family: 'Funnel Display', sans-serif; font-weight: 900; font-size: 28px; color: #0D0F10;
+}
+.fb-search {
+  width: 192px; height: 32px; border-radius: 16px;
+  background: var(--surface-2); border: 1px solid var(--border-2);
+  flex-shrink: 0;
+}
+.fb-ntabs { flex: 1; display: flex; justify-content: center; gap: 4px; }
+.fb-ntab {
+  width: 92px; height: 44px; border-radius: 8px;
+  display: flex; align-items: center; justify-content: center;
+  position: relative;
+}
+.fb-ntab-dot {
+  width: 22px; height: 22px; border-radius: 5px;
+  background: var(--surface-3);
+}
+.fb-ntab.on .fb-ntab-dot { background: var(--signature); }
+.fb-ntab.on::after {
+  content: ''; position: absolute; bottom: 0; left: 4px; right: 4px;
+  height: 3px; background: var(--signature); border-radius: 3px 3px 0 0;
+}
+.fb-nav-r { display: flex; gap: 8px; align-items: center; flex-shrink: 0; }
+.fb-nav-btn {
+  width: 32px; height: 32px; border-radius: 50%;
+  background: var(--surface-2); border: 1px solid var(--border-2);
+}
+.fb-nav-me { width: 32px; height: 32px; border-radius: 50%; background: var(--signature); }
+
+/* ── 3-COL BODY ── */
+.fb-body {
+  display: grid;
+  grid-template-columns: 192px 1fr 192px;
+  gap: 12px;
+  padding: 10px 12px 0;
+  background: var(--bg);
+  min-height: 572px;
+}
+
+/* LEFT SIDEBAR */
+.fb-left {}
+.fb-pm {
+  display: flex; align-items: center; gap: 9px;
+  padding: 6px 7px; border-radius: 8px; margin-bottom: 2px;
+}
+.fb-av-sig {
+  width: 32px; height: 32px; border-radius: 50%;
+  background: var(--signature); flex-shrink: 0;
+}
+.fb-pm-line {
+  flex: 1; height: 11px; border-radius: 6px;
+  background: var(--surface-3); max-width: 120px;
+}
+.fb-menu {
+  display: flex; align-items: center; gap: 9px;
+  padding: 6px 7px; border-radius: 8px; margin-bottom: 2px;
+}
+.fb-mico {
+  width: 32px; height: 32px; border-radius: 50%;
+  background: var(--surface-2); flex-shrink: 0;
+}
+.fb-mline { flex: 1; height: 10px; border-radius: 5px; background: var(--surface-3); }
+.fb-msep { height: 1px; background: var(--border-2); margin: 8px 4px; }
+.fb-msec { height: 10px; background: var(--surface-2); border-radius: 5px; width: 70px; margin: 4px 7px 6px; }
+
+/* FEED */
+.fb-feed { display: flex; flex-direction: column; gap: 10px; }
+
+/* Stories */
+.fb-stories {
+  background: var(--surface); border: 1px solid var(--border-2);
+  border-radius: 8px; padding: 8px 10px;
+  display: flex; gap: 6px;
+  box-shadow: 0 1px 3px rgba(0,0,0,.10);
+  overflow: hidden;
+}
+.fb-story {
+  width: 80px; height: 132px; border-radius: 10px; flex-shrink: 0;
+  position: relative; overflow: hidden;
+  border: 1px solid var(--border-2);
+}
+.fb-story.add {
+  background: var(--surface-2);
+  display: flex; flex-direction: column;
+}
+.fb-story.add .fb-story-top { flex: 1; background: var(--surface-3); border-bottom: 1px solid var(--border-2); }
+.fb-story.add .fb-story-plus {
+  position: absolute; top: 66px; left: 50%; transform: translateX(-50%);
+  width: 28px; height: 28px; border-radius: 50%;
+  background: var(--signature); border: 3px solid var(--surface); z-index: 2;
+}
+.fb-story.add .fb-story-label {
+  height: 11px; background: var(--surface-3); border-radius: 5px;
+  width: 60px; margin: 38px auto 0;
+}
+.fb-story.s1 {
+  background: linear-gradient(160deg, var(--signature) 0%, var(--surface-3) 100%);
+}
+.fb-story.s2 {
+  background: linear-gradient(200deg, var(--surface-3) 0%, var(--surface-2) 100%);
+}
+.fb-story.s3 {
+  background: linear-gradient(140deg, var(--surface-2) 0%, var(--surface-3) 100%);
+}
+.fb-story-av {
+  position: absolute; top: 8px; left: 8px;
+  width: 28px; height: 28px; border-radius: 50%;
+  background: var(--signature); border: 3px solid var(--surface);
+}
+.fb-story.s2 .fb-story-av,
+.fb-story.s3 .fb-story-av { background: var(--surface-2); border-color: var(--border); }
+.fb-story-name {
+  position: absolute; bottom: 7px; left: 8px; right: 8px;
+  height: 9px; background: rgba(255,255,255,.25); border-radius: 4px;
+}
+
+/* Composer */
+.fb-composer {
+  background: var(--surface); border: 1px solid var(--border-2);
+  border-radius: 8px; padding: 10px 14px;
+  display: flex; align-items: center; gap: 10px;
+  box-shadow: 0 1px 3px rgba(0,0,0,.10);
+}
+.fb-cav { width: 38px; height: 38px; border-radius: 50%; background: var(--signature); flex-shrink: 0; }
+.fb-cpill {
+  flex: 1; height: 38px; border-radius: 19px;
+  background: var(--surface-2); border: 1px solid var(--border-2);
+}
+.fb-cdiv { height: 1px; background: var(--border-2); margin: 8px 0; }
+.fb-cacts { display: flex; gap: 4px; }
+.fb-cact {
+  flex: 1; height: 30px; border-radius: 6px;
+  background: var(--surface-2);
+}
+
+/* Post */
+.fb-post {
+  background: var(--surface); border: 1px solid var(--border-2);
+  border-radius: 8px; overflow: hidden;
+  box-shadow: 0 1px 3px rgba(0,0,0,.10);
+}
+.fb-ph { display: flex; align-items: center; gap: 10px; padding: 11px 14px 6px; }
+.fb-pav {
+  width: 38px; height: 38px; border-radius: 50%; flex-shrink: 0;
+  background: var(--surface-2); border: 1px solid var(--border-2);
+}
+.fb-pmeta { flex: 1; display: flex; flex-direction: column; gap: 5px; }
+.fb-pname { height: 11px; border-radius: 6px; background: var(--surface-3); width: 140px; }
+.fb-ptime { height: 8px; border-radius: 4px; background: var(--surface-2); width: 90px; }
+.fb-pbody { padding: 0 14px 8px; display: flex; flex-direction: column; gap: 6px; }
+.fb-pline { height: 9px; border-radius: 5px; background: var(--surface-3); }
+.fb-pline.w100 { width: 100%; }
+.fb-pline.w80  { width: 80%; }
+.fb-pline.w60  { width: 60%; }
+.fb-pmedia {
+  height: 148px; background: var(--surface-2);
+  border-top: 1px solid var(--border-2);
+  border-bottom: 1px solid var(--border-2);
+  display: flex; align-items: center; justify-content: center;
+}
+.fb-pmedia-circle {
+  width: 52px; height: 52px; border-radius: 50%; background: var(--surface-3);
+}
+.fb-preact {
+  padding: 7px 14px; display: flex; align-items: center; gap: 6px;
+  border-bottom: 1px solid var(--border-2);
+}
+.fb-rdots { display: flex; }
+.fb-rd {
+  width: 18px; height: 18px; border-radius: 50%;
+  border: 2px solid var(--surface); margin-left: -4px;
+}
+.fb-rd:first-child { margin-left: 0; }
+.fb-rd.sig { background: var(--signature); }
+.fb-rd.red { background: #E41E3F; }
+.fb-rd.yel { background: #F5C518; }
+.fb-rcount { height: 9px; width: 100px; border-radius: 5px; background: var(--surface-2); margin-left: 6px; }
+.fb-rmore  { height: 9px; width: 80px; border-radius: 5px; background: var(--surface-2); margin-left: auto; }
+.fb-pacts { display: flex; padding: 5px 8px; gap: 4px; }
+.fb-pa {
+  flex: 1; height: 34px; border-radius: 7px;
+  background: transparent;
+  display: flex; align-items: center; justify-content: center; gap: 5px;
+}
+.fb-pa:hover { background: var(--surface-2); }
+.fb-pa.liked { background: var(--banner-g1, rgba(100,100,100,.08)); }
+.fb-pa-icon { width: 16px; height: 16px; border-radius: 4px; background: var(--surface-3); }
+.fb-pa-icon.sig { background: var(--signature); opacity: .85; }
+.fb-pa-txt { height: 9px; border-radius: 4px; background: var(--surface-3); width: 52px; }
+.fb-pa.liked .fb-pa-txt { background: var(--signature); opacity: .5; }
+
+/* RIGHT PANEL */
+.fb-right {}
+.fb-sp {
+  background: var(--surface); border: 1px solid var(--border-2);
+  border-radius: 8px; overflow: hidden; margin-bottom: 14px;
+  box-shadow: 0 1px 3px rgba(0,0,0,.08);
+}
+.fb-sp-img {
+  height: 86px;
+  background: linear-gradient(135deg,
+    var(--banner-g1, rgba(100,100,100,.18)),
+    var(--banner-g2, rgba(100,100,100,.06)));
+  border-bottom: 1px solid var(--border-2);
+  display: flex; align-items: center; justify-content: center;
+}
+.fb-sp-blob { width: 44px; height: 44px; border-radius: 50%; background: var(--signature); opacity: .7; }
+.fb-sp-body { padding: 9px 12px 12px; display: flex; flex-direction: column; gap: 5px; }
+.fb-sp-name { height: 10px; background: var(--surface-3); border-radius: 5px; width: 130px; }
+.fb-sp-desc { height: 8px; background: var(--surface-2); border-radius: 4px; width: 160px; }
+.fb-sp-btn  { height: 30px; margin-top: 4px; border-radius: 6px; background: var(--surface-2); border: 1px solid var(--border); }
+
+.fb-rp-title { height: 14px; background: var(--surface-3); border-radius: 7px; width: 90px; margin-bottom: 12px; margin-top: 4px; }
+.fb-ct {
+  display: flex; align-items: center; gap: 9px;
+  padding: 5px 4px; border-radius: 7px; margin-bottom: 3px;
+}
+.fb-ctav {
+  width: 30px; height: 30px; border-radius: 50%; flex-shrink: 0;
+  background: var(--surface-2); border: 1px solid var(--border-2);
+  position: relative;
+}
+.fb-ctav::after {
+  content: ''; position: absolute; bottom: 0; right: 0;
+  width: 9px; height: 9px; border-radius: 50%;
+  background: #31A24C; border: 2px solid var(--surface);
+}
+.fb-ctname { flex: 1; height: 9px; border-radius: 5px; background: var(--surface-3); }
+
+.fb-footer { display: flex; flex-wrap: wrap; gap: 5px 10px; margin-top: 16px; padding: 0 4px; }
+.fb-flink { height: 8px; border-radius: 4px; background: var(--surface-2); }
+
+/* INFO BAR */
+.tc-info {
+  background: #0D1220; padding: 10px 14px;
+  display: flex; align-items: center; gap: 8px;
+  border-top: 1px solid rgba(255,255,255,.06);
+}
+.tc-name { font-family: 'Geist Mono', monospace; font-size: 11px; font-weight: 600; color: #C8D4E8; flex: 1; }
+.tc-sig-dot { width: 10px; height: 10px; border-radius: 50%; background: var(--signature); flex-shrink: 0; }
+.tc-tag { font-family: 'Geist Mono', monospace; font-size: 9px; padding: 2px 7px; border-radius: 20px; letter-spacing: .05em; font-weight: 600; }
+.tc-tag.dark  { background: rgba(255,255,255,.08); color: rgba(165,195,240,.5); }
+.tc-tag.light { background: rgba(255,255,255,.15); color: rgba(165,195,240,.75); }
+</style>
+</head>
+<body>
+
+<div class="header">
+  <!-- LOGO PENDIENTE -->
+  <div>
+    <span class="header-title">Temas disponibles</span>
+    <span class="header-sub">· excluye oficiales 01–04</span>
+  </div>
+  <div class="header-count" id="count">25 temas</div>
+</div>
+
+<div class="filters">
+  <div class="ftab on" data-f="all">Todos</div>
+  <div class="ftab" data-f="dark">🌙 Dark</div>
+  <div class="ftab" data-f="light">☀️ Light</div>
+  <div class="ftab" data-f="original">Originales</div>
+  <div class="ftab" data-f="contrast">Contraste v2</div>
+</div>
+
+<div class="section" id="main-section"></div>
+
+<script>
+/* ═══════════════════════════════════════════════
+   DATA
+   ═══════════════════════════════════════════════ */
+const GROUPS = [
+  {
+    label: 'DARK ORIGINALES', mode: 'dark', set: 'original',
+    themes: ['profundo-dark','ember-dark','cosmos-dark','forest-dark','punk-dark','ocean-dark','amber-dark']
+  },
+  {
+    label: 'LIGHT ORIGINALES', mode: 'light', set: 'original',
+    themes: ['ember-light','cosmos-light','forest-light','punk-light','ocean-light','amber-light']
+  },
+  {
+    label: 'DARK · CONTRASTE V2', mode: 'dark', set: 'contrast',
+    themes: ['ember-dk','cosmos-dk','forest-dk','ocean-dk','amber-dk','navy-dk']
+  },
+  {
+    label: 'LIGHT · CONTRASTE V2', mode: 'light', set: 'contrast',
+    themes: ['ember-c','cosmos-c','forest-c','ocean-c','amber-c','navy-l']
+  },
+];
+
+/* ═══════════════════════════════════════════════
+   HTML template  —  Facebook mini layout
+   ═══════════════════════════════════════════════ */
+function fbMini() {
+  return `
+  <div class="fb-mini">
+    <!-- NAV -->
+    <div class="fb-nav">
+      <div class="fb-brand" style="display:flex;align-items:center;gap:8px;flex-shrink:0">
+        <div class="fb-logo">u</div>
+        <div class="fb-search"></div>
+      </div>
+      <div class="fb-ntabs">
+        <div class="fb-ntab on"><div class="fb-ntab-dot"></div></div>
+        <div class="fb-ntab"><div class="fb-ntab-dot"></div></div>
+        <div class="fb-ntab"><div class="fb-ntab-dot"></div></div>
+        <div class="fb-ntab"><div class="fb-ntab-dot"></div></div>
+        <div class="fb-ntab"><div class="fb-ntab-dot"></div></div>
+      </div>
+      <div class="fb-nav-r">
+        <div class="fb-nav-btn"></div>
+        <div class="fb-nav-btn"></div>
+        <div class="fb-nav-btn"></div>
+        <div class="fb-nav-me"></div>
+      </div>
+    </div>
+
+    <!-- 3-COL BODY -->
+    <div class="fb-body">
+
+      <!-- LEFT -->
+      <div class="fb-left">
+        <div class="fb-pm">
+          <div class="fb-av-sig"></div>
+          <div class="fb-pm-line"></div>
+        </div>
+        <div class="fb-menu"><div class="fb-mico"></div><div class="fb-mline" style="width:100px"></div></div>
+        <div class="fb-menu"><div class="fb-mico"></div><div class="fb-mline" style="width:88px"></div></div>
+        <div class="fb-menu"><div class="fb-mico"></div><div class="fb-mline" style="width:110px"></div></div>
+        <div class="fb-menu"><div class="fb-mico"></div><div class="fb-mline" style="width:78px"></div></div>
+        <div class="fb-msep"></div>
+        <div class="fb-msec"></div>
+        <div class="fb-menu"><div class="fb-mico"></div><div class="fb-mline" style="width:92px"></div></div>
+        <div class="fb-menu"><div class="fb-mico"></div><div class="fb-mline" style="width:80px"></div></div>
+        <div class="fb-menu"><div class="fb-mico"></div><div class="fb-mline" style="width:104px"></div></div>
+      </div>
+
+      <!-- FEED -->
+      <div class="fb-feed">
+
+        <!-- Stories -->
+        <div class="fb-stories">
+          <div class="fb-story add">
+            <div class="fb-story-top"></div>
+            <div class="fb-story-plus"></div>
+            <div class="fb-story-label"></div>
+          </div>
+          <div class="fb-story s1">
+            <div class="fb-story-av"></div>
+            <div class="fb-story-name"></div>
+          </div>
+          <div class="fb-story s2">
+            <div class="fb-story-av"></div>
+            <div class="fb-story-name"></div>
+          </div>
+          <div class="fb-story s3">
+            <div class="fb-story-av"></div>
+            <div class="fb-story-name"></div>
+          </div>
+        </div>
+
+        <!-- Composer -->
+        <div class="fb-composer">
+          <div class="fb-cav"></div>
+          <div class="fb-cpill"></div>
+        </div>
+
+        <!-- POST 1 — con media -->
+        <div class="fb-post">
+          <div class="fb-ph">
+            <div class="fb-pav"></div>
+            <div class="fb-pmeta">
+              <div class="fb-pname"></div>
+              <div class="fb-ptime"></div>
+            </div>
+          </div>
+          <div class="fb-pbody">
+            <div class="fb-pline w100"></div>
+            <div class="fb-pline w80"></div>
+            <div class="fb-pline w60"></div>
+          </div>
+          <div class="fb-pmedia"><div class="fb-pmedia-circle"></div></div>
+          <div class="fb-preact">
+            <div class="fb-rdots">
+              <div class="fb-rd sig"></div>
+              <div class="fb-rd red"></div>
+              <div class="fb-rd yel"></div>
+            </div>
+            <div class="fb-rcount"></div>
+            <div class="fb-rmore"></div>
+          </div>
+          <div class="fb-pacts">
+            <div class="fb-pa liked">
+              <div class="fb-pa-icon sig"></div>
+              <div class="fb-pa-txt"></div>
+            </div>
+            <div class="fb-pa">
+              <div class="fb-pa-icon"></div>
+              <div class="fb-pa-txt"></div>
+            </div>
+            <div class="fb-pa">
+              <div class="fb-pa-icon"></div>
+              <div class="fb-pa-txt"></div>
+            </div>
+          </div>
+        </div>
+
+        <!-- POST 2 — sin media -->
+        <div class="fb-post">
+          <div class="fb-ph">
+            <div class="fb-pav"></div>
+            <div class="fb-pmeta">
+              <div class="fb-pname" style="width:110px"></div>
+              <div class="fb-ptime"></div>
+            </div>
+          </div>
+          <div class="fb-pbody">
+            <div class="fb-pline w100"></div>
+            <div class="fb-pline w80"></div>
+          </div>
+          <div class="fb-preact" style="border-bottom:none">
+            <div class="fb-rdots">
+              <div class="fb-rd red"></div>
+              <div class="fb-rd yel"></div>
+            </div>
+            <div class="fb-rcount" style="width:70px"></div>
+            <div class="fb-rmore"></div>
+          </div>
+          <div class="fb-pacts">
+            <div class="fb-pa"><div class="fb-pa-icon"></div><div class="fb-pa-txt"></div></div>
+            <div class="fb-pa"><div class="fb-pa-icon"></div><div class="fb-pa-txt"></div></div>
+            <div class="fb-pa"><div class="fb-pa-icon"></div><div class="fb-pa-txt"></div></div>
+          </div>
+        </div>
+
+      </div><!-- /fb-feed -->
+
+      <!-- RIGHT -->
+      <div class="fb-right">
+        <div class="fb-sp">
+          <div class="fb-sp-img"><div class="fb-sp-blob"></div></div>
+          <div class="fb-sp-body">
+            <div class="fb-sp-name"></div>
+            <div class="fb-sp-desc"></div>
+            <div class="fb-sp-btn"></div>
+          </div>
+        </div>
+        <div class="fb-rp-title"></div>
+        <div class="fb-ct"><div class="fb-ctav"></div><div class="fb-ctname"></div></div>
+        <div class="fb-ct"><div class="fb-ctav"></div><div class="fb-ctname" style="width:70%"></div></div>
+        <div class="fb-ct"><div class="fb-ctav"></div><div class="fb-ctname" style="width:80%"></div></div>
+        <div class="fb-ct"><div class="fb-ctav" style="opacity:.6"></div><div class="fb-ctname" style="width:60%"></div></div>
+        <div class="fb-footer">
+          <div class="fb-flink" style="width:50px"></div>
+          <div class="fb-flink" style="width:40px"></div>
+          <div class="fb-flink" style="width:55px"></div>
+          <div class="fb-flink" style="width:44px"></div>
+          <div class="fb-flink" style="width:48px"></div>
+        </div>
+      </div>
+
+    </div><!-- /fb-body -->
+  </div><!-- /fb-mini -->
+  `;
+}
+
+/* ═══════════════════════════════════════════════
+   CARD template
+   ═══════════════════════════════════════════════ */
+function cardHTML(theme, mode, set) {
+  const tagClass = mode === 'dark' ? 'dark' : 'light';
+  let tagLabel = mode === 'dark' ? 'DARK' : 'LIGHT';
+  if (set === 'contrast') tagLabel += ' v2';
+  return `
+    <div class="tc" data-theme="${theme}" data-mode="${mode}" data-set="${set}">
+      <div class="tc-swatch" data-scope="${theme}"></div>
+      <div class="tc-preview" data-scope="${theme}">
+        <div class="tc-bg"></div>
+        ${fbMini()}
+      </div>
+      <div class="tc-info" data-scope="${theme}">
+        <div class="tc-name">${theme}</div>
+        <div class="tc-sig-dot"></div>
+        <div class="tc-tag ${tagClass}">${tagLabel}</div>
+      </div>
+    </div>
+  `;
+}
+
+/* ═══════════════════════════════════════════════
+   RENDER GROUPS
+   ═══════════════════════════════════════════════ */
+const section = document.getElementById('main-section');
+GROUPS.forEach(g => {
+  section.insertAdjacentHTML('beforeend', `
+    <div class="section-title" data-group="${g.mode} ${g.set}">
+      ${g.label} <span>· ${g.themes.length} temas</span>
+    </div>
+    <div class="theme-grid" data-group="${g.mode} ${g.set}">
+      ${g.themes.map(t => cardHTML(t, g.mode, g.set)).join('')}
+    </div>
+  `);
+});
+
+/* ═══════════════════════════════════════════════
+   APPLY CSS VARS
+   ═══════════════════════════════════════════════ */
+function getThemeVars(name) {
+  const el = document.createElement('div');
+  el.setAttribute('data-theme', name);
+  el.style.cssText = 'position:absolute;top:-9999px;visibility:hidden;pointer-events:none;';
+  document.body.appendChild(el);
+  const cs = getComputedStyle(el);
+  const g = v => cs.getPropertyValue(v).trim();
+  const vars = {
+    '--bg':        g('--bg'),
+    '--surface':   g('--surface'),
+    '--surface-2': g('--surface-2'),
+    '--surface-3': g('--surface-3'),
+    '--border':    g('--border'),
+    '--border-2':  g('--border-2'),
+    '--text':      g('--text'),
+    '--text-2':    g('--text-2'),
+    '--text-3':    g('--text-3'),
+    '--signature': g('--signature'),
+    '--banner-g1': g('--banner-g1'),
+    '--banner-g2': g('--banner-g2'),
+  };
+  document.body.removeChild(el);
+  return vars;
+}
+
+const allThemes = GROUPS.flatMap(g => g.themes);
+allThemes.forEach(theme => {
+  const vars = getThemeVars(theme);
+  document.querySelectorAll(`[data-scope="${theme}"]`).forEach(el => {
+    Object.entries(vars).forEach(([k, v]) => {
+      if (v) el.style.setProperty(k, v);
+    });
+  });
+});
+
+/* ═══════════════════════════════════════════════
+   FILTERS
+   ═══════════════════════════════════════════════ */
+const ftabs = document.querySelectorAll('.ftab');
+ftabs.forEach(f => {
+  f.addEventListener('click', () => {
+    ftabs.forEach(t => t.classList.remove('on'));
+    f.classList.add('on');
+    const filter = f.dataset.f;
+    document.querySelectorAll('.tc').forEach(card => {
+      const m = card.dataset.mode, s = card.dataset.set;
+      let show = true;
+      if (filter === 'dark')     show = m === 'dark';
+      if (filter === 'light')    show = m === 'light';
+      if (filter === 'original') show = s === 'original';
+      if (filter === 'contrast') show = s === 'contrast';
+      card.style.display = show ? '' : 'none';
+    });
+    document.querySelectorAll('.theme-grid').forEach(grid => {
+      const vis = [...grid.querySelectorAll('.tc')].some(c => c.style.display !== 'none');
+      grid.style.display = vis ? '' : 'none';
+      const title = grid.previousElementSibling;
+      if (title?.classList.contains('section-title')) title.style.display = vis ? '' : 'none';
+    });
+    const total = [...document.querySelectorAll('.tc')].filter(c => c.style.display !== 'none').length;
+    document.getElementById('count').textContent = total + ' temas';
+  });
+});
+</script>
+</body>
+</html>

@@ -1,0 +1,300 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Empleo · Conniku</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Funnel+Display:wght@400;600;700;800;900&family=Inter:wght@400;500;600;700&family=Geist+Mono:wght@400;500;600&display=swap" />
+<link rel="stylesheet" href="../shared/tokens.css" />
+<link rel="stylesheet" href="../shared/base.css" />
+<link rel="stylesheet" href="../shared/nav.css" />
+<link rel="stylesheet" href="../shared/sidebar.css" />
+<style>
+  :root { --mod: #00A068; --mod-2: rgba(0,194,122,0.08); --mod-3: #8AEAC0; }
+
+  .layout { max-width: 1280px; margin: 0 auto; padding: 28px 24px; display: grid; grid-template-columns: 260px 1fr; gap: 24px; align-items: start; }
+
+  /* ── Sidebar filtros ── */
+  .filters-side { display: flex; flex-direction: column; gap: 14px; }
+  .filter-card {
+    background: var(--surface); border: 1px solid var(--border);
+    border-radius: 12px; overflow: hidden;
+  }
+  .filter-card-head {
+    padding: 11px 14px; border-bottom: 1px solid var(--border);
+    font-size: 12px; font-weight: 700; color: var(--text);
+  }
+  .filter-card-body { padding: 10px 14px; display: flex; flex-direction: column; gap: 6px; }
+  .filter-opt { display: flex; align-items: center; gap: 8px; padding: 4px 0; cursor: pointer; }
+  .filter-check {
+    width: 15px; height: 15px; border-radius: 4px;
+    border: 1px solid var(--border); background: var(--surface-2);
+    display: grid; place-items: center; flex-shrink: 0; transition: all .15s;
+  }
+  .filter-opt:hover .filter-check { border-color: var(--mod); }
+  .filter-opt.on .filter-check { background: var(--mod); border-color: var(--mod); }
+  .filter-opt.on .filter-check::after { content:"✓"; font-size: 9px; color: #0B0C0E; font-weight: 700; }
+  .filter-opt-label { font-size: 12px; color: var(--text-2); }
+  .filter-opt-cnt { margin-left: auto; font-family: 'Geist Mono', monospace; font-size: 10px; color: var(--text-4); }
+
+  /* ── Feed de empleos ── */
+  .jobs-area {}
+  .jobs-top {
+    display: flex; align-items: center; justify-content: space-between;
+    margin-bottom: 16px;
+  }
+  .jobs-top h2 { font-weight: 700; font-size: 16px; color: var(--text); }
+  .jobs-top span { font-family: 'Geist Mono', monospace; font-size: 11px; color: var(--text-4); }
+
+  .search-bar {
+    background: var(--surface); border: 1px solid var(--border);
+    border-radius: 10px; padding: 10px 14px; margin-bottom: 16px;
+    display: flex; align-items: center; gap: 8px;
+    transition: border-color .18s;
+  }
+  .search-bar:focus-within { border-color: var(--mod); box-shadow: 0 0 0 3px rgba(0,194,122,0.08); }
+  .search-bar svg { width: 14px; height: 14px; color: var(--text-3); flex-shrink: 0; }
+  .search-bar input { flex: 1; background: transparent; border: 0; outline: 0; font-family: inherit; font-size: 13px; color: var(--text); }
+  .search-bar input::placeholder { color: var(--text-4); }
+
+  .job-card {
+    background: var(--surface); border: 1px solid var(--border);
+    border-radius: 14px; padding: 18px 20px; margin-bottom: 12px;
+    cursor: pointer; transition: all .2s;
+    display: grid; grid-template-columns: 44px 1fr auto; gap: 14px; align-items: start;
+  }
+  .job-card:hover { border-color: var(--mod); box-shadow: 0 3px 18px rgba(0,194,122,0.10); }
+  .job-card.featured { border-color: rgba(0,194,122,0.3); background: linear-gradient(135deg, var(--surface), rgba(0,194,122,0.03)); }
+
+  .job-logo {
+    width: 44px; height: 44px; border-radius: 10px;
+    background: var(--surface-2); border: 1px solid var(--border);
+    display: grid; place-items: center; font-weight: 800; font-size: 15px;
+    color: var(--text-2); flex-shrink: 0;
+  }
+  .job-info { display: flex; flex-direction: column; gap: 5px; }
+  .job-title { font-weight: 700; font-size: 14px; color: var(--text); }
+  .job-company { font-size: 12px; color: var(--text-3); display: flex; align-items: center; gap: 6px; }
+  .job-verified { width: 12px; height: 12px; border-radius: 50%; background: var(--green); display: grid; place-items: center; }
+  .job-verified svg { width: 7px; height: 7px; color: #0B0C0E; }
+  .job-tags { display: flex; flex-wrap: wrap; gap: 5px; margin-top: 2px; }
+  .job-tag {
+    padding: 2px 8px; border-radius: 4px; font-size: 10px; font-weight: 600;
+    background: var(--surface-2); border: 1px solid var(--border); color: var(--text-3);
+  }
+  .job-tag.match { background: var(--mod-2); border-color: rgba(0,194,122,0.2); color: var(--mod-3); }
+  .job-right { display: flex; flex-direction: column; align-items: flex-end; gap: 8px; }
+  .job-salary { font-family: 'Funnel Display', sans-serif; font-weight: 800; font-size: 15px; color: var(--text); letter-spacing: -.03em; white-space: nowrap; }
+  .job-salary span { font-family: 'Geist Mono', monospace; font-size: 9px; color: var(--text-4); font-weight: 400; }
+  .job-time { font-family: 'Geist Mono', monospace; font-size: 9.5px; color: var(--text-4); }
+  .apply-btn {
+    padding: 7px 14px; border-radius: 8px; font-size: 11px; font-weight: 700;
+    background: var(--mod-2); border: 1px solid var(--mod); color: var(--mod-3);
+    cursor: pointer; transition: all .15s; white-space: nowrap;
+  }
+  .apply-btn:hover { background: rgba(0,194,122,0.14); }
+  .apply-btn.applied { background: transparent; border-color: var(--border); color: var(--text-4); cursor: default; }
+
+  .featured-badge {
+    font-family: 'Geist Mono', monospace; font-size: 8.5px; font-weight: 700;
+    letter-spacing: .08em; text-transform: uppercase;
+    padding: 2px 7px; border-radius: 4px;
+    background: var(--mod-2); border: 1px solid rgba(0,194,122,0.3); color: var(--mod-3);
+  }
+
+  /* ── CV card ── */
+  .cv-card {
+    background: var(--surface); border: 1px solid var(--border);
+    border-radius: 12px; padding: 16px 18px; margin-bottom: 20px;
+    display: flex; align-items: center; gap: 14px;
+  }
+  .cv-score {
+    width: 48px; height: 48px; border-radius: 50%;
+    background: conic-gradient(var(--green) 0% 78%, var(--border) 78%);
+    display: grid; place-items: center; flex-shrink: 0; position: relative;
+  }
+  .cv-score-inner {
+    width: 36px; height: 36px; border-radius: 50%;
+    background: var(--surface); display: grid; place-items: center;
+    font-family: 'Geist Mono', monospace; font-size: 11px; font-weight: 700; color: var(--mod-3);
+  }
+  .cv-info { flex: 1; }
+  .cv-title { font-weight: 700; font-size: 13px; margin-bottom: 3px; }
+  .cv-hint { font-size: 11px; color: var(--text-3); }
+  .cv-btn {
+    padding: 7px 14px; border-radius: 8px; font-size: 11px; font-weight: 600;
+    background: var(--surface-2); border: 1px solid var(--border); color: var(--text-2);
+    cursor: pointer; transition: all .15s;
+  }
+  .cv-btn:hover { border-color: var(--mod); color: var(--mod-3); }
+</style>
+</head>
+<body>
+
+<nav class="nav">
+  <div class="nav-inner">
+    <div class="nav-brand">
+      <a href="orbit-u.html" class="nav-back">
+        <span class="orbit-ico" aria-hidden="true"></span>
+        Orbit<span class="nav-back-u">·U</span>
+      </a>
+      <span class="nav-sep" aria-hidden="true"></span>
+      <a href="orbit-u.html" class="brand">conn<span>i</span>k<span class="u-pack">u<span class="dot">.</span></span></a>
+    </div>
+    <span class="nav-mod-name">Empleo</span>
+    <div class="nav-right">
+      <button class="nav-ico" aria-label="Notificaciones">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" width="18" height="18"><path d="M18 8A6 6 0 006 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 01-3.46 0"/></svg>
+      </button>
+      <div class="nav-av">CG</div>
+    </div>
+  </div>
+</nav>
+
+<div class="layout">
+
+  <aside class="filters-side">
+    <div class="filter-card">
+      <div class="filter-card-head">Tipo</div>
+      <div class="filter-card-body">
+        <div class="filter-opt on"><div class="filter-check"></div><span class="filter-opt-label">Práctica</span><span class="filter-opt-cnt">34</span></div>
+        <div class="filter-opt on"><div class="filter-check"></div><span class="filter-opt-label">Part-time</span><span class="filter-opt-cnt">58</span></div>
+        <div class="filter-opt"><div class="filter-check"></div><span class="filter-opt-label">Full-time</span><span class="filter-opt-cnt">112</span></div>
+        <div class="filter-opt"><div class="filter-check"></div><span class="filter-opt-label">Freelance</span><span class="filter-opt-cnt">27</span></div>
+      </div>
+    </div>
+    <div class="filter-card">
+      <div class="filter-card-head">Área</div>
+      <div class="filter-card-body">
+        <div class="filter-opt on"><div class="filter-check"></div><span class="filter-opt-label">Tecnología</span><span class="filter-opt-cnt">89</span></div>
+        <div class="filter-opt"><div class="filter-check"></div><span class="filter-opt-label">Diseño</span><span class="filter-opt-cnt">31</span></div>
+        <div class="filter-opt"><div class="filter-check"></div><span class="filter-opt-label">Negocios</span><span class="filter-opt-cnt">44</span></div>
+        <div class="filter-opt"><div class="filter-check"></div><span class="filter-opt-label">Investigación</span><span class="filter-opt-cnt">19</span></div>
+      </div>
+    </div>
+    <div class="filter-card">
+      <div class="filter-card-head">Modalidad</div>
+      <div class="filter-card-body">
+        <div class="filter-opt on"><div class="filter-check"></div><span class="filter-opt-label">Remoto</span><span class="filter-opt-cnt">76</span></div>
+        <div class="filter-opt on"><div class="filter-check"></div><span class="filter-opt-label">Híbrido</span><span class="filter-opt-cnt">53</span></div>
+        <div class="filter-opt"><div class="filter-check"></div><span class="filter-opt-label">Presencial</span><span class="filter-opt-cnt">40</span></div>
+      </div>
+    </div>
+  </aside>
+
+  <main class="jobs-area">
+    <div class="cv-card">
+      <div class="cv-score"><div class="cv-score-inner">78%</div></div>
+      <div class="cv-info">
+        <div class="cv-title">Tu CV Conniku está al 78%</div>
+        <div class="cv-hint">Agrega 2 proyectos y completa Mi U para llegar al 100% y destacar en aplicaciones</div>
+      </div>
+      <button class="cv-btn">Completar CV</button>
+    </div>
+
+    <div class="search-bar">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
+      <input type="text" placeholder="Buscar cargo, empresa o tecnología..." />
+    </div>
+
+    <div class="jobs-top">
+      <h2>Resultados para ti</h2>
+      <span>169 ofertas · ordenadas por match</span>
+    </div>
+
+    <div class="job-card featured">
+      <div class="job-logo" style="background:linear-gradient(135deg,rgba(0,194,122,0.15),rgba(0,110,74,0.1));color:#8AEAC0;font-size:13px">NTT</div>
+      <div class="job-info">
+        <div class="job-title">Desarrollador Backend Jr. · Python</div>
+        <div class="job-company">
+          NTT Data Chile
+          <div class="job-verified"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" width="7" height="7"><path d="M20 6L9 17l-5-5"/></svg></div>
+          Empresa verificada
+        </div>
+        <div class="job-tags">
+          <span class="job-tag match">Python</span>
+          <span class="job-tag match">SQL</span>
+          <span class="job-tag match">REST APIs</span>
+          <span class="job-tag">Django</span>
+          <span class="job-tag">AWS</span>
+        </div>
+      </div>
+      <div class="job-right">
+        <span class="featured-badge">Top match</span>
+        <div class="job-salary">$700k <span>/ mes</span></div>
+        <div class="job-time">Hace 2 horas · Remoto</div>
+        <button class="apply-btn">Postular</button>
+      </div>
+    </div>
+
+    <div class="job-card">
+      <div class="job-logo" style="font-size:11px;color:var(--violet)">BAIN</div>
+      <div class="job-info">
+        <div class="job-title">Analista de Datos · Práctica</div>
+        <div class="job-company">
+          Bain & Company Chile
+          <div class="job-verified"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" width="7" height="7"><path d="M20 6L9 17l-5-5"/></svg></div>
+          Empresa verificada
+        </div>
+        <div class="job-tags">
+          <span class="job-tag match">Python</span>
+          <span class="job-tag">Excel avanzado</span>
+          <span class="job-tag match">Estadística</span>
+          <span class="job-tag">Tableau</span>
+        </div>
+      </div>
+      <div class="job-right">
+        <div class="job-salary">$600k <span>/ mes</span></div>
+        <div class="job-time">Hace 1 día · Híbrido</div>
+        <button class="apply-btn">Postular</button>
+      </div>
+    </div>
+
+    <div class="job-card">
+      <div class="job-logo" style="font-size:11px;color:var(--cyan)">FALB</div>
+      <div class="job-info">
+        <div class="job-title">UX Designer · Part-time</div>
+        <div class="job-company">Falabella Tech</div>
+        <div class="job-tags">
+          <span class="job-tag">Figma</span>
+          <span class="job-tag">Investigación de usuarios</span>
+          <span class="job-tag">Prototipado</span>
+        </div>
+      </div>
+      <div class="job-right">
+        <div class="job-salary">$500k <span>/ mes</span></div>
+        <div class="job-time">Hace 3 días · Remoto</div>
+        <button class="apply-btn applied">Postulado ✓</button>
+      </div>
+    </div>
+
+    <div class="job-card">
+      <div class="job-logo" style="font-size:13px;color:var(--cream)">UC</div>
+      <div class="job-info">
+        <div class="job-title">Ayudante de Investigación · Machine Learning</div>
+        <div class="job-company">
+          PUC · Depto. Ciencias Computación
+          <div class="job-verified"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" width="7" height="7"><path d="M20 6L9 17l-5-5"/></svg></div>
+        </div>
+        <div class="job-tags">
+          <span class="job-tag match">Python</span>
+          <span class="job-tag match">ML</span>
+          <span class="job-tag">NLP</span>
+          <span class="job-tag">PyTorch</span>
+        </div>
+      </div>
+      <div class="job-right">
+        <div class="job-salary">$400k <span>/ mes</span></div>
+        <div class="job-time">Hace 5 días · Presencial</div>
+        <button class="apply-btn">Postular</button>
+      </div>
+    </div>
+  </main>
+</div>
+
+<script src="../shared/sidebar.js"></script>
+<script src="../shared/theme-loader.js"></script>
+</body>
+</html>

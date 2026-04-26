@@ -1,0 +1,2310 @@
+<!DOCTYPE html>
+<html lang="es" data-theme="navy-l">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>Perfil · Conniku</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"/>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Funnel+Display:wght@700;800;900&family=Inter:wght@400;500;600;700&family=Geist+Mono:wght@400;500;600&display=swap"/>
+<link rel="stylesheet" href="../shared/themes.css"/>
+<style>
+/* ════════════════════════════════════════
+   RESET + BASE
+   ════════════════════════════════════════ */
+* { box-sizing: border-box; margin: 0; padding: 0; }
+html, body {
+  min-height: 100vh; background: var(--bg); color: var(--text);
+  font-family: 'Inter', sans-serif; font-size: 14px;
+  -webkit-font-smoothing: antialiased; transition: background .3s, color .3s;
+}
+a { color: inherit; text-decoration: none; }
+button { font-family: inherit; cursor: pointer; border: none; background: none; }
+img { display: block; }
+
+/* ICON SYSTEM */
+.ico {
+  display: inline-flex; align-items: center; justify-content: center;
+  position: relative; flex-shrink: 0;
+}
+.ico svg {
+  fill: none; stroke: currentColor;
+  stroke-width: 1.7; stroke-linecap: round; stroke-linejoin: round;
+  display: block;
+}
+.ico.dot-glow::after {
+  content: ''; position: absolute; bottom: 0px; right: 0px;
+  width: 5px; height: 5px; border-radius: 50%;
+  background: #FF4A1C; border: 1.5px solid var(--surface);
+  box-shadow: 0 0 6px rgba(255,74,28,.55);
+}
+
+:root { --ig: linear-gradient(45deg, #F09433, #E6683C 25%, #DC2743 50%, #CC2366 75%, #BC1888); }
+
+/* HEXTIDE */
+#hexTide {
+  position: fixed; inset: 0;
+  pointer-events: none; z-index: 0;
+  width: 100%; height: 100%;
+}
+body > nav, .d-cover-wrap, .d-main { position: relative; z-index: 1; }
+
+/* NAV */
+.d-topnav {
+  background: var(--surface); border-bottom: 1px solid var(--border);
+  height: 56px; display: flex; align-items: center; padding: 0 16px;
+  position: sticky; top: 0; z-index: 50;
+  box-shadow: 0 2px 4px rgba(0,0,0,.06);
+}
+.d-logo {
+  font-family: 'Funnel Display', sans-serif; font-size: 22px; font-weight: 900;
+  background: linear-gradient(45deg, var(--signature) 0%, var(--signature) 50%, #e1306c 50%, #fd1d1d 75%, #fcb045 100%);
+  -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+  background-clip: text; letter-spacing: -1px; flex-shrink: 0;
+}
+.d-search {
+  margin-left: 12px; background: var(--surface-2); border: 1px solid var(--border-2);
+  border-radius: 50px; padding: 9px 14px; width: 220px;
+  display: flex; align-items: center; gap: 8px;
+  color: var(--text-4); font-size: 13px;
+}
+.d-nav-icons { margin-left: auto; display: flex; gap: 8px; }
+.d-nav-icon {
+  width: 36px; height: 36px; background: var(--surface-2); border: 1px solid var(--border-2);
+  border-radius: 50%; display: grid; place-items: center;
+  cursor: pointer; color: var(--text); transition: background .18s; position: relative;
+}
+.d-nav-icon svg { width: 18px; height: 18px; }
+.d-nav-icon:hover { background: var(--surface-3); }
+
+/* Cover */
+.d-cover-wrap { background: var(--surface); border-bottom: 1px solid var(--border); position: relative; z-index: 1; }
+.d-cover {
+  max-width: 1095px; margin: 0 auto; height: 320px;
+  background: linear-gradient(135deg, var(--signature) 0%, var(--banner-g1, rgba(10,40,120,.8)) 50%, var(--bg) 100%);
+  border-radius: 0 0 8px 8px; position: relative; overflow: hidden;
+}
+.d-cover::before {
+  content: ''; position: absolute; inset: 0;
+  background:
+    radial-gradient(circle at 20% 30%, rgba(255,255,255,.20) 0%, transparent 40%),
+    radial-gradient(circle at 80% 70%, rgba(255,255,255,.12) 0%, transparent 40%);
+}
+.d-cover::after {
+  content: ''; position: absolute; inset: 0;
+  background: linear-gradient(to bottom, transparent 40%, rgba(0,0,0,.30) 100%);
+}
+.d-cover .cover-img {
+  position: absolute; inset: 0; width: 100%; height: 100%;
+  object-fit: cover; z-index: 0;
+}
+.d-edit-cover {
+  position: absolute; bottom: 14px; right: 14px; z-index: 2;
+  background: rgba(0,0,0,.55); backdrop-filter: blur(10px);
+  border: 1px solid rgba(255,255,255,.20); border-radius: 8px;
+  padding: 8px 14px; color: #fff; font-size: 12px; font-weight: 600;
+  display: flex; align-items: center; gap: 6px; cursor: pointer; transition: background .18s;
+}
+.d-edit-cover:hover { background: rgba(0,0,0,.70); }
+.d-edit-cover svg { width: 14px; height: 14px; }
+
+/* Profile header */
+.d-profile-header {
+  max-width: 1095px; margin: -40px auto 0; padding: 0 16px 16px;
+  display: flex; align-items: flex-end; gap: 16px; position: relative;
+}
+.d-avatar-ring {
+  padding: 3px; background: var(--ig); border-radius: 50%;
+  box-shadow: 0 6px 20px rgba(0,0,0,.28); flex-shrink: 0;
+}
+.d-avatar {
+  width: 168px; height: 168px; border-radius: 50%; border: 4px solid var(--surface);
+  background: var(--signature); display: grid; place-items: center;
+  font-size: 52px; font-weight: 900; color: #fff;
+  font-family: 'Funnel Display', sans-serif;
+}
+.d-profile-info { flex: 1; padding-bottom: 16px; }
+.d-profile-name {
+  font-family: 'Funnel Display', sans-serif; font-size: 30px; font-weight: 900;
+  color: var(--text); display: flex; align-items: center; gap: 8px; letter-spacing: -.03em;
+}
+.d-verified {
+  width: 22px; height: 22px; background: var(--signature); color: #fff;
+  border-radius: 50%; display: inline-grid; place-items: center; flex-shrink: 0;
+}
+.d-verified svg { width: 12px; height: 12px; }
+.d-profile-handle { color: var(--text-3); font-size: 14px; margin-top: 4px; }
+.d-friends-preview {
+  color: var(--text-3); font-weight: 600; font-size: 14px;
+  margin-top: 10px; display: flex; align-items: center; gap: 10px;
+}
+.d-friend-thumbs { display: flex; }
+.d-friend-thumbs span {
+  width: 30px; height: 30px; border-radius: 50%; border: 2px solid var(--surface);
+  margin-left: -8px; display: grid; place-items: center;
+  font-size: 11px; color: #fff; font-weight: 700;
+}
+.d-friend-thumbs span:first-child { margin-left: 0; }
+.d-profile-actions { display: flex; gap: 8px; padding-bottom: 16px; align-items: flex-end; }
+.d-btn {
+  padding: 8px 14px; border-radius: 8px; font-weight: 600; font-size: 13px;
+  cursor: pointer; display: flex; align-items: center; gap: 6px;
+  border: none; font-family: inherit; transition: opacity .18s;
+}
+.d-btn svg { width: 15px; height: 15px; }
+.d-btn-primary { background: var(--signature); color: #fff; }
+.d-btn-primary:hover { opacity: .88; }
+.d-btn-secondary { background: var(--surface-2); color: var(--text); border: 1px solid var(--border); transition: background .18s; }
+.d-btn-secondary:hover { background: var(--surface-3); }
+
+/* Tabs */
+.d-tabs {
+  max-width: 1095px; margin: 0 auto; padding: 0 16px;
+  display: flex; gap: 4px; border-top: 1px solid var(--border);
+  background: var(--surface);
+  position: sticky; top: 56px; z-index: 40;
+  backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px);
+}
+.d-tab {
+  padding: 14px 16px; font-weight: 600; color: var(--text-3);
+  cursor: pointer; border-bottom: 3px solid transparent;
+  font-size: 14px; transition: all .15s; white-space: nowrap;
+  display: flex; align-items: center; gap: 5px;
+}
+.d-tab.on { color: var(--signature); border-bottom-color: var(--signature); }
+.d-tab:hover:not(.on) { background: var(--surface-2); border-radius: 6px 6px 0 0; color: var(--text); }
+.d-ig-badge {
+  display: inline-flex; align-items: center; gap: 3px;
+  background: var(--ig); color: #fff;
+  padding: 2px 7px; border-radius: 10px;
+  font-size: 10px; font-weight: 700; font-family: 'Geist Mono', monospace;
+}
+
+/* Main */
+.d-main {
+  max-width: 1095px; margin: 16px auto; padding: 0 16px;
+  display: grid; grid-template-columns: 360px 1fr; gap: 16px;
+}
+.d-card {
+  background: var(--surface); border-radius: 10px;
+  box-shadow: 0 2px 8px rgba(0,0,0,.09); border: 1px solid var(--border-2);
+  padding: 16px; margin-bottom: 14px;
+}
+.d-card-title { font-size: 18px; font-weight: 700; color: var(--text); margin-bottom: 12px; }
+.d-card-head { display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; }
+.d-see-all { color: var(--signature); font-size: 13px; font-weight: 600; cursor: pointer; }
+
+/* Intro */
+.d-intro-row {
+  display: flex; align-items: center; gap: 12px;
+  padding: 6px 0; font-size: 14px; color: var(--text-2);
+}
+.d-intro-ico {
+  flex-shrink: 0; width: 22px; display: flex; align-items: center;
+  justify-content: center; color: var(--text-3);
+}
+.d-intro-ico svg {
+  width: 17px; height: 17px; fill: none; stroke: currentColor;
+  stroke-width: 1.7; stroke-linecap: round; stroke-linejoin: round;
+}
+
+/* Module grid */
+.d-mod-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; }
+.d-mod-tile {
+  aspect-ratio: 1; border-radius: 12px; cursor: pointer;
+  background: linear-gradient(145deg, var(--surface-2) 0%, var(--surface-3) 100%);
+  border: 1px solid var(--border-2);
+  display: flex; flex-direction: column; align-items: center; justify-content: center;
+  gap: 7px; transition: all .2s; position: relative; overflow: hidden;
+}
+.d-mod-tile::before {
+  content: ''; position: absolute; inset: 0;
+  background: radial-gradient(circle at 75% 18%, rgba(255,255,255,.06) 0%, transparent 55%);
+  pointer-events: none;
+}
+.d-mod-tile:hover {
+  border-color: var(--signature);
+  box-shadow: 0 0 0 1px var(--signature), 0 6px 18px rgba(0,0,0,.16);
+  transform: translateY(-2px);
+}
+.d-mod-ico {
+  position: relative; width: 42px; height: 42px;
+  display: flex; align-items: center; justify-content: center;
+}
+.d-mod-ico svg {
+  width: 28px; height: 28px; fill: none; stroke: var(--signature);
+  stroke-width: 1.6; stroke-linecap: round; stroke-linejoin: round;
+}
+.d-mod-ico::after {
+  content: ''; position: absolute; bottom: 2px; right: 2px;
+  width: 7px; height: 7px; border-radius: 50%;
+  background: #FF4A1C; border: 2px solid var(--surface-2);
+}
+.d-mod-tile:hover .d-mod-ico::after {
+  animation: modDotPulse 1.6s infinite;
+}
+@keyframes modDotPulse {
+  0%,100% { box-shadow: 0 0 0 0 rgba(255,74,28,.6); }
+  50%      { box-shadow: 0 0 0 4px rgba(255,74,28,0); }
+}
+.d-mod-name {
+  font-size: 9.5px; font-weight: 600; color: var(--text-3);
+  font-family: 'Geist Mono', monospace; letter-spacing: .07em;
+  text-transform: uppercase; text-align: center; line-height: 1.2;
+  padding: 0 4px;
+}
+
+/* Friends */
+.d-friends-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; }
+.d-friend-card { cursor: pointer; }
+.d-friend-thumb {
+  aspect-ratio: 1; border-radius: 8px; margin-bottom: 4px;
+  display: grid; place-items: center; font-weight: 900;
+  font-size: 24px; color: #fff; font-family: 'Funnel Display', sans-serif;
+}
+.d-friend-name { font-size: 12px; font-weight: 600; color: var(--text-2); }
+
+/* Stories */
+.d-stories {
+  display: flex; gap: 14px; overflow-x: auto;
+  padding: 4px 0; scrollbar-width: none;
+}
+.d-stories::-webkit-scrollbar { display: none; }
+.d-story { flex-shrink: 0; width: 72px; text-align: center; cursor: pointer; }
+.d-story-ring {
+  width: 68px; height: 68px; border-radius: 50%; padding: 3px;
+  background: var(--ig); margin: 0 auto 5px;
+}
+.d-story-ring.seen { background: var(--surface-3); }
+.d-story-ring.add {
+  background: var(--surface-2); padding: 0; display: grid; place-items: center;
+  border: 2px dashed var(--border);
+}
+.d-story-inner {
+  width: 100%; height: 100%; border-radius: 50%;
+  border: 2px solid var(--surface);
+  display: grid; place-items: center;
+  color: #fff; font-weight: 900; font-size: 18px;
+  font-family: 'Funnel Display', sans-serif;
+}
+.d-story-label { font-size: 11px; font-weight: 500; color: var(--text-3); }
+
+/* Composer */
+.d-composer { display: flex; gap: 10px; align-items: center; padding: 12px 16px; }
+.d-composer-avatar { width: 40px; height: 40px; border-radius: 50%; background: var(--signature); flex-shrink: 0; }
+.d-composer-pill {
+  flex: 1; height: 40px; border-radius: 20px;
+  background: var(--surface-2); border: 1px solid var(--border-2);
+  padding: 0 16px; font-size: 14px; color: var(--text-3); cursor: text;
+  display: flex; align-items: center;
+}
+.d-composer-acts {
+  display: flex; border-top: 1px solid var(--border-2);
+  padding: 6px 8px 8px; gap: 2px;
+}
+.d-composer-act {
+  flex: 1; display: flex; align-items: center; justify-content: center;
+  gap: 6px; padding: 9px; color: var(--text-3); font-weight: 600;
+  cursor: pointer; border-radius: 6px; font-size: 13px; transition: background .18s;
+}
+.d-composer-act svg { width: 16px; height: 16px; }
+.d-composer-act:hover { background: var(--surface-2); color: var(--text); }
+
+/* Post */
+.d-post {
+  background: var(--surface); border: 1px solid var(--border-2);
+  border-radius: 10px; overflow: hidden; margin-bottom: 14px;
+  box-shadow: 0 2px 8px rgba(0,0,0,.09);
+}
+.d-post-header { display: flex; align-items: center; gap: 10px; padding: 12px 16px 8px; }
+.d-pav { width: 42px; height: 42px; border-radius: 50%; background: var(--signature); flex-shrink: 0; }
+.d-ig-pav { width: 42px; height: 42px; border-radius: 50%; padding: 2px; background: var(--ig); flex-shrink: 0; }
+.d-ig-pav-inner { width: 100%; height: 100%; border-radius: 50%; border: 2px solid var(--surface); background: var(--signature); }
+.d-post-author { font-weight: 700; font-size: 14px; color: var(--text); display: flex; align-items: center; gap: 6px; flex-wrap: wrap; }
+.d-post-meta { font-size: 12px; color: var(--text-3); margin-top: 2px; }
+.d-post-menu { margin-left: auto; color: var(--text-3); cursor: pointer; padding: 8px; font-size: 18px; border-radius: 50%; transition: background .18s; }
+.d-post-menu:hover { background: var(--surface-2); }
+.d-post-text { padding: 0 16px 10px; font-size: 14px; line-height: 1.65; color: var(--text); }
+.d-post-media {
+  width: 100%; background: linear-gradient(135deg, var(--surface-2), var(--surface-3));
+  position: relative; border-top: 1px solid var(--border-2); border-bottom: 1px solid var(--border-2);
+  display: flex; align-items: center; justify-content: center;
+}
+.d-post-media.wide { aspect-ratio: 4/3; }
+.d-post-media.sq { aspect-ratio: 1; }
+.d-carousel-idx {
+  position: absolute; top: 12px; right: 12px;
+  background: rgba(0,0,0,.6); color: #fff; padding: 4px 10px;
+  border-radius: 20px; font-size: 12px; font-weight: 600; font-family: 'Geist Mono', monospace;
+}
+.d-carousel-dots { position: absolute; bottom: 12px; left: 50%; transform: translateX(-50%); display: flex; gap: 4px; }
+.d-carousel-dots span { width: 6px; height: 6px; border-radius: 50%; background: rgba(255,255,255,.5); }
+.d-carousel-dots span.active { background: #fff; }
+.d-post-stats {
+  display: flex; justify-content: space-between; padding: 8px 16px;
+  font-size: 13px; color: var(--text-3); border-bottom: 1px solid var(--border-2);
+}
+.d-reactions { display: flex; align-items: center; gap: 6px; }
+.d-react-row { display: flex; }
+.d-react-row span {
+  width: 18px; height: 18px; border-radius: 50%; border: 2px solid var(--surface);
+  margin-left: -4px; display: grid; place-items: center; font-size: 10px;
+}
+.d-react-row span:first-child { margin-left: 0; }
+.d-post-acts { display: flex; padding: 4px 8px; gap: 2px; }
+.d-post-act {
+  flex: 1; display: flex; align-items: center; justify-content: center;
+  gap: 6px; padding: 9px; color: var(--text-3); font-weight: 600;
+  font-size: 13px; cursor: pointer; border-radius: 6px; transition: background .18s;
+}
+.d-post-act svg { width: 16px; height: 16px; }
+.d-post-act:hover { background: var(--surface-2); color: var(--text); }
+.d-post-act.liked { color: var(--signature); }
+
+/* Friend gradients */
+.fc1 { background: linear-gradient(135deg,#667eea,#764ba2); }
+.fc2 { background: linear-gradient(135deg,#f093fb,#f5576c); }
+.fc3 { background: linear-gradient(135deg,#4facfe,#00f2fe); }
+.fc4 { background: linear-gradient(135deg,#43e97b,#38f9d7); }
+.fc5 { background: linear-gradient(135deg,#fa709a,#fee140); }
+.fc6 { background: linear-gradient(135deg,#30cfd0,#330867); }
+
+/* Orbit·U back */
+.d-nav-back {
+  height: 32px; padding: 0 12px 0 8px; border-radius: 999px;
+  background: var(--surface-2); border: 1px solid var(--border);
+  display: inline-flex; align-items: center; gap: 7px;
+  color: var(--text-2); font-family: 'Geist Mono', monospace;
+  font-size: 11px; font-weight: 600; letter-spacing: .08em;
+  text-transform: uppercase; text-decoration: none; transition: all .18s;
+  flex-shrink: 0;
+}
+.d-nav-back:hover { background: var(--surface-3); color: var(--signature); border-color: var(--signature); }
+.d-nav-back-ico {
+  width: 18px; height: 18px; position: relative;
+  display: inline-grid; place-items: center;
+}
+.d-nav-back-ico::before {
+  content: ''; position: absolute; inset: 0; border-radius: 50%;
+  border: 1px dashed currentColor; opacity: .55; transform: rotate(-25deg);
+}
+.d-nav-back-ico::after {
+  content: ''; width: 7px; height: 7px; border-radius: 50%;
+  background: var(--signature); box-shadow: 0 0 6px var(--signature);
+}
+
+/* Mi U card */
+.d-miu-card { }
+.d-miu-header { display: flex; align-items: center; gap: 10px; margin-bottom: 14px; }
+.d-miu-badge {
+  font-family: 'Geist Mono', monospace; font-size: 9px; font-weight: 600;
+  letter-spacing: .12em; text-transform: uppercase;
+  padding: 3px 8px; border-radius: 20px;
+  color: var(--signature); border: 1px solid var(--signature);
+  background: rgba(10,40,120,.07);
+}
+.d-miu-row {
+  display: flex; justify-content: space-between; align-items: center;
+  padding: 7px 0; border-bottom: 1px solid var(--border-2); font-size: 13px;
+}
+.d-miu-row:last-of-type { border-bottom: none; }
+.d-miu-label { color: var(--text-3); }
+.d-miu-val { color: var(--text); font-weight: 600; }
+.d-miu-val.empty { color: var(--text-4); font-weight: 400; font-style: italic; }
+
+/* Leaderboard */
+.d-lb-row {
+  display: flex; align-items: center; gap: 10px;
+  padding: 7px 0; border-bottom: 1px solid var(--border-2); font-size: 13px;
+}
+.d-lb-row:last-of-type { border-bottom: none; }
+.d-lb-rank {
+  width: 22px; height: 22px; border-radius: 50%; flex-shrink: 0;
+  display: grid; place-items: center;
+  font-family: 'Geist Mono', monospace; font-size: 10px; font-weight: 700;
+  background: var(--surface-3); color: var(--text-3);
+}
+.d-lb-rank.gold   { background: #F5C518; color: #0D0F10; }
+.d-lb-rank.silver { background: #A8A9AD; color: #0D0F10; }
+.d-lb-rank.bronze { background: #CD7F32; color: #0D0F10; }
+.d-lb-av {
+  width: 28px; height: 28px; border-radius: 50%; flex-shrink: 0;
+  display: grid; place-items: center; font-weight: 700; font-size: 11px; color: #fff;
+  font-family: 'Funnel Display', sans-serif;
+}
+.d-lb-name { flex: 1; font-weight: 500; color: var(--text-2); }
+.d-lb-pts { font-family: 'Geist Mono', monospace; font-size: 11px; font-weight: 700; color: var(--signature); }
+
+/* Comunidades */
+.d-com-item {
+  display: flex; align-items: center; gap: 10px;
+  padding: 7px 0; border-bottom: 1px solid var(--border-2); cursor: pointer;
+  transition: background .15s;
+}
+.d-com-item:last-of-type { border-bottom: none; }
+.d-com-ico {
+  width: 36px; height: 36px; border-radius: 8px; flex-shrink: 0;
+  display: grid; place-items: center; font-size: 16px;
+  background: linear-gradient(135deg, var(--surface-2), var(--surface-3));
+  border: 1px solid var(--border-2);
+}
+.d-com-info { flex: 1; }
+.d-com-name { font-size: 13px; font-weight: 600; color: var(--text); }
+.d-com-meta { font-size: 11px; color: var(--text-4); margin-top: 1px; }
+
+/* Privacy chips */
+.d-privacy-group {
+  display: flex; align-items: center; gap: 6px; padding: 6px 16px 10px;
+  flex-wrap: wrap;
+}
+.d-pg-label {
+  font-size: 11px; color: var(--text-4); font-family: 'Geist Mono', monospace;
+  letter-spacing: .06em; margin-right: 2px;
+}
+.d-privacy-chip {
+  display: inline-flex; align-items: center; gap: 5px;
+  padding: 4px 10px; border-radius: 20px; font-size: 12px; font-weight: 500;
+  border: 1px solid var(--border-2); background: var(--surface-2); color: var(--text-3);
+  cursor: pointer; transition: all .15s;
+}
+.d-privacy-chip svg { width: 12px; height: 12px; fill: none; stroke: currentColor; stroke-width: 1.7; stroke-linecap: round; }
+.d-privacy-chip:hover { border-color: var(--signature); color: var(--signature); background: var(--surface-3); }
+.d-privacy-chip.on { border-color: var(--signature); color: var(--signature); background: rgba(10,40,120,.08); font-weight: 600; }
+
+/* Bio card */
+.d-bio-card { }
+.d-bio-head { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; }
+.d-bio-label { font-size: 18px; font-weight: 700; color: var(--text); }
+.d-bio-edit {
+  display: inline-flex; align-items: center; gap: 5px; padding: 5px 10px;
+  border-radius: 6px; font-size: 12px; font-weight: 600; color: var(--text-3);
+  border: 1px solid var(--border-2); background: transparent; cursor: pointer; transition: all .15s;
+}
+.d-bio-edit:hover { background: var(--surface-2); color: var(--text); }
+.d-bio-edit svg { width: 12px; height: 12px; fill: none; stroke: currentColor; stroke-width: 1.7; stroke-linecap: round; }
+.d-bio-text {
+  font-size: 13px; line-height: 1.7; color: var(--text-2);
+  font-style: italic; padding: 10px 12px; border-radius: 8px;
+  background: var(--surface-2); border: 1px solid var(--border-2);
+  width: 100%; resize: none; font-family: inherit;
+}
+#bio-card.editing #bio-actions { display: flex !important; }
+
+/* Module tiles as <a> */
+a.d-mod-tile { text-decoration: none; }
+
+/* IG grid */
+.d-ig-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 4px; border-radius: 8px; overflow: hidden; }
+.d-ig-tile {
+  aspect-ratio: 1; position: relative; overflow: hidden; cursor: pointer;
+  background: linear-gradient(135deg, var(--surface-2), var(--surface-3));
+  transition: opacity .18s;
+}
+.d-ig-tile:hover { opacity: .85; }
+.d-ig-tile:hover::after { content: ''; position: absolute; inset: 0; background: rgba(0,0,0,.12); }
+
+.sw1 { background: linear-gradient(135deg,#ff9a9e,#fad0c4); }
+.sw2 { background: linear-gradient(135deg,#a18cd1,#fbc2eb); }
+.sw3 { background: linear-gradient(135deg,#fad0c4,#ffd1ff); }
+.sw4 { background: linear-gradient(135deg,#84fab0,#8fd3f4); }
+.sw5 { background: linear-gradient(135deg,#ffecd2,#fcb69f); }
+.sw6 { background: linear-gradient(135deg,#a1c4fd,#c2e9fb); }
+.sw7 { background: linear-gradient(135deg,#d4fc79,#96e6a1); }
+.sw8 { background: linear-gradient(135deg,#ffc3a0,#ffafbd); }
+.sw9 { background: linear-gradient(135deg,#e0c3fc,#8ec5fc); }
+
+/* ═══════════════════════════════════════════════
+   MODAL CAMBIAR PORTADA
+   ═══════════════════════════════════════════════ */
+#cv-modal {
+  position: fixed; inset: 0;
+  background: rgba(0,0,0,0.7); backdrop-filter: blur(8px);
+  display: none; place-items: center;
+  z-index: 100001;
+  padding: 20px;
+}
+#cv-modal.on { display: grid; }
+#cv-box {
+  width: 720px; max-width: 100%; max-height: 90vh;
+  background: #0D0E11; color: #E8E8E6;
+  border: 1px solid #262A32; border-radius: 14px;
+  overflow: hidden;
+  display: flex; flex-direction: column;
+  font-family: 'Inter', sans-serif;
+}
+#cv-head {
+  padding: 16px 20px; background: #15181D;
+  border-bottom: 1px solid #262A32;
+  display: flex; justify-content: space-between; align-items: center;
+}
+#cv-head h3 {
+  font-family: 'Funnel Display', sans-serif; font-weight: 800;
+  font-size: 15px; display: flex; align-items: center; gap: 8px;
+}
+#cv-close {
+  background: transparent; color: #8A8A86; border: 0;
+  font-size: 18px; cursor: pointer;
+}
+#cv-close:hover { color: #E8E8E6; }
+
+#cv-tabs {
+  display: flex; padding: 0 20px;
+  background: #0D0E11; border-bottom: 1px solid #262A32;
+}
+.cv-tab {
+  padding: 12px 16px; background: transparent; border: 0;
+  color: #8A8A86; font-size: 12px; font-weight: 600;
+  cursor: pointer; font-family: 'Inter', sans-serif;
+  border-bottom: 2px solid transparent;
+}
+.cv-tab.active { color: #E8E8E6; border-bottom-color: #00C27A; }
+
+#cv-body { flex: 1; overflow-y: auto; padding: 20px; }
+#cv-body::-webkit-scrollbar { width: 8px; }
+#cv-body::-webkit-scrollbar-thumb { background: #262A32; border-radius: 4px; }
+
+.cv-templates {
+  display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px;
+}
+.cv-tpl {
+  aspect-ratio: 16 / 7;
+  border-radius: 8px;
+  border: 2px solid #262A32;
+  cursor: pointer; transition: all .15s;
+  position: relative; overflow: hidden;
+}
+.cv-tpl:hover { transform: translateY(-1px); }
+.cv-tpl.selected { border-color: #00C27A; box-shadow: 0 0 0 3px rgba(0,194,122,0.25); }
+.cv-tpl::after {
+  content: attr(data-name);
+  position: absolute; bottom: 5px; left: 7px;
+  font-family: 'Geist Mono', monospace; font-size: 8px;
+  color: #fff; letter-spacing: .08em;
+  background: rgba(0,0,0,0.55); padding: 2px 6px; border-radius: 4px;
+  font-weight: 600; text-transform: uppercase;
+  pointer-events: none;
+}
+
+.cv-upload-zone {
+  border: 2px dashed #262A32;
+  border-radius: 10px;
+  padding: 36px 20px;
+  text-align: center;
+  cursor: pointer;
+  transition: all .18s;
+}
+.cv-upload-zone:hover, .cv-upload-zone.drag {
+  border-color: #00C27A;
+  background: rgba(0,194,122,0.05);
+}
+.cv-upload-zone .ico {
+  width: 44px; height: 44px;
+  margin: 0 auto 12px;
+  border-radius: 50%;
+  background: #15181D; border: 1px solid #262A32;
+  display: grid; place-items: center;
+  color: #00C27A;
+}
+.cv-upload-zone h4 {
+  font-family: 'Funnel Display', sans-serif; font-weight: 700;
+  font-size: 13px; margin-bottom: 4px;
+}
+.cv-upload-zone p {
+  font-family: 'Geist Mono', monospace; font-size: 10px;
+  color: #8A8A86; letter-spacing: .04em;
+}
+
+.cv-editor { display: none; }
+.cv-editor.on { display: block; }
+.cv-editor-stage {
+  position: relative;
+  width: 100%; aspect-ratio: 16 / 7;
+  background: #050608; border-radius: 10px;
+  overflow: hidden; cursor: grab;
+  user-select: none;
+  border: 1px solid #262A32;
+}
+.cv-editor-stage.dragging { cursor: grabbing; }
+.cv-editor-stage img {
+  position: absolute; top: 50%; left: 50%;
+  transform-origin: center;
+  pointer-events: none;
+  max-width: none; max-height: none;
+  user-select: none; -webkit-user-drag: none;
+}
+.cv-editor-stage::after {
+  content: ""; position: absolute; inset: 0;
+  border: 1px dashed rgba(255,255,255,0.15);
+  pointer-events: none; border-radius: 10px;
+}
+.cv-controls {
+  margin-top: 14px;
+  display: flex; align-items: center; gap: 14px;
+}
+.cv-controls label {
+  display: flex; align-items: center; gap: 8px;
+  font-family: 'Geist Mono', monospace; font-size: 10px;
+  color: #8A8A86; letter-spacing: .08em; text-transform: uppercase;
+  flex: 1;
+}
+.cv-controls input[type=range] {
+  flex: 1; accent-color: #00C27A;
+}
+.cv-tip {
+  font-family: 'Geist Mono', monospace; font-size: 10px;
+  color: #8A8A86; margin-top: 8px; text-align: center;
+  letter-spacing: .04em;
+}
+
+#cv-foot {
+  padding: 14px 20px; background: #15181D;
+  border-top: 1px solid #262A32;
+  display: flex; gap: 8px; justify-content: flex-end;
+}
+#cv-foot button {
+  padding: 9px 18px; border-radius: 8px; border: 0;
+  font-size: 12px; font-weight: 600;
+  font-family: 'Inter', sans-serif; cursor: pointer;
+}
+.cv-btn-cancel { background: #262A32; color: #E8E8E6; }
+.cv-btn-cancel:hover { background: #1A1D23; }
+.cv-btn-apply {
+  background: #00C27A; color: #0B0C0E;
+}
+.cv-btn-apply:hover { background: #8AEAC0; }
+.cv-btn-apply:disabled { opacity: .35; cursor: not-allowed; }
+
+/* ═══════════════════════════════════════════════
+   SIG-ICO SYSTEM
+   ═══════════════════════════════════════════════ */
+.sig-ico {
+  position: relative;
+  display: inline-grid; place-items: center;
+  width: 20px; height: 20px;
+  color: var(--text);
+  flex-shrink: 0;
+}
+.sig-ico svg {
+  width: 100%; height: 100%;
+  stroke-width: 1.6; fill: none; stroke: currentColor;
+  stroke-linecap: round; stroke-linejoin: round;
+}
+.sig-ico::after {
+  content: ""; position: absolute;
+  bottom: -2px; right: -2px;
+  width: 5px; height: 5px;
+  border-radius: 50%;
+  background: rgba(255,74,28,0.22);
+  box-shadow: 0 0 0 1.5px var(--surface);
+  transition: background .25s, box-shadow .25s, transform .25s;
+}
+button:hover .sig-ico::after,
+a:hover .sig-ico::after,
+.st-nav-item:hover .sig-ico::after,
+.st-nav-item.active .sig-ico::after,
+.mod-cell:hover .sig-ico::after,
+.nav-ico:hover .sig-ico::after {
+  background: #FF4A1C;
+  box-shadow: 0 0 0 1.5px var(--surface), 0 0 10px rgba(255,74,28,0.7);
+  transform: scale(1.1);
+}
+
+.sig-ico.c-account    { color: #9FC3FF; }
+.sig-ico.c-appearance { color: #B8A6FF; }
+.sig-ico.c-cover      { color: #7FDAFF; }
+.sig-ico.c-notif      { color: #FFD180; }
+.sig-ico.c-privacy    { color: #C4E63D; }
+.sig-ico.c-data       { color: #8AEAC0; }
+.sig-ico.c-lang       { color: #FF9787; }
+.sig-ico.c-plan       { color: #E8C770; }
+.sig-ico.c-integ      { color: #7FBFFF; }
+.sig-ico.c-help       { color: #C5B5FF; }
+.sig-ico.c-logout     { color: #FF8873; }
+.sig-ico.c-search     { color: #B8B8B4; }
+.sig-ico.c-bell       { color: #FFD180; }
+.sig-ico.c-settings   { color: #7FDAFF; }
+.sig-ico.c-photo      { color: #B8A6FF; }
+.sig-ico.c-poll       { color: #D9FF3A; }
+.sig-ico.c-question   { color: #7FDAFF; }
+.sig-ico.c-doc        { color: #8AEAC0; }
+.sig-ico.c-like       { color: #FF9787; }
+.sig-ico.c-comment    { color: #7FBFFF; }
+.sig-ico.c-share      { color: #FFD180; }
+.sig-ico.c-edit       { color: #C5B5FF; }
+.sig-ico.c-workspaces { color: #B8A6FF; }
+.sig-ico.c-messages   { color: #8AEAC0; }
+.sig-ico.c-friends    { color: #FF9572; }
+.sig-ico.c-communities{ color: #7FDAFF; }
+.sig-ico.c-library    { color: #FFE9B8; }
+.sig-ico.c-courses    { color: #D9FF3A; }
+.sig-ico.c-tutors     { color: #FF9787; }
+.sig-ico.c-calendar   { color: #F5F4EF; }
+
+.sig-ico.sm { width: 16px; height: 16px; }
+.sig-ico.sm::after { width: 4px; height: 4px; bottom: -1px; right: -1px; }
+.sig-ico.xs { width: 14px; height: 14px; }
+.sig-ico.xs::after { width: 3.5px; height: 3.5px; bottom: -1px; right: -1px; }
+
+.empty-placeholder {
+  text-align: center; padding: 24px 16px;
+  color: var(--text-4);
+  font-family: 'Geist Mono', monospace; font-size: 11px;
+  letter-spacing: 0.04em;
+  border: 1px dashed var(--border);
+  border-radius: 10px;
+}
+
+/* ═══════════════════════════════════════════════
+   SETTINGS DRAWER
+   ═══════════════════════════════════════════════ */
+#st-drawer {
+  position: fixed; top: 0; right: 0; bottom: 0;
+  width: 760px; max-width: 96vw;
+  background: #0D0E11; color: #E8E8E6;
+  border-left: 1px solid #262A32;
+  z-index: 99999;
+  transform: translateX(100%);
+  transition: transform .28s cubic-bezier(0.2,0.8,0.2,1);
+  display: grid; grid-template-columns: 220px 1fr;
+  font-family: 'Inter', sans-serif;
+  box-shadow: -20px 0 60px rgba(0,0,0,0.5);
+}
+#st-drawer.on { transform: translateX(0); }
+#st-overlay {
+  position: fixed; inset: 0; background: rgba(0,0,0,0.55);
+  backdrop-filter: blur(4px);
+  z-index: 99998;
+  opacity: 0; pointer-events: none;
+  transition: opacity .25s;
+}
+#st-overlay.on { opacity: 1; pointer-events: all; }
+
+#st-sidebar {
+  background: #050608;
+  border-right: 1px solid #262A32;
+  padding: 18px 0;
+  overflow-y: auto;
+  display: flex; flex-direction: column;
+}
+#st-sidebar::-webkit-scrollbar { width: 4px; }
+#st-sidebar::-webkit-scrollbar-thumb { background: #262A32; }
+#st-sidebar h2 {
+  padding: 0 18px 14px;
+  font-family: 'Funnel Display', sans-serif; font-weight: 800;
+  font-size: 16px; letter-spacing: -.01em;
+  border-bottom: 1px solid #15181D;
+  margin-bottom: 14px;
+}
+.st-nav-item {
+  display: flex; align-items: center; gap: 12px;
+  padding: 10px 18px;
+  color: #B8B8B4;
+  background: transparent; border: 0;
+  text-align: left; cursor: pointer;
+  font-size: 13px; font-family: inherit;
+  transition: all .12s;
+  border-left: 2px solid transparent;
+}
+.st-nav-item:hover { background: #0D0E11; color: #E8E8E6; }
+.st-nav-item.active {
+  background: #0D0E11; color: #E8E8E6;
+  border-left-color: var(--green, #00C27A);
+}
+.st-divider {
+  height: 1px; background: #15181D;
+  margin: 8px 18px;
+}
+
+#st-main {
+  overflow-y: auto;
+  display: flex; flex-direction: column;
+  background: #0D0E11;
+}
+#st-main::-webkit-scrollbar { width: 8px; }
+#st-main::-webkit-scrollbar-thumb { background: #262A32; border-radius: 4px; }
+#st-head {
+  padding: 18px 24px; background: #15181D;
+  border-bottom: 1px solid #262A32;
+  display: flex; justify-content: space-between; align-items: center;
+  position: sticky; top: 0; z-index: 2;
+}
+#st-head h3 {
+  font-family: 'Funnel Display', sans-serif; font-weight: 800;
+  font-size: 17px; letter-spacing: -.01em;
+  display: flex; align-items: center; gap: 10px;
+}
+#st-head h3 .id-tag {
+  font-family: 'Geist Mono', monospace; font-size: 9px;
+  color: #00C27A; letter-spacing: .14em; font-weight: 600;
+  background: rgba(0,194,122,0.10); padding: 3px 7px;
+  border-radius: 4px;
+}
+#st-close {
+  background: transparent; color: #8A8A86; border: 0;
+  font-size: 20px; cursor: pointer; padding: 4px 10px;
+}
+#st-close:hover { color: #E8E8E6; }
+
+#st-body {
+  flex: 1; padding: 22px 24px 28px;
+  overflow-y: auto;
+}
+#st-foot {
+  padding: 14px 24px; background: #15181D;
+  border-top: 1px solid #262A32;
+  display: flex; gap: 8px; justify-content: flex-end;
+  position: sticky; bottom: 0;
+}
+#st-foot button {
+  padding: 9px 18px; border-radius: 8px; border: 0;
+  font-size: 12px; font-weight: 600;
+  font-family: 'Inter', sans-serif; cursor: pointer;
+}
+.st-btn-secondary { background: #262A32; color: #E8E8E6; }
+.st-btn-secondary:hover { background: #1A1D23; }
+.st-btn-primary { background: #00C27A; color: #0B0C0E; }
+.st-btn-primary:hover { background: #8AEAC0; }
+.st-btn-danger { background: #FF4A1C; color: #fff; }
+.st-btn-danger:hover { background: #d93b14; }
+
+.st-pane { display: none; }
+.st-pane.on { display: block; }
+.st-section { margin-bottom: 22px; }
+.st-section-title {
+  font-family: 'Geist Mono', monospace; font-size: 9px;
+  color: #8A8A86; letter-spacing: .16em; font-weight: 600;
+  text-transform: uppercase;
+  padding-bottom: 8px;
+  border-bottom: 1px solid #262A32;
+  margin-bottom: 12px;
+}
+
+.st-row {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 11px 0;
+  border-bottom: 1px solid #15181D;
+}
+.st-row:last-child { border-bottom: 0; }
+.st-row .st-label {
+  font-size: 13px; color: #E8E8E6; font-weight: 500;
+}
+.st-row .st-label small {
+  display: block;
+  font-family: 'Geist Mono', monospace; font-size: 10px;
+  color: #8A8A86; margin-top: 2px;
+  letter-spacing: .02em;
+}
+.st-input {
+  background: #050608; color: #E8E8E6;
+  border: 1px solid #262A32; border-radius: 6px;
+  padding: 7px 10px; font-size: 12px;
+  font-family: inherit; width: 220px;
+}
+.st-input:focus { outline: 0; border-color: #00C27A; }
+.st-select {
+  background: #050608; color: #E8E8E6;
+  border: 1px solid #262A32; border-radius: 6px;
+  padding: 7px 28px 7px 10px; font-size: 12px;
+  font-family: inherit;
+  appearance: none;
+  background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='10' height='6' viewBox='0 0 10 6'><path d='M1 1l4 4 4-4' stroke='%238A8A86' stroke-width='1.5' fill='none'/></svg>");
+  background-repeat: no-repeat;
+  background-position: right 10px center;
+}
+
+.st-toggle {
+  position: relative; width: 36px; height: 20px;
+  background: #262A32; border-radius: 999px;
+  cursor: pointer; transition: background .15s;
+}
+.st-toggle::after {
+  content: ""; position: absolute;
+  top: 2px; left: 2px;
+  width: 16px; height: 16px;
+  background: #E8E8E6; border-radius: 50%;
+  transition: transform .15s;
+}
+.st-toggle.on { background: #00C27A; }
+.st-toggle.on::after { transform: translateX(16px); background: #0B0C0E; }
+
+.st-btn-block {
+  display: flex; align-items: center; gap: 12px;
+  padding: 14px 16px;
+  background: #15181D;
+  border: 1px solid #262A32;
+  border-radius: 10px;
+  width: 100%;
+  cursor: pointer;
+  color: #E8E8E6;
+  transition: all .15s;
+  text-align: left;
+}
+.st-btn-block:hover { border-color: #00C27A; background: #1A1D23; }
+.st-btn-block .ico-lg {
+  width: 40px; height: 40px; border-radius: 10px;
+  background: #050608; border: 1px solid #262A32;
+  display: grid; place-items: center;
+  color: #00C27A; flex-shrink: 0;
+}
+.st-btn-block .info { flex: 1; }
+.st-btn-block .info .t { font-weight: 600; font-size: 13px; }
+.st-btn-block .info .d {
+  font-family: 'Geist Mono', monospace; font-size: 10px;
+  color: #8A8A86; margin-top: 2px;
+}
+.st-btn-block .arrow { color: #8A8A86; }
+
+.theme-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+  gap: 8px;
+}
+.theme-card {
+  background: #15181D;
+  border: 2px solid #262A32;
+  border-radius: 10px;
+  padding: 10px 8px 8px;
+  cursor: pointer;
+  transition: all .18s;
+  text-align: center;
+  font-family: 'Inter', sans-serif;
+  color: #E8E8E6;
+}
+.theme-card:hover { border-color: #00C27A; transform: translateY(-1px); }
+.theme-card.active { border-color: #D9FF3A; box-shadow: 0 0 0 2px rgba(217,255,58,0.22); }
+.theme-card-swatch {
+  display: flex; gap: 2px; margin-bottom: 7px; border-radius: 6px; overflow: hidden;
+}
+.theme-card-swatch span { flex: 1; height: 22px; }
+.theme-card-name {
+  font-family: 'Funnel Display', sans-serif; font-weight: 700;
+  font-size: 11px; letter-spacing: -.01em; margin-bottom: 2px;
+}
+.theme-card-mode {
+  font-family: 'Geist Mono', monospace; font-size: 8px;
+  color: #8A8A86; letter-spacing: .06em;
+}
+
+#bio-counter.warn { color: #FF4A1C !important; }
+</style>
+</head>
+<body>
+
+<canvas id="hexTide"></canvas>
+
+<!-- NAV -->
+<nav class="d-topnav">
+  <a href="orbit-u.html" class="d-nav-back" title="Volver a Orbit·U">
+    <span class="d-nav-back-ico"></span>
+    Orbit·<span style="color:var(--signature)">U</span>
+  </a>
+  <div class="d-logo" style="display:flex;align-items:center;gap:8px;background:none;-webkit-text-fill-color:initial;">
+    <!-- LOGO PENDIENTE -->
+  </div>
+  <div class="d-search">
+    <span class="ico"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="14" height="14"><circle cx="11" cy="11" r="7"/><line x1="16.5" y1="16.5" x2="21" y2="21"/></svg></span>
+    <span>Buscar</span>
+  </div>
+  <div class="d-nav-icons">
+    <div class="d-nav-icon" title="Inicio">
+      <span class="ico"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg></span>
+    </div>
+    <div class="d-nav-icon" title="Amigos">
+      <span class="ico"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 00-3-3.87"/><path d="M16 3.13a4 4 0 010 7.75"/></svg></span>
+    </div>
+    <div class="d-nav-icon" title="Reels / Video">
+      <span class="ico"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><polygon points="23 7 16 12 23 17 23 7"/><rect x="1" y="5" width="15" height="14" rx="2" ry="2"/></svg></span>
+    </div>
+    <div class="d-nav-icon" title="Tienda / Empleo">
+      <span class="ico"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M6 2L3 6v14a2 2 0 002 2h14a2 2 0 002-2V6l-3-4z"/><line x1="3" y1="6" x2="21" y2="6"/><path d="M16 10a4 4 0 01-8 0"/></svg></span>
+    </div>
+    <div class="d-nav-icon" title="Mensajes">
+      <span class="ico dot-glow"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"/></svg></span>
+    </div>
+    <div class="d-nav-icon" title="Notificaciones">
+      <span class="ico dot-glow"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M18 8A6 6 0 006 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 01-3.46 0"/></svg></span>
+    </div>
+    <div class="d-nav-icon" id="st-open-btn" title="Configuración">
+      <span class="ico"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 01-2.83 2.83l-.06-.06a1.65 1.65 0 00-1.82-.33 1.65 1.65 0 00-1 1.51V21a2 2 0 01-4 0v-.09A1.65 1.65 0 009 19.4a1.65 1.65 0 00-1.82.33l-.06.06a2 2 0 01-2.83-2.83l.06-.06A1.65 1.65 0 004.6 15a1.65 1.65 0 00-1.51-1H3a2 2 0 010-4h.09A1.65 1.65 0 004.6 9a1.65 1.65 0 00-.33-1.82l-.06-.06a2 2 0 012.83-2.83l.06.06A1.65 1.65 0 009 4.68a1.65 1.65 0 001-1.51V3a2 2 0 014 0v.09a1.65 1.65 0 001 1.51 1.65 1.65 0 001.82-.33l.06-.06a2 2 0 012.83 2.83l-.06.06A1.65 1.65 0 0019.4 9a1.65 1.65 0 001.51 1H21a2 2 0 010 4h-.09a1.65 1.65 0 00-1.51 1z"/></svg></span>
+    </div>
+  </div>
+</nav>
+
+<!-- COVER + PROFILE -->
+<div class="d-cover-wrap">
+  <div class="d-cover" id="cv-banner">
+    <button class="d-edit-cover" id="cv-open-btn">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M23 19a2 2 0 01-2 2H3a2 2 0 01-2-2V8a2 2 0 012-2h4l2-3h6l2 3h4a2 2 0 012 2z"/><circle cx="12" cy="13" r="4"/></svg>
+      Editar portada
+    </button>
+  </div>
+  <div class="d-profile-header">
+    <div class="d-avatar-ring">
+      <div class="d-avatar"></div>
+    </div>
+    <div class="d-profile-info">
+      <div class="d-profile-name">
+        —
+        <span class="d-verified">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+        </span>
+      </div>
+      <div class="d-profile-handle">@usuario · —</div>
+      <div class="d-friends-preview">
+        <div class="d-friend-thumbs"></div>
+        <span style="color:var(--text-4);font-style:italic">—</span>
+      </div>
+    </div>
+    <div class="d-profile-actions">
+      <button class="d-btn d-btn-primary">
+        <span class="ico"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg></span>
+        Agregar a historia
+      </button>
+      <button class="d-btn d-btn-secondary">
+        <span class="ico"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z"/></svg></span>
+        Editar perfil
+      </button>
+      <button class="d-btn d-btn-secondary">···</button>
+    </div>
+  </div>
+  <!-- TABS -->
+  <div class="d-tabs">
+    <div class="d-tab on">Publicaciones</div>
+    <div class="d-tab">Información</div>
+    <div class="d-tab">Amigos</div>
+    <div class="d-tab">Módulos</div>
+    <div class="d-tab">Reels</div>
+    <div class="d-tab">Videos</div>
+    <div class="d-tab">Más ▾</div>
+    <div class="d-tab" style="opacity:.5;font-size:11px;padding-left:12px;border-left:1px solid var(--border-2);margin-left:4px">·</div>
+    <div class="d-tab">Feed</div>
+    <div class="d-tab">Logros</div>
+    <div class="d-tab">CV público</div>
+    <div class="d-tab">Sobre mí</div>
+  </div>
+</div>
+
+<!-- MAIN -->
+<div class="d-main">
+
+  <!-- SIDEBAR -->
+  <aside>
+
+    <!-- Mi U -->
+    <div class="d-card d-miu-card">
+      <div class="d-miu-header">
+        <div class="d-card-title" style="margin:0">Tu universidad</div>
+        <span class="d-miu-badge">Mi U</span>
+      </div>
+      <div class="d-miu-row">
+        <span class="d-miu-label">Universidad</span>
+        <span class="d-miu-val empty">—</span>
+      </div>
+      <div class="d-miu-row">
+        <span class="d-miu-label">Promedio</span>
+        <span class="d-miu-val empty">—</span>
+      </div>
+      <div class="d-miu-row">
+        <span class="d-miu-label">Asistencia</span>
+        <span class="d-miu-val empty">—</span>
+      </div>
+      <div class="d-miu-row">
+        <span class="d-miu-label">Ramos activos</span>
+        <span class="d-miu-val empty">—</span>
+      </div>
+      <button class="d-btn d-btn-secondary" style="width:100%;justify-content:center;margin-top:12px;font-size:12px">
+        <span class="ico"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="13" height="13"><path d="M10 13a5 5 0 007.54.54l3-3a5 5 0 00-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 00-7.54-.54l-3 3a5 5 0 007.07 7.07l1.71-1.71"/></svg></span>
+        Conectar mi Universidad
+      </button>
+    </div>
+
+    <!-- BIO -->
+    <div class="d-card" id="bio-card">
+      <div class="d-bio-head">
+        <span class="d-bio-label">Bio</span>
+        <span id="bio-counter" style="font-family:'Geist Mono',monospace;font-size:10px;color:var(--text-4);display:none">0 / 300</span>
+        <button class="d-bio-edit" id="bio-edit-btn">✏ Editar</button>
+      </div>
+      <textarea class="d-bio-text" id="bio-text" readonly placeholder="Escribe algo sobre ti…" rows="3"></textarea>
+      <div id="bio-actions" style="display:none;gap:6px;justify-content:flex-end;margin-top:10px">
+        <button class="d-btn d-btn-secondary" id="bio-cancel" style="font-size:12px;padding:6px 12px">Cancelar</button>
+        <button class="d-btn d-btn-primary" id="bio-save" style="font-size:12px;padding:6px 12px">Guardar</button>
+      </div>
+    </div>
+
+    <!-- Intro -->
+    <div class="d-card">
+      <div class="d-card-title">Introducción</div>
+      <div class="d-intro-row">
+        <span class="d-intro-ico"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><rect x="2" y="7" width="20" height="14" rx="2" ry="2"/><path d="M16 21V5a2 2 0 00-2-2h-4a2 2 0 00-2 2v16"/></svg></span>
+        <span style="color:var(--text-4);font-style:italic">—</span>
+      </div>
+      <div class="d-intro-row">
+        <span class="d-intro-ico"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M22 10v6M2 10l10-5 10 5-10 5z"/><path d="M6 12v5c3 3 9 3 12 0v-5"/></svg></span>
+        <span style="color:var(--text-4);font-style:italic">—</span>
+      </div>
+      <div class="d-intro-row">
+        <span class="d-intro-ico"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg></span>
+        <span style="color:var(--text-4);font-style:italic">—</span>
+      </div>
+      <div class="d-intro-row">
+        <span class="d-intro-ico"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0118 0z"/><circle cx="12" cy="10" r="3"/></svg></span>
+        <span style="color:var(--text-4);font-style:italic">—</span>
+      </div>
+      <div class="d-intro-row">
+        <span class="d-intro-ico"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20.84 4.61a5.5 5.5 0 00-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 00-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 000-7.78z"/></svg></span>
+        <span style="color:var(--text-4);font-style:italic">—</span>
+      </div>
+      <div class="d-intro-row">
+        <span class="d-intro-ico"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M10 13a5 5 0 007.54.54l3-3a5 5 0 00-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 00-7.54-.54l-3 3a5 5 0 007.07 7.07l1.71-1.71"/></svg></span>
+        <span style="color:var(--text-4);font-style:italic">—</span>
+      </div>
+      <button class="d-btn d-btn-secondary" style="width:100%;justify-content:center;margin-top:12px">Editar detalles</button>
+    </div>
+
+    <!-- Módulos -->
+    <div class="d-card">
+      <div class="d-card-head">
+        <div class="d-card-title" style="margin:0">Módulos</div>
+        <span class="d-see-all">Ver todos</span>
+      </div>
+      <div class="d-mod-grid">
+
+        <a class="d-mod-tile" href="workspaces.html">
+          <div class="d-mod-ico">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M5 3h10l4 4v14H5z"/><path d="M15 3v4h4"/><path d="M9 12h6"/><path d="M9 16h4"/></svg>
+          </div>
+          <div class="d-mod-name">Workspaces</div>
+        </a>
+
+        <a class="d-mod-tile" href="mensajes.html">
+          <div class="d-mod-ico">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"/></svg>
+          </div>
+          <div class="d-mod-name">Mensajes</div>
+        </a>
+
+        <a class="d-mod-tile" href="#">
+          <div class="d-mod-ico">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 00-3-3.87"/><path d="M16 3.13a4 4 0 010 7.75"/></svg>
+          </div>
+          <div class="d-mod-name">Amigos</div>
+        </a>
+
+        <a class="d-mod-tile" href="cursos.html">
+          <div class="d-mod-ico">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M22 10v6M2 10l10-5 10 5-10 5z"/><path d="M6 12v5c3 3 9 3 12 0v-5"/></svg>
+          </div>
+          <div class="d-mod-name">Cursos</div>
+        </a>
+
+        <a class="d-mod-tile" href="tutores.html">
+          <div class="d-mod-ico">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><circle cx="12" cy="8" r="4"/><path d="M4 21c0-4.5 3.5-7 8-7s8 2.5 8 7"/></svg>
+          </div>
+          <div class="d-mod-name">Tutores</div>
+        </a>
+
+        <a class="d-mod-tile" href="biblioteca.html">
+          <div class="d-mod-ico">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><rect x="2" y="6" width="20" height="14" rx="2"/><path d="M2 11h20"/><path d="M6 16h4"/></svg>
+          </div>
+          <div class="d-mod-name">Biblioteca</div>
+        </a>
+
+        <a class="d-mod-tile" href="calendario.html">
+          <div class="d-mod-ico">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+          </div>
+          <div class="d-mod-name">Calendario</div>
+        </a>
+
+        <a class="d-mod-tile" href="empleo.html">
+          <div class="d-mod-ico">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><rect x="2" y="7" width="20" height="14" rx="2" ry="2"/><path d="M16 21V5a2 2 0 00-2-2h-4a2 2 0 00-2 2v16"/></svg>
+          </div>
+          <div class="d-mod-name">Empleo</div>
+        </a>
+
+        <a class="d-mod-tile" href="#">
+          <div class="d-mod-ico">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M3 12h18"/><path d="M12 3a13 13 0 010 18"/><path d="M12 3a13 13 0 000 18"/></svg>
+          </div>
+          <div class="d-mod-name">Comunidades</div>
+        </a>
+
+      </div>
+    </div>
+
+    <!-- Fotos -->
+    <div class="d-card">
+      <div class="d-card-head">
+        <div class="d-card-title" style="margin:0">Fotos</div>
+        <span class="d-see-all">Ver todas</span>
+      </div>
+      <div class="d-ig-grid">
+        <div class="d-ig-tile sw1"></div>
+        <div class="d-ig-tile sw2"></div>
+        <div class="d-ig-tile sw3"></div>
+        <div class="d-ig-tile sw4"></div>
+        <div class="d-ig-tile sw5"></div>
+        <div class="d-ig-tile sw6"></div>
+        <div class="d-ig-tile sw7"></div>
+        <div class="d-ig-tile sw8"></div>
+        <div class="d-ig-tile sw9"></div>
+      </div>
+    </div>
+
+    <!-- Amigos -->
+    <div class="d-card">
+      <div class="d-card-head">
+        <div class="d-card-title" style="margin:0">Amigos</div>
+        <span class="d-see-all">Ver todos</span>
+      </div>
+      <div class="d-friends-grid">
+        <div class="d-friend-card"><div class="d-friend-thumb fc1">A</div><div class="d-friend-name">Andrea Gil</div></div>
+        <div class="d-friend-card"><div class="d-friend-thumb fc2">M</div><div class="d-friend-name">Marco Díaz</div></div>
+        <div class="d-friend-card"><div class="d-friend-thumb fc3">R</div><div class="d-friend-name">Rocío Paz</div></div>
+        <div class="d-friend-card"><div class="d-friend-thumb fc4">S</div><div class="d-friend-name">Sergio Núñez</div></div>
+        <div class="d-friend-card"><div class="d-friend-thumb fc5">E</div><div class="d-friend-name">Elena Vega</div></div>
+        <div class="d-friend-card"><div class="d-friend-thumb fc6">P</div><div class="d-friend-name">Pablo Rincón</div></div>
+      </div>
+    </div>
+
+    <!-- Leaderboard -->
+    <div class="d-card">
+      <div class="d-card-head">
+        <div class="d-card-title" style="margin:0">Leaderboard · 30d</div>
+        <span class="d-see-all">Ver ranking</span>
+      </div>
+      <div class="d-lb-row">
+        <span class="d-lb-rank gold">1</span>
+        <div class="d-lb-av fc4">CG</div>
+        <span class="d-lb-name">Cristian García</span>
+        <span class="d-lb-pts">2.840 pts</span>
+      </div>
+      <div class="d-lb-row">
+        <span class="d-lb-rank silver">2</span>
+        <div class="d-lb-av fc1">LM</div>
+        <span class="d-lb-name">Lucía Mendoza</span>
+        <span class="d-lb-pts">2.610 pts</span>
+      </div>
+      <div class="d-lb-row">
+        <span class="d-lb-rank bronze">3</span>
+        <div class="d-lb-av fc2">AR</div>
+        <span class="d-lb-name">Andrea Ruiz</span>
+        <span class="d-lb-pts">2.390 pts</span>
+      </div>
+      <div class="d-lb-row">
+        <span class="d-lb-rank">4</span>
+        <div class="d-lb-av fc5">SN</div>
+        <span class="d-lb-name">Sergio Núñez</span>
+        <span class="d-lb-pts">2.170 pts</span>
+      </div>
+      <div class="d-lb-row">
+        <span class="d-lb-rank">5</span>
+        <div class="d-lb-av fc3">EP</div>
+        <span class="d-lb-name">Elena Paz</span>
+        <span class="d-lb-pts">1.950 pts</span>
+      </div>
+    </div>
+
+    <!-- Comunidades -->
+    <div class="d-card">
+      <div class="d-card-head">
+        <div class="d-card-title" style="margin:0">Tus comunidades</div>
+        <span class="d-see-all">Ver todas</span>
+      </div>
+      <div class="d-com-item">
+        <div class="d-com-ico">🎨</div>
+        <div class="d-com-info">
+          <div class="d-com-name">Diseño UX · Chile</div>
+          <div class="d-com-meta">4.2K miembros · activa</div>
+        </div>
+      </div>
+      <div class="d-com-item">
+        <div class="d-com-ico">🤖</div>
+        <div class="d-com-info">
+          <div class="d-com-name">IA & Tecnología</div>
+          <div class="d-com-meta">8.7K miembros · activa</div>
+        </div>
+      </div>
+      <div class="d-com-item">
+        <div class="d-com-ico">🎓</div>
+        <div class="d-com-info">
+          <div class="d-com-name">Ingeniería Civil 2024</div>
+          <div class="d-com-meta">312 miembros · tu universidad</div>
+        </div>
+      </div>
+      <div class="d-com-item">
+        <div class="d-com-ico">💼</div>
+        <div class="d-com-info">
+          <div class="d-com-name">Empleos Tech</div>
+          <div class="d-com-meta">12.1K miembros</div>
+        </div>
+      </div>
+    </div>
+
+  </aside>
+
+  <!-- FEED -->
+  <section>
+    <!-- Stories -->
+    <div class="d-card">
+      <div class="d-card-title">Tus historias</div>
+      <div class="d-stories">
+        <div class="d-story">
+          <div class="d-story-ring add"><div class="d-story-inner" style="background:var(--surface);color:var(--signature);font-size:22px">＋</div></div>
+          <div class="d-story-label">Nueva</div>
+        </div>
+        <div class="d-story"><div class="d-story-ring"><div class="d-story-inner fc1">A</div></div><div class="d-story-label">Andrea</div></div>
+        <div class="d-story"><div class="d-story-ring"><div class="d-story-inner fc2">M</div></div><div class="d-story-label">Marco</div></div>
+        <div class="d-story"><div class="d-story-ring seen"><div class="d-story-inner fc3">R</div></div><div class="d-story-label">Rocío</div></div>
+        <div class="d-story"><div class="d-story-ring"><div class="d-story-inner fc4">S</div></div><div class="d-story-label">Sergio</div></div>
+        <div class="d-story"><div class="d-story-ring seen"><div class="d-story-inner fc5">E</div></div><div class="d-story-label">Elena</div></div>
+        <div class="d-story"><div class="d-story-ring"><div class="d-story-inner fc6">P</div></div><div class="d-story-label">Pablo</div></div>
+      </div>
+    </div>
+
+    <!-- Composer -->
+    <div class="d-card" style="padding:12px 0 4px">
+      <div class="d-composer">
+        <div class="d-composer-avatar"></div>
+        <div class="d-composer-pill">¿Qué estás pensando?</div>
+      </div>
+      <div class="d-composer-acts">
+        <div class="d-composer-act">
+          <span class="ico"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><polygon points="23 7 16 12 23 17 23 7"/><rect x="1" y="5" width="15" height="14" rx="2" ry="2"/></svg></span>
+          Reel
+        </div>
+        <div class="d-composer-act">
+          <span class="ico"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M23 19a2 2 0 01-2 2H3a2 2 0 01-2-2V8a2 2 0 012-2h4l2-3h6l2 3h4a2 2 0 012 2z"/><circle cx="12" cy="13" r="4"/></svg></span>
+          Foto/video
+        </div>
+        <div class="d-composer-act">
+          <span class="ico"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="M8 13s1.5 2 4 2 4-2 4-2"/><line x1="9" y1="9" x2="9.01" y2="9"/><line x1="15" y1="9" x2="15.01" y2="9"/></svg></span>
+          Sentimiento
+        </div>
+        <div class="d-composer-act">
+          <span class="ico"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M5 3h10l4 4v14H5z"/><path d="M15 3v4h4"/><path d="M9 12h6"/><path d="M9 16h4"/></svg></span>
+          Apunte
+        </div>
+        <div class="d-composer-act">
+          <span class="ico"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg></span>
+          Evento
+        </div>
+        <div class="d-composer-act">
+          <span class="ico"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M9.5 9a2.5 2.5 0 015 0c0 1.5-2.5 2-2.5 4"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg></span>
+          Pregunta
+        </div>
+      </div>
+      <div class="d-privacy-group">
+        <span class="d-pg-label">Quién ve ·</span>
+        <button class="d-privacy-chip on">
+          <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M3 12h18 M12 3a13 13 0 010 18 M12 3a13 13 0 000 18"/></svg>
+          Público
+        </button>
+        <button class="d-privacy-chip">
+          <svg viewBox="0 0 24 24"><path d="M2 9l10-5 10 5-10 5z"/><path d="M6 11v5c0 1.5 3 3 6 3s6-1.5 6-3v-5"/></svg>
+          Solo mi U
+        </button>
+        <button class="d-privacy-chip">
+          <svg viewBox="0 0 24 24"><rect x="5" y="11" width="14" height="10" rx="2"/><path d="M8 11V7a4 4 0 018 0v4"/></svg>
+          Privado
+        </button>
+      </div>
+    </div>
+
+    <!-- POST 1 -->
+    <div class="d-post">
+      <div class="d-post-header">
+        <div class="d-pav"></div>
+        <div>
+          <div class="d-post-author">—</div>
+          <div class="d-post-meta">hace 3 h · 🌎</div>
+        </div>
+        <div class="d-post-menu">···</div>
+      </div>
+      <div class="d-post-text">
+        Terminé el rediseño del sistema de componentes después de 4 meses. Compartir con el equipo es la mejor parte. 💜
+      </div>
+      <div class="d-post-media wide"></div>
+      <div class="d-post-stats">
+        <div class="d-reactions">
+          <div class="d-react-row">
+            <span style="background:var(--signature)">👍</span>
+            <span style="background:#f33e58">❤</span>
+            <span style="background:#f7b125">😮</span>
+          </div>
+          <span>Tú y 284 personas más</span>
+        </div>
+        <span>42 comentarios · 7 compartidos</span>
+      </div>
+      <div class="d-post-acts">
+        <div class="d-post-act liked">
+          <span class="ico"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M14 9V5a3 3 0 00-3-3l-4 9v11h11.28a2 2 0 002-1.7l1.38-9a2 2 0 00-2-2.3H14z"/><path d="M7 22H4a2 2 0 01-2-2v-7a2 2 0 012-2h3"/></svg></span>
+          Me gusta
+        </div>
+        <div class="d-post-act">
+          <span class="ico"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"/></svg></span>
+          Comentar
+        </div>
+        <div class="d-post-act">
+          <span class="ico"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/></svg></span>
+          Compartir
+        </div>
+      </div>
+    </div>
+
+    <!-- POST 2 -->
+    <div class="d-post">
+      <div class="d-post-header">
+        <div class="d-ig-pav"><div class="d-ig-pav-inner"></div></div>
+        <div>
+          <div class="d-post-author">
+            —
+            <span class="d-ig-badge">
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.2" stroke-linecap="round" style="width:8px;height:8px"><path d="M18 13v6a2 2 0 01-2 2H5a2 2 0 01-2-2V8a2 2 0 012-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>
+              Instagram
+            </span>
+          </div>
+          <div class="d-post-meta">ayer · 🌎</div>
+        </div>
+        <div class="d-post-menu">···</div>
+      </div>
+      <div class="d-post-media sq">
+        <div class="d-carousel-idx">1 / 4</div>
+        <div class="d-carousel-dots">
+          <span class="active"></span><span></span><span></span><span></span>
+        </div>
+      </div>
+      <div class="d-post-text">
+        Fin de semana en la sierra 🏔️ <span style="color:var(--signature)">#escapada</span> <span style="color:var(--signature)">#naturaleza</span> <span style="color:var(--signature)">#finde</span>
+      </div>
+      <div class="d-post-stats">
+        <div class="d-reactions">
+          <div class="d-react-row">
+            <span style="background:#f33e58">❤</span>
+            <span style="background:var(--signature)">👍</span>
+          </div>
+          <span>1,204 me gusta</span>
+        </div>
+        <span>38 comentarios</span>
+      </div>
+      <div class="d-post-acts">
+        <div class="d-post-act">
+          <span class="ico"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20.84 4.61a5.5 5.5 0 00-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 00-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 000-7.78z"/></svg></span>
+          Me gusta
+        </div>
+        <div class="d-post-act">
+          <span class="ico"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"/></svg></span>
+          Comentar
+        </div>
+        <div class="d-post-act">
+          <span class="ico"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg></span>
+          Enviar
+        </div>
+      </div>
+    </div>
+
+  </section>
+</div><!-- /d-main -->
+
+
+<!-- ═══ MODAL CAMBIAR PORTADA ═══ -->
+<div id="cv-modal" role="dialog" aria-labelledby="cv-title">
+  <div id="cv-box">
+    <div id="cv-head">
+      <h3 id="cv-title">🖼  Cambiar portada</h3>
+      <button id="cv-close" aria-label="Cerrar">✕</button>
+    </div>
+
+    <div id="cv-tabs">
+      <button class="cv-tab active" data-tab="tpl">Templates</button>
+      <button class="cv-tab" data-tab="upload">Subir foto</button>
+    </div>
+
+    <div id="cv-body">
+
+      <div class="cv-pane" data-pane="tpl">
+        <div class="cv-templates" id="cv-tpl-grid"></div>
+      </div>
+
+      <div class="cv-pane" data-pane="upload" style="display:none;">
+        <div class="cv-upload-zone" id="cv-drop">
+          <div class="ico">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 19V5 M5 12l7-7 7 7"/></svg>
+          </div>
+          <h4>Subí una foto desde tu PC o teléfono</h4>
+          <p>JPG · PNG · WebP · arrastra o toca para elegir</p>
+          <input type="file" id="cv-file" accept="image/*" hidden>
+        </div>
+
+        <div class="cv-editor" id="cv-editor">
+          <div class="cv-editor-stage" id="cv-stage">
+            <img id="cv-img" alt="Preview portada">
+          </div>
+          <div class="cv-controls">
+            <label>Zoom
+              <input type="range" id="cv-zoom" min="100" max="300" value="100" step="1">
+            </label>
+            <button class="cv-btn-cancel" id="cv-reset" style="padding:6px 10px;font-size:11px;">↺ Reset</button>
+          </div>
+          <div class="cv-tip">Arrastrá la imagen para reposicionar · usá el slider para zoom</div>
+        </div>
+      </div>
+
+    </div>
+
+    <div id="cv-foot">
+      <button class="cv-btn-cancel" id="cv-cancel">Cancelar</button>
+      <button class="cv-btn-apply" id="cv-apply" disabled>Aplicar</button>
+    </div>
+  </div>
+</div>
+
+<!-- ═══ SETTINGS DRAWER ═══ -->
+<div id="st-overlay"></div>
+<aside id="st-drawer" aria-hidden="true">
+  <nav id="st-sidebar">
+    <h2>Configuración</h2>
+    <button class="st-nav-item active" data-pane="cuenta"><span class="sig-ico c-account"><svg viewBox="0 0 24 24"><circle cx="12" cy="8" r="4"/><path d="M4 21c0-4.5 3.5-7 8-7s8 2.5 8 7"/></svg></span>Cuenta</button>
+    <button class="st-nav-item" data-pane="apariencia"><span class="sig-ico c-appearance"><svg viewBox="0 0 24 24"><circle cx="13" cy="7" r="2"/><circle cx="17" cy="12" r="2"/><circle cx="13" cy="17" r="2"/><circle cx="7" cy="14" r="2"/><path d="M3 11a9 9 0 0118-1 9 9 0 01-4 13L3 11z"/></svg></span>Apariencia</button>
+    <button class="st-nav-item" data-pane="portada"><span class="sig-ico c-cover"><svg viewBox="0 0 24 24"><rect x="3" y="5" width="18" height="14" rx="2"/><circle cx="9" cy="11" r="2"/><path d="M3 17l5-5 4 4 3-3 6 6"/></svg></span>Portada</button>
+    <button class="st-nav-item" data-pane="notif"><span class="sig-ico c-notif"><svg viewBox="0 0 24 24"><path d="M6 8a6 6 0 0112 0c0 7 3 9 3 9H3s3-2 3-9 M10 21a2 2 0 004 0"/></svg></span>Notificaciones</button>
+    <button class="st-nav-item" data-pane="privacidad"><span class="sig-ico c-privacy"><svg viewBox="0 0 24 24"><rect x="5" y="11" width="14" height="10" rx="2"/><path d="M8 11V7a4 4 0 018 0v4"/></svg></span>Privacidad</button>
+    <button class="st-nav-item" data-pane="datos"><span class="sig-ico c-data"><svg viewBox="0 0 24 24"><path d="M3 21V11 M9 21V5 M15 21V8 M21 21V3"/></svg></span>Mis datos</button>
+    <button class="st-nav-item" data-pane="idioma"><span class="sig-ico c-lang"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M3 12h18 M12 3a13 13 0 010 18 M12 3a13 13 0 000 18"/></svg></span>Idioma & región</button>
+    <button class="st-nav-item" data-pane="plan"><span class="sig-ico c-plan"><svg viewBox="0 0 24 24"><rect x="2" y="6" width="20" height="14" rx="2"/><path d="M2 11h20 M6 16h4"/></svg></span>Plan & facturación</button>
+    <button class="st-nav-item" data-pane="integraciones"><span class="sig-ico c-integ"><svg viewBox="0 0 24 24"><path d="M10 14a4 4 0 015 0l3-3a4 4 0 00-6-6l-1 1 M14 10a4 4 0 01-5 0l-3 3a4 4 0 006 6l1-1"/></svg></span>Integraciones</button>
+    <div class="st-divider"></div>
+    <button class="st-nav-item" data-pane="ayuda"><span class="sig-ico c-help"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M9.5 9a2.5 2.5 0 015 0c0 1.5-2.5 2-2.5 4 M12 17h.01"/></svg></span>Ayuda</button>
+    <button class="st-nav-item" data-pane="cerrar"><span class="sig-ico c-logout"><svg viewBox="0 0 24 24"><path d="M9 21H5a2 2 0 01-2-2V5a2 2 0 012-2h4 M16 17l5-5-5-5 M21 12H9"/></svg></span>Cerrar sesión</button>
+  </nav>
+
+  <div id="st-main">
+    <div id="st-head">
+      <h3 id="st-title">👤 Cuenta <span class="id-tag">SETTINGS</span></h3>
+      <button id="st-close" aria-label="Cerrar">✕</button>
+    </div>
+
+    <div id="st-body">
+
+      <!-- CUENTA -->
+      <div class="st-pane on" data-pane="cuenta">
+        <div class="st-section">
+          <div class="st-section-title">Información personal</div>
+          <div class="st-row"><div class="st-label">Nombre completo<small>visible en tu perfil</small></div><input class="st-input" type="text" placeholder="—"></div>
+          <div class="st-row"><div class="st-label">Usuario<small>tu @handle único</small></div><input class="st-input" type="text" placeholder="@usuario"></div>
+          <div class="st-row"><div class="st-label">Email<small>institucional preferido</small></div><input class="st-input" type="email" placeholder="—"></div>
+          <div class="st-row"><div class="st-label">Carrera<small>—</small></div><input class="st-input" type="text" placeholder="—"></div>
+          <div class="st-row"><div class="st-label">Año<small>—</small></div><select class="st-select"><option>—</option><option>1°</option><option>2°</option><option>3°</option><option>4°</option><option>5°+</option></select></div>
+        </div>
+        <div class="st-section">
+          <div class="st-section-title">Seguridad</div>
+          <div class="st-row"><div class="st-label">Contraseña<small>última vez —</small></div><button class="st-btn-secondary" style="padding:7px 14px;border-radius:6px;border:0;color:#E8E8E6;background:#262A32;cursor:pointer;">Cambiar</button></div>
+          <div class="st-row"><div class="st-label">2FA<small>autenticación de dos factores</small></div><div class="st-toggle" data-key="2fa"></div></div>
+          <div class="st-row"><div class="st-label">Sesiones activas<small>dispositivos conectados</small></div><button class="st-btn-secondary" style="padding:7px 14px;border-radius:6px;border:0;color:#E8E8E6;background:#262A32;cursor:pointer;">Ver</button></div>
+        </div>
+      </div>
+
+      <!-- APARIENCIA -->
+      <div class="st-pane" data-pane="apariencia">
+        <div class="st-section">
+          <div class="st-section-title">Tema de la interfaz</div>
+          <div class="theme-grid" id="theme-grid"></div>
+        </div>
+      </div>
+
+      <!-- PORTADA -->
+      <div class="st-pane" data-pane="portada">
+        <div class="st-section">
+          <div class="st-section-title">Foto de portada</div>
+          <button class="st-btn-block" id="st-open-cover">
+            <div class="ico-lg">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="5" width="18" height="14" rx="2"/><circle cx="9" cy="11" r="2"/><path d="M3 17l5-5 4 4 3-3 6 6"/></svg>
+            </div>
+            <div class="info">
+              <div class="t">Cambiar portada</div>
+              <div class="d">Elige una plantilla predefinida o sube tu propia foto</div>
+            </div>
+            <div class="arrow">→</div>
+          </button>
+        </div>
+      </div>
+
+      <!-- NOTIFICACIONES -->
+      <div class="st-pane" data-pane="notif">
+        <div class="st-section">
+          <div class="st-section-title">Canales</div>
+          <div class="st-row"><div class="st-label">Push<small>notificaciones del navegador / móvil</small></div><div class="st-toggle on" data-key="push"></div></div>
+          <div class="st-row"><div class="st-label">Email<small>resumen diario</small></div><div class="st-toggle" data-key="email"></div></div>
+          <div class="st-row"><div class="st-label">In-app<small>notificaciones dentro de Conniku</small></div><div class="st-toggle on" data-key="inapp"></div></div>
+        </div>
+        <div class="st-section">
+          <div class="st-section-title">Tipos</div>
+          <div class="st-row"><div class="st-label">Mensajes nuevos<small>1:1 y grupos</small></div><div class="st-toggle on"></div></div>
+          <div class="st-row"><div class="st-label">Actividad de comunidades<small>posts, eventos</small></div><div class="st-toggle on"></div></div>
+          <div class="st-row"><div class="st-label">Logros y racha<small>milestones</small></div><div class="st-toggle on"></div></div>
+          <div class="st-row"><div class="st-label">Recordatorios académicos<small>deadlines, clases</small></div><div class="st-toggle on"></div></div>
+        </div>
+      </div>
+
+      <!-- PRIVACIDAD -->
+      <div class="st-pane" data-pane="privacidad">
+        <div class="st-section">
+          <div class="st-section-title">Visibilidad del perfil</div>
+          <div class="st-row"><div class="st-label">¿Quién puede ver mi perfil?<small>—</small></div><select class="st-select"><option>Cualquiera</option><option>Solo mi U</option><option>Solo amigos</option></select></div>
+          <div class="st-row"><div class="st-label">¿Quién puede mensajearme?<small>—</small></div><select class="st-select"><option>Cualquiera verificado</option><option>Solo mi U</option><option>Solo amigos</option></select></div>
+          <div class="st-row"><div class="st-label">Mostrar mi racha<small>—</small></div><div class="st-toggle on"></div></div>
+          <div class="st-row"><div class="st-label">Mostrar mis logros<small>—</small></div><div class="st-toggle on"></div></div>
+        </div>
+        <div class="st-section">
+          <div class="st-section-title">Bloqueados</div>
+          <div class="st-row"><div class="st-label">Lista de bloqueados<small>0 usuarios</small></div><button class="st-btn-secondary" style="padding:7px 14px;border-radius:6px;border:0;color:#E8E8E6;background:#262A32;cursor:pointer;">Ver lista</button></div>
+        </div>
+      </div>
+
+      <!-- DATOS -->
+      <div class="st-pane" data-pane="datos">
+        <div class="st-section">
+          <div class="st-section-title">Mis datos · Ley 19.628</div>
+          <div class="st-row"><div class="st-label">Descargar mis datos<small>JSON con todo tu historial</small></div><button class="st-btn-secondary" style="padding:7px 14px;border-radius:6px;border:0;color:#E8E8E6;background:#262A32;cursor:pointer;">Descargar</button></div>
+          <div class="st-row"><div class="st-label">Solicitar copia legal<small>archivo PDF</small></div><button class="st-btn-secondary" style="padding:7px 14px;border-radius:6px;border:0;color:#E8E8E6;background:#262A32;cursor:pointer;">Solicitar</button></div>
+          <div class="st-row"><div class="st-label">Borrar mi cuenta<small>permanente · irreversible</small></div><button class="st-btn-danger" style="padding:7px 14px;border-radius:6px;border:0;color:#fff;background:#FF4A1C;cursor:pointer;">Borrar</button></div>
+        </div>
+      </div>
+
+      <!-- IDIOMA -->
+      <div class="st-pane" data-pane="idioma">
+        <div class="st-section">
+          <div class="st-section-title">Preferencias regionales</div>
+          <div class="st-row"><div class="st-label">Idioma<small>—</small></div><select class="st-select"><option>Español (Chile)</option><option>Español (LATAM)</option><option>English</option><option>Português (BR)</option></select></div>
+          <div class="st-row"><div class="st-label">Zona horaria<small>—</small></div><select class="st-select"><option>America/Santiago (UTC−4)</option><option>America/Lima</option><option>America/Buenos_Aires</option></select></div>
+          <div class="st-row"><div class="st-label">Formato fecha<small>—</small></div><select class="st-select"><option>DD/MM/YYYY</option><option>YYYY-MM-DD</option></select></div>
+        </div>
+      </div>
+
+      <!-- PLAN -->
+      <div class="st-pane" data-pane="plan">
+        <div class="st-section">
+          <div class="st-section-title">Tu plan actual</div>
+          <div class="st-btn-block" style="cursor:default;">
+            <div class="ico-lg">🎓</div>
+            <div class="info">
+              <div class="t">Estudiante · Free</div>
+              <div class="d">Acceso completo · sin tarjeta requerida</div>
+            </div>
+          </div>
+        </div>
+        <div class="st-section">
+          <div class="st-section-title">Upgrade</div>
+          <button class="st-btn-block">
+            <div class="ico-lg" style="background:rgba(217,255,58,0.10);color:#D9FF3A;">⭐</div>
+            <div class="info">
+              <div class="t">Conniku Pro</div>
+              <div class="d">IA Athena ilimitada · biblioteca premium · sin anuncios</div>
+            </div>
+            <div class="arrow">→</div>
+          </button>
+        </div>
+        <div class="st-section">
+          <div class="st-section-title">Facturación</div>
+          <div class="st-row"><div class="st-label">Método de pago<small>—</small></div><button class="st-btn-secondary" style="padding:7px 14px;border-radius:6px;border:0;color:#E8E8E6;background:#262A32;cursor:pointer;">Agregar</button></div>
+          <div class="st-row"><div class="st-label">Historial<small>—</small></div><button class="st-btn-secondary" style="padding:7px 14px;border-radius:6px;border:0;color:#E8E8E6;background:#262A32;cursor:pointer;">Ver</button></div>
+        </div>
+      </div>
+
+      <!-- INTEGRACIONES -->
+      <div class="st-pane" data-pane="integraciones">
+        <div class="st-section">
+          <div class="st-section-title">Universidad</div>
+          <button class="st-btn-block" id="st-conectar-u">
+            <div class="ico-lg" style="background:rgba(0,194,122,0.10);">🎓</div>
+            <div class="info">
+              <div class="t">Conectar mi universidad</div>
+              <div class="d">Vinculá tu cuenta institucional para sincronizar notas, asistencia y ramos</div>
+            </div>
+            <div class="arrow">→</div>
+          </button>
+        </div>
+        <div class="st-section">
+          <div class="st-section-title">Extensiones</div>
+          <button class="st-btn-block" id="st-ext-chrome">
+            <div class="ico-lg" style="background:rgba(255,233,184,0.10);color:#FFE9B8;">⚡</div>
+            <div class="info">
+              <div class="t">Extensión Chrome Conniku</div>
+              <div class="d">Captura apuntes, citas y referencias desde cualquier sitio web</div>
+            </div>
+            <div class="arrow">⬇</div>
+          </button>
+        </div>
+      </div>
+
+      <!-- AYUDA -->
+      <div class="st-pane" data-pane="ayuda">
+        <div class="st-section">
+          <div class="st-section-title">Centro de ayuda</div>
+          <button class="st-btn-block">
+            <div class="ico-lg">📚</div>
+            <div class="info"><div class="t">Documentación</div><div class="d">Guías, tutoriales, FAQ</div></div>
+            <div class="arrow">→</div>
+          </button>
+          <button class="st-btn-block" style="margin-top:8px;">
+            <div class="ico-lg">💬</div>
+            <div class="info"><div class="t">Contactar soporte</div><div class="d">Respondemos en menos de 24h</div></div>
+            <div class="arrow">→</div>
+          </button>
+          <button class="st-btn-block" style="margin-top:8px;">
+            <div class="ico-lg">📝</div>
+            <div class="info"><div class="t">Enviar feedback</div><div class="d">Sugerencias o reporte de bug</div></div>
+            <div class="arrow">→</div>
+          </button>
+        </div>
+        <div class="st-section">
+          <div class="st-section-title">Legal</div>
+          <div class="st-row"><div class="st-label">Términos y condiciones</div><a class="st-btn-secondary" href="#" style="padding:7px 14px;border-radius:6px;text-decoration:none;color:#E8E8E6;background:#262A32;">Leer</a></div>
+          <div class="st-row"><div class="st-label">Política de privacidad</div><a class="st-btn-secondary" href="#" style="padding:7px 14px;border-radius:6px;text-decoration:none;color:#E8E8E6;background:#262A32;">Leer</a></div>
+          <div class="st-row"><div class="st-label">Cookies</div><a class="st-btn-secondary" href="#" style="padding:7px 14px;border-radius:6px;text-decoration:none;color:#E8E8E6;background:#262A32;">Leer</a></div>
+        </div>
+      </div>
+
+      <!-- CERRAR -->
+      <div class="st-pane" data-pane="cerrar">
+        <div class="st-section">
+          <div class="st-section-title">Cerrar sesión</div>
+          <p style="color:#B8B8B4;font-size:13px;line-height:1.6;margin-bottom:14px;">Vas a cerrar la sesión en este dispositivo. Tus datos se mantienen seguros.</p>
+          <button class="st-btn-danger" style="padding:10px 20px;border-radius:8px;border:0;color:#fff;background:#FF4A1C;cursor:pointer;font-weight:600;">Cerrar sesión</button>
+        </div>
+      </div>
+
+    </div>
+
+    <div id="st-foot">
+      <button class="st-btn-secondary" id="st-cancel">Cancelar</button>
+      <button class="st-btn-primary" id="st-save">Guardar cambios</button>
+    </div>
+  </div>
+</aside>
+
+
+<script src="../shared/hex-tide/hex-tide.js"></script>
+<script>
+/* ═══ THEMES + HexTide config ═══ */
+const THEMES = [
+  { id:'official-01', sig:'#1877F2', bg:'#F0F2F5', op:0.32, vig:0.20 },
+  { id:'official-02', sig:'#2D88FF', bg:'#18191A', op:0.34, vig:0.26 },
+  { id:'official-03', sig:'#0095F6', bg:'#FAFAFA', op:0.30, vig:0.18 },
+  { id:'official-04', sig:'#0095F6', bg:'#000000', op:0.32, vig:0.28 },
+  { id:'ember-dk',    sig:'#FF4A1C', bg:'#10141E', op:0.36, vig:0.24 },
+  { id:'cosmos-dk',   sig:'#8B6FFF', bg:'#1A1510', op:0.36, vig:0.24 },
+  { id:'forest-dk',   sig:'#00C87A', bg:'#181210', op:0.36, vig:0.24 },
+  { id:'ocean-dk',    sig:'#00C2FF', bg:'#1A1710', op:0.36, vig:0.24 },
+  { id:'amber-dk',    sig:'#E8A820', bg:'#0E1220', op:0.36, vig:0.24 },
+  { id:'navy-dk',     sig:'#4A80FF', bg:'#181410', op:0.36, vig:0.24 },
+  { id:'ember-c',     sig:'#FF4A1C', bg:'#F4F4F2', op:0.44, vig:0.26 },
+  { id:'cosmos-c',    sig:'#6B4EFF', bg:'#FAF6EE', op:0.44, vig:0.26 },
+  { id:'forest-c',    sig:'#00A866', bg:'#F5F3EE', op:0.44, vig:0.24 },
+  { id:'ocean-c',     sig:'#0098CC', bg:'#F7F4F0', op:0.42, vig:0.24 },
+  { id:'amber-c',     sig:'#C8961C', bg:'#EFF2F6', op:0.44, vig:0.26 },
+  { id:'navy-l',      sig:'#0A2878', bg:'#E8EEF8', op:0.42, vig:0.24 },
+];
+
+/* Theme application + populate settings grid */
+const html = document.documentElement;
+const THEME_KEY = 'conniku-theme';
+function applyHexTheme(t) {
+  if (window._hx) window._hx.setOptions({ background: t.bg, maxOpacity: t.op, vignette: t.vig });
+}
+function applyTheme(t) {
+  html.setAttribute('data-theme', t.id);
+  localStorage.setItem(THEME_KEY, t.id);
+  document.querySelectorAll('.theme-card').forEach(c => c.classList.toggle('active', c.dataset.theme === t.id));
+  applyHexTheme(t);
+}
+const savedThemeId = localStorage.getItem(THEME_KEY) || 'navy-l';
+const initTheme = THEMES.find(t => t.id === savedThemeId) || THEMES[15];
+
+const themeGrid = document.getElementById('theme-grid');
+if (themeGrid) {
+  THEMES.forEach(t => {
+    const card = document.createElement('button');
+    card.className = 'theme-card' + (t.id === savedThemeId ? ' active' : '');
+    card.dataset.theme = t.id;
+    card.innerHTML = `<div class="theme-card-swatch"><span style="background:${t.bg};flex:2"></span><span style="background:${t.sig};flex:1"></span></div><div class="theme-card-name">${t.id}</div>`;
+    card.addEventListener('click', () => applyTheme(t));
+    themeGrid.appendChild(card);
+  });
+}
+html.setAttribute('data-theme', savedThemeId);
+
+/* ═══ HEXTIDE ═══ */
+try {
+  window._hx = HexTide.mount('#hexTide', {
+    variant: 'whisper',
+    background: initTheme.bg,
+    hexSize: 32,
+    maxOpacity: initTheme.op,
+    mouseReactive: true,
+    vignette: initTheme.vig,
+  });
+} catch(e) { console.warn('HexTide no disponible', e); }
+
+/* ═══ TAB INTERACTIVITY ═══ */
+document.querySelectorAll('.d-tab').forEach(t => {
+  t.addEventListener('click', () => {
+    const parent = t.parentElement;
+    parent.querySelectorAll('.d-tab').forEach(x => x.classList.remove('on'));
+    t.classList.add('on');
+  });
+});
+
+/* ═══ SETTINGS DRAWER ═══ */
+(function(){
+'use strict';
+const TITLES = {
+  cuenta: '👤 Cuenta',
+  apariencia: '🎨 Apariencia',
+  portada: '🖼 Portada',
+  notif: '🔔 Notificaciones',
+  privacidad: '🔒 Privacidad',
+  datos: '📊 Mis datos',
+  idioma: '🌐 Idioma & región',
+  plan: '💳 Plan & facturación',
+  integraciones: '🔗 Integraciones',
+  ayuda: '❓ Ayuda',
+  cerrar: '↪ Cerrar sesión',
+};
+const $ = id => document.getElementById(id);
+function openDrawer(){ $('st-drawer').classList.add('on'); $('st-overlay').classList.add('on'); }
+function closeDrawer(){ $('st-drawer').classList.remove('on'); $('st-overlay').classList.remove('on'); }
+function selectPane(name){
+  document.querySelectorAll('.st-nav-item').forEach(b=> b.classList.toggle('active', b.dataset.pane === name));
+  document.querySelectorAll('.st-pane').forEach(p=> p.classList.toggle('on', p.dataset.pane === name));
+  $('st-title').innerHTML = (TITLES[name] || '⚙ Configuración') + ' <span class="id-tag">SETTINGS</span>';
+}
+function init(){
+  $('st-open-btn').addEventListener('click', openDrawer);
+  $('st-close').addEventListener('click', closeDrawer);
+  $('st-cancel').addEventListener('click', closeDrawer);
+  $('st-overlay').addEventListener('click', closeDrawer);
+  document.querySelectorAll('.st-nav-item').forEach(b=>{
+    b.addEventListener('click', ()=> selectPane(b.dataset.pane));
+  });
+  document.querySelectorAll('.st-toggle').forEach(t=>{
+    t.addEventListener('click', ()=> t.classList.toggle('on'));
+  });
+  $('st-save').addEventListener('click', ()=>{
+    const btn = $('st-save'); const orig = btn.textContent;
+    btn.textContent = '✓ Guardado'; btn.style.background = '#8AEAC0';
+    setTimeout(()=>{ btn.textContent = orig; btn.style.background = ''; closeDrawer(); }, 700);
+  });
+  const stCover = $('st-open-cover');
+  if(stCover) stCover.addEventListener('click', ()=>{ closeDrawer(); setTimeout(()=> $('cv-open-btn').click(), 200); });
+  const stU = $('st-conectar-u');
+  if(stU) stU.addEventListener('click', ()=> alert('Próximamente: vincular cuenta institucional'));
+  const stExt = $('st-ext-chrome');
+  if(stExt) stExt.addEventListener('click', ()=> alert('Próximamente: descarga de extensión Chrome'));
+}
+if(document.readyState === 'loading'){
+  document.addEventListener('DOMContentLoaded', init);
+} else { init(); }
+})();
+
+/* ═══ COVER EDITOR ═══ */
+(function(){
+'use strict';
+const COVER_KEY = 'conniku-cover-v1';
+
+const TEMPLATES = [
+  { id:'cosmos',   name:'Cosmos',   tint:'#00C27A', bg:`radial-gradient(circle at 30% 50%, rgba(0,194,122,0.30), transparent 55%),radial-gradient(circle at 75% 30%, rgba(255,74,28,0.18), transparent 50%),linear-gradient(135deg,#0E1A18,#0A0E12)` },
+  { id:'sunrise',  name:'Sunrise',  tint:'#FF4A1C', bg:`linear-gradient(135deg,#FF8961 0%,#FF4A1C 60%,#7C2F0E 100%)` },
+  { id:'forest',   name:'Forest',   tint:'#3A7D5C', bg:`linear-gradient(135deg,#3A7D5C 0%,#1B5C3A 60%,#0A2E1B 100%)` },
+  { id:'electric', name:'Electric', tint:'#00C2FF', bg:`radial-gradient(circle at 70% 30%, #00C2FF, transparent 55%),linear-gradient(135deg,#1E2A6E 0%,#0A0E2E 100%)` },
+  { id:'violet',   name:'Violet',   tint:'#A78BFA', bg:`linear-gradient(135deg,#A78BFA 0%,#6B4EFF 50%,#1E0E5C 100%)` },
+  { id:'paper',    name:'Paper',    tint:'#A0A3A7', bg:`linear-gradient(135deg,#F5F4EF 0%,#EBE9E1 100%)` },
+  { id:'ink',      name:'Ink',      tint:null,      bg:`radial-gradient(circle at 50% 30%, #15181D, #050608)` },
+  { id:'lime',     name:'Lime',     tint:'#D9FF3A', bg:`linear-gradient(135deg,#D9FF3A 0%,#A8C92E 50%,#5C7016 100%)` },
+  { id:'coral',    name:'Coral',    tint:'#FF4D3A', bg:`linear-gradient(135deg,#FFE9B8 0%,#FF9787 50%,#DD341F 100%)` }
+];
+
+function hexToRgba(hex, alpha){
+  const m = hex.replace('#','').match(/.{2}/g);
+  if(!m) return `rgba(0,0,0,${alpha})`;
+  const [r,g,b] = m.map(h => parseInt(h,16));
+  return `rgba(${r},${g},${b},${alpha})`;
+}
+function applyTint(hex){
+  const root = document.documentElement.style;
+  if(!hex){
+    ['--cover-tint','--cover-tint-line','--cover-tint-soft','--cover-tint-glow','--cover-tint-edge','--cover-tint-mist'].forEach(p => root.removeProperty(p));
+    return;
+  }
+  root.setProperty('--cover-tint',      hex);
+  root.setProperty('--cover-tint-line', hexToRgba(hex, 0.16));
+  root.setProperty('--cover-tint-edge', hexToRgba(hex, 0.45));
+  root.setProperty('--cover-tint-soft', hexToRgba(hex, 0.08));
+  root.setProperty('--cover-tint-glow', hexToRgba(hex, 0.12));
+  root.setProperty('--cover-tint-mist', hexToRgba(hex, 0.04));
+}
+
+let state = { type: null, templateId: null, image: null, x: 0, y: 0, scale: 1 };
+let drag = { active: false, sx: 0, sy: 0, ix: 0, iy: 0 };
+
+const $ = id => document.getElementById(id);
+
+function applyCoverToBanner(){
+  const banner = $('cv-banner'); if(!banner) return;
+  const prevImg = banner.querySelector('.cover-img');
+  if(prevImg) prevImg.remove();
+  banner.style.background = '';
+
+  if(state.type === 'template'){
+    const tpl = TEMPLATES.find(t => t.id === state.templateId);
+    if(tpl){
+      banner.style.background = tpl.bg;
+      applyTint(tpl.tint);
+    }
+  } else if(state.type === 'image' && state.image){
+    applyTint(null);
+    const img = document.createElement('img');
+    img.className = 'cover-img';
+    img.src = state.image;
+    img.style.objectPosition = `${50 + state.x}% ${50 + state.y}%`;
+    img.style.transform = `scale(${state.scale})`;
+    img.style.transformOrigin = 'center';
+    banner.insertBefore(img, banner.firstChild);
+  }
+}
+
+function loadStored(){
+  try {
+    const stored = JSON.parse(localStorage.getItem(COVER_KEY) || 'null');
+    if(stored){ state = Object.assign(state, stored); applyCoverToBanner(); }
+  } catch(e){}
+}
+
+function saveStored(){
+  localStorage.setItem(COVER_KEY, JSON.stringify(state));
+}
+
+function openModal(){ $('cv-modal').classList.add('on'); buildTemplates(); switchTab('tpl'); }
+function closeModal(){ $('cv-modal').classList.remove('on'); }
+
+function switchTab(name){
+  document.querySelectorAll('.cv-tab').forEach(b => b.classList.toggle('active', b.dataset.tab === name));
+  document.querySelectorAll('.cv-pane').forEach(p => p.style.display = (p.dataset.pane === name ? 'block' : 'none'));
+}
+
+function buildTemplates(){
+  const grid = $('cv-tpl-grid');
+  if(grid.children.length) return;
+  TEMPLATES.forEach(tpl => {
+    const el = document.createElement('div');
+    el.className = 'cv-tpl';
+    el.dataset.id = tpl.id;
+    el.dataset.name = tpl.name;
+    el.style.background = tpl.bg;
+    el.addEventListener('click', () => selectTemplate(tpl.id));
+    grid.appendChild(el);
+  });
+}
+function selectTemplate(id){
+  document.querySelectorAll('.cv-tpl').forEach(el => el.classList.toggle('selected', el.dataset.id === id));
+  state = { type: 'template', templateId: id, image: null, x: 0, y: 0, scale: 1 };
+  $('cv-apply').disabled = false;
+}
+
+function handleFile(file){
+  if(!file || !file.type.startsWith('image/')) { alert('Por favor selecciona una imagen.'); return; }
+  const reader = new FileReader();
+  reader.onload = e => {
+    state = { type: 'image', templateId: null, image: e.target.result, x: 0, y: 0, scale: 1 };
+    showEditor();
+    $('cv-apply').disabled = false;
+  };
+  reader.readAsDataURL(file);
+}
+function showEditor(){
+  $('cv-drop').style.display = 'none';
+  $('cv-editor').classList.add('on');
+  const img = $('cv-img');
+  img.src = state.image;
+  img.onload = () => positionImage();
+  $('cv-zoom').value = state.scale * 100;
+}
+function hideEditor(){
+  $('cv-drop').style.display = '';
+  $('cv-editor').classList.remove('on');
+}
+function positionImage(){
+  const img = $('cv-img');
+  const stage = $('cv-stage');
+  const sw = stage.clientWidth, sh = stage.clientHeight;
+  const iw = img.naturalWidth, ih = img.naturalHeight;
+  const baseScale = Math.max(sw/iw, sh/ih);
+  img.dataset.baseScale = baseScale;
+  img.style.width  = (iw * baseScale) + 'px';
+  img.style.height = (ih * baseScale) + 'px';
+  applyTransform();
+}
+function applyTransform(){
+  const img = $('cv-img');
+  img.style.transform = `translate(-50%,-50%) translate(${state.x}px,${state.y}px) scale(${state.scale})`;
+}
+
+function startDrag(e){
+  drag.active = true;
+  $('cv-stage').classList.add('dragging');
+  const p = e.touches ? e.touches[0] : e;
+  drag.sx = p.clientX; drag.sy = p.clientY;
+  drag.ix = state.x; drag.iy = state.y;
+  e.preventDefault();
+}
+function moveDrag(e){
+  if(!drag.active) return;
+  const p = e.touches ? e.touches[0] : e;
+  state.x = drag.ix + (p.clientX - drag.sx);
+  state.y = drag.iy + (p.clientY - drag.sy);
+  applyTransform();
+}
+function endDrag(){
+  drag.active = false;
+  $('cv-stage').classList.remove('dragging');
+}
+
+function bindEvents(){
+  $('cv-open-btn').addEventListener('click', openModal);
+  $('cv-close').addEventListener('click', closeModal);
+  $('cv-cancel').addEventListener('click', closeModal);
+  $('cv-modal').addEventListener('click', e => { if(e.target.id === 'cv-modal') closeModal(); });
+
+  document.querySelectorAll('.cv-tab').forEach(b => b.addEventListener('click', () => switchTab(b.dataset.tab)));
+
+  $('cv-drop').addEventListener('click', () => $('cv-file').click());
+  $('cv-file').addEventListener('change', e => { if(e.target.files[0]) handleFile(e.target.files[0]); });
+  $('cv-drop').addEventListener('dragover', e => { e.preventDefault(); $('cv-drop').classList.add('drag'); });
+  $('cv-drop').addEventListener('dragleave', () => $('cv-drop').classList.remove('drag'));
+  $('cv-drop').addEventListener('drop', e => {
+    e.preventDefault(); $('cv-drop').classList.remove('drag');
+    if(e.dataTransfer.files[0]) handleFile(e.dataTransfer.files[0]);
+  });
+
+  const stage = $('cv-stage');
+  stage.addEventListener('mousedown', startDrag);
+  document.addEventListener('mousemove', moveDrag);
+  document.addEventListener('mouseup', endDrag);
+  stage.addEventListener('touchstart', startDrag, {passive: false});
+  document.addEventListener('touchmove', moveDrag, {passive: false});
+  document.addEventListener('touchend', endDrag);
+
+  $('cv-zoom').addEventListener('input', e => {
+    state.scale = parseInt(e.target.value) / 100;
+    applyTransform();
+  });
+
+  $('cv-reset').addEventListener('click', () => {
+    state.x = 0; state.y = 0; state.scale = 1;
+    $('cv-zoom').value = 100;
+    applyTransform();
+  });
+
+  $('cv-apply').addEventListener('click', () => {
+    saveStored();
+    applyCoverToBanner();
+    closeModal();
+  });
+}
+
+if(document.readyState === 'loading'){
+  document.addEventListener('DOMContentLoaded', () => { bindEvents(); loadStored(); });
+} else {
+  bindEvents(); loadStored();
+}
+})();
+
+/* ═══ BIO ═══ */
+(function(){
+  const BIO_KEY = 'conniku-bio-v1';
+  const MAX_WORDS = 300;
+  const $ = id => document.getElementById(id);
+  function countWords(t){ return (t.trim().match(/\S+/g)||[]).length; }
+  function updateCounter(){
+    if(!$('bio-text')) return;
+    const w = countWords($('bio-text').value);
+    $('bio-counter').textContent = w + ' / ' + MAX_WORDS;
+    $('bio-counter').classList.toggle('warn', w > MAX_WORDS);
+  }
+  function startEdit(){
+    $('bio-card').classList.add('editing');
+    const ta = $('bio-text'); ta.removeAttribute('readonly');
+    ta.dataset.original = ta.value; ta.focus();
+    $('bio-counter').style.display = '';
+    $('bio-edit-btn').style.display = 'none';
+    $('bio-actions').style.display = 'flex';
+  }
+  function endEdit(save){
+    const ta = $('bio-text');
+    if(!save){ ta.value = ta.dataset.original || ''; }
+    else {
+      const words = ta.value.trim().split(/\s+/);
+      if(words.length > MAX_WORDS) ta.value = words.slice(0,MAX_WORDS).join(' ');
+      localStorage.setItem(BIO_KEY, ta.value);
+    }
+    ta.setAttribute('readonly','');
+    $('bio-card').classList.remove('editing');
+    $('bio-counter').style.display = 'none';
+    $('bio-edit-btn').style.display = '';
+    $('bio-actions').style.display = 'none';
+    updateCounter();
+  }
+  function init(){
+    if(!$('bio-text')) return;
+    let stored = localStorage.getItem(BIO_KEY);
+    if(!stored){
+      try {
+        const u = JSON.parse(localStorage.getItem('conniku-user-v1') || 'null');
+        if(u && u.profile && u.profile.bio){ stored = u.profile.bio; localStorage.setItem(BIO_KEY, stored); }
+      } catch(e){}
+    }
+    $('bio-text').value = stored || ''; updateCounter();
+    $('bio-edit-btn').addEventListener('click', startEdit);
+    $('bio-cancel').addEventListener('click', () => endEdit(false));
+    $('bio-save').addEventListener('click', () => endEdit(true));
+    $('bio-text').addEventListener('input', updateCounter);
+  }
+  if(document.readyState === 'loading') document.addEventListener('DOMContentLoaded', init);
+  else init();
+})();
+
+/* ═══ PRIVACY CHIPS ═══ */
+document.querySelectorAll('.d-privacy-chip').forEach(chip => {
+  chip.addEventListener('click', () => {
+    chip.closest('.d-privacy-group').querySelectorAll('.d-privacy-chip').forEach(c => c.classList.remove('on'));
+    chip.classList.add('on');
+  });
+});
+</script>
+
+<script>
+/* ═══ HYDRATE FROM ONBOARDING (conniku-user-v1) ═══ */
+(function(){
+  function avatarColors(name) {
+    const palettes = ['#FF4A1C,#FFA042','#D9FF3A,#A8C92E','#00C2FF,#0098CC','#8B6FFF,#6B4EFF','#00C87A,#00A866'];
+    let hash = 0; for (const c of (name || '?')) hash = (hash + c.charCodeAt(0)) % palettes.length;
+    return palettes[hash];
+  }
+  function initials(name){
+    return (name || '?').split(' ').filter(Boolean).slice(0,2).map(s=>s[0]).join('').toUpperCase() || '?';
+  }
+  function calcSemestreLabel(mes, anio, sistema){
+    if(!mes || !anio) return null;
+    const ahora = new Date();
+    const meses = (ahora.getFullYear()-anio)*12 + (ahora.getMonth()+1-mes);
+    const periodo = sistema === 'trimestre' ? 4 : 6;
+    const actual = Math.max(1, Math.floor(meses/periodo)+1);
+    return sistema === 'trimestre' ? actual+'° trimestre' : actual+'° semestre';
+  }
+  function run(){
+    let data;
+    try { data = JSON.parse(localStorage.getItem('conniku-user-v1') || 'null'); } catch(e){ return; }
+    if(!data || !data.profile) return;
+    const p = data.profile;
+
+    // Profile name (preserve verified badge)
+    const nameEl = document.querySelector('.d-profile-name');
+    if(nameEl && p.nombre){
+      const verified = nameEl.querySelector('.d-verified');
+      nameEl.innerHTML = '';
+      nameEl.appendChild(document.createTextNode(p.nombre + ' '));
+      if(verified) nameEl.appendChild(verified);
+    }
+
+    // Handle line · carrera · universidad
+    const handleEl = document.querySelector('.d-profile-handle');
+    if(handleEl){
+      const parts = [];
+      if(p.handle) parts.push(p.handle.startsWith('@') ? p.handle : '@' + p.handle);
+      if(p.carrera) parts.push(p.carrera);
+      if(p.universidad) parts.push(p.universidad);
+      if(parts.length) handleEl.textContent = parts.join(' · ');
+    }
+
+    // Avatar
+    const avatar = document.querySelector('.d-avatar');
+    if(avatar){
+      if(p.foto){
+        avatar.style.backgroundImage = 'url(' + p.foto + ')';
+        avatar.style.backgroundSize = 'cover';
+        avatar.style.backgroundPosition = 'center';
+        avatar.textContent = '';
+      } else if(p.nombre){
+        const [c1, c2] = avatarColors(p.nombre).split(',');
+        avatar.style.background = 'linear-gradient(135deg,' + c1 + ',' + c2 + ')';
+        avatar.style.display = 'grid';
+        avatar.style.placeItems = 'center';
+        avatar.style.color = '#0B0C0E';
+        avatar.style.fontFamily = "'Funnel Display', sans-serif";
+        avatar.style.fontWeight = '800';
+        avatar.style.fontSize = '38px';
+        avatar.textContent = initials(p.nombre);
+      }
+    }
+
+    // Composer pill
+    const composer = document.querySelector('.d-composer-pill');
+    if(composer && p.nombre){
+      const firstName = p.nombre.split(' ')[0];
+      composer.textContent = '¿Qué estás pensando, ' + firstName + '?';
+    }
+
+    // Mi U card rows: [Universidad, Promedio, Asistencia, Ramos activos]
+    const miuRows = document.querySelectorAll('.d-miu-row');
+    function setMiU(idx, val){
+      const v = miuRows[idx] && miuRows[idx].querySelector('.d-miu-val');
+      if(v && val){ v.textContent = val; v.classList.remove('empty'); }
+    }
+    if(miuRows.length >= 4){
+      if(p.universidad) setMiU(0, p.universidad);
+      // Promedio + Asistencia stay as — (no data yet)
+      // Ramos activos stays as — until ramos onboarding is wired
+    }
+
+    // Intro card rows · fill by index based on current icon order:
+    // 0: trabajo (briefcase)  1: estudio (graduation cap)  2: vive (home)
+    // 3: ubicación (map pin)  4: relación (heart)          5: links
+    const introRows = document.querySelectorAll('.d-card .d-intro-row');
+    function setIntro(idx, html){
+      if(!introRows[idx]) return;
+      const span = introRows[idx].querySelector('span:not(.d-intro-ico)') || introRows[idx].children[1];
+      if(span && html){
+        span.removeAttribute('style');
+        span.style.color = 'var(--text-2)';
+        span.innerHTML = html;
+      }
+    }
+    if(p.carrera){
+      const semLabel = calcSemestreLabel(p.fechaInicio && p.fechaInicio.mes, p.fechaInicio && p.fechaInicio['año'], p.sistema);
+      setIntro(0, 'Estudia <strong>' + p.carrera + '</strong>' + (semLabel ? ' · ' + semLabel : ''));
+    }
+    if(p.universidad){
+      setIntro(1, 'Estudió en <strong>' + p.universidad + '</strong>');
+    }
+
+    // Bio textarea (handled in main bio init too, but safety net)
+    const bioText = document.getElementById('bio-text');
+    if(bioText && p.bio && !bioText.value){
+      bioText.value = p.bio;
+      const counter = document.getElementById('bio-counter');
+      if(counter){
+        const w = (p.bio.trim().match(/\S+/g) || []).length;
+        counter.textContent = w + ' / 300';
+      }
+    }
+  }
+  if(document.readyState === 'loading') document.addEventListener('DOMContentLoaded', run);
+  else run();
+})();
+</script>
+
+</body>
+</html>

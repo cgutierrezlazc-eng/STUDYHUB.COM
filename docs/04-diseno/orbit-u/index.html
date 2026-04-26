@@ -1,0 +1,734 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>Start · Conniku</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"/>
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Funnel+Display:wght@400;800;900&family=Inter:wght@400;500;600&family=Geist+Mono:wght@400;500;600&display=swap"/>
+<link rel="stylesheet" href="shared/tokens.css"/>
+<link rel="stylesheet" href="shared/base.css"/>
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+html,body{width:100%;height:100%;overflow:hidden;background:#050608;color:#F5F4EF}
+canvas{position:fixed;inset:0;display:block;z-index:0}
+
+/* ── Stars ── */
+.universe{position:fixed;inset:0;pointer-events:none;z-index:1}
+.star{position:absolute;border-radius:50%;background:rgba(245,244,239,.7);animation:twinkle var(--dur,3s) ease-in-out infinite;animation-delay:var(--delay,0s)}
+.star.s{width:1.5px;height:1.5px}.star.m{width:2px;height:2px}
+.star.l{width:3px;height:3px;box-shadow:0 0 6px rgba(245,244,239,.5)}
+.star.xl{width:4px;height:4px;box-shadow:0 0 9px rgba(245,244,239,.6),0 0 18px rgba(245,244,239,.2)}
+.star.green{background:rgba(0,194,122,.85);box-shadow:0 0 7px rgba(0,194,122,.6)}
+.star.orange{background:rgba(255,74,28,.85);box-shadow:0 0 7px rgba(255,74,28,.6)}
+.star.cyan{background:rgba(138,234,192,.75);box-shadow:0 0 7px rgba(138,234,192,.5)}
+@keyframes twinkle{0%,100%{opacity:1;transform:scale(1)}50%{opacity:.15;transform:scale(.65)}}
+
+/* ── Pulse wave ── */
+.pulse-wave{position:fixed;left:50%;top:50%;width:0;height:0;border-radius:50%;transform:translate(-50%,-50%);border:1px solid rgba(0,194,122,0);pointer-events:none;z-index:5}
+body.revealed .pulse-wave{animation:pulse-out 1.6s cubic-bezier(0,0,.2,1) forwards}
+@keyframes pulse-out{0%{width:0;height:0;border-color:rgba(0,194,122,.8);border-width:2px;opacity:1}60%{border-color:rgba(0,194,122,.25)}100%{width:1800px;height:1800px;border-color:rgba(0,194,122,0);opacity:0}}
+
+/* ── Orbit rings ── */
+/* Radii: r1=85 r2=140 r3=195 r4=250 r5=305 */
+.orb-ring{position:fixed;border-radius:50%;left:50%;top:50%;transform:translate(-50%,-50%);pointer-events:none;overflow:visible;z-index:2;transition:border-color 1.2s ease,box-shadow 1.4s ease}
+.orb-r1{width:170px; height:170px; border:1px solid rgba(0,194,122,.15)}
+.orb-r2{width:280px; height:280px; border:1px dashed rgba(196,154,58,.12)}
+.orb-r3{width:390px; height:390px; border:1px dotted rgba(0,150,204,.10)}
+.orb-r4{width:500px; height:500px; border:1px solid rgba(107,78,255,.09)}
+.orb-r5{width:610px; height:610px; border:1px dashed rgba(255,74,28,.08)}
+body.revealed .orb-r1{border-color:rgba(0,194,122,.40);box-shadow:0 0 14px rgba(0,194,122,.08)}
+body.revealed .orb-r2{border-color:rgba(196,154,58,.34)}
+body.revealed .orb-r3{border-color:rgba(0,150,204,.30)}
+body.revealed .orb-r4{border-color:rgba(107,78,255,.26)}
+body.revealed .orb-r5{border-color:rgba(255,74,28,.22)}
+
+/* ── Orbital arms ── */
+.orb-arm{position:absolute;width:0;height:0;top:0;left:50%;pointer-events:none}
+.orb-r1 .orb-arm{transform-origin:0 85px}
+.orb-r2 .orb-arm{transform-origin:0 140px}
+.orb-r3 .orb-arm{transform-origin:0 195px}
+.orb-r4 .orb-arm{transform-origin:0 250px}
+.orb-r5 .orb-arm{transform-origin:0 305px}
+@keyframes arm-spin{from{transform:rotate(0deg)}to{transform:rotate(360deg)}}
+.arm-conniku{animation:arm-spin 18s linear infinite;animation-delay:-3s}
+.arm-tutores{animation:arm-spin 32s linear infinite;animation-delay:-10s}
+.arm-empleos{animation:arm-spin 50s linear infinite;animation-delay:-22s}
+.arm-entrar {animation:arm-spin 72s linear infinite;animation-delay:-35s}
+.arm-crear  {animation:arm-spin 96s linear infinite;animation-delay:-55s}
+
+/* ── Planet dot ── */
+.orb-vis{position:absolute;border-radius:50%;width:7px;height:7px;top:-3.5px;left:-3.5px;pointer-events:none;transition:width .5s ease,height .5s ease,top .5s ease,left .5s ease,box-shadow .5s ease,opacity .5s ease}
+.orb-vis.landing{width:13px;height:13px;top:-6.5px;left:-6.5px}
+.vis-conniku{background:radial-gradient(circle at 35% 30%,#8AEAC0,#006E4A);box-shadow:0 0 8px rgba(0,194,122,.85)}
+.vis-tutores{background:radial-gradient(circle at 35% 30%,#FFE9B8,#C49A3A);box-shadow:0 0 8px rgba(196,154,58,.85)}
+.vis-empleos{background:radial-gradient(circle at 35% 30%,#67E8F9,#0096CC);box-shadow:0 0 8px rgba(0,150,204,.85)}
+.vis-entrar {background:radial-gradient(circle at 35% 30%,#C4B5FD,#6B4EFF);box-shadow:0 0 8px rgba(107,78,255,.85)}
+.vis-crear  {background:radial-gradient(circle at 35% 30%,#FFBDAB,#FF4A1C);box-shadow:0 0 8px rgba(255,74,28,.85)}
+.vis-conniku.landing{box-shadow:0 0 22px rgba(0,194,122,1),0 0 44px rgba(0,194,122,.4)}
+.vis-tutores.landing{box-shadow:0 0 22px rgba(196,154,58,1),0 0 44px rgba(196,154,58,.4)}
+.vis-empleos.landing{box-shadow:0 0 22px rgba(0,150,204,1),0 0 44px rgba(0,150,204,.4)}
+.vis-entrar.landing {box-shadow:0 0 22px rgba(107,78,255,1),0 0 44px rgba(107,78,255,.4)}
+.vis-crear.landing  {box-shadow:0 0 22px rgba(255,74,28,1), 0 0 44px rgba(255,74,28,.4)}
+
+/* ── ETIQUETA buttons (final state) ── */
+.planet-btn{
+  position:fixed;left:50%;transform:translate(-50%,-50%);
+  display:flex;align-items:center;gap:9px;
+  padding:11px 20px 11px 14px;border-radius:100px;
+  font-family:'Geist Mono',monospace;font-size:11.5px;font-weight:600;letter-spacing:.05em;
+  text-decoration:none;white-space:nowrap;border:1px solid;
+  opacity:0;pointer-events:none;
+  transition:opacity .5s ease,box-shadow .22s ease,background .22s ease,transform .22s ease;
+  z-index:10;
+}
+.planet-btn.visible{opacity:1;pointer-events:all}
+.planet-btn:hover{transform:translate(-50%,-50%) scale(1.045)}
+.pb-dot{width:7px;height:7px;border-radius:50%;flex-shrink:0}
+.pb-arr{font-size:10px;opacity:.5;margin-left:2px;transition:opacity .18s,margin-left .18s}
+.planet-btn:hover .pb-arr{opacity:1;margin-left:5px}
+
+/* 3 active planets only */
+#pb-conniku{top:calc(50% - 85px);background:rgba(0,194,122,.13);border-color:rgba(0,194,122,.45);color:#8AEAC0;box-shadow:0 0 18px rgba(0,194,122,.12);padding:13px 24px 13px 18px;font-size:12px}
+#pb-conniku:hover{background:rgba(0,194,122,.22);border-color:rgba(0,194,122,.72);box-shadow:0 0 30px rgba(0,194,122,.28)}
+#pb-entrar{top:calc(50% + 250px);background:rgba(107,78,255,.11);border-color:rgba(107,78,255,.40);color:#C4B5FD;box-shadow:0 0 14px rgba(107,78,255,.09)}
+#pb-entrar:hover{background:rgba(107,78,255,.20);border-color:rgba(107,78,255,.65);box-shadow:0 0 24px rgba(107,78,255,.22)}
+#pb-crear{top:calc(50% + 305px);background:rgba(255,74,28,.11);border-color:rgba(255,74,28,.40);color:#FFBDAB;box-shadow:0 0 14px rgba(255,74,28,.09)}
+#pb-crear:hover{background:rgba(255,74,28,.20);border-color:rgba(255,74,28,.65);box-shadow:0 0 24px rgba(255,74,28,.22)}
+/* Decorative planet click burst */
+@keyframes deco-burst{0%{transform:scale(1);opacity:1}40%{transform:scale(2.8);opacity:.7}100%{transform:scale(1);opacity:1}}
+.orb-vis.deco-click{animation:deco-burst .65s cubic-bezier(.3,1.5,.4,1) forwards!important}
+
+/* ── Center engine ── */
+.center{position:fixed;left:50%;top:50%;transform:translate(-50%,-50%);display:flex;flex-direction:column;align-items:center;z-index:15;transition:opacity 1s ease,transform 1s ease}
+body.revealing .center{opacity:0;pointer-events:none;transform:translate(-50%,-50%) scale(.9)}
+.engine-wrap{display:flex;flex-direction:column;align-items:center;gap:16px;cursor:pointer;position:relative}
+.engine-btn{width:340px;height:340px;position:relative;display:grid;place-items:center}
+.eng-orbit{position:absolute;width:168px;height:168px;border-radius:50%;border:1px solid rgba(0,194,122,.14);animation:eng-breathe 3.6s ease-in-out infinite}
+.eng-orbit-2{position:absolute;width:148px;height:148px;border-radius:50%;border:1px dashed rgba(0,194,122,.10);animation:eng-breathe 3.6s .6s ease-in-out infinite}
+@keyframes eng-breathe{0%,100%{opacity:.6;transform:scale(1)}50%{opacity:1;transform:scale(1.025)}}
+.eng-ticks{position:absolute;width:168px;height:168px;top:50%;left:50%;transform:translate(-50%,-50%)}
+.eng-radar{position:absolute;width:128px;height:128px;border-radius:50%;background:conic-gradient(from 0deg,rgba(0,194,122,.22) 0deg,rgba(0,194,122,.08) 35deg,transparent 60deg);animation:radar-sweep 4s linear infinite}
+@keyframes radar-sweep{from{transform:rotate(0deg)}to{transform:rotate(360deg)}}
+.eng-precision{position:absolute;width:110px;height:110px;border-radius:50%;border:1px solid rgba(0,194,122,.28);box-shadow:inset 0 0 16px rgba(0,194,122,.05)}
+/* ── ORBIT·U center face ── */
+.eng-face{width:96px;height:96px;border-radius:50%;background:radial-gradient(circle at 38% 32%,#001C12,#050708);border:1.5px solid rgba(0,194,122,.48);display:grid;place-items:center;z-index:2;position:relative;box-shadow:inset 0 1px 0 rgba(0,194,122,.14),0 0 28px rgba(0,194,122,.20),0 0 56px rgba(0,194,122,.08);transition:border-color .3s ease,box-shadow .3s ease;overflow:hidden}
+.ou-svg{width:96px;height:96px;position:absolute;inset:0}
+.ou-u{font-family:'Funnel Display',sans-serif;font-weight:900;font-size:32px;fill:url(#ouGrad);letter-spacing:-.04em;transition:opacity .6s ease}
+.ou-start{font-family:'Geist Mono',monospace;font-size:6px;font-weight:600;fill:rgba(0,194,122,.72);letter-spacing:3px;transition:opacity .6s ease}
+.ou-ring-text{transition:opacity .6s ease}
+.face-logo{display:none} /* disabled — we update SVG directly */
+.engine-wrap:hover .eng-face{border-color:rgba(0,194,122,.82);box-shadow:inset 0 1px 0 rgba(0,194,122,.22),0 0 40px rgba(0,194,122,.35),0 0 80px rgba(0,194,122,.16)}
+.engine-wrap:hover .eng-radar{animation-duration:2.2s}
+.engine-wrap:hover .ou-u{filter:drop-shadow(0 0 6px rgba(138,234,192,.6))}
+
+/* ── Panel brand (official logo) ── */
+.pa-brand{display:flex;align-items:center;gap:14px;margin-bottom:6px}
+.pa-icon-tile{width:44px;height:44px;background:linear-gradient(135deg,#8AEAC0,#006E4A);border-radius:10px;transform:rotate(-12deg);display:grid;place-items:center;flex-shrink:0;box-shadow:0 3px 14px rgba(0,0,0,.55),0 0 22px rgba(0,194,122,.22)}
+.pa-icon-inner{font-family:'Funnel Display',sans-serif;font-weight:900;font-size:21px;color:#0D0F10;letter-spacing:-.05em;transform:rotate(12deg);display:flex;align-items:baseline;line-height:1}
+.pa-icon-odot{color:#FF4A1C;font-size:18px}
+.pa-wordmark{font-family:'Funnel Display',sans-serif;font-weight:900;font-size:36px;letter-spacing:-.05em;color:#F5F4EF;line-height:1}
+.pa-wordmark em{font-style:italic;opacity:.38}
+.pa-utile{display:inline-flex;align-items:baseline;background:#D9FF3A;color:#0D0F10;padding:.07em .14em .07em .09em;border-radius:.2em;margin-left:.02em}
+.pa-udot{color:#FF4A1C}
+.engine-wrap.igniting .eng-face{animation:ignite-flash .35s ease forwards}
+@keyframes ignite-flash{0%{box-shadow:inset 0 1px 0 rgba(0,194,122,.15),0 0 24px rgba(0,194,122,.18)}40%{background:radial-gradient(circle,rgba(0,194,122,.35),rgba(0,194,122,.08) 60%,transparent);box-shadow:0 0 60px rgba(0,194,122,.55),0 0 120px rgba(0,194,122,.25)}100%{box-shadow:inset 0 1px 0 rgba(0,194,122,.15),0 0 24px rgba(0,194,122,.18)}}
+.eng-status{position:fixed;left:50%;bottom:14px;transform:translateX(-50%);display:flex;flex-direction:row;align-items:center;gap:10px;z-index:35;transition:opacity .6s ease}
+.eng-status-line{font-family:'Geist Mono',monospace;font-size:9px;font-weight:500;color:rgba(0,194,122,.38);letter-spacing:.14em;text-transform:uppercase}
+.eng-status-line.primary{color:rgba(0,194,122,.60);font-size:10px}
+.eng-status-dot{display:inline-block;width:4px;height:4px;border-radius:50%;background:rgba(0,194,122,.7);box-shadow:0 0 5px rgba(0,194,122,.6);margin-right:5px;animation:dot-blink 1.8s ease-in-out infinite}
+@keyframes dot-blink{0%,100%{opacity:1}50%{opacity:.25}}
+
+/* ── Panel A · Glass ── */
+.panel-a{position:fixed;left:0;top:0;bottom:0;width:290px;z-index:20;background:rgba(5,6,8,.82);backdrop-filter:blur(24px);-webkit-backdrop-filter:blur(24px);border-right:1px solid rgba(0,194,122,.12);display:flex;flex-direction:column;padding:40px 32px;opacity:0;pointer-events:none;transition:opacity .55s ease,transform .55s ease;transform:translateX(-16px)}
+.panel-a.visible{opacity:1;pointer-events:all;transform:translateX(0)}
+.pa-badge{font-family:'Geist Mono',monospace;font-size:9px;letter-spacing:.2em;color:rgba(0,194,122,.6);background:rgba(0,194,122,.07);border:1px solid rgba(0,194,122,.18);padding:4px 10px;border-radius:4px;width:fit-content;margin-bottom:20px}
+.pa-logo{font-family:'Funnel Display',sans-serif;font-weight:900;font-size:42px;letter-spacing:-.055em;color:#F5F4EF;line-height:1;margin-bottom:4px}
+.pa-logo em{font-style:italic;opacity:.38}
+.pa-product{font-family:'Geist Mono',monospace;font-size:10px;color:rgba(0,194,122,.5);letter-spacing:.2em;margin-bottom:28px}
+.pa-sep{height:1px;background:linear-gradient(to right,rgba(0,194,122,.3),transparent);margin-bottom:24px}
+.pa-tagline{font-family:'Funnel Display',sans-serif;font-weight:800;font-size:22px;letter-spacing:-.03em;color:#F5F4EF;line-height:1.25;margin-bottom:10px}
+.pa-tagline em{color:#00C27A;font-style:normal}
+.pa-sub{font-family:'Geist Mono',monospace;font-size:9px;color:rgba(245,244,239,.30);letter-spacing:.09em;line-height:1.8;margin-bottom:24px}
+.pa-sep2{height:1px;background:rgba(245,244,239,.06);margin-bottom:24px}
+.pa-desc{font-size:13px;color:rgba(245,244,239,.40);line-height:1.8;margin-bottom:32px;flex:1}
+.pa-desc strong{color:rgba(245,244,239,.70);font-weight:600}
+.pa-stats{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:28px}
+.pa-stat{border:1px solid rgba(245,244,239,.07);border-radius:8px;padding:10px 12px;background:rgba(245,244,239,.02)}
+.pa-stat-n{font-family:'Funnel Display',sans-serif;font-weight:900;font-size:24px;color:#00C27A;letter-spacing:-.04em}
+.pa-stat-l{font-family:'Geist Mono',monospace;font-size:9px;color:rgba(245,244,239,.28);letter-spacing:.08em;margin-top:1px}
+.pa-cta{display:flex;align-items:center;gap:8px;font-family:'Geist Mono',monospace;font-size:10px;color:#00C27A;letter-spacing:.1em;padding:12px 16px;border:1px solid rgba(0,194,122,.3);border-radius:8px;background:rgba(0,194,122,.06);cursor:pointer;transition:all .2s;text-decoration:none}
+.pa-cta:hover{background:rgba(0,194,122,.14);border-color:rgba(0,194,122,.55)}
+.pa-cta-arr{margin-left:auto;font-size:12px}
+
+/* ── Modales ── */
+.modal-overlay{
+  position:fixed;inset:0;z-index:100;
+  background:rgba(5,6,8,.88);backdrop-filter:blur(18px);-webkit-backdrop-filter:blur(18px);
+  display:flex;align-items:center;justify-content:center;padding:24px;
+  opacity:0;pointer-events:none;transition:opacity .28s ease;
+}
+.modal-overlay.open{opacity:1;pointer-events:all}
+.modal-card{
+  width:100%;max-width:400px;
+  background:rgba(10,12,15,.97);border:1px solid rgba(0,194,122,.2);
+  border-radius:20px;padding:36px 32px;position:relative;
+  transform:translateY(12px) scale(.98);transition:transform .3s cubic-bezier(.2,1,.3,1);
+  box-shadow:0 0 60px rgba(0,194,122,.08),0 24px 48px rgba(0,0,0,.55);
+}
+.modal-overlay.open .modal-card{transform:translateY(0) scale(1)}
+.modal-close{
+  position:absolute;top:16px;right:16px;width:28px;height:28px;border-radius:50%;
+  background:rgba(245,244,239,.06);border:1px solid rgba(245,244,239,.08);
+  color:rgba(245,244,239,.4);font-size:14px;cursor:pointer;
+  display:grid;place-items:center;transition:all .15s;
+}
+.modal-close:hover{background:rgba(245,244,239,.12);color:#F5F4EF}
+.modal-logo{text-align:center;margin-bottom:22px}
+.modal-logo-mark{
+  font-family:'Funnel Display',sans-serif;font-weight:900;
+  font-size:26px;letter-spacing:-.055em;color:#F5F4EF;
+  display:inline-flex;align-items:baseline;line-height:1;
+}
+.modal-logo-mark em{font-style:italic;opacity:.38}
+.modal-logo-tile{
+  display:inline-flex;align-items:baseline;
+  background:#D9FF3A;color:#0D0F10;
+  padding:.07em .14em .07em .09em;border-radius:.2em;margin-left:.02em;
+}
+.modal-logo-dot{color:#FF4A1C}
+.modal-title{
+  font-family:'Funnel Display',sans-serif;font-weight:900;
+  font-size:22px;letter-spacing:-.035em;color:#F5F4EF;
+  text-align:center;margin-bottom:4px;
+}
+.modal-sub{font-size:12px;color:rgba(245,244,239,.32);text-align:center;margin-bottom:28px;font-family:'Geist Mono',monospace;letter-spacing:.03em}
+.modal-sep{height:1px;background:rgba(245,244,239,.07);margin-bottom:24px}
+.mf-group{margin-bottom:14px}
+.mf-label{
+  display:block;font-family:'Geist Mono',monospace;font-size:10px;
+  font-weight:600;letter-spacing:.1em;color:rgba(245,244,239,.35);
+  text-transform:uppercase;margin-bottom:6px;
+}
+.mf-input{
+  width:100%;background:rgba(245,244,239,.04);border:1px solid rgba(245,244,239,.1);
+  border-radius:9px;padding:11px 14px;
+  font-family:'Inter',sans-serif;font-size:14px;color:#F5F4EF;
+  outline:none;transition:border-color .18s,box-shadow .18s;
+  -webkit-appearance:none;
+}
+.mf-input::placeholder{color:rgba(245,244,239,.22)}
+.mf-input:focus{border-color:rgba(0,194,122,.55);box-shadow:0 0 0 3px rgba(0,194,122,.08)}
+.mf-row{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.mf-hint{font-size:11px;color:rgba(245,244,239,.26);font-family:'Geist Mono',monospace;letter-spacing:.03em;margin-top:4px}
+.mf-link{
+  font-size:11px;color:rgba(0,194,122,.6);font-family:'Geist Mono',monospace;
+  letter-spacing:.04em;text-decoration:none;float:right;margin-top:-2px;
+  transition:color .15s;
+}
+.mf-link:hover{color:rgba(0,194,122,1)}
+.modal-btn{
+  width:100%;padding:13px;border-radius:10px;margin-top:8px;
+  background:#00C27A;border:none;color:#050608;
+  font-family:'Geist Mono',monospace;font-size:12px;font-weight:700;
+  letter-spacing:.1em;text-transform:uppercase;cursor:pointer;
+  transition:background .18s,box-shadow .18s,transform .12s;
+}
+.modal-btn:hover{background:#00D988;box-shadow:0 0 24px rgba(0,194,122,.35);transform:translateY(-1px)}
+.modal-btn:active{transform:translateY(0)}
+.modal-switch{
+  text-align:center;margin-top:20px;
+  font-size:12px;color:rgba(245,244,239,.28);font-family:'Geist Mono',monospace;letter-spacing:.03em;
+}
+.modal-switch a{color:rgba(0,194,122,.7);text-decoration:none;transition:color .15s}
+.modal-switch a:hover{color:#00C27A}
+.mf-select{
+  width:100%;background:rgba(245,244,239,.04);border:1px solid rgba(245,244,239,.1);
+  border-radius:9px;padding:11px 14px;
+  font-family:'Inter',sans-serif;font-size:14px;color:#F5F4EF;
+  outline:none;transition:border-color .18s;-webkit-appearance:none;cursor:pointer;
+}
+.mf-select:focus{border-color:rgba(0,194,122,.55);box-shadow:0 0 0 3px rgba(0,194,122,.08)}
+.mf-select option{background:#0A0C0F;color:#F5F4EF}
+/* ── Footer ── */
+.site-footer{position:fixed;bottom:0;left:0;right:0;z-index:30;padding:14px 32px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px;border-top:1px solid rgba(245,244,239,.04);background:linear-gradient(to top,rgba(5,6,8,.85),transparent)}
+.footer-copy{font-family:'Geist Mono',monospace;font-size:10px;color:rgba(245,244,239,.22);letter-spacing:.06em;white-space:nowrap}
+.footer-links{display:flex;align-items:center;gap:20px;flex-wrap:wrap}
+.footer-links a{font-family:'Geist Mono',monospace;font-size:10px;color:rgba(245,244,239,.28);letter-spacing:.06em;text-decoration:none;white-space:nowrap;transition:color .15s}
+.footer-links a:hover{color:rgba(0,194,122,.75)}
+.footer-sep{width:1px;height:10px;background:rgba(245,244,239,.10)}
+body.leaving{animation:fade-leave 1.2s ease forwards}
+@keyframes fade-leave{from{opacity:1}to{opacity:0}}
+
+</style>
+</head>
+<body>
+
+<canvas id="cvs"></canvas>
+
+<div class="universe">
+  <span class="star xl"      style="top:6%;left:18%;--dur:3.4s;--delay:0s"></span>
+  <span class="star l green" style="top:14%;left:55%;--dur:2.8s;--delay:.6s"></span>
+  <span class="star m"       style="top:9%;left:72%;--dur:3.2s;--delay:1.2s"></span>
+  <span class="star l orange"style="top:11%;left:84%;--dur:3.2s;--delay:.4s"></span>
+  <span class="star s"       style="top:5%;left:5%;--dur:2.2s;--delay:1.8s"></span>
+  <span class="star m"       style="top:8%;left:93%;--dur:4s;--delay:.2s"></span>
+  <span class="star l"       style="top:28%;left:7%;--dur:3.6s;--delay:.3s"></span>
+  <span class="star s green" style="top:22%;left:96%;--dur:2.4s;--delay:1.4s"></span>
+  <span class="star xl"      style="top:42%;left:2%;--dur:3.8s;--delay:.8s"></span>
+  <span class="star m orange"style="top:58%;left:97%;--dur:2.9s;--delay:.1s"></span>
+  <span class="star s"       style="top:72%;left:12%;--dur:3.1s;--delay:2s"></span>
+  <span class="star l cyan"  style="top:80%;left:78%;--dur:4.2s;--delay:.5s"></span>
+  <span class="star m"       style="top:88%;left:44%;--dur:2.7s;--delay:1.1s"></span>
+  <span class="star xl green"style="top:38%;left:88%;--dur:4.8s;--delay:1.6s"></span>
+</div>
+
+<div class="pulse-wave"></div>
+
+<!-- Orbit ring 1 — conniku (green, r=85) -->
+<div class="orb-ring orb-r1">
+  <div class="orb-arm arm-conniku" id="arm-conniku">
+    <div class="orb-vis vis-conniku" id="vis-conniku"></div>
+  </div>
+</div>
+
+<!-- Orbit ring 2 — tutores (gold, r=140) -->
+<div class="orb-ring orb-r2">
+  <div class="orb-arm arm-tutores" id="arm-tutores">
+    <div class="orb-vis vis-tutores" id="vis-tutores"></div>
+  </div>
+</div>
+
+<!-- Orbit ring 3 — empleos (cyan, r=195) -->
+<div class="orb-ring orb-r3">
+  <div class="orb-arm arm-empleos" id="arm-empleos">
+    <div class="orb-vis vis-empleos" id="vis-empleos"></div>
+  </div>
+</div>
+
+<!-- Orbit ring 4 — entrar (violet, r=250) -->
+<div class="orb-ring orb-r4">
+  <div class="orb-arm arm-entrar" id="arm-entrar">
+    <div class="orb-vis vis-entrar" id="vis-entrar"></div>
+  </div>
+</div>
+
+<!-- Orbit ring 5 — crear (orange, r=305) -->
+<div class="orb-ring orb-r5">
+  <div class="orb-arm arm-crear" id="arm-crear">
+    <div class="orb-vis vis-crear" id="vis-crear"></div>
+  </div>
+</div>
+
+<!-- ETIQUETA buttons — 3 active planets only -->
+<a class="planet-btn" id="pb-conniku" href="pages/conniku.html" onclick="go('pages/conniku.html');return false">
+  <div class="pb-dot" style="background:#00C27A"></div>
+  <span class="pb-name">Conoce el Universo Conniku</span>
+  <span class="pb-arr">→</span>
+</a>
+<a class="planet-btn" id="pb-entrar" href="#" onclick="return openModal('entrar')">
+  <div class="pb-dot" style="background:#6B4EFF"></div>
+  <span class="pb-name">entrar</span>
+  <span class="pb-arr">→</span>
+</a>
+<a class="planet-btn" id="pb-crear" href="#" onclick="return openModal('crear')">
+  <div class="pb-dot" style="background:#FF4A1C"></div>
+  <span class="pb-name">crear cuenta gratis</span>
+  <span class="pb-arr">→</span>
+</a>
+
+<!-- Center engine -->
+<div class="center" id="center">
+  <div class="engine-wrap" id="engineWrap" onclick="startReveal()">
+    <div class="engine-btn">
+      <div class="eng-orbit"></div>
+      <div class="eng-orbit-2"></div>
+      <svg class="eng-ticks" viewBox="0 0 168 168" id="tickSvg"></svg>
+      <div class="eng-radar"></div>
+      <div class="eng-precision"></div>
+      <div class="eng-face" id="engFace">
+        <!-- Texto START · siguiendo el patrón SYS.READY (Geist Mono · uppercase · letter-spacing) -->
+        <div id="ouSvg" style="font-family:'Geist Mono',monospace;font-weight:600;font-size:22px;color:rgba(0,194,122,.85);letter-spacing:.18em;text-transform:uppercase;text-align:center;line-height:1;text-shadow:0 0 12px rgba(0,194,122,.35)">START</div>
+        <text id="ouStart" style="display:none"></text>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Panel A · Glass -->
+<div class="panel-a" id="panelA">
+  <div class="pa-badge">ORBIT-U · CONNIKU</div>
+  <div class="pa-logo"><!-- WORDMARK PENDIENTE --></div>
+  <div class="pa-product">ORBIT · U</div>
+  <div class="pa-sep"></div>
+  <div class="pa-tagline">El <em>sistema operativo</em> de tu vida universitaria.</div>
+  <div class="pa-sub">MENSAJES · WORKSPACE · BIBLIOTECA<br>TUTORES · EMPLEOS · COMUNIDAD</div>
+  <div class="pa-sep2"></div>
+  <div class="pa-desc">
+    Todo lo que necesitas para tu carrera universitaria, <strong>integrado en una sola plataforma.</strong> Hecha para la realidad latinoamericana.
+  </div>
+  <div class="pa-stats">
+    <div class="pa-stat"><div class="pa-stat-n">9</div><div class="pa-stat-l">MÓDULOS</div></div>
+    <div class="pa-stat"><div class="pa-stat-n">1</div><div class="pa-stat-l">PLATAFORMA</div></div>
+    <div class="pa-stat"><div class="pa-stat-n">∞</div><div class="pa-stat-l">POSIBILIDADES</div></div>
+    <div class="pa-stat"><div class="pa-stat-n">CL</div><div class="pa-stat-l">LATINOAMÉRICA</div></div>
+  </div>
+</div>
+
+<footer class="site-footer">
+  <span class="footer-copy">© 2026 Conniku SpA · Todos los derechos reservados</span>
+  <nav class="footer-links">
+    <a href="pages/terminos.html">Términos de servicio</a>
+    <div class="footer-sep"></div>
+    <a href="pages/privacidad.html">Política de privacidad</a>
+    <div class="footer-sep"></div>
+    <a href="pages/soporte.html">Soporte</a>
+    <div class="footer-sep"></div>
+    <a href="pages/contacto.html">Contacto</a>
+    <div class="footer-sep"></div>
+    <a href="pages/empleo-conniku.html">Trabaja con nosotros</a>
+  </nav>
+</footer>
+
+<script>
+/* ── Tick marks ── */
+(function(){
+  var svg=document.getElementById('tickSvg');
+  var cx=84,cy=84,total=72,major=6,oR=82,iMaj=73,iMin=77;
+  for(var i=0;i<total;i++){
+    var ang=(i/total)*360-90,rad=ang*Math.PI/180,maj=(i%major===0),iR=maj?iMaj:iMin;
+    var ln=document.createElementNS('http://www.w3.org/2000/svg','line');
+    ln.setAttribute('x1',(cx+oR*Math.cos(rad)).toFixed(2));ln.setAttribute('y1',(cy+oR*Math.sin(rad)).toFixed(2));
+    ln.setAttribute('x2',(cx+iR*Math.cos(rad)).toFixed(2));ln.setAttribute('y2',(cy+iR*Math.sin(rad)).toFixed(2));
+    ln.setAttribute('stroke',maj?'rgba(0,194,122,.55)':'rgba(0,194,122,.20)');
+    ln.setAttribute('stroke-width',maj?'1.5':'0.8');
+    svg.appendChild(ln);
+  }
+})();
+
+/* ── HEX canvas ── */
+var cvs=document.getElementById('cvs'),ctx=cvs.getContext('2d');
+var W,H,tick=0,hexes=[];
+var S=28,SQ3=Math.sqrt(3);
+var I=0.85; /* multiplicador global de intensidad del efecto hex (1 = original, 0.85 = -15%) */
+var PCOLS=[[0,194,122],[196,154,58],[0,150,204],[107,78,255],[255,74,28]];
+var revealed=false;
+
+function resize(){W=cvs.width=innerWidth;H=cvs.height=innerHeight;buildHexes();}
+function buildHexes(){
+  hexes=[];
+  var cols=Math.ceil(W/(S*SQ3))+3,rows=Math.ceil(H/(S*1.5))+3;
+  for(var r=0;r<rows;r++) for(var c=0;c<cols;c++){
+    var ox=(r%2)*S*SQ3*.5;
+    hexes.push({cx:c*S*SQ3+ox-S*SQ3,cy:r*S*1.5-S*1.5,glow:0,cr:0,cg:194,cb:122});
+  }
+}
+resize();window.addEventListener('resize',resize);
+
+/* Get live planet position from its arm dot OR fixed position after reveal */
+var RADII=[85,140,195,250,305];
+var ARM_IDS=['arm-conniku','arm-tutores','arm-empleos','arm-entrar','arm-crear'];
+function getPlanetPos(i){
+  if(revealed){
+    return {x:W/2, y:i===0 ? H/2-RADII[0] : H/2+RADII[i]};
+  }
+  var arm=document.getElementById(ARM_IDS[i]);
+  if(!arm) return {x:W/2,y:H/2};
+  var vis=arm.firstElementChild;
+  if(!vis) return {x:W/2,y:H/2};
+  var r=vis.getBoundingClientRect();
+  return {x:r.left+r.width/2,y:r.top+r.height/2};
+}
+
+function hexPath(cx,cy,s){
+  ctx.beginPath();
+  for(var i=0;i<6;i++){var a=Math.PI/180*(60*i-30);i===0?ctx.moveTo(cx+s*Math.cos(a),cy+s*Math.sin(a)):ctx.lineTo(cx+s*Math.cos(a),cy+s*Math.sin(a));}
+  ctx.closePath();
+}
+
+function frame(){
+  requestAnimationFrame(frame);
+  ctx.fillStyle='rgba(5,6,8,0.18)';ctx.fillRect(0,0,W,H);
+  tick++;
+  for(var h=0;h<hexes.length;h++){
+    var hx=hexes[h];
+    hx.glow=Math.max(0,hx.glow-.011);
+    for(var i=0;i<5;i++){
+      var p=getPlanetPos(i);
+      var d=Math.hypot(hx.cx-p.x,hx.cy-p.y),rng=S*4.2;
+      var pulse=1+Math.sin(tick*.03+i*.9)*.12;
+      if(d<rng){var s=(1-d/rng)*pulse*.9;if(s>hx.glow){hx.glow=s;hx.cr=PCOLS[i][0];hx.cg=PCOLS[i][1];hx.cb=PCOLS[i][2];}}
+    }
+    hexPath(hx.cx,hx.cy,S*.88);
+    ctx.fillStyle='rgba('+hx.cr+','+hx.cg+','+hx.cb+','+(hx.glow*.06*I)+')';ctx.fill();
+    ctx.strokeStyle='rgba('+hx.cr+','+hx.cg+','+hx.cb+','+((0.032+hx.glow*.2)*I)+')';ctx.lineWidth=.65;ctx.stroke();
+    if(hx.glow>.18){ctx.beginPath();ctx.arc(hx.cx,hx.cy,.8+hx.glow*1.5,0,Math.PI*2);ctx.fillStyle='rgba('+hx.cr+','+hx.cg+','+hx.cb+','+(hx.glow*.5*I)+')';ctx.fill();}
+  }
+  var cg=ctx.createRadialGradient(W/2,H/2,0,W/2,H/2,90);
+  cg.addColorStop(0,'rgba(0,194,122,'+((0.08+Math.sin(tick*.025)*.025)*I)+')');
+  cg.addColorStop(1,'rgba(0,194,122,0)');
+  ctx.fillStyle=cg;ctx.beginPath();ctx.arc(W/2,H/2,90,0,Math.PI*2);ctx.fill();
+  ctx.strokeStyle='rgba(245,244,239,0.025)';ctx.lineWidth=1;ctx.setLineDash([4,8]);
+  ctx.beginPath();ctx.moveTo(W/2,H/2-350);ctx.lineTo(W/2,H/2+350);ctx.stroke();ctx.setLineDash([]);
+}
+frame();
+
+/* ── Reveal sequence ── */
+var started=false;
+
+/* 3 active planets — tutores & empleos stay orbiting (decorative) */
+var PCONF=[
+  {armId:'arm-conniku',visId:'vis-conniku',btnId:'pb-conniku',target:0,  triggerAt:1000},
+  {armId:'arm-entrar', visId:'vis-entrar', btnId:'pb-entrar', target:180,triggerAt:2200},
+  {armId:'arm-crear',  visId:'vis-crear',  btnId:'pb-crear',  target:180,triggerAt:3400},
+];
+/* Decorative planets — click bursts then keeps orbiting */
+['vis-tutores','vis-empleos'].forEach(function(id){
+  var el=document.getElementById(id);
+  if(!el) return;
+  el.style.cursor='pointer';
+  el.addEventListener('click',function(){
+    el.classList.remove('deco-click');
+    void el.offsetWidth;
+    el.classList.add('deco-click');
+    setTimeout(function(){el.classList.remove('deco-click');},700);
+  });
+});
+
+function getArmAngle(el){
+  var mat=window.getComputedStyle(el).transform;
+  if(!mat||mat==='none') return 0;
+  var m=mat.match(/matrix\(([^)]+)\)/);
+  if(!m) return 0;
+  var v=m[1].split(',').map(Number);
+  return (((Math.atan2(v[1],v[0])*180/Math.PI)%360)+360)%360;
+}
+
+function stopArmAt(armEl,targetDeg,dur){
+  var cur=getArmAngle(armEl);
+  /* Clockwise + two extra full turns for graceful wind-down */
+  var delta=((targetDeg-cur)%360+360)%360+720;
+  var final=cur+delta;
+  armEl.style.animation='none';
+  armEl.style.transition='none';
+  armEl.style.transform='rotate('+cur+'deg)';
+  armEl.offsetHeight; /* reflow */
+  /* Very soft ease-out: fast start, long gentle deceleration */
+  armEl.style.transition='transform '+dur+'ms cubic-bezier(0.08,1,0.18,1)';
+  armEl.style.transform='rotate('+final+'deg)';
+}
+
+function startReveal(){
+  if(started) return;
+  started=true;
+  var wrap=document.getElementById('engineWrap');
+  wrap.classList.add('igniting');
+  wrap.onclick=null;
+
+  setTimeout(function(){
+    document.body.classList.add('revealing');
+    setTimeout(function(){document.body.classList.add('revealed');},200);
+  },350);
+
+  PCONF.forEach(function(p){
+    setTimeout(function(){
+      var arm=document.getElementById(p.armId);
+      var vis=document.getElementById(p.visId);
+      stopArmAt(arm,p.target,2600);
+      vis.classList.add('landing');
+      /* Button fades in as arm settles (triggerAt + 2700ms) */
+      setTimeout(function(){
+        vis.style.opacity='0';
+        document.getElementById(p.btnId).classList.add('visible');
+      },2700);
+    },p.triggerAt);
+  });
+
+  var allDone=3400+2700; /* last planet button shows at ~6100ms */
+
+  /* Fade status text after first planet starts moving */
+  setTimeout(function(){
+    document.getElementById('engStatus').style.opacity='0';
+  },3200);
+
+  /* Panel A slides in */
+  setTimeout(function(){
+    document.getElementById('panelA').classList.add('visible');
+    revealed=true; /* canvas switches to fixed positions */
+  },allDone+200);
+
+  /* Center logo */
+  setTimeout(function(){
+    var c=document.getElementById('center');
+    c.style.transition='opacity 1.2s ease,transform 1.2s ease';
+    c.style.opacity='1';
+    c.style.transform='translate(-50%,-50%) scale(1)';
+    c.style.pointerEvents='auto';
+    /* Brighten the seal: hide START, glow ring text */
+    var s=document.getElementById('ouStart');
+    if(s){s.style.opacity='0';}
+    var rt=document.querySelector('.ou-ring-text');
+    if(rt){rt.style.transition='fill .8s ease';rt.setAttribute('fill','rgba(0,194,122,0.85)');}
+    var face=document.getElementById('engFace');
+    if(face){face.style.boxShadow='inset 0 1px 0 rgba(0,194,122,.22),0 0 48px rgba(0,194,122,.38),0 0 96px rgba(0,194,122,.18)';}
+    /* Ícono central → navega al universo de módulos */
+    var wrap=document.getElementById('engineWrap');
+    wrap.style.cursor='pointer';
+    wrap.onclick=function(){ go('pages/conniku.html'); };
+  },allDone+400);
+}
+
+function go(href){
+  if(!started) return;
+  document.body.classList.add('leaving');
+  setTimeout(function(){window.location.href=href;},1000);
+}
+
+function openModal(type){
+  var id=type==='entrar'?'modalEntrar':'modalCrear';
+  document.getElementById(id).classList.add('open');
+  document.body.style.overflow='hidden';
+  return false;
+}
+function closeModal(type){
+  var id=type==='entrar'?'modalEntrar':'modalCrear';
+  document.getElementById(id).classList.remove('open');
+  document.body.style.overflow='';
+}
+function switchModal(from,to){
+  closeModal(from);
+  setTimeout(function(){openModal(to);},180);
+}
+/* Close on overlay click */
+['modalEntrar','modalCrear'].forEach(function(id){
+  document.getElementById(id).addEventListener('click',function(e){
+    if(e.target===this) closeModal(id==='modalEntrar'?'entrar':'crear');
+  });
+});
+/* Close on Escape */
+document.addEventListener('keydown',function(e){
+  if(e.key==='Escape'){closeModal('entrar');closeModal('crear');}
+});
+function handleLogin(){
+  var email=document.getElementById('loginEmail').value.trim();
+  var pass=document.getElementById('loginPass').value;
+  if(!email||!pass) return;
+  go('pages/conniku.html');
+}
+function handleRegistro(){
+  var email=document.getElementById('regEmail').value.trim();
+  var pass=document.getElementById('regPass').value;
+  var univ=document.getElementById('regUniv').value;
+  if(!email||!pass||!univ) return;
+  go('pages/bienvenida.html');
+}
+</script>
+
+<!-- Modal · Entrar -->
+<div class="modal-overlay" id="modalEntrar">
+  <div class="modal-card">
+    <button class="modal-close" onclick="closeModal('entrar')">✕</button>
+    <div class="modal-logo">
+      <span class="modal-logo-mark"><!-- WORDMARK PENDIENTE --></span>
+    </div>
+    <div class="modal-title">Bienvenido de vuelta</div>
+    <div class="modal-sub">Accede a tu cuenta Conniku</div>
+    <div class="modal-sep"></div>
+    <div class="mf-group">
+      <label class="mf-label">Correo electrónico</label>
+      <input class="mf-input" type="email" placeholder="tu@universidad.cl" id="loginEmail" autocomplete="email"/>
+    </div>
+    <div class="mf-group">
+      <label class="mf-label">Contraseña <a class="mf-link" href="pages/login.html">¿Olvidaste tu contraseña?</a></label>
+      <input class="mf-input" type="password" placeholder="••••••••" id="loginPass" autocomplete="current-password"/>
+    </div>
+    <button class="modal-btn" onclick="handleLogin()">Entrar →</button>
+    <div class="modal-switch">¿No tienes cuenta? <a href="#" onclick="switchModal('entrar','crear');return false">Crear cuenta gratis</a></div>
+  </div>
+</div>
+
+<!-- Modal · Crear cuenta -->
+<div class="modal-overlay" id="modalCrear">
+  <div class="modal-card">
+    <button class="modal-close" onclick="closeModal('crear')">✕</button>
+    <div class="modal-logo">
+      <span class="modal-logo-mark"><!-- WORDMARK PENDIENTE --></span>
+    </div>
+    <div class="modal-title">Crea tu cuenta</div>
+    <div class="modal-sub">Empieza gratis · Sin tarjeta de crédito</div>
+    <div class="modal-sep"></div>
+    <div class="mf-row">
+      <div class="mf-group">
+        <label class="mf-label">Nombre</label>
+        <input class="mf-input" type="text" placeholder="Tu nombre" id="regNombre" autocomplete="given-name"/>
+      </div>
+      <div class="mf-group">
+        <label class="mf-label">Apellido</label>
+        <input class="mf-input" type="text" placeholder="Tu apellido" id="regApellido" autocomplete="family-name"/>
+      </div>
+    </div>
+    <div class="mf-group">
+      <label class="mf-label">Correo electrónico</label>
+      <input class="mf-input" type="email" placeholder="tu@universidad.cl" id="regEmail" autocomplete="email"/>
+    </div>
+    <div class="mf-group">
+      <label class="mf-label">Contraseña</label>
+      <input class="mf-input" type="password" placeholder="Mínimo 8 caracteres" id="regPass" autocomplete="new-password"/>
+      <div class="mf-hint">Usa letras, números y símbolos</div>
+    </div>
+    <div class="mf-group">
+      <label class="mf-label">Universidad</label>
+      <select class="mf-select" id="regUniv">
+        <option value="" disabled selected>Selecciona tu universidad</option>
+        <option>Universidad de Chile</option>
+        <option>Pontificia Universidad Católica de Chile</option>
+        <option>Universidad de Concepción</option>
+        <option>Universidad de Santiago de Chile</option>
+        <option>Universidad Austral de Chile</option>
+        <option>Universidad Técnica Federico Santa María</option>
+        <option>Universidad Adolfo Ibáñez</option>
+        <option>Universidad Diego Portales</option>
+        <option>Universidad Andrés Bello</option>
+        <option>Otra universidad</option>
+      </select>
+    </div>
+    <button class="modal-btn" onclick="handleRegistro()">Crear cuenta gratis →</button>
+    <div class="modal-switch">¿Ya tienes cuenta? <a href="#" onclick="switchModal('crear','entrar');return false">Entrar</a></div>
+  </div>
+</div>
+
+<script src="shared/theme-loader.js"></script>
+
+<!-- ════ DEV SKIP · solo desarrollo ════ -->
+<button id="devSkipBtn" style="position:fixed;bottom:14px;left:14px;z-index:9999;background:rgba(217,255,58,.12);border:1px solid rgba(217,255,58,.45);color:#D9FF3A;font-family:'Geist Mono',monospace;font-size:11px;font-weight:600;padding:7px 12px;border-radius:6px;cursor:pointer;letter-spacing:.06em">⚡ Dev: skip</button>
+<script>
+(function(){
+  var MOCK = {
+    profile: {
+      foto: null, nombre: 'Dev User', handle: '@dev.user',
+      bio: 'Probando Conniku · estudiante de Ingeniería',
+      universidad: 'Universidad de Chile',
+      carrera: 'Ingeniería Civil Industrial',
+      fechaInicio: { mes: 3, año: 2023 },
+      sistema: 'semestre'
+    },
+    intereses: ['Diseño', 'Código', 'IA'],
+    privacidad: { perfilVisible: 'mi-u', mensajesDe: 'mi-u' },
+    dispositivos: { connected: 1, max: 2, fingerprint: 'dev-fp-001' },
+    completed: true,
+    completedAt: new Date().toISOString()
+  };
+  function devSkip(){
+    localStorage.setItem('conniku-user-v1', JSON.stringify(MOCK));
+    localStorage.setItem('conniku-bio-v1', MOCK.profile.bio);
+    window.location.href = 'pages/orbit-u.html';
+  }
+  document.getElementById('devSkipBtn').addEventListener('click', devSkip);
+  document.addEventListener('keydown', function(e){
+    if(e.ctrlKey && e.shiftKey && (e.key==='D' || e.key==='d')){ e.preventDefault(); devSkip(); }
+  });
+})();
+</script>
+</body>
+</html>

@@ -1,0 +1,714 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>Perfil Social · Opciones de Tema</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"/>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Funnel+Display:wght@900&family=Inter:wght@400;500;600;700&family=Geist+Mono:wght@400;600&display=swap"/>
+<style>
+/* ══════════════════════════════════
+   RESET
+══════════════════════════════════ */
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{min-height:100vh;font-family:'Inter',sans-serif;font-size:14px;-webkit-font-smoothing:antialiased}
+a{color:inherit;text-decoration:none}
+button{font-family:inherit;cursor:pointer}
+svg{width:16px;height:16px;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round;display:block}
+
+/* ══════════════════════════════════
+   SELECTOR (sticky)
+══════════════════════════════════ */
+.selector{
+  position:fixed;top:0;left:0;right:0;z-index:200;
+  display:flex;align-items:center;gap:10px;padding:10px 24px;
+  backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px);
+  border-bottom:1px solid rgba(255,255,255,.06);
+  background:rgba(7,10,20,.92);
+}
+.sel-label{font-family:'Geist Mono',monospace;font-size:9px;color:rgba(255,255,255,.28);letter-spacing:.15em;margin-right:4px}
+.sel-btn{
+  font-family:'Geist Mono',monospace;font-size:10px;font-weight:600;
+  letter-spacing:.08em;padding:5px 13px;border-radius:6px;border:1px solid;
+  cursor:pointer;background:transparent;transition:all .15s;
+}
+.sel-1{color:#5B9EFF;border-color:rgba(91,158,255,.25)}
+.sel-1:hover,.sel-1.on{background:rgba(91,158,255,.14);border-color:rgba(91,158,255,.65)}
+.sel-2{color:#7CDDCB;border-color:rgba(124,221,203,.25)}
+.sel-2:hover,.sel-2.on{background:rgba(124,221,203,.14);border-color:rgba(124,221,203,.65)}
+.sel-3{color:#A78BFA;border-color:rgba(167,139,250,.25)}
+.sel-3:hover,.sel-3.on{background:rgba(167,139,250,.14);border-color:rgba(167,139,250,.65)}
+.sel-note{margin-left:auto;font-family:'Geist Mono',monospace;font-size:9px;color:rgba(255,255,255,.18);letter-spacing:.08em}
+
+/* ══════════════════════════════════
+   HEX CANVAS FIJO
+══════════════════════════════════ */
+#hexCvs{position:fixed;inset:0;pointer-events:none;z-index:0}
+
+/* ══════════════════════════════════
+   TEMAS — variables CSS
+══════════════════════════════════ */
+
+/* ─── OPCIÓN 1 · Navy Profundo ─── */
+body.t1{
+  --bg:        #070A16;
+  --bg2:       #0B0F1E;
+  --surface:   #0E1326;
+  --surface-2: #131829;
+  --surface-3: #192036;
+  --border:    rgba(91,158,255,.12);
+  --border-2:  rgba(91,158,255,.07);
+  --text:      #D6E4FF;
+  --text-2:    #8AA8D6;
+  --text-3:    #556585;
+  --accent:    #5B9EFF;
+  --accent-2:  rgba(91,158,255,.15);
+  --accent-glow: rgba(91,158,255,.22);
+  --green:     #00C27A;
+  --lime:      #D9FF3A;
+  --orange:    #FF4A1C;
+  --hex-r:50;--hex-g:110;--hex-b:255;
+  background:var(--bg);color:var(--text);
+}
+
+/* ─── OPCIÓN 2 · Teal Orbital ─── */
+body.t2{
+  --bg:        #060E0D;
+  --bg2:       #091614;
+  --surface:   #0C1C19;
+  --surface-2: #112420;
+  --surface-3: #172E29;
+  --border:    rgba(0,194,122,.14);
+  --border-2:  rgba(0,194,122,.07);
+  --text:      #CBF0E6;
+  --text-2:    #6DB89A;
+  --text-3:    #3D7A62;
+  --accent:    #00C27A;
+  --accent-2:  rgba(0,194,122,.14);
+  --accent-glow: rgba(0,194,122,.22);
+  --green:     #00C27A;
+  --lime:      #D9FF3A;
+  --orange:    #FF4A1C;
+  --hex-r:0;--hex-g:180;--hex-b:130;
+  background:var(--bg);color:var(--text);
+}
+
+/* ─── OPCIÓN 3 · Indigo Cosmos ─── */
+body.t3{
+  --bg:        #08070F;
+  --bg2:       #0F0D1C;
+  --surface:   #131129;
+  --surface-2: #18163B;
+  --surface-3: #1E1C42;
+  --border:    rgba(167,139,250,.14);
+  --border-2:  rgba(167,139,250,.07);
+  --text:      #E0D9FF;
+  --text-2:    #9588CC;
+  --text-3:    #574E8A;
+  --accent:    #A78BFA;
+  --accent-2:  rgba(167,139,250,.14);
+  --accent-glow: rgba(167,139,250,.22);
+  --green:     #00C27A;
+  --lime:      #D9FF3A;
+  --orange:    #FF4A1C;
+  --hex-r:140;--hex-g:100;--hex-b:255;
+  background:var(--bg);color:var(--text);
+}
+
+/* ══════════════════════════════════
+   NAV
+══════════════════════════════════ */
+.nav{
+  background:var(--surface);
+  border-bottom:1px solid var(--border);
+  position:sticky;top:42px;z-index:50;
+  backdrop-filter:blur(16px);-webkit-backdrop-filter:blur(16px);
+}
+.nav-inner{
+  max-width:980px;margin:0 auto;
+  padding:0 24px;
+  display:grid;grid-template-columns:auto 1fr auto;
+  gap:20px;align-items:center;height:54px;
+}
+.nav-brand{display:flex;align-items:center;gap:12px}
+.back-btn{
+  display:flex;align-items:center;gap:6px;
+  padding:5px 11px 5px 8px;border-radius:99px;
+  background:var(--surface-2);border:1px solid var(--border);
+  color:var(--text-2);font-family:'Geist Mono',monospace;
+  font-size:10px;font-weight:600;letter-spacing:.08em;
+  transition:all .16s;
+}
+.back-btn:hover{color:var(--accent);border-color:var(--accent);background:var(--accent-2)}
+.back-dot{
+  width:6px;height:6px;border-radius:50%;
+  background:var(--accent);box-shadow:0 0 6px var(--accent-glow);
+}
+.logo{
+  font-family:'Funnel Display',sans-serif;font-weight:900;
+  font-size:17px;letter-spacing:-.05em;
+  display:inline-flex;align-items:baseline;color:var(--text);
+}
+.logo em{font-style:italic;opacity:.35}
+.logo-tile{
+  display:inline-flex;align-items:baseline;
+  background:#D9FF3A;color:#0D0F10;
+  padding:.06em .13em .06em .08em;border-radius:.18em;margin-left:.02em;
+}
+.logo-dot{color:#FF4A1C}
+.search-bar{
+  max-width:360px;width:100%;
+  background:var(--surface-2);border:1px solid var(--border);
+  border-radius:99px;padding:7px 14px;
+  display:flex;align-items:center;gap:8px;
+  font-family:'Geist Mono',monospace;font-size:11px;color:var(--text-3);
+}
+.search-bar input{flex:1;background:transparent;border:0;outline:0;color:var(--text);font-size:12px;font-family:inherit}
+.nav-actions{display:flex;align-items:center;gap:6px}
+.nav-btn{
+  width:34px;height:34px;border-radius:9px;border:1px solid transparent;
+  background:transparent;color:var(--text-2);display:grid;place-items:center;
+  transition:all .16s;
+}
+.nav-btn:hover{background:var(--surface-2);border-color:var(--border);color:var(--text)}
+.nav-btn svg{width:15px;height:15px}
+.nav-tabs{
+  display:flex;gap:0;padding:0 24px;
+  max-width:980px;margin:0 auto;
+  border-top:1px solid var(--border-2);
+}
+.nav-tab{
+  padding:10px 18px;font-size:13px;font-weight:500;
+  color:var(--text-3);border-bottom:2px solid transparent;
+  margin-bottom:-1px;cursor:pointer;transition:all .14s;
+}
+.nav-tab.on{color:var(--accent);border-bottom-color:var(--accent)}
+.nav-tab:hover:not(.on){color:var(--text-2)}
+
+/* ══════════════════════════════════
+   PAGE LAYOUT
+══════════════════════════════════ */
+.page{max-width:980px;margin:0 auto;padding:0 24px 60px;position:relative;z-index:1}
+
+/* ══════════════════════════════════
+   COVER
+══════════════════════════════════ */
+.cover-wrap{
+  height:200px;border-radius:0 0 18px 18px;
+  background:var(--surface-2);
+  border:1px solid var(--border);border-top:0;
+  position:relative;overflow:hidden;margin-bottom:-1px;
+}
+.cover-hex{position:absolute;inset:0}
+.cover-gradient{
+  position:absolute;inset:0;
+  background:linear-gradient(170deg,transparent 30%,var(--bg) 100%);
+}
+.cover-edit{
+  position:absolute;bottom:14px;right:14px;
+  display:flex;align-items:center;gap:6px;
+  padding:6px 12px;border-radius:8px;
+  background:rgba(0,0,0,.45);backdrop-filter:blur(8px);
+  border:1px solid rgba(255,255,255,.12);
+  color:rgba(255,255,255,.7);font-size:12px;
+  transition:all .15s;
+}
+.cover-edit:hover{background:rgba(0,0,0,.65);color:#fff}
+.cover-edit svg{width:13px;height:13px}
+
+/* ══════════════════════════════════
+   AVATAR ROW
+══════════════════════════════════ */
+.avatar-row{
+  display:flex;align-items:flex-end;gap:16px;
+  padding:0 24px;margin-top:-46px;margin-bottom:20px;
+  position:relative;z-index:2;
+}
+.avatar{
+  width:88px;height:88px;border-radius:50%;
+  border:3px solid var(--bg);
+  background:linear-gradient(135deg,var(--surface-3),var(--surface-2));
+  display:grid;place-items:center;
+  font-family:'Funnel Display',sans-serif;font-weight:900;
+  font-size:26px;color:var(--accent);flex-shrink:0;
+  box-shadow:0 0 0 1px var(--border),0 0 24px var(--accent-glow);
+}
+.av-info{flex:1;padding-bottom:8px}
+.av-name{
+  font-family:'Funnel Display',sans-serif;font-weight:900;
+  font-size:22px;letter-spacing:-.04em;color:var(--text);
+}
+.av-sub{font-size:12px;color:var(--text-3);margin-top:3px}
+.av-badges{display:flex;gap:6px;margin-top:7px;flex-wrap:wrap}
+.badge{
+  font-family:'Geist Mono',monospace;font-size:9px;font-weight:600;
+  letter-spacing:.08em;padding:3px 8px;border-radius:4px;
+  border:1px solid;
+}
+.badge-online{color:#00C27A;background:rgba(0,194,122,.10);border-color:rgba(0,194,122,.25)}
+.badge-verified{color:var(--accent);background:var(--accent-2);border-color:var(--accent);opacity:.8}
+.badge-streak{color:var(--text-3);background:transparent;border-color:var(--border)}
+.av-cta{display:flex;gap:8px;padding-bottom:8px}
+.btn-msg{
+  padding:8px 18px;border-radius:9px;
+  background:var(--surface-2);border:1px solid var(--border);
+  color:var(--text-2);font-size:13px;font-weight:500;
+  transition:all .15s;
+}
+.btn-msg:hover{border-color:var(--accent);color:var(--accent);background:var(--accent-2)}
+.btn-edit{
+  padding:8px 18px;border-radius:9px;
+  background:var(--accent);border:1px solid var(--accent);
+  color:#050810;font-size:13px;font-weight:700;
+  transition:opacity .15s;
+}
+.btn-edit:hover{opacity:.85}
+
+/* ══════════════════════════════════
+   GRID
+══════════════════════════════════ */
+.content-grid{
+  display:grid;grid-template-columns:1fr 288px;gap:18px;
+  padding:0 24px;
+}
+
+/* ══════════════════════════════════
+   BIO CARD
+══════════════════════════════════ */
+.bio-card{
+  background:var(--surface);border:1px solid var(--border);
+  border-radius:14px;padding:16px 18px;margin-bottom:14px;
+}
+.bio-head{display:flex;align-items:center;gap:8px;margin-bottom:10px}
+.bio-label{font-size:11px;font-weight:600;color:var(--text-2);letter-spacing:.06em;text-transform:uppercase}
+.bio-edit-btn{
+  margin-left:auto;display:flex;align-items:center;gap:5px;
+  padding:4px 9px;border-radius:6px;background:transparent;
+  border:1px solid var(--border);color:var(--text-3);font-size:11px;
+  transition:all .14s;
+}
+.bio-edit-btn:hover{color:var(--accent);border-color:var(--accent);background:var(--accent-2)}
+.bio-edit-btn svg{width:12px;height:12px}
+.bio-text{
+  width:100%;background:transparent;border:0;outline:0;resize:none;
+  color:var(--text-2);font-size:13px;font-family:'Inter',sans-serif;
+  line-height:1.65;
+}
+
+/* ══════════════════════════════════
+   COMPOSER
+══════════════════════════════════ */
+.composer{
+  background:var(--surface);border:1px solid var(--border);
+  border-radius:14px;padding:16px 18px;margin-bottom:14px;
+}
+.composer-row{display:flex;align-items:center;gap:12px;margin-bottom:12px}
+.composer-av{
+  width:34px;height:34px;border-radius:50%;flex-shrink:0;
+  background:linear-gradient(135deg,var(--surface-3),var(--surface-2));
+  border:1px solid var(--border);
+  display:grid;place-items:center;
+  font-family:'Funnel Display',sans-serif;font-weight:900;
+  font-size:12px;color:var(--accent);
+}
+.composer-input{
+  flex:1;background:var(--surface-2);border:1px solid var(--border);
+  border-radius:99px;padding:8px 16px;
+  color:var(--text-3);font-size:13px;cursor:text;
+  transition:border-color .14s;
+}
+.composer-input:hover{border-color:var(--accent);color:var(--text-2)}
+.composer-actions{display:flex;gap:4px}
+.comp-act{
+  width:32px;height:32px;border-radius:8px;border:1px solid transparent;
+  background:transparent;color:var(--text-3);display:grid;place-items:center;
+  transition:all .14s;
+}
+.comp-act:hover{background:var(--surface-2);color:var(--accent);border-color:var(--border)}
+.comp-act svg{width:14px;height:14px}
+
+/* ══════════════════════════════════
+   POST
+══════════════════════════════════ */
+.post{
+  background:var(--surface);border:1px solid var(--border);
+  border-radius:14px;padding:16px 18px;margin-bottom:12px;
+  transition:border-color .18s;
+}
+.post:hover{border-color:rgba(255,255,255,.14)}
+.post-head{display:flex;align-items:center;gap:10px;margin-bottom:12px}
+.post-av{
+  width:34px;height:34px;border-radius:50%;flex-shrink:0;
+  background:linear-gradient(135deg,var(--surface-3),var(--surface-2));
+  border:1px solid var(--border);
+  display:grid;place-items:center;
+  font-family:'Funnel Display',sans-serif;font-weight:900;
+  font-size:12px;color:var(--accent);
+}
+.post-name{font-size:13px;font-weight:600;color:var(--text)}
+.post-time{font-size:11px;color:var(--text-3);margin-top:1px}
+.post-body{font-size:13px;color:var(--text-2);line-height:1.65;margin-bottom:14px}
+.post-body .placeholder{color:var(--text-3);font-style:italic}
+.post-actions{display:flex;gap:2px;padding-top:10px;border-top:1px solid var(--border-2)}
+.post-act{
+  display:flex;align-items:center;gap:5px;
+  padding:5px 10px;border-radius:7px;border:0;
+  background:transparent;color:var(--text-3);font-size:12px;
+  transition:all .14s;
+}
+.post-act:hover{background:var(--surface-2);color:var(--accent)}
+.post-act svg{width:14px;height:14px}
+
+/* ══════════════════════════════════
+   SIDEBAR CARDS
+══════════════════════════════════ */
+.side-card{
+  background:var(--surface);border:1px solid var(--border);
+  border-radius:14px;padding:16px 18px;margin-bottom:14px;
+}
+.side-title{
+  font-size:11px;font-weight:600;color:var(--text-3);
+  letter-spacing:.08em;text-transform:uppercase;margin-bottom:14px;
+}
+.stat-row{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;text-align:center}
+.stat-n{
+  font-family:'Funnel Display',sans-serif;font-weight:900;
+  font-size:24px;letter-spacing:-.04em;color:var(--accent);
+}
+.stat-l{font-size:10px;color:var(--text-3);margin-top:2px}
+
+/* ── Módulos lista ── */
+.mod-list{display:flex;flex-direction:column;gap:6px}
+.mod-item{
+  display:flex;align-items:center;gap:10px;
+  padding:8px 10px;border-radius:9px;border:1px solid transparent;
+  transition:all .14s;cursor:pointer;
+}
+.mod-item:hover{background:var(--surface-2);border-color:var(--border)}
+.mod-dot{width:8px;height:8px;border-radius:50%;flex-shrink:0}
+.mod-name{font-size:12px;font-weight:500;color:var(--text-2);flex:1}
+.mod-arr{font-size:11px;color:var(--text-3);opacity:0;transition:opacity .14s,transform .14s;transform:translateX(-3px)}
+.mod-item:hover .mod-arr{opacity:1;transform:translateX(0)}
+
+/* ══════════════════════════════════
+   LABEL BADGE PARA OPCIÓN ACTIVA
+══════════════════════════════════ */
+.option-badge{
+  position:fixed;bottom:20px;left:50%;transform:translateX(-50%);
+  z-index:100;
+  font-family:'Geist Mono',monospace;font-size:10px;font-weight:600;
+  letter-spacing:.10em;padding:7px 18px;border-radius:99px;
+  border:1px solid var(--border);
+  background:var(--surface);color:var(--text-2);
+  pointer-events:none;
+}
+</style>
+</head>
+<body class="t1">
+
+<canvas id="hexCvs"></canvas>
+
+<!-- SELECTOR -->
+<div class="selector">
+  <span class="sel-label">OPCIÓN ·</span>
+  <button class="sel-btn sel-1 on" onclick="setT(1,this)">1 · NAVY BLUE</button>
+  <button class="sel-btn sel-2" onclick="setT(2,this)">2 · TEAL ORBITAL</button>
+  <button class="sel-btn sel-3" onclick="setT(3,this)">3 · INDIGO COSMOS</button>
+  <span class="sel-note">ORBIT·U · PERFIL SOCIAL · OPCIONES DE TEMA</span>
+</div>
+
+<!-- ═══ NAV ═══ -->
+<nav class="nav">
+  <div class="nav-inner">
+    <div class="nav-brand">
+      <a href="conniku.html" class="back-btn">
+        <span class="back-dot"></span>
+        Orbit·U
+      </a>
+      <span class="logo"><!-- WORDMARK PENDIENTE --></span>
+    </div>
+    <div class="search-bar">
+      <svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.5-4.5"/></svg>
+      <input placeholder="Buscar personas, cursos, comunidades…"/>
+      <span style="font-family:'Geist Mono',monospace;font-size:10px;color:var(--text-3);padding:1px 6px;background:var(--surface-2);border:1px solid var(--border);border-radius:4px">⌘K</span>
+    </div>
+    <div class="nav-actions">
+      <button class="nav-btn">
+        <svg viewBox="0 0 24 24"><path d="M6 8a6 6 0 0112 0c0 7 3 9 3 9H3s3-2 3-9"/><path d="M10 21a2 2 0 004 0"/></svg>
+      </button>
+      <button class="nav-btn">
+        <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 11-2.83 2.83l-.06-.06a1.65 1.65 0 00-1.82-.33H15a1.65 1.65 0 00-1 1.51V21a2 2 0 11-4 0v-.09A1.65 1.65 0 009 19.4a1.65 1.65 0 00-1.82.33l-.06.06a2 2 0 11-2.83-2.83l.06-.06A1.65 1.65 0 004.6 15H3a2 2 0 110-4h.09A1.65 1.65 0 004.6 9a1.65 1.65 0 00-.33-1.82l-.06-.06a2 2 0 112.83-2.83l.06.06A1.65 1.65 0 009 4.68V3a2 2 0 114 0v.09a1.65 1.65 0 001 1.51 1.65 1.65 0 001.82-.33l.06-.06a2 2 0 112.83 2.83l-.06.06A1.65 1.65 0 0019.4 9H21a2 2 0 110 4h-.09a1.65 1.65 0 00-1.51 1z"/></svg>
+      </button>
+    </div>
+  </div>
+  <div class="nav-tabs" style="max-width:980px;margin:0 auto;padding:0 24px">
+    <div class="nav-tab on">Feed</div>
+    <div class="nav-tab">Logros</div>
+    <div class="nav-tab">CV público</div>
+    <div class="nav-tab">Sobre mí</div>
+  </div>
+</nav>
+
+<!-- ═══ PAGE ═══ -->
+<div class="page">
+
+  <!-- Cover -->
+  <div class="cover-wrap">
+    <canvas class="cover-hex" id="coverCvs"></canvas>
+    <div class="cover-gradient"></div>
+    <button class="cover-edit">
+      <svg viewBox="0 0 24 24"><path d="M3 17.25V21h3.75L17.81 9.94l-3.75-3.75L3 17.25z"/><path d="M14.06 6.19l3.75 3.75"/></svg>
+      Cambiar portada
+    </button>
+  </div>
+
+  <!-- Avatar row -->
+  <div class="avatar-row">
+    <div class="avatar">CG</div>
+    <div class="av-info">
+      <div class="av-name">Cristian García</div>
+      <div class="av-sub">@cristiang · Ingeniería Civil · Universidad de Santiago</div>
+      <div class="av-badges">
+        <span class="badge badge-online">● online</span>
+        <span class="badge badge-verified">verificado</span>
+        <span class="badge badge-streak">🔥 racha 14 días</span>
+      </div>
+    </div>
+    <div class="av-cta">
+      <button class="btn-msg">Mensaje</button>
+      <button class="btn-edit">Editar perfil</button>
+    </div>
+  </div>
+
+  <!-- Grid -->
+  <div class="content-grid">
+
+    <!-- Feed col -->
+    <div>
+
+      <!-- Bio -->
+      <div class="bio-card">
+        <div class="bio-head">
+          <span class="bio-label">Bio</span>
+          <button class="bio-edit-btn">
+            <svg viewBox="0 0 24 24"><path d="M3 17.25V21h3.75L17.81 9.94l-3.75-3.75L3 17.25z"/><path d="M14.06 6.19l3.75 3.75"/></svg>
+            Editar
+          </button>
+        </div>
+        <div class="bio-text" style="display:block;color:var(--text-3);font-style:italic;font-size:13px;line-height:1.65">Agrega tu bio — contale al mundo quién sos y qué te apasiona estudiar.</div>
+      </div>
+
+      <!-- Composer -->
+      <div class="composer">
+        <div class="composer-row">
+          <div class="composer-av">CG</div>
+          <div class="composer-input">Compartí algo con tu red…</div>
+        </div>
+        <div class="composer-actions">
+          <button class="comp-act" title="Apunte">
+            <svg viewBox="0 0 24 24"><path d="M5 3h10l4 4v14H5z"/><path d="M15 3v4h4 M9 12h6 M9 16h4"/></svg>
+          </button>
+          <button class="comp-act" title="Foto">
+            <svg viewBox="0 0 24 24"><rect x="3" y="5" width="18" height="14" rx="2"/><circle cx="9" cy="11" r="2"/><path d="M3 17l5-5 4 4 3-3 6 6"/></svg>
+          </button>
+          <button class="comp-act" title="Evento">
+            <svg viewBox="0 0 24 24"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M3 10h18 M8 3v4 M16 3v4"/></svg>
+          </button>
+          <button class="comp-act" title="Pregunta">
+            <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M9.5 9a2.5 2.5 0 015 0c0 1.5-2.5 2-2.5 4 M12 17h.01"/></svg>
+          </button>
+        </div>
+      </div>
+
+      <!-- Post 1 -->
+      <div class="post">
+        <div class="post-head">
+          <div class="post-av">CG</div>
+          <div>
+            <div class="post-name">Cristian García</div>
+            <div class="post-time">Hace 2 horas · Público</div>
+          </div>
+        </div>
+        <div class="post-body">Terminé el proyecto de estructuras con mi equipo. 3 semanas de trabajo duro — entregado a tiempo y con nota 6.8 🎯 Gracias al workspace que armamos en conniku.</div>
+        <div class="post-actions">
+          <button class="post-act">
+            <svg viewBox="0 0 24 24"><path d="M20.84 4.61a5.5 5.5 0 00-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 00-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 000-7.78z"/></svg>
+            24
+          </button>
+          <button class="post-act">
+            <svg viewBox="0 0 24 24"><path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"/></svg>
+            8
+          </button>
+          <button class="post-act">
+            <svg viewBox="0 0 24 24"><path d="M4 12v8a2 2 0 002 2h12a2 2 0 002-2v-8 M16 6l-4-4-4 4 M12 2v13"/></svg>
+            Compartir
+          </button>
+        </div>
+      </div>
+
+      <!-- Post 2 -->
+      <div class="post">
+        <div class="post-head">
+          <div class="post-av">CG</div>
+          <div>
+            <div class="post-name">Cristian García</div>
+            <div class="post-time">Ayer · Solo mi universidad</div>
+          </div>
+        </div>
+        <div class="post-body">Buscando tutor para Cálculo III antes del certamen del jueves. Si alguien puede dar una mano, mensajeen.</div>
+        <div class="post-actions">
+          <button class="post-act">
+            <svg viewBox="0 0 24 24"><path d="M20.84 4.61a5.5 5.5 0 00-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 00-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 000-7.78z"/></svg>
+            7
+          </button>
+          <button class="post-act">
+            <svg viewBox="0 0 24 24"><path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"/></svg>
+            3
+          </button>
+          <button class="post-act">
+            <svg viewBox="0 0 24 24"><path d="M4 12v8a2 2 0 002 2h12a2 2 0 002-2v-8 M16 6l-4-4-4 4 M12 2v13"/></svg>
+            Compartir
+          </button>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- Sidebar -->
+    <div>
+
+      <!-- Stats -->
+      <div class="side-card">
+        <div class="side-title">Estadísticas</div>
+        <div class="stat-row">
+          <div>
+            <div class="stat-n">47</div>
+            <div class="stat-l">Conexiones</div>
+          </div>
+          <div>
+            <div class="stat-n">12</div>
+            <div class="stat-l">Cursos</div>
+          </div>
+          <div>
+            <div class="stat-n">94%</div>
+            <div class="stat-l">Asistencia</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Módulos -->
+      <div class="side-card">
+        <div class="side-title">Módulos</div>
+        <div class="mod-list">
+          <div class="mod-item"><div class="mod-dot" style="background:#D97706;box-shadow:0 0 6px rgba(217,119,6,.5)"></div><span class="mod-name">Mi U</span><span class="mod-arr">→</span></div>
+          <div class="mod-item"><div class="mod-dot" style="background:#C49A3A;box-shadow:0 0 6px rgba(196,154,58,.5)"></div><span class="mod-name">Tutores</span><span class="mod-arr">→</span></div>
+          <div class="mod-item"><div class="mod-dot" style="background:#0096CC;box-shadow:0 0 6px rgba(0,150,204,.5)"></div><span class="mod-name">Empleos</span><span class="mod-arr">→</span></div>
+          <div class="mod-item"><div class="mod-dot" style="background:#6B4EFF;box-shadow:0 0 6px rgba(107,78,255,.5)"></div><span class="mod-name">Workspaces</span><span class="mod-arr">→</span></div>
+          <div class="mod-item"><div class="mod-dot" style="background:#00C27A;box-shadow:0 0 6px rgba(0,194,122,.5)"></div><span class="mod-name">Mensajes</span><span class="mod-arr">→</span></div>
+          <div class="mod-item"><div class="mod-dot" style="background:#FF4A1C;box-shadow:0 0 6px rgba(255,74,28,.5)"></div><span class="mod-name">Biblioteca</span><span class="mod-arr">→</span></div>
+          <div class="mod-item"><div class="mod-dot" style="background:#E91E8C;box-shadow:0 0 6px rgba(233,30,140,.5)"></div><span class="mod-name">Cursos</span><span class="mod-arr">→</span></div>
+          <div class="mod-item"><div class="mod-dot" style="background:#00BFA5;box-shadow:0 0 6px rgba(0,191,165,.5)"></div><span class="mod-name">Calendario</span><span class="mod-arr">→</span></div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<!-- Badge opción activa -->
+<div class="option-badge" id="optBadge">OPCIÓN 1 · NAVY BLUE</div>
+
+<script>
+/* ── HEX CANVAS (fondo global) ── */
+var cvs=document.getElementById('hexCvs'),ctx=cvs.getContext('2d');
+var W,H,hexes=[],tick=0,S=30,SQ3=Math.sqrt(3);
+
+function getHexRGB(){
+  var s=getComputedStyle(document.body);
+  return[+s.getPropertyValue('--hex-r').trim()||50,
+         +s.getPropertyValue('--hex-g').trim()||110,
+         +s.getPropertyValue('--hex-b').trim()||255];
+}
+
+function resize(){W=cvs.width=innerWidth;H=cvs.height=innerHeight;buildH()}
+function buildH(){
+  hexes=[];
+  var cols=Math.ceil(W/(S*SQ3))+3,rows=Math.ceil(H/(S*1.5))+3;
+  for(var r=0;r<rows;r++) for(var c=0;c<cols;c++){
+    hexes.push({
+      cx:c*S*SQ3+(r%2)*S*SQ3*.5-S*SQ3,
+      cy:r*S*1.5-S*1.5,
+      phase:Math.random()*Math.PI*2,
+      base:.014+Math.random()*.010
+    });
+  }
+}
+resize();window.addEventListener('resize',resize);
+
+function hexPath(cx,cy,s){
+  ctx.beginPath();
+  for(var i=0;i<6;i++){var a=i*Math.PI/3-Math.PI/6;i?ctx.lineTo(cx+s*Math.cos(a),cy+s*Math.sin(a)):ctx.moveTo(cx+s*Math.cos(a),cy+s*Math.sin(a));}
+  ctx.closePath();
+}
+
+(function frame(){
+  requestAnimationFrame(frame);
+  var ac=getHexRGB();
+  ctx.clearRect(0,0,W,H);
+  tick++;
+  for(var h=0;h<hexes.length;h++){
+    var hx=hexes[h];
+    var a=hx.base+Math.sin(tick*.010+hx.phase)*.007;
+    hexPath(hx.cx,hx.cy,S*.87);
+    ctx.fillStyle='rgba('+ac[0]+','+ac[1]+','+ac[2]+','+a.toFixed(4)+')';ctx.fill();
+    ctx.strokeStyle='rgba('+ac[0]+','+ac[1]+','+ac[2]+','+(a*2.6).toFixed(4)+')';
+    ctx.lineWidth=.65;ctx.stroke();
+  }
+})();
+
+/* ── HEX COVER ── */
+(function(){
+  var cc=document.getElementById('coverCvs'),cx2=cc.getContext('2d');
+  var hexes2=[],tick2=0,S2=18;
+  function resz(){cc.width=cc.offsetWidth;cc.height=cc.offsetHeight;bld()}
+  function bld(){
+    hexes2=[];
+    var cols=Math.ceil(cc.width/(S2*SQ3))+3,rows=Math.ceil(cc.height/(S2*1.5))+3;
+    for(var r=0;r<rows;r++) for(var c=0;c<cols;c++){
+      hexes2.push({
+        cx:c*S2*SQ3+(r%2)*S2*SQ3*.5,
+        cy:r*S2*1.5,
+        phase:Math.random()*Math.PI*2,
+        bright:.04+Math.random()*.06
+      });
+    }
+  }
+  resz();window.addEventListener('resize',resz);
+  (function fr(){
+    requestAnimationFrame(fr);
+    var ac=getHexRGB();
+    cx2.clearRect(0,0,cc.width,cc.height);
+    tick2++;
+    for(var h=0;h<hexes2.length;h++){
+      var hx=hexes2[h];
+      var a=hx.bright+Math.sin(tick2*.016+hx.phase)*.025;
+      cx2.beginPath();
+      for(var i=0;i<6;i++){var ang=i*Math.PI/3-Math.PI/6;i?cx2.lineTo(hx.cx+S2*.85*Math.cos(ang),hx.cy+S2*.85*Math.sin(ang)):cx2.moveTo(hx.cx+S2*.85*Math.cos(ang),hx.cy+S2*.85*Math.sin(ang));}
+      cx2.closePath();
+      cx2.strokeStyle='rgba('+ac[0]+','+ac[1]+','+ac[2]+','+a.toFixed(3)+')';
+      cx2.lineWidth=.9;cx2.stroke();
+    }
+  })();
+})();
+
+/* ── TEMA SWITCHER ── */
+var labels=['','OPCIÓN 1 · NAVY BLUE','OPCIÓN 2 · TEAL ORBITAL','OPCIÓN 3 · INDIGO COSMOS'];
+function setT(n,btn){
+  document.body.className='t'+n;
+  document.querySelectorAll('.sel-btn').forEach(function(b){b.classList.remove('on')});
+  btn.classList.add('on');
+  document.getElementById('optBadge').textContent=labels[n];
+}
+</script>
+</body>
+</html>

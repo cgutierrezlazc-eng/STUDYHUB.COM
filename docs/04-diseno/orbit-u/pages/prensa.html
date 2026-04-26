@@ -1,0 +1,215 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Prensa · Conniku</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Funnel+Display:wght@400;600;700;800;900&family=Inter:wght@400;500;600;700&family=Geist+Mono:wght@400;500;600&display=swap" />
+<link rel="stylesheet" href="../shared/tokens.css" />
+<link rel="stylesheet" href="../shared/base.css" />
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+body { background: var(--bg); color: var(--text); font-family: 'Inter', sans-serif; font-size: 15px; line-height: 1.7; min-height: 100vh; }
+.topbar { position:sticky;top:0;z-index:100;background:rgba(5,6,8,0.92);backdrop-filter:blur(12px);border-bottom:1px solid var(--border);padding:14px 32px;display:flex;align-items:center;gap:20px; }
+.back-link { display:flex;align-items:center;gap:6px;font-size:12px;color:var(--text-4);text-decoration:none;transition:color .15s; }
+.back-link:hover { color:var(--text-2); }
+.back-link svg { width:14px;height:14px;flex-shrink:0; }
+.topbar-sep { width:1px;height:16px;background:var(--border); }
+.topbar-title { font-family:'Geist Mono',monospace;font-size:11px;color:var(--text-4);letter-spacing:.06em; }
+
+.page-wrap { max-width: 840px; margin: 0 auto; padding: 56px 32px; }
+
+.page-badge { display:inline-flex;align-items:center;gap:6px;padding:3px 10px;border-radius:999px;background:rgba(0,194,122,0.08);border:1px solid rgba(0,194,122,0.2);font-family:'Geist Mono',monospace;font-size:10px;color:var(--green-3);letter-spacing:.08em;margin-bottom:16px; }
+.page-badge::before { content:"";width:5px;height:5px;border-radius:50%;background:var(--green); }
+.page-title { font-family:'Funnel Display',sans-serif;font-weight:900;font-size:clamp(32px,5vw,48px);letter-spacing:-.04em;color:var(--text);margin-bottom:10px; }
+.page-sub { font-size:15px;color:var(--text-3);margin-bottom:56px;max-width:560px;line-height:1.7; }
+.section-label { font-family:'Geist Mono',monospace;font-size:10px;color:var(--text-4);letter-spacing:.1em;text-transform:uppercase;margin-bottom:16px; }
+
+/* boilerplate */
+.boilerplate {
+  background: var(--surface); border: 1px solid var(--border); border-radius: 12px; padding: 24px 28px; margin-bottom: 40px;
+}
+.boilerplate p { font-size:14px;color:var(--text-2);line-height:1.8; }
+.boilerplate strong { color:var(--text); }
+
+/* fact chips */
+.facts { display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:12px;margin-bottom:48px; }
+.fact-card { padding:16px 20px;background:var(--surface);border:1px solid var(--border);border-radius:10px; }
+.fact-val { font-family:'Funnel Display',sans-serif;font-weight:900;font-size:24px;color:var(--green);letter-spacing:-.04em; }
+.fact-label { font-size:12px;color:var(--text-4);margin-top:2px; }
+
+/* kit assets */
+.kit-grid { display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:12px;margin-bottom:48px; }
+.kit-card {
+  padding:18px 20px;background:var(--surface);border:1px solid var(--border);border-radius:10px;
+  display:flex;flex-direction:column;gap:8px;
+}
+.kit-icon { font-size:20px; }
+.kit-name { font-size:13px;font-weight:700;color:var(--text-2); }
+.kit-desc { font-size:12px;color:var(--text-4); }
+.kit-badge { display:inline-flex;align-items:center;gap:4px;padding:2px 8px;border-radius:4px;background:var(--surface-2);border:1px solid var(--border);font-family:'Geist Mono',monospace;font-size:10px;color:var(--text-4);margin-top:auto; }
+
+/* contact press */
+.press-contact { background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:28px;display:flex;flex-wrap:wrap;gap:24px;align-items:flex-start; }
+.press-contact-info h3 { font-family:'Funnel Display',sans-serif;font-weight:800;font-size:16px;color:var(--text);margin-bottom:8px; }
+.press-contact-info p { font-size:13px;color:var(--text-3);line-height:1.7; }
+.press-contact-info a { color:var(--green);text-decoration:none; }
+.press-contact-info a:hover { color:var(--green-3); }
+.sla-chip { display:inline-flex;align-items:center;gap:5px;padding:3px 10px;border-radius:6px;background:rgba(0,194,122,0.08);border:1px solid rgba(0,194,122,0.2);font-family:'Geist Mono',monospace;font-size:11px;color:var(--green-3);margin-top:10px; }
+.sla-chip::before { content:"";width:5px;height:5px;border-radius:50%;background:var(--green); }
+
+/* wordmark preview */
+.brand-preview { display:flex;flex-wrap:wrap;gap:16px;margin:20px 0 40px; }
+.brand-bg {
+  padding:24px 32px;border-radius:10px;border:1px solid var(--border);
+  display:flex;align-items:center;justify-content:center;
+}
+.brand-bg.dark { background:#050608; }
+.brand-bg.light { background:#F5F4EF; }
+.brand-bg.light .brand { color:#1A1D23; }
+
+/* rule block */
+.usage-rule { padding:12px 16px;border-radius:8px;font-size:13px;color:var(--text-3);display:flex;gap:10px;align-items:flex-start;margin-bottom:8px; }
+.usage-rule.ok { background:rgba(0,194,122,0.05);border:1px solid rgba(0,194,122,0.15); }
+.usage-rule.no { background:rgba(255,74,28,0.05);border:1px solid rgba(255,74,28,0.12); }
+.usage-rule-icon { font-size:14px;flex-shrink:0;margin-top:1px; }
+</style>
+</head>
+<body>
+
+<div class="topbar">
+  <a href="../index.html" class="back-link">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>
+    Volver
+  </a>
+  <div class="topbar-sep"></div>
+  <a href="../index.html" class="brand" style="font-size:16px">conn<span>i</span>k<span class="u-pack">u<span class="dot">.</span></span></a>
+  <div class="topbar-sep"></div>
+  <span class="topbar-title">SALA DE PRENSA</span>
+</div>
+
+<div class="page-wrap">
+
+  <div class="page-badge">MEDIOS Y PRENSA</div>
+  <h1 class="page-title">Sala de prensa</h1>
+  <p class="page-sub">Recursos para periodistas, medios de comunicación y creadores de contenido que deseen cubrir la historia de Conniku.</p>
+
+  <!-- Boilerplate -->
+  <div class="section-label">Descripción oficial — Boilerplate</div>
+  <div class="boilerplate">
+    <p><strong>Conniku</strong> es una plataforma digital colaborativa para educación universitaria, fundada en Chile en 2024. Pensada por estudiantes para estudiantes, Conniku centraliza en un solo lugar los módulos esenciales de la vida universitaria: espacios de trabajo colaborativo, mensajería, biblioteca de recursos, cursos, comunidades temáticas, calendario académico, tutorías entre pares, portal de empleo y asistente Athena.</p>
+    <p style="margin-top:12px">La plataforma opera bajo el dominio <strong>conniku.com</strong> y está disponible en web, aplicación móvil (iOS y Android) y como Progressive Web App. Conniku SpA, RUT 78.395.702-7, tiene su domicilio en <strong>Antofagasta, Chile</strong>, y su objeto social es el <em>desarrollo, operación y comercialización de plataformas digitales colaborativas para educación</em>.</p>
+  </div>
+
+  <!-- Facts -->
+  <div class="section-label">Datos clave</div>
+  <div class="facts">
+    <div class="fact-card">
+      <div class="fact-val">2024</div>
+      <div class="fact-label">Año de fundación, Chile</div>
+    </div>
+    <div class="fact-card">
+      <div class="fact-val">9</div>
+      <div class="fact-label">Módulos integrados en la plataforma</div>
+    </div>
+    <div class="fact-card">
+      <div class="fact-val">3</div>
+      <div class="fact-label">Formatos: web, móvil, PWA</div>
+    </div>
+    <div class="fact-card">
+      <div class="fact-val">CL</div>
+      <div class="fact-label">País de origen: Antofagasta, Chile</div>
+    </div>
+  </div>
+
+  <!-- Brand / Wordmark -->
+  <div class="section-label">Marca y wordmark</div>
+  <p style="font-size:13px;color:var(--text-3);margin-bottom:16px;">La marca Conniku se escribe siempre en minúsculas. El wordmark oficial incluye el tile verde sobre la "u" y el punto naranja. No está permitido modificarlo.</p>
+
+  <div class="brand-preview">
+    <div class="brand-bg dark">
+      <a href="../index.html" class="brand" style="font-size:26px">conn<span>i</span>k<span class="u-pack">u<span class="dot">.</span></span></a>
+    </div>
+    <div class="brand-bg light">
+      <a href="../index.html" class="brand" style="font-size:26px">conn<span>i</span>k<span class="u-pack">u<span class="dot">.</span></span></a>
+    </div>
+  </div>
+
+  <div style="margin-bottom:40px">
+    <div class="section-label" style="margin-bottom:12px">Normas de uso de la marca</div>
+    <div class="usage-rule ok"><span class="usage-rule-icon">✓</span> Escribir "Conniku" (primera letra mayúscula) en texto corrido y "conniku" en contextos de código o URL.</div>
+    <div class="usage-rule ok"><span class="usage-rule-icon">✓</span> Usar el wordmark oficial en los colores y proporciones originales.</div>
+    <div class="usage-rule no"><span class="usage-rule-icon">✗</span> No modificar los colores del tile verde ni del punto naranja.</div>
+    <div class="usage-rule no"><span class="usage-rule-icon">✗</span> No escribir "CONNIKU" en mayúsculas sostenidas fuera de titulares de gran tamaño.</div>
+    <div class="usage-rule no"><span class="usage-rule-icon">✗</span> No usar el nombre ni los recursos gráficos para sugerir respaldo, afiliación o patrocinio de Conniku sin autorización escrita.</div>
+  </div>
+
+  <!-- Kit de prensa -->
+  <div class="section-label">Recursos disponibles</div>
+  <div class="kit-grid">
+    <div class="kit-card">
+      <span class="kit-icon">🖼️</span>
+      <span class="kit-name">Logotipos</span>
+      <span class="kit-desc">Wordmark en SVG y PNG. Versiones sobre fondo oscuro, claro y transparente.</span>
+      <span class="kit-badge">Disponible bajo solicitud</span>
+    </div>
+    <div class="kit-card">
+      <span class="kit-icon">📸</span>
+      <span class="kit-name">Capturas de pantalla</span>
+      <span class="kit-desc">Pantallas representativas de los módulos principales en resolución retina.</span>
+      <span class="kit-badge">Disponible bajo solicitud</span>
+    </div>
+    <div class="kit-card">
+      <span class="kit-icon">📖</span>
+      <span class="kit-name">Historia de Conniku</span>
+      <span class="kit-desc">Resumen narrativo del origen, misión y visión de la empresa.</span>
+      <span class="kit-badge">Disponible bajo solicitud</span>
+    </div>
+    <div class="kit-card">
+      <span class="kit-icon">🎨</span>
+      <span class="kit-name">Guía de marca</span>
+      <span class="kit-desc">Paleta de colores, tipografías y reglas de uso visual.</span>
+      <span class="kit-badge">Disponible bajo solicitud</span>
+    </div>
+  </div>
+
+  <!-- Contacto de prensa -->
+  <div class="section-label">Contacto de prensa</div>
+  <div class="press-contact">
+    <div class="press-contact-info">
+      <h3>Equipo de comunicaciones</h3>
+      <p>
+        Para entrevistas, solicitud de recursos del kit de prensa, preguntas sobre la empresa o cobertura periodística, escríbenos a:<br>
+        <a href="mailto:contacto@conniku.com" style="font-size:15px;font-weight:700;">contacto@conniku.com</a>
+      </p>
+      <p style="margin-top:8px">Incluye en el asunto: <strong>"[PRENSA] — Nombre del medio — Tema"</strong> para que demos prioridad a tu solicitud.</p>
+      <span class="sla-chip">Respuesta en 24 h hábiles para solicitudes de prensa</span>
+    </div>
+  </div>
+
+  <!-- Declaración editorial -->
+  <div style="margin-top:48px;padding:20px 24px;background:var(--surface);border:1px solid var(--border);border-radius:12px;font-size:12px;color:var(--text-4);">
+    <strong style="color:var(--text-3);display:block;margin-bottom:6px;font-family:'Geist Mono',monospace;font-size:10px;letter-spacing:.08em;text-transform:uppercase;">Nota editorial</strong>
+    Los recursos de esta sala de prensa están disponibles para uso editorial libre, con atribución a Conniku. No están disponibles para uso en publicidad, campañas de marketing de terceros o contextos que puedan sugerir patrocinio o asociación sin autorización. Para usos distintos a los editoriales, contacta a <a href="mailto:legal@conniku.com" style="color:var(--green);">legal@conniku.com</a>.
+  </div>
+
+</div>
+
+<footer style="border-top:1px solid var(--border);padding:24px 32px;display:flex;flex-wrap:wrap;justify-content:space-between;align-items:center;gap:12px;max-width:840px;margin:0 auto;">
+  <span style="font-size:11px;color:var(--text-4);font-family:'Geist Mono',monospace;">© 2026 Conniku SpA · RUT 78.395.702-7 · Antofagasta, Chile</span>
+  <nav style="display:flex;flex-wrap:wrap;gap:16px;">
+    <a href="terminos.html" style="font-size:11px;color:var(--text-4);text-decoration:none;" onmouseover="this.style.color='var(--text-2)'" onmouseout="this.style.color='var(--text-4)'">Términos</a>
+    <a href="privacidad.html" style="font-size:11px;color:var(--text-4);text-decoration:none;" onmouseover="this.style.color='var(--text-2)'" onmouseout="this.style.color='var(--text-4)'">Privacidad</a>
+    <a href="cookies.html" style="font-size:11px;color:var(--text-4);text-decoration:none;" onmouseover="this.style.color='var(--text-2)'" onmouseout="this.style.color='var(--text-4)'">Cookies</a>
+    <a href="soporte.html" style="font-size:11px;color:var(--text-4);text-decoration:none;" onmouseover="this.style.color='var(--text-2)'" onmouseout="this.style.color='var(--text-4)'">Soporte</a>
+    <a href="contacto.html" style="font-size:11px;color:var(--text-4);text-decoration:none;" onmouseover="this.style.color='var(--text-2)'" onmouseout="this.style.color='var(--text-4)'">Contacto</a>
+    <a href="prensa.html" style="font-size:11px;color:var(--green);text-decoration:none;">Prensa</a>
+    <a href="empleo-conniku.html" style="font-size:11px;color:var(--text-4);text-decoration:none;" onmouseover="this.style.color='var(--text-2)'" onmouseout="this.style.color='var(--text-4)'">Trabaja con nosotros</a>
+  </nav>
+</footer>
+
+<script src="../shared/theme-loader.js"></script>
+</body>
+</html>

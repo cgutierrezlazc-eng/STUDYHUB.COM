@@ -1,0 +1,100 @@
+/* ═══ ORBIT-U · Nav Component · compartido en todas las páginas internas ═══ */
+.nav {
+  background: var(--surface);
+  border-bottom: 1px solid var(--border);
+  position: sticky; top: 0; z-index: 30;
+}
+.nav-inner {
+  max-width: 1280px; margin: 0 auto;
+  padding: 12px 24px;
+  display: flex; align-items: center; gap: 14px;
+}
+.nav-brand { display: inline-flex; align-items: center; gap: 12px; }
+
+.nav-back {
+  height: 30px;
+  padding: 0 12px 0 8px;
+  border-radius: 999px;
+  background: var(--surface-2);
+  border: 1px solid var(--border);
+  display: inline-flex; align-items: center; gap: 7px;
+  color: var(--text-2);
+  transition: all .18s;
+  font-family: 'Geist Mono', monospace;
+  font-size: 10px; font-weight: 600;
+  letter-spacing: .08em; text-transform: uppercase;
+  text-decoration: none; white-space: nowrap;
+  cursor: pointer;
+}
+.nav-back:hover {
+  background: var(--surface-3);
+  color: var(--green);
+  border-color: var(--green);
+  box-shadow: 0 0 0 3px rgba(0,194,122,0.10);
+}
+.orbit-ico {
+  width: 16px; height: 16px;
+  position: relative;
+  display: inline-grid; place-items: center;
+  flex-shrink: 0;
+}
+.orbit-ico::before {
+  content: ""; position: absolute; inset: 0;
+  border-radius: 50%;
+  border: 1px dashed currentColor;
+  opacity: 0.55;
+  transform: rotate(-25deg);
+}
+.orbit-ico::after {
+  content: ""; width: 6px; height: 6px;
+  border-radius: 50%;
+  background: var(--green);
+  box-shadow: 0 0 5px var(--green);
+}
+.nav-back:hover .orbit-ico::after {
+  background: var(--green-3);
+  box-shadow: 0 0 8px var(--green-3);
+}
+.nav-back-u { color: var(--green); }
+
+.nav-sep {
+  width: 1px; height: 18px;
+  background: var(--border);
+  flex-shrink: 0;
+}
+
+.nav-mod-name {
+  font-size: 13px; font-weight: 600;
+  color: var(--text-2);
+  letter-spacing: -.01em;
+}
+
+.nav-right {
+  margin-left: auto;
+  display: inline-flex; align-items: center; gap: 8px;
+}
+.nav-ico {
+  width: 34px; height: 34px; border-radius: 10px;
+  background: transparent;
+  border: 1px solid transparent;
+  display: grid; place-items: center;
+  color: var(--text-2);
+  transition: all .18s;
+  cursor: pointer;
+}
+.nav-ico:hover { background: var(--surface-2); color: var(--text); border-color: var(--border); }
+.nav-ico.has-badge { position: relative; }
+.nav-ico.has-badge::after {
+  content: ""; position: absolute; top: 6px; right: 8px;
+  width: 6px; height: 6px; border-radius: 50%;
+  background: var(--orange);
+  box-shadow: 0 0 5px rgba(255,74,28,0.6);
+}
+.nav-av {
+  width: 34px; height: 34px; border-radius: 50%;
+  background: linear-gradient(135deg, var(--green-3), var(--green-2));
+  color: #0B0C0E; font-weight: 700; font-size: 12px;
+  display: grid; place-items: center;
+  border: 1.5px solid var(--green);
+  cursor: pointer; flex-shrink: 0;
+}

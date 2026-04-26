@@ -1,0 +1,525 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>Perfil · Paletas · Orbit·U</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"/>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Funnel+Display:wght@900&family=Inter:wght@400;500;600;700&family=Geist+Mono:wght@400;600&display=swap"/>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{min-height:100vh;font-family:'Inter',sans-serif;font-size:14px;-webkit-font-smoothing:antialiased}
+a{color:inherit;text-decoration:none}
+button{font-family:inherit;cursor:pointer}
+svg{width:16px;height:16px;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round;display:block}
+
+/* ══ SELECTOR ══ */
+.sel{
+  position:fixed;top:0;left:0;right:0;z-index:300;
+  display:flex;align-items:center;gap:8px;padding:10px 24px;
+  border-bottom:1px solid rgba(255,255,255,.06);
+  background:rgba(8,12,24,.94);backdrop-filter:blur(18px);
+}
+.sel-label{font-family:'Geist Mono',monospace;font-size:9px;letter-spacing:.14em;color:rgba(200,215,240,.3);margin-right:4px}
+.sbtn{
+  font-family:'Geist Mono',monospace;font-size:10px;font-weight:600;
+  letter-spacing:.07em;padding:5px 14px;border-radius:6px;border:1px solid;
+  cursor:pointer;background:transparent;transition:all .15s;color:rgba(200,215,240,.55);border-color:rgba(200,215,240,.18);
+}
+.sbtn.active{background:rgba(255,255,255,.1);color:#fff;border-color:rgba(255,255,255,.3)}
+.sel-note{margin-left:auto;font-family:'Geist Mono',monospace;font-size:9px;letter-spacing:.07em;color:rgba(200,215,240,.18)}
+
+/* HEX fondo estático */
+#hexCvs{position:fixed;inset:0;pointer-events:none;z-index:0}
+
+/* ════════════════════════════
+   A · MEDIANOCHE
+   bg #14192E — navy muy oscuro
+   cards: glass tenue, texto claro
+════════════════════════════ */
+body.va{
+  --bg:      #14192E;
+  --card:    rgba(255,255,255,.055);
+  --cardbrd: rgba(200,212,240,.10);
+  --cardbrd2:rgba(200,212,240,.05);
+  --text:    #D8E4F4;
+  --text2:   #8AA0C4;
+  --text3:   #4A5E80;
+  --accent:  #00C27A;
+  --acc2:    rgba(0,194,122,.10);
+  --accglow: rgba(0,194,122,.20);
+  --hexA:    0.18;          /* opacidad hex */
+  background:var(--bg);color:var(--text);
+}
+/* ════════════════════════════
+   B · PROFUNDO
+   bg #192240 — navy azul real
+   cards: blanco tenue visible
+════════════════════════════ */
+body.vb{
+  --bg:      #192240;
+  --card:    rgba(255,255,255,.075);
+  --cardbrd: rgba(200,218,255,.12);
+  --cardbrd2:rgba(200,218,255,.06);
+  --text:    #E2EBF8;
+  --text2:   #96B0D4;
+  --text3:   #526885;
+  --accent:  #00C27A;
+  --acc2:    rgba(0,194,122,.10);
+  --accglow: rgba(0,194,122,.22);
+  --hexA:    0.22;
+  background:var(--bg);color:var(--text);
+}
+/* ════════════════════════════
+   C · ÍNDIGO
+   bg #1E2B50 — azul índigo
+   cards: superficie semivisible
+════════════════════════════ */
+body.vc{
+  --bg:      #1E2B50;
+  --card:    rgba(255,255,255,.10);
+  --cardbrd: rgba(210,224,255,.14);
+  --cardbrd2:rgba(210,224,255,.07);
+  --text:    #EAF0FC;
+  --text2:   #A4BCE0;
+  --text3:   #607494;
+  --accent:  #D9FF3A;
+  --acc2:    rgba(217,255,58,.08);
+  --accglow: rgba(217,255,58,.18);
+  --hexA:    0.26;
+  background:var(--bg);color:var(--text);
+}
+/* ════════════════════════════
+   D · COBALTO
+   bg #243462 — azul cobalto
+   cards: más claras, más aire
+════════════════════════════ */
+body.vd{
+  --bg:      #243462;
+  --card:    rgba(255,255,255,.13);
+  --cardbrd: rgba(220,232,255,.18);
+  --cardbrd2:rgba(220,232,255,.08);
+  --text:    #F0F5FF;
+  --text2:   #B4C8E8;
+  --text3:   #728AAE;
+  --accent:  #D9FF3A;
+  --acc2:    rgba(217,255,58,.09);
+  --accglow: rgba(217,255,58,.22);
+  --hexA:    0.30;
+  background:var(--bg);color:var(--text);
+}
+
+/* ══ NAV ══ */
+.nav{
+  position:sticky;top:42px;z-index:50;
+  background:rgba(0,0,0,.28);
+  backdrop-filter:blur(22px);-webkit-backdrop-filter:blur(22px);
+  border-bottom:1px solid var(--cardbrd);
+}
+.nav-inner{
+  max-width:960px;margin:0 auto;padding:0 24px;
+  display:grid;grid-template-columns:auto 1fr auto;
+  gap:20px;align-items:center;height:54px;
+}
+.nav-brand{display:flex;align-items:center;gap:12px}
+.back-btn{
+  display:flex;align-items:center;gap:6px;
+  padding:5px 11px 5px 8px;border-radius:99px;
+  background:rgba(0,0,0,.18);border:1px solid var(--cardbrd);
+  color:var(--text2);font-family:'Geist Mono',monospace;
+  font-size:10px;font-weight:600;letter-spacing:.08em;transition:all .15s;
+}
+.back-btn:hover{color:var(--accent);border-color:var(--accent);background:var(--acc2)}
+.back-dot{width:6px;height:6px;border-radius:50%;background:var(--accent);box-shadow:0 0 7px var(--accglow)}
+.logo{
+  font-family:'Funnel Display',sans-serif;font-weight:900;
+  font-size:17px;letter-spacing:-.05em;color:var(--text);
+  display:inline-flex;align-items:baseline;
+}
+.logo em{font-style:italic;opacity:.35}
+.logo-tile{
+  display:inline-flex;align-items:baseline;
+  background:#D9FF3A;color:#0D0F10;
+  padding:.06em .13em .06em .08em;border-radius:.18em;margin-left:.02em;
+}
+.logo-dot{color:#FF4A1C}
+.search-bar{
+  max-width:340px;width:100%;
+  background:rgba(0,0,0,.15);border:1px solid var(--cardbrd);
+  border-radius:99px;padding:7px 14px;
+  display:flex;align-items:center;gap:8px;color:var(--text3);
+}
+.search-bar input{flex:1;background:transparent;border:0;outline:0;color:var(--text);font-size:12px;font-family:'Inter',sans-serif}
+.search-bar input::placeholder{color:var(--text3)}
+.kbd{font-family:'Geist Mono',monospace;font-size:9px;padding:2px 6px;background:rgba(0,0,0,.2);border:1px solid var(--cardbrd);border-radius:4px;color:var(--text3)}
+.nav-acts{display:flex;gap:5px}
+.nav-ico{width:34px;height:34px;border-radius:9px;border:1px solid transparent;background:transparent;color:var(--text2);display:grid;place-items:center;transition:all .15s}
+.nav-ico:hover{background:var(--acc2);border-color:var(--cardbrd);color:var(--accent)}
+.nav-ico svg{width:15px;height:15px}
+.nav-tabs{display:flex;border-top:1px solid var(--cardbrd2);max-width:960px;margin:0 auto;padding:0 24px}
+.ntab{padding:9px 16px;font-size:13px;font-weight:500;color:var(--text3);border-bottom:2px solid transparent;margin-bottom:-1px;cursor:pointer;transition:all .13s}
+.ntab.on{color:var(--accent);border-bottom-color:var(--accent)}
+.ntab:hover:not(.on){color:var(--text2)}
+
+/* ══ PAGE ══ */
+.page{max-width:960px;margin:0 auto;padding:0 24px 80px;position:relative;z-index:1}
+
+/* ══ COVER ══ */
+.cover-wrap{
+  height:190px;border-radius:0 0 16px 16px;overflow:hidden;
+  position:relative;border:1px solid var(--cardbrd);border-top:0;
+}
+.cover-hex-cvs{position:absolute;inset:0;width:100%;height:100%}
+.cover-fade{
+  position:absolute;inset:0;
+  background:linear-gradient(160deg,transparent 40%,rgba(0,0,0,.45) 100%);
+}
+.cover-edit-btn{
+  position:absolute;bottom:12px;right:12px;
+  display:flex;align-items:center;gap:6px;padding:6px 12px;
+  border-radius:8px;background:rgba(0,0,0,.35);backdrop-filter:blur(8px);
+  border:1px solid rgba(255,255,255,.14);color:rgba(255,255,255,.75);
+  font-size:12px;transition:all .14s;
+}
+.cover-edit-btn:hover{background:rgba(0,0,0,.55);color:#fff}
+.cover-edit-btn svg{width:13px;height:13px}
+
+/* ══ AVATAR ROW ══ */
+.av-row{
+  display:flex;align-items:flex-end;gap:16px;
+  padding:0 24px;margin-top:-44px;margin-bottom:18px;
+  position:relative;z-index:2;
+}
+.avatar{
+  width:86px;height:86px;border-radius:50%;flex-shrink:0;
+  border:3.5px solid var(--bg);
+  background:var(--card);
+  backdrop-filter:blur(8px);
+  display:grid;place-items:center;
+  font-family:'Funnel Display',sans-serif;font-weight:900;
+  font-size:26px;color:var(--accent);
+  box-shadow:0 0 0 1.5px var(--cardbrd),0 0 22px var(--accglow);
+}
+.av-info{flex:1;padding-bottom:6px}
+.av-name{font-family:'Funnel Display',sans-serif;font-weight:900;font-size:22px;letter-spacing:-.04em;color:var(--text)}
+.av-sub{font-size:12px;color:var(--text3);margin-top:3px}
+.av-bdg{display:flex;gap:5px;margin-top:8px;flex-wrap:wrap}
+.bdg{font-family:'Geist Mono',monospace;font-size:9px;font-weight:600;letter-spacing:.07em;padding:3px 8px;border-radius:4px;border:1px solid}
+.bdg-on{color:#00C27A;background:rgba(0,194,122,.10);border-color:rgba(0,194,122,.28)}
+.bdg-vf{color:var(--accent);background:var(--acc2);border-color:var(--accent)}
+.bdg-st{color:var(--text3);background:rgba(0,0,0,.12);border-color:var(--cardbrd2)}
+.av-btns{display:flex;gap:8px;padding-bottom:6px}
+.btn-sec{padding:8px 16px;border-radius:9px;background:rgba(0,0,0,.15);border:1px solid var(--cardbrd);color:var(--text2);font-size:13px;font-weight:500;transition:all .14s}
+.btn-sec:hover{border-color:var(--accent);color:var(--accent);background:var(--acc2)}
+.btn-pri{padding:8px 18px;border-radius:9px;background:var(--accent);border:1px solid var(--accent);color:#06100C;font-size:13px;font-weight:700;transition:opacity .14s}
+body.vc .btn-pri,body.vd .btn-pri{color:#0D0F10}
+.btn-pri:hover{opacity:.85}
+
+/* ══ GRID ══ */
+.grid{display:grid;grid-template-columns:1fr 280px;gap:16px;padding:0 24px}
+
+/* ══ CARD ══ */
+.card{
+  background:var(--card);
+  backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);
+  border:1px solid var(--cardbrd);border-radius:14px;
+  padding:16px 18px;margin-bottom:12px;
+}
+.card-title{font-size:11px;font-weight:600;color:var(--text3);letter-spacing:.08em;text-transform:uppercase;margin-bottom:14px}
+
+/* Bio */
+.bio-row{display:flex;align-items:center;gap:8px;margin-bottom:10px}
+.bio-lbl{font-size:11px;font-weight:600;color:var(--text2);letter-spacing:.06em;text-transform:uppercase}
+.bio-edit{margin-left:auto;display:flex;align-items:center;gap:5px;padding:4px 9px;border-radius:6px;background:transparent;border:1px solid var(--cardbrd);color:var(--text3);font-size:11px;transition:all .13s}
+.bio-edit:hover{color:var(--accent);border-color:var(--accent);background:var(--acc2)}
+.bio-edit svg{width:12px;height:12px}
+.bio-placeholder{font-size:13px;color:var(--text3);font-style:italic;line-height:1.65}
+
+/* Composer */
+.comp-row{display:flex;align-items:center;gap:10px;margin-bottom:10px}
+.comp-av{width:34px;height:34px;border-radius:50%;flex-shrink:0;background:rgba(0,0,0,.2);border:1px solid var(--cardbrd);display:grid;place-items:center;font-family:'Funnel Display',sans-serif;font-weight:900;font-size:12px;color:var(--accent)}
+.comp-inp{flex:1;background:rgba(0,0,0,.14);border:1px solid var(--cardbrd);border-radius:99px;padding:8px 16px;color:var(--text3);font-size:13px;cursor:text;transition:border-color .13s}
+.comp-inp:hover{border-color:var(--accent);color:var(--text2)}
+.comp-acts{display:flex;gap:3px}
+.c-act{width:32px;height:32px;border-radius:7px;border:1px solid transparent;background:transparent;color:var(--text3);display:grid;place-items:center;transition:all .13s}
+.c-act:hover{background:var(--acc2);color:var(--accent);border-color:var(--cardbrd)}
+.c-act svg{width:14px;height:14px}
+
+/* Post */
+.post{
+  background:var(--card);
+  backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);
+  border:1px solid var(--cardbrd);border-radius:14px;
+  padding:16px 18px;margin-bottom:10px;transition:border-color .16s;
+}
+.post:hover{border-color:rgba(255,255,255,.16)}
+.ph{display:flex;align-items:center;gap:10px;margin-bottom:10px}
+.p-av{width:34px;height:34px;border-radius:50%;flex-shrink:0;background:rgba(0,0,0,.2);border:1px solid var(--cardbrd);display:grid;place-items:center;font-family:'Funnel Display',sans-serif;font-weight:900;font-size:12px;color:var(--accent)}
+.p-name{font-size:13px;font-weight:600;color:var(--text)}
+.p-time{font-size:11px;color:var(--text3);margin-top:1px}
+.p-body{font-size:13px;color:var(--text2);line-height:1.7;margin-bottom:12px}
+.p-acts{display:flex;gap:2px;padding-top:10px;border-top:1px solid var(--cardbrd2)}
+.p-act{display:flex;align-items:center;gap:5px;padding:5px 9px;border-radius:7px;border:0;background:transparent;color:var(--text3);font-size:12px;transition:all .13s}
+.p-act:hover{background:var(--acc2);color:var(--accent)}
+.p-act svg{width:14px;height:14px}
+
+/* Sidebar */
+.stat-row{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;text-align:center}
+.sn{font-family:'Funnel Display',sans-serif;font-weight:900;font-size:24px;letter-spacing:-.04em;color:var(--accent)}
+.sl{font-size:10px;color:var(--text3);margin-top:2px}
+.mod-list{display:flex;flex-direction:column;gap:3px}
+.mod{display:flex;align-items:center;gap:9px;padding:7px 9px;border-radius:8px;border:1px solid transparent;cursor:pointer;transition:all .13s}
+.mod:hover{background:rgba(0,0,0,.14);border-color:var(--cardbrd)}
+.mdot{width:7px;height:7px;border-radius:50%;flex-shrink:0}
+.mname{font-size:12px;font-weight:500;color:var(--text2);flex:1}
+.marr{font-size:11px;color:var(--text3);opacity:0;transform:translateX(-3px);transition:all .13s}
+.mod:hover .marr{opacity:1;transform:translateX(0)}
+.sdiv{height:1px;background:var(--cardbrd2);margin:8px 0}
+
+/* Badge */
+.badge-label{
+  position:fixed;bottom:20px;left:50%;transform:translateX(-50%);
+  z-index:200;font-family:'Geist Mono',monospace;font-size:10px;font-weight:600;
+  letter-spacing:.10em;padding:7px 20px;border-radius:99px;
+  border:1px solid rgba(255,255,255,.09);background:rgba(0,0,0,.42);
+  backdrop-filter:blur(12px);color:rgba(200,220,255,.5);pointer-events:none;
+  white-space:nowrap;
+}
+</style>
+</head>
+<body class="va">
+
+<!-- HEX estático -->
+<canvas id="hexCvs"></canvas>
+
+<!-- SELECTOR -->
+<div class="sel">
+  <span class="sel-label">PALETA ·</span>
+  <button class="sbtn active" id="btn-a" onclick="setV('a',this)">A · MEDIANOCHE</button>
+  <button class="sbtn" id="btn-b" onclick="setV('b',this)">B · PROFUNDO</button>
+  <button class="sbtn" id="btn-c" onclick="setV('c',this)">C · ÍNDIGO</button>
+  <button class="sbtn" id="btn-d" onclick="setV('d',this)">D · COBALTO</button>
+  <span class="sel-note">ORBIT·U · SILVER HEX ESTÁTICO</span>
+</div>
+
+<!-- NAV -->
+<nav class="nav">
+  <div class="nav-inner">
+    <div class="nav-brand">
+      <a class="back-btn" href="#">
+        <span class="back-dot"></span>Orbit·U
+      </a>
+      <span class="logo"><!-- WORDMARK PENDIENTE --></span>
+    </div>
+    <div class="search-bar">
+      <svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.5-4.5"/></svg>
+      <input placeholder="Buscar personas, cursos, comunidades…"/>
+      <span class="kbd">⌘K</span>
+    </div>
+    <div class="nav-acts">
+      <button class="nav-ico"><svg viewBox="0 0 24 24"><path d="M6 8a6 6 0 0112 0c0 7 3 9 3 9H3s3-2 3-9"/><path d="M10 21a2 2 0 004 0"/></svg></button>
+      <button class="nav-ico"><svg viewBox="0 0 24 24"><circle cx="12" cy="8" r="4"/><path d="M4 20c0-4 3.6-7 8-7s8 3 8 7"/></svg></button>
+    </div>
+  </div>
+  <div class="nav-tabs">
+    <div class="ntab on">Feed</div>
+    <div class="ntab">Logros</div>
+    <div class="ntab">CV público</div>
+    <div class="ntab">Sobre mí</div>
+  </div>
+</nav>
+
+<!-- PAGE -->
+<div class="page">
+
+  <!-- Cover -->
+  <div class="cover-wrap">
+    <canvas class="cover-hex-cvs" id="coverCvs"></canvas>
+    <div class="cover-fade"></div>
+    <button class="cover-edit-btn">
+      <svg viewBox="0 0 24 24"><path d="M3 17.25V21h3.75L17.81 9.94l-3.75-3.75L3 17.25z"/><path d="M14.06 6.19l3.75 3.75"/></svg>
+      Cambiar portada
+    </button>
+  </div>
+
+  <!-- Avatar -->
+  <div class="av-row">
+    <div class="avatar">CG</div>
+    <div class="av-info">
+      <div class="av-name">Cristian García</div>
+      <div class="av-sub">@cristiang · Ingeniería Civil · Universidad de Santiago</div>
+      <div class="av-bdg">
+        <span class="bdg bdg-on">● online</span>
+        <span class="bdg bdg-vf">verificado</span>
+        <span class="bdg bdg-st">🔥 racha 14 días</span>
+      </div>
+    </div>
+    <div class="av-btns">
+      <button class="btn-sec">Mensaje</button>
+      <button class="btn-pri">Editar perfil</button>
+    </div>
+  </div>
+
+  <!-- Grid -->
+  <div class="grid">
+    <!-- Feed -->
+    <div>
+      <div class="card">
+        <div class="bio-row">
+          <span class="bio-lbl">Bio</span>
+          <button class="bio-edit">
+            <svg viewBox="0 0 24 24"><path d="M3 17.25V21h3.75L17.81 9.94l-3.75-3.75L3 17.25z"/><path d="M14.06 6.19l3.75 3.75"/></svg>
+            Editar
+          </button>
+        </div>
+        <div class="bio-placeholder">Agrega tu bio — contale al mundo quién sos y qué te apasiona estudiar.</div>
+      </div>
+
+      <div class="card">
+        <div class="comp-row">
+          <div class="comp-av">CG</div>
+          <div class="comp-inp">Compartí algo con tu red…</div>
+        </div>
+        <div class="comp-acts">
+          <button class="c-act"><svg viewBox="0 0 24 24"><path d="M5 3h10l4 4v14H5z"/><path d="M15 3v4h4 M9 12h6 M9 16h4"/></svg></button>
+          <button class="c-act"><svg viewBox="0 0 24 24"><rect x="3" y="5" width="18" height="14" rx="2"/><circle cx="9" cy="11" r="2"/><path d="M3 17l5-5 4 4 3-3 6 6"/></svg></button>
+          <button class="c-act"><svg viewBox="0 0 24 24"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M3 10h18 M8 3v4 M16 3v4"/></svg></button>
+          <button class="c-act"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M9.5 9a2.5 2.5 0 015 0c0 1.5-2.5 2-2.5 4 M12 17h.01"/></svg></button>
+        </div>
+      </div>
+
+      <div class="post">
+        <div class="ph">
+          <div class="p-av">CG</div>
+          <div><div class="p-name">Cristian García</div><div class="p-time">Hace 2 horas · Público</div></div>
+        </div>
+        <div class="p-body">Terminé el proyecto de estructuras con mi equipo en Workspaces. 3 semanas de trabajo duro — entregado a tiempo, nota 6.8 🎯</div>
+        <div class="p-acts">
+          <button class="p-act"><svg viewBox="0 0 24 24"><path d="M20.84 4.61a5.5 5.5 0 00-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 00-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 000-7.78z"/></svg>24</button>
+          <button class="p-act"><svg viewBox="0 0 24 24"><path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"/></svg>8</button>
+          <button class="p-act"><svg viewBox="0 0 24 24"><path d="M4 12v8a2 2 0 002 2h12a2 2 0 002-2v-8 M16 6l-4-4-4 4 M12 2v13"/></svg>Compartir</button>
+        </div>
+      </div>
+
+      <div class="post">
+        <div class="ph">
+          <div class="p-av">CG</div>
+          <div><div class="p-name">Cristian García</div><div class="p-time">Ayer · Solo mi universidad</div></div>
+        </div>
+        <div class="p-body">Buscando tutor para Cálculo III antes del certamen del jueves. Si alguien puede dar una mano, ¡avisen acá! 🙌</div>
+        <div class="p-acts">
+          <button class="p-act"><svg viewBox="0 0 24 24"><path d="M20.84 4.61a5.5 5.5 0 00-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 00-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 000-7.78z"/></svg>7</button>
+          <button class="p-act"><svg viewBox="0 0 24 24"><path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"/></svg>14</button>
+          <button class="p-act"><svg viewBox="0 0 24 24"><path d="M4 12v8a2 2 0 002 2h12a2 2 0 002-2v-8 M16 6l-4-4-4 4 M12 2v13"/></svg>Compartir</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Sidebar -->
+    <div>
+      <div class="card">
+        <div class="card-title">Actividad</div>
+        <div class="stat-row">
+          <div><div class="sn">128</div><div class="sl">conexiones</div></div>
+          <div><div class="sn">34</div><div class="sl">publicaciones</div></div>
+          <div><div class="sn">12</div><div class="sl">cursos</div></div>
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-title">Módulos</div>
+        <div class="mod-list">
+          <div class="mod"><span class="mdot" style="background:#D97706"></span><span class="mname">Mi U</span><span class="marr">›</span></div>
+          <div class="mod"><span class="mdot" style="background:#C49A3A"></span><span class="mname">Tutores</span><span class="marr">›</span></div>
+          <div class="mod"><span class="mdot" style="background:#0096CC"></span><span class="mname">Empleos</span><span class="marr">›</span></div>
+          <div class="mod"><span class="mdot" style="background:#6B4EFF"></span><span class="mname">Workspaces</span><span class="marr">›</span></div>
+          <div class="sdiv"></div>
+          <div class="mod"><span class="mdot" style="background:#00C27A"></span><span class="mname">Mensajes</span><span class="marr">›</span></div>
+          <div class="mod"><span class="mdot" style="background:#FF4A1C"></span><span class="mname">Biblioteca</span><span class="marr">›</span></div>
+          <div class="mod"><span class="mdot" style="background:#E91E8C"></span><span class="mname">Cursos</span><span class="marr">›</span></div>
+          <div class="mod"><span class="mdot" style="background:#00BFA5"></span><span class="mname">Calendario</span><span class="marr">›</span></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="badge-label" id="badgeLabel">A · MEDIANOCHE — #14192E · hex silver estático</div>
+
+<script>
+/* ══ HEX ESTÁTICO — se dibuja una vez, sin animación ══ */
+function hexPath(ctx,x,y,r){
+  ctx.beginPath();
+  for(var i=0;i<6;i++){
+    var a=Math.PI/3*i-Math.PI/6;
+    i===0?ctx.moveTo(x+r*Math.cos(a),y+r*Math.sin(a))
+         :ctx.lineTo(x+r*Math.cos(a),y+r*Math.sin(a));
+  }
+  ctx.closePath();
+}
+
+function drawStaticHex(canvas,S,alpha){
+  var W=canvas.width, H=canvas.height;
+  var ctx=canvas.getContext('2d');
+  ctx.clearRect(0,0,W,H);
+  var rHex=S*0.46;
+  var colW=S*1.5;
+  var rowH=S*Math.sqrt(3);
+  var cols=Math.ceil(W/colW)+2;
+  var rows=Math.ceil(H/rowH)+2;
+  ctx.strokeStyle='rgba(185,198,222,'+alpha+')';
+  ctx.lineWidth=0.75;
+  for(var ci=-1;ci<cols;ci++){
+    for(var ri=-1;ri<rows;ri++){
+      var x=ci*colW;
+      var y=ri*rowH+(ci%2===1?rowH/2:0);
+      hexPath(ctx,x,y,rHex);
+      ctx.stroke();
+    }
+  }
+}
+
+function initHex(){
+  /* fondo global */
+  var gc=document.getElementById('hexCvs');
+  gc.width=window.innerWidth;
+  gc.height=window.innerHeight;
+  var style=getComputedStyle(document.body);
+  var alpha=parseFloat(style.getPropertyValue('--hexA'))||0.18;
+  drawStaticHex(gc,34,alpha);
+
+  /* cover */
+  var cc=document.getElementById('coverCvs');
+  cc.width=cc.offsetWidth||900;
+  cc.height=cc.offsetHeight||190;
+  drawStaticHex(cc,20,alpha*1.4);
+}
+
+/* cambio de variante */
+var LABELS={
+  a:'A · MEDIANOCHE — #14192E · hex silver 0.18',
+  b:'B · PROFUNDO   — #192240 · hex silver 0.22',
+  c:'C · ÍNDIGO     — #1E2B50 · hex silver 0.26 · acento lima',
+  d:'D · COBALTO    — #243462 · hex silver 0.30 · acento lima'
+};
+function setV(v,btn){
+  document.body.className='v'+v;
+  document.querySelectorAll('.sbtn').forEach(function(b){b.classList.remove('active')});
+  btn.classList.add('active');
+  document.getElementById('badgeLabel').textContent=LABELS[v];
+  /* redibujar hex con nueva opacidad */
+  setTimeout(initHex,20);
+}
+
+window.addEventListener('resize',function(){
+  var gc=document.getElementById('hexCvs');
+  gc.width=window.innerWidth;
+  gc.height=window.innerHeight;
+  var style=getComputedStyle(document.body);
+  var alpha=parseFloat(style.getPropertyValue('--hexA'))||0.18;
+  drawStaticHex(gc,34,alpha);
+});
+
+initHex();
+</script>
+</body>
+</html>

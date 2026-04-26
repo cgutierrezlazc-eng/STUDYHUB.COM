@@ -1,0 +1,166 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Iniciar sesión · Conniku</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Funnel+Display:wght@400;600;700;800;900&family=Inter:wght@400;500;600;700&family=Geist+Mono:wght@400;500;600&display=swap" />
+<link rel="stylesheet" href="../shared/tokens.css" />
+<link rel="stylesheet" href="../shared/base.css" />
+<style>
+body {
+  min-height: 100vh; background: var(--bg);
+  display: flex; flex-direction: column;
+  align-items: center; justify-content: center;
+  padding: 24px; position: relative; overflow: hidden;
+}
+/* ambient orbits */
+.ambient-orbits { position:fixed;inset:0;pointer-events:none;overflow:hidden;z-index:0; }
+.ao { position:absolute;border-radius:50%;border:1px solid rgba(232,232,230,0.04);transform:translate(-50%,-50%);left:50%;top:50%; }
+.ao.a1  { width:280px; height:280px; border-color:rgba(0,194,122,0.22); }
+.ao.a2  { width:480px; height:480px; border-style:dashed; border-color:rgba(255,74,28,0.16); }
+.ao.a3  { width:680px; height:680px; border-style:dotted; border-color:rgba(0,194,122,0.13); opacity:.8; }
+.ao.a4  { width:880px; height:880px; border-color:rgba(245,244,239,0.07); opacity:.65; }
+.ao.a5  { width:1080px;height:1080px;border-style:dashed;border-color:rgba(255,74,28,0.07);opacity:.5; }
+.ao.a6  { width:1280px;height:1280px;border-style:dotted;border-color:rgba(0,194,122,0.05);opacity:.4; }
+.ao.a7  { width:1480px;height:1480px;border-color:rgba(245,244,239,0.03);opacity:.3; }
+.ao.glow { width:500px;height:500px;border:none;background:radial-gradient(circle,rgba(0,194,122,0.08) 0%,transparent 65%); }
+.star { position:absolute;border-radius:50%;background:rgba(245,244,239,0.7);animation:twinkle var(--dur,3s) ease-in-out infinite;animation-delay:var(--delay,0s); }
+.star.s  { width:1.5px;height:1.5px; }
+.star.m  { width:2px;height:2px; }
+.star.l  { width:3px;height:3px;box-shadow:0 0 6px rgba(245,244,239,0.5); }
+.star.green  { background:rgba(0,194,122,0.8); box-shadow:0 0 5px rgba(0,194,122,0.5); }
+.star.orange { background:rgba(255,74,28,0.8); box-shadow:0 0 5px rgba(255,74,28,0.5); }
+.star.cyan   { background:rgba(138,234,192,0.7);box-shadow:0 0 5px rgba(138,234,192,0.4); }
+@keyframes twinkle { 0%,100%{opacity:1;transform:scale(1);}50%{opacity:.2;transform:scale(.7);} }
+
+.auth-card {
+  width: 100%; max-width: 420px;
+  background: var(--surface); border: 1px solid var(--border);
+  border-radius: 20px; padding: 36px;
+  position: relative; z-index: 1;
+}
+.auth-logo { text-align: center; margin-bottom: 28px; }
+.auth-logo .brand { font-size: 22px; }
+.auth-title {
+  font-family: 'Funnel Display', sans-serif; font-weight: 800;
+  font-size: 22px; letter-spacing: -.03em;
+  color: var(--text); margin-bottom: 4px; text-align: center;
+}
+.auth-sub { font-size: 13px; color: var(--text-3); text-align: center; margin-bottom: 28px; }
+.form-group { margin-bottom: 16px; }
+.form-label {
+  display: block; font-size: 11px; font-weight: 600;
+  font-family: 'Geist Mono', monospace; color: var(--text-3);
+  text-transform: uppercase; letter-spacing: .07em; margin-bottom: 6px;
+}
+.form-input {
+  width: 100%; padding: 11px 14px; border-radius: 10px;
+  background: var(--surface-2); border: 1px solid var(--border);
+  color: var(--text); font-size: 14px; font-family: 'Inter', sans-serif;
+  transition: all .15s; outline: none;
+}
+.form-input::placeholder { color: var(--text-4); }
+.form-input:focus { border-color: var(--green); box-shadow: 0 0 0 3px rgba(0,194,122,0.1); }
+.forgot { text-align: right; margin-top: -10px; margin-bottom: 16px; }
+.forgot a { font-size: 11px; color: var(--text-4); transition: color .15s; }
+.forgot a:hover { color: var(--green); }
+.btn-submit {
+  width: 100%; padding: 13px; border-radius: 10px;
+  background: var(--green); color: #0B0C0E;
+  font-size: 14px; font-weight: 700; border: none; cursor: pointer;
+  transition: all .2s; margin-top: 4px;
+}
+.btn-submit:hover { background: var(--green-3); box-shadow: 0 0 20px rgba(0,194,122,0.3); }
+.auth-divider {
+  display: flex; align-items: center; gap: 12px;
+  margin: 20px 0; font-size: 11px; color: var(--text-4);
+  font-family: 'Geist Mono', monospace;
+}
+.auth-divider::before, .auth-divider::after { content: ""; flex: 1; height: 1px; background: var(--border); }
+.btn-social {
+  width: 100%; padding: 11px; border-radius: 10px;
+  background: var(--surface-2); border: 1px solid var(--border);
+  color: var(--text-2); font-size: 13px; font-weight: 600;
+  cursor: pointer; transition: all .15s;
+  display: flex; align-items: center; justify-content: center; gap: 8px;
+}
+.btn-social:hover { border-color: var(--border-2); color: var(--text); }
+.btn-social svg { width: 16px; height: 16px; flex-shrink: 0; }
+.auth-footer { text-align: center; margin-top: 22px; font-size: 12px; color: var(--text-4); }
+.auth-footer a { color: var(--green); font-weight: 600; }
+.auth-footer a:hover { color: var(--green-3); }
+.back-link {
+  position: fixed; top: 20px; left: 24px;
+  display: flex; align-items: center; gap: 6px;
+  font-size: 12px; color: var(--text-4); z-index: 10; transition: color .15s;
+}
+.back-link:hover { color: var(--text-2); }
+.back-link svg { width: 14px; height: 14px; }
+</style>
+</head>
+<body>
+
+<div class="ambient-orbits">
+  <div class="ao a1"></div><div class="ao a2"></div><div class="ao a3"></div>
+  <div class="ao a4"></div><div class="ao a5"></div><div class="ao a6"></div>
+  <div class="ao a7"></div><div class="ao glow"></div>
+  <span class="star l green"  style="top:8%;left:15%;--dur:3.4s;--delay:0s"></span>
+  <span class="star m"        style="top:12%;left:78%;--dur:2.8s;--delay:.6s"></span>
+  <span class="star s orange" style="top:25%;left:90%;--dur:3.2s;--delay:.4s"></span>
+  <span class="star l"        style="top:65%;left:5%;--dur:3.6s;--delay:.3s"></span>
+  <span class="star m cyan"   style="top:78%;left:82%;--dur:4s;--delay:.2s"></span>
+  <span class="star s green"  style="top:88%;left:45%;--dur:2.4s;--delay:1.4s"></span>
+  <span class="star l orange" style="top:45%;left:96%;--dur:3.8s;--delay:.8s"></span>
+  <span class="star m"        style="top:55%;left:2%;--dur:2.9s;--delay:.1s"></span>
+</div>
+
+<a href="../landing.html" class="back-link">
+  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>
+  Volver
+</a>
+
+<div class="auth-card">
+  <div class="auth-logo">
+    <a href="../landing.html" class="brand">conn<span>i</span>k<span class="u-pack">u<span class="dot">.</span></span></a>
+  </div>
+
+  <div class="auth-title">Bienvenido de vuelta</div>
+  <div class="auth-sub">Ingresa a tu cuenta de Conniku</div>
+
+  <form onsubmit="handleLogin(event)">
+    <div class="form-group">
+      <label class="form-label">Correo</label>
+      <input class="form-input" type="email" placeholder="tu@universidad.cl" autocomplete="email" required />
+    </div>
+    <div class="form-group">
+      <label class="form-label">Contraseña</label>
+      <input class="form-input" type="password" placeholder="Tu contraseña" autocomplete="current-password" required />
+    </div>
+    <div class="forgot"><a href="#">¿Olvidaste tu contraseña?</a></div>
+    <button type="submit" class="btn-submit">Iniciar sesión →</button>
+  </form>
+
+  <div class="auth-divider">o continúa con</div>
+
+  <button class="btn-social" onclick="handleLogin(event)">
+    <svg viewBox="0 0 24 24"><path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/><path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/><path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l3.66-2.84z"/><path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.47 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/></svg>
+    Continuar con Google
+  </button>
+
+  <div class="auth-footer">
+    ¿No tienes cuenta? <a href="registro.html">Regístrate gratis</a>
+  </div>
+</div>
+
+<script>
+function handleLogin(e) {
+  e.preventDefault();
+  window.location.href = 'orbit-u.html';
+}
+</script>
+<script src="../shared/theme-loader.js"></script>
+</body>
+</html>

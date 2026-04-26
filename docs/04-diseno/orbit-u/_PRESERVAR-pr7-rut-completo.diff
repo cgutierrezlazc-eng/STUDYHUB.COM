@@ -1,0 +1,207 @@
+diff --git a/backend/auth_routes.py b/backend/auth_routes.py
+index f438c4a..e922d47 100644
+--- a/backend/auth_routes.py
++++ b/backend/auth_routes.py
+@@ -320,6 +320,7 @@ class UpdateProfileRequest(BaseModel):
+     career: str | None = None
+     semester: int | None = None
+     phone: str | None = None
++    rut: str | None = None
+     birth_date: str | None = None
+     bio: str | None = None
+     avatar: str | None = None
+@@ -993,6 +994,24 @@ def get_me(user: User = Depends(get_current_user)):
+     return user_to_dict(user)
+ 
+ 
++def _validate_rut(rut: str) -> bool:
++    """Basic Chilean RUT validation (format and check digit)."""
++    clean = rut.replace(".", "").replace("-", "").upper()
++    if len(clean) < 2:
++        return False
++    body, dv = clean[:-1], clean[-1]
++    if not body.isdigit():
++        return False
++    total = 0
++    factor = 2
++    for ch in reversed(body):
++        total += int(ch) * factor
++        factor = factor + 1 if factor < 7 else 2
++    remainder = 11 - (total % 11)
++    expected = "0" if remainder == 11 else "K" if remainder == 10 else str(remainder)
++    return dv == expected
++
++
+ @router.put("/me")
+ def update_me(req: UpdateProfileRequest, user: User = Depends(get_current_user), db: Session = Depends(get_db)):
+     import json as _json
+@@ -1004,6 +1023,10 @@ def update_me(req: UpdateProfileRequest, user: User = Depends(get_current_user),
+     old_academic_status = getattr(user, "academic_status", "") or ""
+     old_offers_mentoring = getattr(user, "offers_mentoring", False) or False
+ 
++    # Validate RUT before processing updates
++    if hasattr(req, "rut") and req.rut is not None and not _validate_rut(req.rut):
++        raise HTTPException(400, "RUT inválido")
++
+     updates = req.dict(exclude_none=True)
+     json_list_fields = {"secondary_languages", "mentoring_services", "mentoring_subjects"}
+     for key, value in updates.items():
+@@ -1017,6 +1040,9 @@ def update_me(req: UpdateProfileRequest, user: User = Depends(get_current_user),
+         # Validate academic_status
+         if key == "academic_status" and value not in ("estudiante", "egresado", "titulado"):
+             continue
++        # Normalize RUT: store without dots/dash
++        if key == "rut" and isinstance(value, str):
++            value = value.replace(".", "").replace("-", "").upper()
+         # Convert camelCase to snake_case for db fields
+         db_key = key
+         if hasattr(user, db_key):
+diff --git a/backend/database.py b/backend/database.py
+index 7cf22ed..1791677 100644
+--- a/backend/database.py
++++ b/backend/database.py
+@@ -72,6 +72,7 @@ class User(Base):
+     career = Column(String(255), default="")
+     semester = Column(Integer, default=1)
+     phone = Column(String(50), default="")
++    rut = Column(String(12), nullable=True, default=None)  # Chilean tax ID (no dots/dash)
+     country = Column(String(5), default="CL")  # ISO country code
+     country_currency = Column(String(5), default="CLP")  # User's local currency
+     birth_date = Column(String(20), default="")
+@@ -1596,6 +1597,7 @@ def _ensure_columns():
+         ("users", "cover_position_y", "INTEGER DEFAULT 50"),
+         ("users", "bio_auto", "BOOLEAN DEFAULT FALSE"),
+         ("users", "provider", "VARCHAR(20) DEFAULT 'email'"),
++        ("users", "rut", "VARCHAR(12) DEFAULT NULL"),
+         # users — CV fields
+         ("users", "cv_headline", "VARCHAR(255) DEFAULT ''"),
+         ("users", "cv_summary", "TEXT DEFAULT ''"),
+diff --git a/backend/mercadopago_routes.py b/backend/mercadopago_routes.py
+index 53180af..9108885 100644
+--- a/backend/mercadopago_routes.py
++++ b/backend/mercadopago_routes.py
+@@ -101,6 +101,9 @@ async def create_mp_subscription(data: dict, user: User = Depends(get_current_us
+     if not MP_ACCESS_TOKEN:
+         raise HTTPException(503, "Mercado Pago no configurado")
+ 
++    if not user.rut:
++        raise HTTPException(400, "Debes completar tu RUT en tu perfil antes de suscribirte")
++
+     plan_key = data.get("plan", "pro_monthly")
+     plan = PLANS.get(plan_key)
+     if not plan:
+@@ -172,6 +175,9 @@ async def create_mp_checkout(data: dict, user: User = Depends(get_current_user),
+     if not plan:
+         raise HTTPException(400, f"Plan no valido: {plan_key}")
+ 
++    if not user.rut:
++        raise HTTPException(400, "Debes completar tu RUT en tu perfil antes de suscribirte")
++
+     preference_data = {
+         "items": [{
+             "title": plan["title"],
+@@ -184,6 +190,7 @@ async def create_mp_checkout(data: dict, user: User = Depends(get_current_user),
+             "email": user.email,
+             "name": user.first_name,
+             "surname": user.last_name or "",
++            "identification": {"type": "RUT", "number": user.rut},
+         },
+         "back_urls": {
+             "success": f"{FRONTEND_URL}/subscription?mp_status=approved&plan={plan_key}",
+diff --git a/backend/paypal_routes.py b/backend/paypal_routes.py
+index ffcb8d0..211e427 100644
+--- a/backend/paypal_routes.py
++++ b/backend/paypal_routes.py
+@@ -146,6 +146,9 @@ async def create_order(request: Request, db: Session = Depends(get_db), user=Dep
+     if not plan:
+         raise HTTPException(status_code=400, detail=f"Plan '{plan_id}' no encontrado")
+ 
++    if not user.rut:
++        raise HTTPException(400, "Debes completar tu RUT en tu perfil antes de suscribirte")
++
+     token = await _get_access_token()
+ 
+     order_data = {
+diff --git a/src/pages/Subscription.tsx b/src/pages/Subscription.tsx
+index d774be8..a40ff62 100644
+--- a/src/pages/Subscription.tsx
++++ b/src/pages/Subscription.tsx
+@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
+ import { useAuth } from '../services/auth';
+ import { api } from '../services/api';
+ import { useI18n } from '../services/i18n';
++import { validateRut } from '../utils/rut';
+ import tierData from '../../shared/tier-limits.json';
+ import {
+   Gem,
+@@ -124,6 +125,25 @@ export default function Subscription({ onNavigate }: Props) {
+   }, []);
+ 
+   const handleSubscribe = async () => {
++    // RUT obligatorio para checkout PRO
++    if (!user?.rut) {
++      const rutInput = prompt(
++        'Para continuar con tu suscripción, ingresa tu RUT (ej: 12.345.678-9):'
++      );
++      if (!rutInput) return;
++      if (!validateRut(rutInput)) {
++        alert('RUT inválido. Verifica e intenta de nuevo.');
++        return;
++      }
++      const cleanRut = rutInput.replace(/\./g, '').replace(/-/g, '').toUpperCase();
++      try {
++        await api.updateMe({ rut: cleanRut });
++      } catch {
++        alert('Error al guardar RUT');
++        return;
++      }
++    }
++
+     setLoading(true);
+     const planKey = `pro_${selectedPlan}`;
+     try {
+diff --git a/src/types/index.ts b/src/types/index.ts
+index fc04524..8966191 100644
+--- a/src/types/index.ts
++++ b/src/types/index.ts
+@@ -108,6 +108,7 @@ export interface User {
+   mentoringPricePerHour?: number;
+   mentoringCurrency?: string;
+   professionalTitle?: string;
++  rut?: string;
+   studyStartDate?: string;
+   studyDays?: number;
+   createdAt: string;
+diff --git a/src/utils/rut.ts b/src/utils/rut.ts
+new file mode 100644
+index 0000000..fc1b34f
+--- /dev/null
++++ b/src/utils/rut.ts
+@@ -0,0 +1,27 @@
++/** Valida RUT chileno con algoritmo módulo 11 */
++export function validateRut(rut: string): boolean {
++  const clean = rut.replace(/\./g, '').replace(/-/g, '').toUpperCase();
++  if (clean.length < 2) return false;
++  const body = clean.slice(0, -1);
++  const dv = clean.slice(-1);
++  if (!/^\d+$/.test(body)) return false;
++  let total = 0;
++  let factor = 2;
++  for (let i = body.length - 1; i >= 0; i--) {
++    total += parseInt(body[i]) * factor;
++    factor = factor < 7 ? factor + 1 : 2;
++  }
++  const remainder = 11 - (total % 11);
++  const expected = remainder === 11 ? '0' : remainder === 10 ? 'K' : String(remainder);
++  return dv === expected;
++}
++
++/** Formatea RUT: 12345678-9 → 12.345.678-9 */
++export function formatRut(rut: string): string {
++  const clean = rut.replace(/\./g, '').replace(/-/g, '');
++  if (clean.length < 2) return rut;
++  const body = clean.slice(0, -1);
++  const dv = clean.slice(-1);
++  const formatted = body.replace(/\B(?=(\d{3})+(?!\d))/g, '.');
++  return `${formatted}-${dv}`;
++}

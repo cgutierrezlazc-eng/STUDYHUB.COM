@@ -1,8 +1,15 @@
 """
 cleanup_production_db.py — Limpieza total de datos de prueba
 =========================================================
-Ejecutar en el shell de Render:
-  python cleanup_production_db.py
+UBICACIÓN: scripts/dangerous/ — NO pertenece al directorio de deploy.
+NO ejecutar sin leer completamente lo que hace.
+
+Para ejecutar en el shell de Render (SOLO cuando sea necesario limpiar datos de prueba):
+  1. En Render dashboard → Environment → añadir temporalmente: ALLOW_DB_CLEANUP=true
+  2. Abrir shell del servicio
+  3. cd /opt/render/project/src/backend
+  4. python ../scripts/dangerous/cleanup_production_db.py
+  5. Eliminar ALLOW_DB_CLEANUP del entorno inmediatamente después.
 
 QUÉ HACE:
   - Conserva SOLO el usuario owner (ceo@conniku.com / role='owner')
@@ -12,18 +19,34 @@ QUÉ HACE:
   - Deja la plataforma completamente limpia excepto por el perfil del CEO
 """
 
+import os
 import sys
+
+# ─── Guard obligatorio ────────────────────────────────────────────
+if os.getenv("ENV") == "production":
+    print("ERROR: Este script está bloqueado cuando ENV=production.")
+    print("       Desactiva esa variable o usa ALLOW_DB_CLEANUP=true para override explícito.")
+    sys.exit(1)
+
+if os.getenv("ALLOW_DB_CLEANUP") != "true":
+    print("ERROR: Ejecución bloqueada por seguridad.")
+    print("       Para ejecutar, añade la variable de entorno: ALLOW_DB_CLEANUP=true")
+    print("       Elimínala inmediatamente después de ejecutar el script.")
+    sys.exit(1)
+
 from sqlalchemy import text
-from database import engine, SessionLocal, User, Base
+from database import engine, SessionLocal, User, Base  # noqa: E402 — import after guard
+
 
 # ─── Safety check ────────────────────────────────────────────────
 def confirm(prompt: str) -> bool:
     resp = input(f"\n{prompt} (escribe 'SI' para confirmar): ").strip()
     return resp == "SI"
 
-print("\n" + "="*60)
+
+print("\n" + "=" * 60)
 print("  LIMPIEZA DE BASE DE DATOS DE PRODUCCIÓN — CONNIKU")
-print("="*60)
+print("=" * 60)
 
 db = SessionLocal()
 
@@ -50,8 +73,6 @@ if not confirm("¿Confirmas la eliminación completa de todos los datos de prueb
 print("\nEjecutando limpieza...")
 
 with engine.connect() as conn:
-    # Use raw SQL with CASCADE to handle FK constraints efficiently
-    # Tables to truncate entirely (no owner-specific data to keep)
     truncate_tables = [
         # Social content
         "community_post_comments",
@@ -135,7 +156,7 @@ with engine.connect() as conn:
     try:
         conn.execute(
             text("DELETE FROM users WHERE id != :owner_id"),
-            {"owner_id": owner.id}
+            {"owner_id": owner.id},
         )
         print(f"  ✓ users (kept owner: {owner.email})")
     except Exception as e:

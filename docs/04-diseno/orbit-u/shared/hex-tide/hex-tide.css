@@ -1,0 +1,14 @@
+/* Hex Tide · Canvas reset */
+.hex-tide{
+  position: fixed;
+  inset: 0;
+  display: block;
+  z-index: 0;
+  pointer-events: none;
+}
+
+/* Asegurar que el contenido esté por encima */
+.hex-tide ~ *{
+  position: relative;
+  z-index: 1;
+}

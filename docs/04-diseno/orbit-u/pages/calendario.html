@@ -1,0 +1,255 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Calendario · Conniku</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Funnel+Display:wght@400;600;700;800;900&family=Inter:wght@400;500;600;700&family=Geist+Mono:wght@400;500;600&display=swap" />
+<link rel="stylesheet" href="../shared/tokens.css" />
+<link rel="stylesheet" href="../shared/base.css" />
+<link rel="stylesheet" href="../shared/nav.css" />
+<link rel="stylesheet" href="../shared/sidebar.css" />
+<style>
+  :root { --mod: #B0ADA4; --mod-2: rgba(245,244,239,0.06); --mod-3: #F5F4EF; }
+
+  .layout { max-width: 1280px; margin: 0 auto; padding: 24px; display: grid; grid-template-columns: 1fr 300px; gap: 20px; }
+
+  /* ── Header mes ── */
+  .cal-header {
+    display: flex; align-items: center; justify-content: space-between;
+    margin-bottom: 18px;
+  }
+  .cal-month {
+    font-family: 'Funnel Display', sans-serif; font-weight: 800;
+    font-size: 26px; letter-spacing: -.04em; color: var(--text);
+  }
+  .cal-nav { display: flex; gap: 4px; }
+  .cal-nav-btn {
+    width: 32px; height: 32px; border-radius: 8px;
+    background: var(--surface); border: 1px solid var(--border);
+    color: var(--text-2); cursor: pointer; display: grid; place-items: center;
+    transition: all .15s;
+  }
+  .cal-nav-btn:hover { border-color: var(--mod-3); color: var(--mod-3); }
+  .cal-today-btn {
+    padding: 0 14px; height: 32px; border-radius: 8px;
+    background: var(--mod-2); border: 1px solid var(--border);
+    color: var(--text-2); font-size: 12px; font-weight: 600;
+    cursor: pointer; transition: all .15s;
+  }
+  .cal-today-btn:hover { border-color: var(--mod-3); color: var(--mod-3); }
+
+  /* ── Grid ── */
+  .cal-grid { background: var(--surface); border: 1px solid var(--border); border-radius: 14px; overflow: hidden; }
+  .cal-weekdays {
+    display: grid; grid-template-columns: repeat(7,1fr);
+    border-bottom: 1px solid var(--border);
+  }
+  .cal-wd {
+    padding: 10px 0; text-align: center;
+    font-family: 'Geist Mono', monospace; font-size: 10px;
+    font-weight: 600; letter-spacing: .08em; text-transform: uppercase;
+    color: var(--text-4);
+  }
+  .cal-days { display: grid; grid-template-columns: repeat(7,1fr); }
+  .cal-day {
+    min-height: 90px; padding: 8px;
+    border-right: 1px solid var(--border-2);
+    border-bottom: 1px solid var(--border-2);
+    display: flex; flex-direction: column; gap: 4px;
+    cursor: pointer; transition: background .14s;
+  }
+  .cal-day:nth-child(7n) { border-right: 0; }
+  .cal-day:hover { background: var(--surface-2); }
+  .cal-day.today { background: var(--mod-2); }
+  .cal-day.other-month .cal-dn { color: var(--text-4); opacity: .4; }
+  .cal-dn {
+    font-family: 'Geist Mono', monospace; font-size: 11px; font-weight: 600;
+    color: var(--text-3); width: 22px; height: 22px;
+    display: grid; place-items: center; border-radius: 50%;
+  }
+  .cal-day.today .cal-dn {
+    background: var(--mod-3); color: #0D0F10; font-weight: 700;
+  }
+  .cal-event {
+    font-size: 10px; padding: 2px 6px; border-radius: 4px;
+    white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+    font-weight: 500; line-height: 1.4;
+  }
+  .ev-class  { background: rgba(0,194,122,0.15); color: #8AEAC0; }
+  .ev-task   { background: rgba(217,255,58,0.10); color: #D9FF3A; }
+  .ev-tutor  { background: rgba(255,77,58,0.12); color: #FF9787; }
+  .ev-event  { background: rgba(0,194,255,0.10); color: #7FDAFF; }
+  .ev-exam   { background: rgba(255,74,28,0.15); color: #FF9572; }
+  .ev-more   { font-size: 9px; color: var(--text-4); padding-left: 2px; }
+
+  /* ── Sidebar ── */
+  .cal-side { display: flex; flex-direction: column; gap: 16px; }
+  .side-card {
+    background: var(--surface); border: 1px solid var(--border);
+    border-radius: 12px; overflow: hidden;
+  }
+  .side-card-head {
+    padding: 12px 14px; border-bottom: 1px solid var(--border);
+    font-size: 12px; font-weight: 700; color: var(--text);
+    display: flex; justify-content: space-between; align-items: center;
+  }
+  .side-card-head span { font-family: 'Geist Mono', monospace; font-size: 10px; color: var(--text-4); font-weight: 400; }
+  .agenda-item {
+    padding: 11px 14px; border-bottom: 1px solid var(--border-2);
+    display: flex; gap: 10px; align-items: flex-start;
+  }
+  .agenda-item:last-child { border-bottom: 0; }
+  .agenda-dot { width: 8px; height: 8px; border-radius: 50%; margin-top: 4px; flex-shrink: 0; }
+  .agenda-info { flex: 1; }
+  .agenda-title { font-size: 12px; font-weight: 600; color: var(--text); margin-bottom: 2px; }
+  .agenda-meta { font-family: 'Geist Mono', monospace; font-size: 10px; color: var(--text-4); }
+  .agenda-time { font-family: 'Geist Mono', monospace; font-size: 10px; color: var(--text-3); white-space: nowrap; }
+
+  .legend-item { display: flex; align-items: center; gap: 8px; padding: 7px 14px; font-size: 12px; color: var(--text-2); }
+  .legend-dot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
+</style>
+</head>
+<body>
+
+<nav class="nav">
+  <div class="nav-inner">
+    <div class="nav-brand">
+      <a href="orbit-u.html" class="nav-back">
+        <span class="orbit-ico" aria-hidden="true"></span>
+        Orbit<span class="nav-back-u">·U</span>
+      </a>
+      <span class="nav-sep" aria-hidden="true"></span>
+      <a href="orbit-u.html" class="brand">conn<span>i</span>k<span class="u-pack">u<span class="dot">.</span></span></a>
+    </div>
+    <span class="nav-mod-name">Calendario</span>
+    <div class="nav-right">
+      <button class="nav-ico" aria-label="Notificaciones">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" width="18" height="18"><path d="M18 8A6 6 0 006 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 01-3.46 0"/></svg>
+      </button>
+      <div class="nav-av">CG</div>
+    </div>
+  </div>
+</nav>
+
+<div class="layout">
+  <div>
+    <div class="cal-header">
+      <div class="cal-month">Abril 2026</div>
+      <div style="display:flex;gap:8px;align-items:center">
+        <div class="cal-nav">
+          <button class="cal-nav-btn" aria-label="Mes anterior"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="14" height="14"><path d="M15 18l-6-6 6-6"/></svg></button>
+          <button class="cal-today-btn">Hoy</button>
+          <button class="cal-nav-btn" aria-label="Mes siguiente"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="14" height="14"><path d="M9 18l6-6-6-6"/></svg></button>
+        </div>
+      </div>
+    </div>
+
+    <div class="cal-grid">
+      <div class="cal-weekdays">
+        <div class="cal-wd">Lun</div><div class="cal-wd">Mar</div><div class="cal-wd">Mié</div>
+        <div class="cal-wd">Jue</div><div class="cal-wd">Vie</div>
+        <div class="cal-wd" style="color:var(--orange)">Sáb</div>
+        <div class="cal-wd" style="color:var(--orange)">Dom</div>
+      </div>
+      <div class="cal-days">
+        <!-- Semana 1 -->
+        <div class="cal-day other-month"><div class="cal-dn">31</div></div>
+        <div class="cal-day"><div class="cal-dn">1</div><div class="cal-event ev-class">Redes 10:00</div></div>
+        <div class="cal-day"><div class="cal-dn">2</div><div class="cal-event ev-task">Entrega Lab 3</div></div>
+        <div class="cal-day"><div class="cal-dn">3</div><div class="cal-event ev-class">Cálculo III</div></div>
+        <div class="cal-day"><div class="cal-dn">4</div><div class="cal-event ev-tutor">Tutoría Sofía</div></div>
+        <div class="cal-day"><div class="cal-dn">5</div></div>
+        <div class="cal-day"><div class="cal-dn">6</div></div>
+        <!-- Semana 2 -->
+        <div class="cal-day"><div class="cal-dn">7</div><div class="cal-event ev-class">Redes 10:00</div><div class="cal-event ev-event">Hackathon UCH</div></div>
+        <div class="cal-day"><div class="cal-dn">8</div><div class="cal-event ev-task">Ensayo Epist.</div></div>
+        <div class="cal-day"><div class="cal-dn">9</div><div class="cal-event ev-class">Cálculo III</div></div>
+        <div class="cal-day"><div class="cal-dn">10</div></div>
+        <div class="cal-day"><div class="cal-dn">11</div><div class="cal-event ev-exam">Parcial Redes</div></div>
+        <div class="cal-day"><div class="cal-dn">12</div></div>
+        <div class="cal-day"><div class="cal-dn">13</div></div>
+        <!-- Semana 3 -->
+        <div class="cal-day"><div class="cal-dn">14</div><div class="cal-event ev-class">Redes 10:00</div></div>
+        <div class="cal-day"><div class="cal-dn">15</div><div class="cal-event ev-tutor">Tutoría grupal</div></div>
+        <div class="cal-day"><div class="cal-dn">16</div><div class="cal-event ev-class">Cálculo III</div><div class="cal-event ev-task">Lab 4 — entrega</div></div>
+        <div class="cal-day"><div class="cal-dn">17</div></div>
+        <div class="cal-day"><div class="cal-dn">18</div></div>
+        <div class="cal-day"><div class="cal-dn">19</div></div>
+        <div class="cal-day"><div class="cal-dn">20</div></div>
+        <!-- Semana 4 -->
+        <div class="cal-day"><div class="cal-dn">21</div><div class="cal-event ev-class">Redes 10:00</div></div>
+        <div class="cal-day"><div class="cal-dn">22</div></div>
+        <div class="cal-day"><div class="cal-dn">23</div><div class="cal-event ev-class">Cálculo III</div></div>
+        <div class="cal-day today"><div class="cal-dn">24</div><div class="cal-event ev-event">Conniku Demo</div><div class="cal-event ev-class">Redes 14:00</div></div>
+        <div class="cal-day"><div class="cal-dn">25</div><div class="cal-event ev-exam">Solemne Cálc.</div></div>
+        <div class="cal-day"><div class="cal-dn">26</div></div>
+        <div class="cal-day"><div class="cal-dn">27</div></div>
+        <!-- Semana 5 -->
+        <div class="cal-day"><div class="cal-dn">28</div></div>
+        <div class="cal-day"><div class="cal-dn">29</div><div class="cal-event ev-task">Tesis Cap.1</div></div>
+        <div class="cal-day"><div class="cal-dn">30</div></div>
+        <div class="cal-day other-month"><div class="cal-dn">1</div></div>
+        <div class="cal-day other-month"><div class="cal-dn">2</div></div>
+        <div class="cal-day other-month"><div class="cal-dn">3</div></div>
+        <div class="cal-day other-month"><div class="cal-dn">4</div></div>
+      </div>
+    </div>
+  </div>
+
+  <aside class="cal-side">
+    <div class="side-card">
+      <div class="side-card-head">Hoy · Jueves 24 <span>3 eventos</span></div>
+      <div class="agenda-item">
+        <div class="agenda-dot" style="background:#8AEAC0"></div>
+        <div class="agenda-info"><div class="agenda-title">Conniku Demo Day</div><div class="agenda-meta">Auditorio Central · UCH</div></div>
+        <div class="agenda-time">10:00</div>
+      </div>
+      <div class="agenda-item">
+        <div class="agenda-dot" style="background:#8AEAC0"></div>
+        <div class="agenda-info"><div class="agenda-title">Redes de Computadores</div><div class="agenda-meta">Sala B-204</div></div>
+        <div class="agenda-time">14:00</div>
+      </div>
+      <div class="agenda-item">
+        <div class="agenda-dot" style="background:#D9FF3A"></div>
+        <div class="agenda-info"><div class="agenda-title">Entregar Lab 4</div><div class="agenda-meta">Aula Virtual</div></div>
+        <div class="agenda-time">23:59</div>
+      </div>
+    </div>
+
+    <div class="side-card">
+      <div class="side-card-head">Próximos</div>
+      <div class="agenda-item">
+        <div class="agenda-dot" style="background:#FF9572"></div>
+        <div class="agenda-info"><div class="agenda-title">Solemne Cálculo III</div><div class="agenda-meta">Vie 25 · Sala A-101</div></div>
+        <div class="agenda-time">08:30</div>
+      </div>
+      <div class="agenda-item">
+        <div class="agenda-dot" style="background:#FF9787"></div>
+        <div class="agenda-info"><div class="agenda-title">Tutoría grupal</div><div class="agenda-meta">Mar 29 · Online</div></div>
+        <div class="agenda-time">19:00</div>
+      </div>
+      <div class="agenda-item">
+        <div class="agenda-dot" style="background:#D9FF3A"></div>
+        <div class="agenda-info"><div class="agenda-title">Entrega Tesis Cap.1</div><div class="agenda-meta">Mar 29 · Dirección</div></div>
+        <div class="agenda-time">17:00</div>
+      </div>
+    </div>
+
+    <div class="side-card">
+      <div class="side-card-head">Leyenda</div>
+      <div class="legend-item"><div class="legend-dot" style="background:#8AEAC0"></div>Clases</div>
+      <div class="legend-item"><div class="legend-dot" style="background:#D9FF3A"></div>Entregas</div>
+      <div class="legend-item"><div class="legend-dot" style="background:#FF9572"></div>Exámenes</div>
+      <div class="legend-item"><div class="legend-dot" style="background:#FF9787"></div>Tutorías</div>
+      <div class="legend-item"><div class="legend-dot" style="background:#7FDAFF"></div>Eventos</div>
+    </div>
+  </aside>
+</div>
+
+<script src="../shared/sidebar.js"></script>
+<script src="../shared/theme-loader.js"></script>
+</body>
+</html>
