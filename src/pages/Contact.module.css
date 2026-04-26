@@ -107,14 +107,18 @@
   letter-spacing: 0.06em;
 }
 
-/* ───────── layout grid (perfil-social-v2) ───────── */
+/* ───────── layout grid (perfil-social-v2) ─────────
+   Gap ampliado a 96px para crear un corredor visible entre el sidebar y
+   el composer; por ese corredor viaja el segmento vertical del cable
+   conector. El composer se limita con max-width en .feed para no
+   ocuparlo todo. */
 .layout {
-  max-width: 1095px;
+  max-width: 1180px;
   margin: 16px auto;
   padding: 0 16px;
   display: grid;
-  grid-template-columns: 360px 1fr;
-  gap: 16px;
+  grid-template-columns: 360px minmax(0, 1fr);
+  gap: 96px;
   align-items: start;
 }
 @media (max-width: 768px) {
@@ -155,6 +159,9 @@
 .feed {
   display: flex;
   flex-direction: column;
+  /* Composer más angosto · deja respirar el corredor del cable. */
+  max-width: 620px;
+  width: 100%;
 }
 
 /* ───────── d-card (estilo facegram) ───────── */
@@ -252,6 +259,27 @@
   font-size: 11.5px;
   color: var(--text-4);
   line-height: 1.45;
+}
+
+/* sidebar · botón link al centro de ayuda */
+.helpLinkBtn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  margin-top: 6px;
+  padding: 8px 14px;
+  border-radius: 8px;
+  background: rgba(0, 194, 122, 0.1);
+  border: 1px solid rgba(0, 194, 122, 0.35);
+  color: var(--green);
+  font-size: 13px;
+  font-weight: 600;
+  text-decoration: none;
+  transition: all 0.15s;
+}
+.helpLinkBtn:hover {
+  background: rgba(0, 194, 122, 0.18);
+  border-color: var(--green);
 }
 
 /* sidebar · legal */
@@ -537,28 +565,6 @@
 .btnSecondary:hover {
   border-color: var(--green);
   color: var(--green);
-}
-
-/* ───────── redirect a Centro de soporte ───────── */
-.supportRedirect {
-  padding: 18px 16px 6px;
-  border-top: 1px solid var(--border-2);
-  margin-top: 8px;
-  display: flex;
-  flex-direction: column;
-  gap: 14px;
-  align-items: flex-start;
-}
-.supportRedirectText {
-  font-size: 14px;
-  color: var(--text-2);
-  margin: 0;
-  line-height: 1.55;
-}
-.supportRedirect .btnSend {
-  align-self: flex-start;
-  text-decoration: none;
-  display: inline-block;
 }
 
 /* ───────── form ───────── */
