@@ -189,7 +189,8 @@ presentarlos cuando Cristian pida "pendientes" o decida qué bloque emprender.
 - TODOs vivos en `social_routes.py:1312`, `referral_routes.py:188`
 - `ai_workflow_routes.py` docstring dice "Gemini" pero código usa OpenAI (clarificar)
 - `.claude/session.lock` stale handling
-- `cleanup_production_db.py` + `seed_ceo_profile.py` gitignore o mover
+- ✅ `cleanup_production_db.py` movido a `backend/scripts/dangerous/` con guards ENV — CERRADO 2026-04-26 (commit `5c548e5`, AUDITOR_BRIEFING #10)
+- `seed_ceo_profile.py` gitignore o mover (AUDITOR_BRIEFING #11, Moderado)
 
 ---
 
