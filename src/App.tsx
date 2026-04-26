@@ -20,6 +20,7 @@ const Privacy = lazy(() => import('./pages/Privacy'));
 const Support = lazy(() => import('./pages/Support'));
 const Contact = lazy(() => import('./pages/Contact'));
 const Careers = lazy(() => import('./pages/Careers'));
+const Cookies = lazy(() => import('./pages/Cookies'));
 
 function NotFoundWithNav() {
   const navigate = useNavigate();
@@ -43,6 +44,7 @@ function AnimatedRoutes() {
         <Route path="/support" element={<Support />} />
         <Route path="/contact" element={<Contact />} />
         <Route path="/careers" element={<Careers />} />
+        <Route path="/cookies" element={<Cookies />} />
         <Route path="*" element={<NotFoundWithNav />} />
       </Routes>
     </div>

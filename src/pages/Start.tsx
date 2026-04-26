@@ -536,7 +536,7 @@ export default function Start() {
     const docs: { key: LegalDocKey; label: string; href: string | null; desc?: string }[] = [
       { key: 'terms', label: t('register.legal.terms'), href: '/terms' },
       { key: 'privacy', label: t('register.legal.privacy'), href: '/privacy' },
-      { key: 'cookies', label: t('register.legal.cookies'), href: null },
+      { key: 'cookies', label: t('register.legal.cookies'), href: '/cookies' },
       {
         key: 'age-declaration',
         label: t('register.legal.age'),

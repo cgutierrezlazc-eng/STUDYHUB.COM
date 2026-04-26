@@ -558,6 +558,7 @@ export default function Terms() {
             Términos
           </Link>
           <Link to="/privacy">Privacidad</Link>
+          <Link to="/cookies">Cookies</Link>
           <Link to="/support">Soporte</Link>
           <Link to="/contact">Contacto</Link>
           <Link to="/careers">Trabaja con nosotros</Link>
