@@ -19,7 +19,7 @@
  *   alert('Pendiente · Contacto'). Ídem para Cookies, Prensa, Empleo.
  */
 import React, { useState } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import HexNebulaCanvas from '../lib/hex-nebula/HexNebulaCanvas';
 import styles from './Support.module.css';
 
@@ -301,6 +301,7 @@ const pendingAlert = (label: string) => () => {
 };
 
 export default function Support() {
+  const navigate = useNavigate();
   const [activeCat, setActiveCat] = useState<Category>('all');
   const [search, setSearch] = useState('');
   const [openKey, setOpenKey] = useState<string | null>(null);
@@ -315,12 +316,12 @@ export default function Support() {
       />
 
       <div className={styles.topbar}>
-        <Link to="/" className={styles.backLink}>
+        <button type="button" onClick={() => navigate(-1)} className={styles.backLink}>
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
             <path d="M19 12H5M12 19l-7-7 7-7" />
           </svg>
           Volver
-        </Link>
+        </button>
         <div className={styles.topbarSep} />
         <Link to="/" className={`brand on-dark ${styles.topbarBrand}`} aria-label="Conniku">
           conn<span>i</span>
