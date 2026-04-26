@@ -191,6 +191,8 @@ presentarlos cuando Cristian pida "pendientes" o decida qué bloque emprender.
 - `.claude/session.lock` stale handling
 - ✅ `cleanup_production_db.py` movido a `backend/scripts/dangerous/` con guards ENV — CERRADO 2026-04-26 (commit `5c548e5`, AUDITOR_BRIEFING #10)
 - `seed_ceo_profile.py` gitignore o mover (AUDITOR_BRIEFING #11, Moderado)
+- Cablear `handleRegistro` en `src/pages/Start.tsx:513` a `POST /auth/register` — bloque futuro separado, requiere armar `RegisterRequest` con 30+ campos legales (legal_session_token, age_declaration_accepted, accepted_text_version_hash, user_timezone, etc.) y agregar inputs faltantes en el modal de registro. Origen: AUDITOR_BRIEFING #9 (precisión 2026-04-26).
+- Limpiar TODOs de navegación legacy en `src/pages/Start.tsx:452,481` — los archivos `conniku.html` / `pages/conniku.html` referenciados ya fueron migrados a `docs/04-diseno/orbit-u/` con PR #57. Acción: remover los comentarios `// TODO: cuando se bridgee...` y dejar la navegación final actual. Origen: AUDITOR_BRIEFING #9 (precisión 2026-04-26).
 
 ---
 
