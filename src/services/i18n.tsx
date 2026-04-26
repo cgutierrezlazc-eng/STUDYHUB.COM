@@ -1,5 +1,5 @@
-import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
-import { Language, Gender } from '../types';
+import React, { createContext, useContext, useState, ReactNode } from 'react';
+import { Language } from '../types';
 
 const translations: Partial<Record<Language, Record<string, string>>> = {
   es: {
