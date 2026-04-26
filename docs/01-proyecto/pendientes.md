@@ -77,9 +77,9 @@ presentarlos cuando Cristian pida "pendientes" o decida qué bloque emprender.
 - **T&C**: existen 2 versiones incongruentes (modal Register vs página pública), una dice "16 años" — debe decir 18+
 - **Privacidad**: omite Supabase, Firebase Cloud Messaging, Capacitor, Google OAuth → violación GDPR Art. 13 y Ley 19.628 Art. 4°
 - **Retracto**: CLAUDE.md dice "10 días corridos", código dice "10 días hábiles"
-- **Política de Cookies**: NO EXISTE como documento separado
+- **Política de Cookies**: ✅ RESUELTA 2026-04-26 — `/cookies` creada como M01.6, mergeada en PR #53
 - **Origen**: legal-docs-keeper 2026-04-17
-- **Bloque sugerido**: Bloque legal documentos v3.0 unificados
+- **Bloque sugerido**: Bloque legal documentos v3.0 unificados (T&C + Privacy pendientes)
 
 ---
 

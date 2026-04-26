@@ -91,3 +91,4 @@ Thumbs.db
 .DS_Store
 .vercel
 public/sandbox/
+.claude/launch.json
