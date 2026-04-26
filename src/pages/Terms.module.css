@@ -50,6 +50,24 @@
   height: auto;
 }
 
+.nebulaBg {
+  position: fixed;
+  inset: 0;
+  width: 100vw;
+  height: 100vh;
+  z-index: 0;
+  pointer-events: none;
+  display: block;
+}
+
+/* Topbar y layout deben quedar encima del canvas. */
+.topbar,
+.layout,
+.pageFooter {
+  position: relative;
+  z-index: 1;
+}
+
 /* ───────── topbar ───────── */
 .topbar {
   position: sticky;
@@ -62,8 +80,6 @@
   display: flex;
   align-items: center;
   gap: 20px;
-  position: relative;
-  z-index: 1;
 }
 .backLink {
   display: flex;
@@ -111,8 +127,6 @@
   grid-template-columns: 360px minmax(0, 1fr);
   gap: 96px;
   align-items: start;
-  position: relative;
-  z-index: 1;
 }
 @media (max-width: 768px) {
   .layout {
@@ -361,8 +375,6 @@
   gap: 12px;
   max-width: 1180px;
   margin: 24px auto 0;
-  position: relative;
-  z-index: 1;
 }
 .footerCopy {
   font-size: 11px;
