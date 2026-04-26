@@ -90,6 +90,8 @@ type CablePoints = {
   y1: number;
   x2: number;
   y2: number;
+  /** X del corredor vertical (entre sidebar y composer) por donde baja el cable. */
+  xCorridor: number;
 };
 
 export default function Contact() {
@@ -149,15 +151,21 @@ export default function Contact() {
       }
       const a = sourceEl.getBoundingClientRect();
       const b = sidebarEl.getBoundingClientRect();
-      // El cable sale por el borde DERECHO del item del motivo, va horizontal
-      // hacia la derecha (saliendo del composer), baja vertical por afuera, y
-      // entra horizontal hacia la izquierda al borde DERECHO del canal del
-      // sidebar. Patrón → ↓ ← (ruta tipo cable PCB rodeando el composer).
-      const x1 = a.right;
+      const comp = composerRef.current?.getBoundingClientRect();
+      // El cable sale por el borde IZQUIERDO del item del motivo, va horizontal
+      // hacia la izquierda hasta el corredor (espacio vacío entre sidebar y
+      // composer), baja/sube vertical por ese corredor, y entra horizontal
+      // hacia la izquierda al borde DERECHO del canal del sidebar.
+      // Patrón ← ↓ ← (todo el trazo viaja por dentro del corredor visible).
+      const x1 = a.left;
       const y1 = a.top + a.height / 2;
       const x2 = b.right;
       const y2 = b.top + b.height / 2;
-      setCable({ x1, y1, x2, y2 });
+      // Corredor centrado entre el borde derecho del sidebar y el borde
+      // izquierdo del composer. Si no hay composer ref por algún motivo,
+      // colocamos el corredor a media distancia entre los dos puntos.
+      const xCorridor = comp ? (b.right + comp.left) / 2 : (x1 + x2) / 2;
+      setCable({ x1, y1, x2, y2, xCorridor });
     }
     computeCable();
     window.addEventListener('resize', computeCable);
@@ -226,36 +234,39 @@ export default function Contact() {
   const activeSidebarKey = motivoOption?.sidebarKey ?? null;
   const isCentroSoporte = motivo === 'Centro de soporte';
 
-  // Conector ortogonal: → ↓ ← (o → ↑ ← si el canal está más arriba).
-  // Sale por el lado DERECHO del motivo, va horizontal hacia la derecha hasta
-  // el corredor exterior, baja (o sube) vertical hasta la altura del canal,
-  // y entra horizontal hacia la izquierda al borde derecho del canal.
-  // Esquinas redondeadas con arcos de radio r para que no se vean toscas.
+  // Conector ortogonal ← ↓ ← (o ← ↑ ← si el canal está arriba):
+  //   1. Sale por el lado IZQUIERDO del motivo, viaja horizontal hacia
+  //      la izquierda hasta xCorridor.
+  //   2. Baja (o sube) vertical en xCorridor (corredor entre sidebar y
+  //      composer, dentro del gap del grid).
+  //   3. Vuelve a viajar horizontal hacia la izquierda hasta el borde
+  //      derecho del canal en el sidebar.
+  // Las dos esquinas se suavizan con arcos circulares de radio r.
   const cablePath = cable
     ? (() => {
-        const r = 12; // radio de las esquinas redondeadas
-        const offsetRight = 56; // distancia del corredor vertical al motivo
-        const xCorridor = cable.x1 + offsetRight;
+        const r = 12;
         const goingDown = cable.y2 > cable.y1;
+        const { x1, y1, x2, y2, xCorridor } = cable;
 
-        // Esquina 1 (arriba/derecha): arco desde (xCorridor - r, y1) hasta
-        // (xCorridor, y1 ± r). Sentido: si va hacia abajo, sweep=1 (horario);
-        // si va hacia arriba, sweep=0 (antihorario).
+        // Esquina 1: pasa de "horizontal hacia la izquierda" a "vertical".
+        //  - going down: gira en sentido horario (sweep=1).
+        //  - going up:   gira en sentido antihorario (sweep=0).
+        const a1End = goingDown ? y1 + r : y1 - r;
         const sweep1 = goingDown ? 1 : 0;
-        const c1End = goingDown ? cable.y1 + r : cable.y1 - r;
 
-        // Esquina 2 (abajo/derecha): arco desde (xCorridor, y2 ∓ r) hasta
-        // (xCorridor - r, y2). Sentido inverso al de la esquina 1.
-        const sweep2 = goingDown ? 1 : 0;
-        const c2Start = goingDown ? cable.y2 - r : cable.y2 + r;
+        // Esquina 2: pasa de "vertical" a "horizontal hacia la izquierda".
+        //  - going down: sweep=0 (antihorario).
+        //  - going up:   sweep=1 (horario).
+        const a2Start = goingDown ? y2 - r : y2 + r;
+        const sweep2 = goingDown ? 0 : 1;
 
         return [
-          `M ${cable.x1} ${cable.y1}`,
-          `L ${xCorridor - r} ${cable.y1}`,
-          `A ${r} ${r} 0 0 ${sweep1} ${xCorridor} ${c1End}`,
-          `L ${xCorridor} ${c2Start}`,
-          `A ${r} ${r} 0 0 ${sweep2 ? 0 : 1} ${xCorridor - r} ${cable.y2}`,
-          `L ${cable.x2} ${cable.y2}`,
+          `M ${x1} ${y1}`,
+          `L ${xCorridor + r} ${y1}`,
+          `A ${r} ${r} 0 0 ${sweep1} ${xCorridor} ${a1End}`,
+          `L ${xCorridor} ${a2Start}`,
+          `A ${r} ${r} 0 0 ${sweep2} ${xCorridor - r} ${y2}`,
+          `L ${x2} ${y2}`,
         ].join(' ');
       })()
     : '';
