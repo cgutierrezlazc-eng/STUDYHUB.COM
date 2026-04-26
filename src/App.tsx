@@ -19,10 +19,16 @@ const Terms = lazy(() => import('./pages/Terms'));
 const Privacy = lazy(() => import('./pages/Privacy'));
 const Support = lazy(() => import('./pages/Support'));
 const Contact = lazy(() => import('./pages/Contact'));
+const Careers = lazy(() => import('./pages/Careers'));
 
 function NotFoundWithNav() {
   const navigate = useNavigate();
   return <NotFound onNavigate={(path: string) => navigate(path)} />;
+}
+
+function UnderConstructionWithNav() {
+  const navigate = useNavigate();
+  return <UnderConstruction onStaffLogin={() => navigate('/start')} />;
 }
 
 export default function App() {
@@ -30,12 +36,13 @@ export default function App() {
     <ErrorBoundary>
       <Suspense fallback={null}>
         <Routes>
-          <Route path="/" element={<UnderConstruction />} />
+          <Route path="/" element={<UnderConstructionWithNav />} />
           <Route path="/start" element={<Start />} />
           <Route path="/terms" element={<Terms />} />
           <Route path="/privacy" element={<Privacy />} />
           <Route path="/support" element={<Support />} />
           <Route path="/contact" element={<Contact />} />
+          <Route path="/careers" element={<Careers />} />
           <Route path="*" element={<NotFoundWithNav />} />
         </Routes>
       </Suspense>

@@ -52,6 +52,8 @@
    afectar al resto de la app. */
 :global(body):has(.page) {
   background: #050608;
+  overflow-y: auto;
+  height: auto;
 }
 
 /* top bar */
