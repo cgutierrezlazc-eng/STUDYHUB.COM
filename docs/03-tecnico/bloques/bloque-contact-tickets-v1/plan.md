@@ -53,7 +53,7 @@ Existen dos precedentes directos que este bloque reutiliza como patrón:
 - `contacto@conniku.com` (pass `SMTP_PASS_CONTACTO`) — inbound genérico / soporte.
 - `ceo@conniku.com` (pass `SMTP_PASS_CEO`) — broadcasts y reportes.
 
-**Hallazgo crítico**: las direcciones `prensa@conniku.com`, `legal@conniku.com` y `seguridad@conniku.com` que aparecen en el JS del form en `contacto.html:412-420` **no están provisionadas en Zoho** (solo hay 3 cuentas, ver `reference_email_accounts.md` en memoria). Si se envía a esas direcciones, el delivery falla silenciosamente o rebota. Este plan lo resuelve en D-T2.
+**Nota actualizada 2026-04-25**: `prensa@conniku.com`, `legal@conniku.com` y `seguridad@conniku.com` **sí están provisionadas** como aliases en Zoho que entregan en `contacto@conniku.com`. El hallazgo crítico original ya no aplica — el delivery funciona. Ver inventario completo de cuentas y aliases en CLAUDE.md (sección Email transaccional).
 
 ### 1.5 Form actual en landing (verificado en `contacto.html`)
 
@@ -156,7 +156,7 @@ El mensaje inicial del usuario se persiste tanto en `contact_tickets.message` (s
 - **B) YAML en `backend/config/contact_routing.yaml`** cargado al startup. Pros: editable sin deploy. Contras: introduce dependencia nueva (PyYAML), desincroniza con frontend, rompe tipado en TS.
 - **C) Tabla `contact_routes` en BD** con fila por motivo. Pros: editable desde admin. Contras: sobre-ingeniería para 6 filas, requiere seed, complica test.
 
-**Recomendación Tori**: **A**. Coherente con cómo viven `legal_versions.py` y `COOKIE_CONSENT_CATEGORIES` — constantes Python con espejo en `shared/*.ts`. Editable por commit, auditable por git log. Y resuelve el problema crítico de los buzones inexistentes: todos los motivos rutean a `contacto@conniku.com` como **email físico real** y solo se diferencian por `label` y `sla_hours` en el ticket y en el subject del email. Los buzones `prensa@`, `legal@`, `seguridad@` quedan declarados como "pendientes de provisión" en comentario del archivo y en alerta de `docs/legal/alerts.md`.
+**Recomendación Tori**: **A**. Coherente con cómo viven `legal_versions.py` y `COOKIE_CONSENT_CATEGORIES` — constantes Python con espejo en `shared/*.ts`. Editable por commit, auditable por git log. Todos los aliases (`prensa@`, `legal@`, `seguridad@`, etc.) están provisionados en Zoho desde 2026-04-25 y entregan en `contacto@`. Ver inventario en CLAUDE.md.
 
 Shape propuesto:
 
@@ -363,7 +363,7 @@ Todos con `Depends(require_admin)`. Todas las acciones registran `EmailLog` para
   - Agregar input honeypot `<input type="text" name="website" tabindex="-1" autocomplete="off" style="display:none;">`.
   - `success-box`: mostrar ticket number real recibido de la respuesta JSON.
   - Mantener fallback `mailto:` como plan B si `fetch` falla (UX robusta).
-- `/Users/cristiang./CONNIKU/docs/legal/alerts.md` — agregar alerta "Buzones prensa@/legal@/seguridad@ no provisionados; todos los motivos rutean a contacto@".
+- `/Users/cristiang./CONNIKU/docs/legal/alerts.md` — alerta de buzones no provisionados ya no aplica (todos son aliases válidos en Zoho desde 2026-04-25).
 - `/Users/cristiang./CONNIKU/BLOCKS.md` — entrada al cerrar Capa 7.
 - `/Users/cristiang./CONNIKU/FROZEN.md` — agregar los nuevos archivos del bloque (excepto landing HTML, que todavía evoluciona).
 
@@ -641,7 +641,7 @@ Cristian responde en un mensaje con lista de letras, formato `1A 2A 3A 4B 5A 6A 
 - **`CookieConsent` y `DocumentView` models existen con patrón retención**: VERIFICADO (Read, línea 1885+).
 - **slowapi NO está instalado operativamente**: VERIFICADO (grep encontró 4 files pero solo en docstrings declarativos, no `@limiter.limit` aplicado).
 - **CORS actual NO incluye `null` origin**: VERIFICADO (`server.py:91-107`, lista no incluye `null`).
-- **Buzones `prensa@`, `legal@`, `seguridad@` NO provisionados en Zoho**: VERIFICADO por memoria `reference_email_accounts.md` (solo 3 cuentas: noreply@, contacto@, ceo@).
+- **Buzones `prensa@`, `legal@`, `seguridad@`**: RESUELTO 2026-04-25 — son aliases válidos en Zoho que entregan en `contacto@conniku.com`. Inventario completo en CLAUDE.md.
 - **Form HTML actual usa mailto, no fetch**: VERIFICADO (`contacto.html:480` `window.location.href = mailto`).
 - **Bloque 5 legal-viewer + Bloque 7 multi-doc-consent mergeados**: VERIFICADO (commits recientes en rama actual confirman).
 

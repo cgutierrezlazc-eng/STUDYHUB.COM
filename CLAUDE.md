@@ -62,9 +62,31 @@ Base de datos y autenticación: Supabase.
 Asistente conversacional al usuario final: Claude API de Anthropic, modelo
 claude-haiku-4-5-20251001 para chatbot y soporte.
 
-Email transaccional: Zoho Mail SMTP (smtp.zoho.com puerto 587) con tres
-cuentas configuradas: noreply@conniku.com, contacto@conniku.com,
-ceo@conniku.com.
+Email transaccional: Zoho Mail SMTP (smtp.zoho.com puerto 587).
+
+Buzones reales con credenciales SMTP propias (tienen SMTP_PASS en Render):
+- noreply@conniku.com  → SMTP_PASS_NOREPLY  — notificaciones automáticas
+- contacto@conniku.com → SMTP_PASS_CONTACTO — inbound genérico / soporte
+- ceo@conniku.com      → SMTP_PASS_CEO      — buzón de Cristian (titular: Cristian Andres Gutierrez Lazcano)
+
+Alias de ceo@conniku.com:
+- c.gutierrez@conniku.com — alias personal de Cristian; entrega en ceo@
+
+Aliases que entregan en contacto@conniku.com (sin buzón ni contraseña propios;
+para enviar *desde* un alias usar las credenciales de contacto@):
+- dpo@conniku.com         — Oficial de Protección de Datos
+- hr@conniku.com          — Recursos Humanos
+- j.ruiz@conniku.com      — Jennifer Ruiz (personal)
+- legal@conniku.com       — Asuntos legales
+- moderacion@conniku.com  — Moderación
+- prensa@conniku.com      — Prensa y medios
+- seguridad@conniku.com   — Seguridad / Ley Karin
+- soporte@conniku.com     — Soporte técnico
+- talento@conniku.com     — Talento y postulaciones
+- tutores@conniku.com     — Tutores
+
+Regla: para enviar a cualquier alias, usar from_account="noreply" o "contacto"
+(lo que corresponda al contexto). No crear SMTP_PASS_* adicionales para aliases.
 
 Lint y formato: ESLint 9 con Prettier para frontend, Ruff para backend.
 Husky con lint-staged como pre-commit.
