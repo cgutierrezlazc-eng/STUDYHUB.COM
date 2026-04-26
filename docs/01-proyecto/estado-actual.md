@@ -2,10 +2,10 @@
 ## Punto de referencia: 26 de abril de 2026
 
 **Mantenido por:** Tori (Asistente Interno)
-**Última actualización:** 2026-04-26 — cierre sesión (PRs #43 #51 #55 #56 mergeados + PR #57 abierto)
-**Rama de producción:** `main` — HEAD `c63f6ee` (docs estado-actual post-#55)
-**Rama abierta:** `chore/consolidate-orbit-u-into-repo` — PR #57 pendiente CI + merge
-**HEAD worktree actual:** `9209dff` (AUDITOR_BRIEFING.md agregado)
+**Última actualización:** 2026-04-26 — cleanup pre-Fase 2.1 (PRs #43 #51 #55 #56 #57 mergeados + branch cleanup local pendiente PR)
+**Rama de producción:** `main` — HEAD `5c548e5` (squash merge de PR #57 ORBIT-U)
+**Rama abierta:** `chore/cleanup-pre-fase-2-1` — 5 commits ahead, PR pendiente de abrir
+**HEAD worktree actual:** `7ec63e7` (feat(auth) handleLogin cabled #9 TDD)
 
 ---
 
@@ -113,19 +113,26 @@
 | #54 | `a7ad8c4` | fix(cookies): intento de corrección — revertido por PR #55 |
 | #55 | `5f04c7b` | fix(cookies): restaura Cookies.tsx a cookies.md v1.0.0 canónico |
 | #56 | `a076cb2` | chore: cleanup imports i18n.tsx (useEffect, Gender) |
+| #57 | `5c548e5` | chore: consolidar ORBIT-U dentro del repo + AUDITOR_BRIEFING.md (squash) |
 
-## PR abierto — pendiente merge
+## Branch local pendiente de PR
 
-| PR | Rama | Contenido |
-|----|------|-----------|
-| #57 | `chore/consolidate-orbit-u-into-repo` | ORBIT-U design lab movido al repo + AUDITOR_BRIEFING.md |
+| Branch | HEAD | Contenido |
+|--------|------|-----------|
+| `chore/cleanup-pre-fase-2-1` | `7ec63e7` | Cleanup pre-Fase 2.1: deps i18next out + .gitignore launch.json + AUDITOR_BRIEFING #10/#14 cerrados + #9 cabled (login con TDD) |
+
+## Hallazgos GRAVE del AUDITOR_BRIEFING — estado
+
+| # | Descripción | Estado |
+|---|-------------|--------|
+| 9 | TODOs heterogéneos en `Start.tsx` 452/481/507 + 513 | **Parcial 2026-04-26** — login (línea 507) cabled `7ec63e7` con TDD; navegación legacy 452/481 y registro 513 diferidos a bloques futuros (ver `pendientes.md`) |
+| 10 | `cleanup_production_db.py` script destructivo en backend productivo | ✅ Cerrado 2026-04-26 — movido a `backend/scripts/dangerous/` con guards ENV (commit `5c548e5`) |
+| 14 | Drift CLAUDE.md: "Supabase" como BD/auth backend | ✅ Cerrado 2026-04-26 — corregido a PostgreSQL+SQLAlchemy (commit `9a734fc`); también `.claude/agents/backend-builder.md` líneas 3 y 105 |
 
 ## Acciones manuales pendientes para Cristian
 
-1. **`rm -rf /Users/cristiang./CONNIKU/src/i18n/`** — código muerto react-i18next nunca importado
-2. **Mergear PR #57** cuando CI esté verde
-3. **`rm -rf /Users/cristiang./Desktop/ORBIT-U/`** — eliminar original Desktop post-merge PR #57
-4. **Revisar AUDITOR_BRIEFING.md** — 2 hallazgos 🚨 GRAVE requieren decisión
+1. **`rm -rf /Users/cristiang./Desktop/ORBIT-U/`** — eliminar original Desktop ahora que PR #57 está mergeado
+2. **Abrir PR de `chore/cleanup-pre-fase-2-1`** y mergear cuando CI esté verde (5 commits)
 
 ---
 
