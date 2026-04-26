@@ -65,7 +65,7 @@ export default function Start() {
       ln.setAttribute('y1', (cy + oR * Math.sin(rad)).toFixed(2));
       ln.setAttribute('x2', (cx + iR * Math.cos(rad)).toFixed(2));
       ln.setAttribute('y2', (cy + iR * Math.sin(rad)).toFixed(2));
-      ln.setAttribute('stroke', maj ? 'rgba(0,194,122,.55)' : 'rgba(0,194,122,.20)');
+      ln.setAttribute('stroke', maj ? 'rgba(168,85,247,.55)' : 'rgba(168,85,247,.20)');
       ln.setAttribute('stroke-width', maj ? '1.5' : '0.8');
       svg.appendChild(ln);
     }
@@ -800,7 +800,18 @@ export default function Start() {
             <div className={styles.engRadar} />
             <div className={styles.engPrecision} />
             <div className={styles.engFace}>
-              <div className={styles.startLabel}>START</div>
+              <div className={styles.engPowerRing} />
+              <svg
+                className={styles.engPowerIcon}
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="1.8"
+                strokeLinecap="round"
+              >
+                <path d="M12 2v6" />
+                <path d="M19.07 4.93a10 10 0 1 1-14.14 0" />
+              </svg>
             </div>
           </div>
         </div>

@@ -1,0 +1,594 @@
+<!doctype html>
+<html lang="es">
+  <head>
+    <meta charset="UTF-8" />
+    <title>START button — opciones</title>
+    <style>
+      @import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600&display=swap');
+
+      * { box-sizing: border-box; margin: 0; padding: 0; }
+
+      body {
+        background: #050608;
+        font-family: 'JetBrains Mono', monospace;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        padding: 60px 24px;
+        gap: 80px;
+        color: #e8e8e6;
+      }
+
+      h2 {
+        font-size: 11px;
+        letter-spacing: 0.18em;
+        color: #5c5f65;
+        text-transform: uppercase;
+        margin-bottom: 32px;
+        text-align: center;
+      }
+
+      section {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+      }
+
+      /* ─────────────────────────────────────────────────
+         OPCIÓN A — Power icon · pulso suave · verde puro
+      ───────────────────────────────────────────────── */
+      .btn-a {
+        width: 140px;
+        height: 140px;
+        border-radius: 50%;
+        background: radial-gradient(circle at 38% 32%, #001c12, #050708);
+        border: 1.5px solid rgba(0, 194, 122, 0.5);
+        display: grid;
+        place-items: center;
+        cursor: pointer;
+        position: relative;
+        box-shadow:
+          inset 0 1px 0 rgba(0, 194, 122, 0.15),
+          0 0 40px rgba(0, 194, 122, 0.25),
+          0 0 80px rgba(0, 194, 122, 0.1);
+        animation: breathA 2.8s ease-in-out infinite;
+        transition: border-color 0.3s, box-shadow 0.3s;
+      }
+      .btn-a::before {
+        content: '';
+        position: absolute;
+        inset: 6px;
+        border-radius: 50%;
+        border: 1px solid rgba(0, 194, 122, 0.22);
+      }
+      .btn-a svg {
+        width: 52px;
+        height: 52px;
+        color: rgba(0, 194, 122, 0.9);
+        filter: drop-shadow(0 0 8px rgba(0, 194, 122, 0.6));
+        transition: filter 0.3s;
+      }
+      .btn-a:hover {
+        border-color: rgba(0, 194, 122, 0.9);
+        box-shadow:
+          inset 0 1px 0 rgba(0, 194, 122, 0.25),
+          0 0 60px rgba(0, 194, 122, 0.5),
+          0 0 120px rgba(0, 194, 122, 0.2);
+        animation: none;
+      }
+      .btn-a:hover svg {
+        filter: drop-shadow(0 0 14px rgba(0, 194, 122, 0.95));
+      }
+      @keyframes breathA {
+        0%, 100% {
+          box-shadow:
+            inset 0 1px 0 rgba(0, 194, 122, 0.15),
+            0 0 40px rgba(0, 194, 122, 0.22),
+            0 0 80px rgba(0, 194, 122, 0.08);
+        }
+        50% {
+          box-shadow:
+            inset 0 1px 0 rgba(0, 194, 122, 0.22),
+            0 0 60px rgba(0, 194, 122, 0.42),
+            0 0 120px rgba(0, 194, 122, 0.18);
+        }
+      }
+
+      /* ─────────────────────────────────────────────────
+         OPCIÓN B — Anillo interior brillante + reflejo
+         Más cercano a la imagen de referencia
+      ───────────────────────────────────────────────── */
+      .btn-b-wrap {
+        width: 160px;
+        height: 160px;
+        border-radius: 50%;
+        background: radial-gradient(circle at 50% 50%, #0a1a10 0%, #030405 70%);
+        box-shadow:
+          0 0 0 1px rgba(0, 194, 122, 0.15),
+          0 0 50px rgba(0, 194, 122, 0.3),
+          0 0 100px rgba(0, 194, 122, 0.12),
+          inset 0 0 40px rgba(0, 0, 0, 0.6);
+        display: grid;
+        place-items: center;
+        cursor: pointer;
+        animation: breathB 3s ease-in-out infinite;
+        transition: box-shadow 0.4s;
+        position: relative;
+      }
+      /* Anillo interior con highlight tipo "vidrio" */
+      .btn-b-ring {
+        position: absolute;
+        inset: 10px;
+        border-radius: 50%;
+        border: 2px solid transparent;
+        background: linear-gradient(135deg, rgba(0,194,122,0.7) 0%, rgba(0,194,122,0.08) 40%, rgba(0,194,122,0.02) 60%, rgba(0,194,122,0.45) 100%) border-box;
+        -webkit-mask: linear-gradient(#fff 0 0) padding-box, linear-gradient(#fff 0 0);
+        -webkit-mask-composite: destination-out;
+        mask-composite: exclude;
+        animation: ringRotate 8s linear infinite;
+      }
+      .btn-b-face {
+        width: 96px;
+        height: 96px;
+        border-radius: 50%;
+        background: radial-gradient(circle at 40% 35%, #001c12 0%, #030405 100%);
+        display: grid;
+        place-items: center;
+        position: relative;
+        z-index: 1;
+      }
+      .btn-b-face svg {
+        width: 44px;
+        height: 44px;
+        color: rgba(0, 194, 122, 0.92);
+        filter: drop-shadow(0 0 10px rgba(0, 194, 122, 0.7));
+        transition: filter 0.3s;
+      }
+      .btn-b-wrap:hover {
+        animation: none;
+        box-shadow:
+          0 0 0 1px rgba(0, 194, 122, 0.5),
+          0 0 70px rgba(0, 194, 122, 0.55),
+          0 0 140px rgba(0, 194, 122, 0.22),
+          inset 0 0 40px rgba(0, 0, 0, 0.6);
+      }
+      .btn-b-wrap:hover .btn-b-face svg {
+        filter: drop-shadow(0 0 18px rgba(0, 194, 122, 1));
+      }
+      @keyframes breathB {
+        0%, 100% {
+          box-shadow:
+            0 0 0 1px rgba(0, 194, 122, 0.15),
+            0 0 40px rgba(0, 194, 122, 0.22),
+            0 0 80px rgba(0, 194, 122, 0.08),
+            inset 0 0 40px rgba(0, 0, 0, 0.6);
+        }
+        50% {
+          box-shadow:
+            0 0 0 1px rgba(0, 194, 122, 0.3),
+            0 0 60px rgba(0, 194, 122, 0.4),
+            0 0 120px rgba(0, 194, 122, 0.18),
+            inset 0 0 40px rgba(0, 0, 0, 0.6);
+        }
+      }
+      @keyframes ringRotate {
+        from { transform: rotate(0deg); }
+        to   { transform: rotate(360deg); }
+      }
+
+      /* ─────────────────────────────────────────────────
+         OPCIÓN C — 3D depth con highlight top + texto START debajo
+      ───────────────────────────────────────────────── */
+      .btn-c-outer {
+        width: 160px;
+        height: 160px;
+        border-radius: 50%;
+        background: radial-gradient(circle at 50% 50%, #0a1f14, #020405);
+        box-shadow:
+          0 8px 32px rgba(0, 0, 0, 0.8),
+          0 0 60px rgba(0, 194, 122, 0.2),
+          inset 0 2px 4px rgba(0, 194, 122, 0.12),
+          inset 0 -2px 4px rgba(0, 0, 0, 0.5);
+        display: grid;
+        place-items: center;
+        cursor: pointer;
+        animation: breathC 3.2s ease-in-out infinite;
+        transition: all 0.4s;
+        position: relative;
+      }
+      /* Highlight arco superior — efecto "botón físico" */
+      .btn-c-outer::before {
+        content: '';
+        position: absolute;
+        top: 12px;
+        left: 18px;
+        right: 18px;
+        height: 28px;
+        border-radius: 50%;
+        background: radial-gradient(ellipse at 50% 0%, rgba(0, 194, 122, 0.25) 0%, transparent 70%);
+        pointer-events: none;
+      }
+      /* Anillo exterior luminoso */
+      .btn-c-outer::after {
+        content: '';
+        position: absolute;
+        inset: -1px;
+        border-radius: 50%;
+        background: conic-gradient(
+          from 200deg,
+          rgba(0, 194, 122, 0.8) 0deg,
+          rgba(0, 194, 122, 0.05) 80deg,
+          rgba(0, 194, 122, 0.02) 180deg,
+          rgba(0, 194, 122, 0.05) 280deg,
+          rgba(0, 194, 122, 0.8) 360deg
+        );
+        -webkit-mask: radial-gradient(farthest-side, transparent calc(100% - 2px), white calc(100% - 1px));
+        mask: radial-gradient(farthest-side, transparent calc(100% - 2px), white calc(100% - 1px));
+        animation: ringRotate 6s linear infinite;
+      }
+      .btn-c-face {
+        width: 104px;
+        height: 104px;
+        border-radius: 50%;
+        background: radial-gradient(circle at 40% 35%, #002215 0%, #030507 100%);
+        border: 1px solid rgba(0, 194, 122, 0.3);
+        display: grid;
+        place-items: center;
+        position: relative;
+        z-index: 1;
+        box-shadow:
+          0 0 24px rgba(0, 194, 122, 0.18),
+          inset 0 1px 0 rgba(0, 194, 122, 0.2);
+      }
+      .btn-c-face svg {
+        width: 46px;
+        height: 46px;
+        color: rgba(0, 194, 122, 0.95);
+        filter: drop-shadow(0 0 10px rgba(0, 194, 122, 0.65));
+        transition: filter 0.3s;
+      }
+      .btn-c-sub {
+        margin-top: 18px;
+        font-size: 10px;
+        letter-spacing: 0.3em;
+        color: rgba(0, 194, 122, 0.4);
+        text-transform: uppercase;
+        animation: breathC 3.2s ease-in-out infinite;
+      }
+      .btn-c-outer:hover {
+        animation: none;
+        box-shadow:
+          0 8px 32px rgba(0, 0, 0, 0.8),
+          0 0 90px rgba(0, 194, 122, 0.45),
+          inset 0 2px 4px rgba(0, 194, 122, 0.2),
+          inset 0 -2px 4px rgba(0, 0, 0, 0.5);
+      }
+      .btn-c-outer:hover .btn-c-face svg {
+        filter: drop-shadow(0 0 20px rgba(0, 194, 122, 1));
+      }
+      .btn-c-outer:hover ~ .btn-c-sub {
+        color: rgba(0, 194, 122, 0.7);
+      }
+      @keyframes breathC {
+        0%, 100% { opacity: 0.85; }
+        50%       { opacity: 1; }
+      }
+
+      /* ─────────────────────────────────────────────────
+         MEZCLA A+B — Porte de A (140px) + anillo giratorio de B
+      ───────────────────────────────────────────────── */
+      .btn-mix {
+        width: 140px;
+        height: 140px;
+        border-radius: 50%;
+        background: radial-gradient(circle at 38% 32%, #001c12, #050708);
+        border: 1.5px solid rgba(0, 194, 122, 0.5);
+        display: grid;
+        place-items: center;
+        cursor: pointer;
+        position: relative;
+        box-shadow:
+          inset 0 1px 0 rgba(0, 194, 122, 0.15),
+          0 0 40px rgba(0, 194, 122, 0.25),
+          0 0 80px rgba(0, 194, 122, 0.1);
+        animation: breathA 2.8s ease-in-out infinite;
+        transition: border-color 0.3s, box-shadow 0.3s;
+      }
+      /* Anillo giratorio de B, adaptado al tamaño de A */
+      .btn-mix-ring {
+        position: absolute;
+        inset: 6px;
+        border-radius: 50%;
+        border: 2px solid transparent;
+        background: linear-gradient(135deg,
+          rgba(0,194,122,0.75) 0%,
+          rgba(0,194,122,0.08) 40%,
+          rgba(0,194,122,0.02) 60%,
+          rgba(0,194,122,0.5) 100%
+        ) border-box;
+        -webkit-mask: linear-gradient(#fff 0 0) padding-box, linear-gradient(#fff 0 0);
+        -webkit-mask-composite: destination-out;
+        mask-composite: exclude;
+        animation: ringRotate 8s linear infinite;
+        pointer-events: none;
+      }
+      .btn-mix svg {
+        width: 52px;
+        height: 52px;
+        color: rgba(0, 194, 122, 0.9);
+        filter: drop-shadow(0 0 8px rgba(0, 194, 122, 0.6));
+        transition: filter 0.3s;
+        position: relative;
+        z-index: 1;
+      }
+      .btn-mix:hover {
+        border-color: rgba(0, 194, 122, 0.9);
+        box-shadow:
+          inset 0 1px 0 rgba(0, 194, 122, 0.25),
+          0 0 60px rgba(0, 194, 122, 0.5),
+          0 0 120px rgba(0, 194, 122, 0.2);
+        animation: none;
+      }
+      .btn-mix:hover svg {
+        filter: drop-shadow(0 0 14px rgba(0, 194, 122, 0.95));
+      }
+
+      /* ─────────────────────────────────────────────────
+         Variantes de color — reemplazan el verde por otro acento
+      ───────────────────────────────────────────────── */
+
+      /* Azul eléctrico #2d8fff */
+      .btn-blue {
+        background: radial-gradient(circle at 38% 32%, #001224, #050708);
+        border-color: rgba(45, 143, 255, 0.5);
+        box-shadow:
+          inset 0 1px 0 rgba(45, 143, 255, 0.15),
+          0 0 40px rgba(45, 143, 255, 0.25),
+          0 0 80px rgba(45, 143, 255, 0.1);
+        animation: breathBlue 2.8s ease-in-out infinite;
+      }
+      .btn-blue svg { color: rgba(45, 143, 255, 0.9); filter: drop-shadow(0 0 8px rgba(45, 143, 255, 0.6)); }
+      .btn-blue-ring {
+        background: linear-gradient(135deg,
+          rgba(45,143,255,0.75) 0%,
+          rgba(45,143,255,0.08) 40%,
+          rgba(45,143,255,0.02) 60%,
+          rgba(45,143,255,0.5) 100%
+        ) border-box;
+      }
+      .btn-blue:hover {
+        border-color: rgba(45, 143, 255, 0.9);
+        box-shadow: inset 0 1px 0 rgba(45,143,255,0.25), 0 0 60px rgba(45,143,255,0.5), 0 0 120px rgba(45,143,255,0.2);
+        animation: none;
+      }
+      .btn-blue:hover svg { filter: drop-shadow(0 0 14px rgba(45,143,255,0.95)); }
+      @keyframes breathBlue {
+        0%, 100% { box-shadow: inset 0 1px 0 rgba(45,143,255,0.15), 0 0 40px rgba(45,143,255,0.22), 0 0 80px rgba(45,143,255,0.08); }
+        50%       { box-shadow: inset 0 1px 0 rgba(45,143,255,0.22), 0 0 60px rgba(45,143,255,0.42), 0 0 120px rgba(45,143,255,0.18); }
+      }
+
+      /* Violeta #a855f7 */
+      .btn-violet {
+        background: radial-gradient(circle at 38% 32%, #120b1e, #050708);
+        border-color: rgba(168, 85, 247, 0.5);
+        box-shadow:
+          inset 0 1px 0 rgba(168, 85, 247, 0.15),
+          0 0 40px rgba(168, 85, 247, 0.25),
+          0 0 80px rgba(168, 85, 247, 0.1);
+        animation: breathViolet 2.8s ease-in-out infinite;
+      }
+      .btn-violet svg { color: rgba(168, 85, 247, 0.9); filter: drop-shadow(0 0 8px rgba(168,85,247,0.6)); }
+      .btn-violet-ring {
+        background: linear-gradient(135deg,
+          rgba(168,85,247,0.75) 0%,
+          rgba(168,85,247,0.08) 40%,
+          rgba(168,85,247,0.02) 60%,
+          rgba(168,85,247,0.5) 100%
+        ) border-box;
+      }
+      .btn-violet:hover {
+        border-color: rgba(168,85,247,0.9);
+        box-shadow: inset 0 1px 0 rgba(168,85,247,0.25), 0 0 60px rgba(168,85,247,0.5), 0 0 120px rgba(168,85,247,0.2);
+        animation: none;
+      }
+      .btn-violet:hover svg { filter: drop-shadow(0 0 14px rgba(168,85,247,0.95)); }
+      @keyframes breathViolet {
+        0%, 100% { box-shadow: inset 0 1px 0 rgba(168,85,247,0.15), 0 0 40px rgba(168,85,247,0.22), 0 0 80px rgba(168,85,247,0.08); }
+        50%       { box-shadow: inset 0 1px 0 rgba(168,85,247,0.22), 0 0 60px rgba(168,85,247,0.42), 0 0 120px rgba(168,85,247,0.18); }
+      }
+
+      /* Ámbar dorado #f59e0b */
+      .btn-amber {
+        background: radial-gradient(circle at 38% 32%, #1a1000, #050708);
+        border-color: rgba(245, 158, 11, 0.5);
+        box-shadow:
+          inset 0 1px 0 rgba(245, 158, 11, 0.15),
+          0 0 40px rgba(245, 158, 11, 0.25),
+          0 0 80px rgba(245, 158, 11, 0.1);
+        animation: breathAmber 2.8s ease-in-out infinite;
+      }
+      .btn-amber svg { color: rgba(245, 158, 11, 0.9); filter: drop-shadow(0 0 8px rgba(245,158,11,0.6)); }
+      .btn-amber-ring {
+        background: linear-gradient(135deg,
+          rgba(245,158,11,0.75) 0%,
+          rgba(245,158,11,0.08) 40%,
+          rgba(245,158,11,0.02) 60%,
+          rgba(245,158,11,0.5) 100%
+        ) border-box;
+      }
+      .btn-amber:hover {
+        border-color: rgba(245,158,11,0.9);
+        box-shadow: inset 0 1px 0 rgba(245,158,11,0.25), 0 0 60px rgba(245,158,11,0.5), 0 0 120px rgba(245,158,11,0.2);
+        animation: none;
+      }
+      .btn-amber:hover svg { filter: drop-shadow(0 0 14px rgba(245,158,11,0.95)); }
+      @keyframes breathAmber {
+        0%, 100% { box-shadow: inset 0 1px 0 rgba(245,158,11,0.15), 0 0 40px rgba(245,158,11,0.22), 0 0 80px rgba(245,158,11,0.08); }
+        50%       { box-shadow: inset 0 1px 0 rgba(245,158,11,0.22), 0 0 60px rgba(245,158,11,0.42), 0 0 120px rgba(245,158,11,0.18); }
+      }
+
+      /* ─────────────────────────────────────────────────
+         Variante Violeta+Azul — halo/anillo violeta · power azul
+      ───────────────────────────────────────────────── */
+      .btn-vio-blue {
+        background: radial-gradient(circle at 38% 32%, #100b1e, #050708);
+        border-color: rgba(168, 85, 247, 0.5);
+        box-shadow:
+          inset 0 1px 0 rgba(168, 85, 247, 0.15),
+          0 0 40px rgba(168, 85, 247, 0.3),
+          0 0 80px rgba(168, 85, 247, 0.12);
+        animation: breathVioBlue 2.8s ease-in-out infinite;
+      }
+      .btn-vio-blue svg {
+        color: rgba(45, 143, 255, 0.95);
+        filter: drop-shadow(0 0 10px rgba(45, 143, 255, 0.75));
+      }
+      .btn-vio-blue-ring {
+        background: linear-gradient(135deg,
+          rgba(168,85,247,0.8) 0%,
+          rgba(168,85,247,0.08) 40%,
+          rgba(168,85,247,0.02) 60%,
+          rgba(168,85,247,0.55) 100%
+        ) border-box;
+      }
+      .btn-vio-blue:hover {
+        border-color: rgba(168, 85, 247, 0.9);
+        box-shadow:
+          inset 0 1px 0 rgba(168,85,247,0.25),
+          0 0 60px rgba(168,85,247,0.55),
+          0 0 120px rgba(168,85,247,0.22);
+        animation: none;
+      }
+      .btn-vio-blue:hover svg {
+        filter: drop-shadow(0 0 16px rgba(45, 143, 255, 1));
+      }
+      @keyframes breathVioBlue {
+        0%, 100% {
+          box-shadow:
+            inset 0 1px 0 rgba(168,85,247,0.15),
+            0 0 40px rgba(168,85,247,0.25),
+            0 0 80px rgba(168,85,247,0.1);
+        }
+        50% {
+          box-shadow:
+            inset 0 1px 0 rgba(168,85,247,0.25),
+            0 0 65px rgba(168,85,247,0.48),
+            0 0 130px rgba(168,85,247,0.2);
+        }
+      }
+
+      /* ─────────────────────────────────────────────────
+         Compartido — ícono SVG power
+      ───────────────────────────────────────────────── */
+      .tag {
+        margin-top: 20px;
+        font-size: 10px;
+        letter-spacing: 0.12em;
+        color: #3a3d44;
+        text-transform: uppercase;
+      }
+    </style>
+  </head>
+  <body>
+
+    <section>
+      <h2>Opción A — Pulso suave · ícono power · limpio</h2>
+      <div class="btn-a" title="Haz clic">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round">
+          <path d="M12 2v6"/>
+          <path d="M19.07 4.93a10 10 0 1 1-14.14 0"/>
+        </svg>
+      </div>
+      <span class="tag">sin texto · mínimo</span>
+    </section>
+
+    <section>
+      <h2>Opción B — Anillo giratorio + reflejo · más cerca de la referencia</h2>
+      <div class="btn-b-wrap" title="Haz clic">
+        <div class="btn-b-ring"></div>
+        <div class="btn-b-face">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round">
+            <path d="M12 2v6"/>
+            <path d="M19.07 4.93a10 10 0 1 1-14.14 0"/>
+          </svg>
+        </div>
+      </div>
+      <span class="tag">anillo giratorio · más espectacular</span>
+    </section>
+
+    <section>
+      <h2>Mezcla A+B — Porte de A (140px) · anillo giratorio de B</h2>
+      <div class="btn-mix" title="Haz clic">
+        <div class="btn-mix-ring"></div>
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round">
+          <path d="M12 2v6"/>
+          <path d="M19.07 4.93a10 10 0 1 1-14.14 0"/>
+        </svg>
+      </div>
+      <span class="tag">140px · anillo giratorio · pulso verde</span>
+    </section>
+
+    <section>
+      <h2>Variante Violeta+Azul — halo violeta · power azul</h2>
+      <div class="btn-mix btn-vio-blue" title="Haz clic">
+        <div class="btn-mix-ring btn-vio-blue-ring"></div>
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round">
+          <path d="M12 2v6"/>
+          <path d="M19.07 4.93a10 10 0 1 1-14.14 0"/>
+        </svg>
+      </div>
+      <span class="tag">halo violeta · power azul</span>
+    </section>
+
+    <section>
+      <h2>Variante Azul — mismo mix A+B en azul eléctrico</h2>
+      <div class="btn-mix btn-blue" title="Haz clic">
+        <div class="btn-mix-ring btn-blue-ring"></div>
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round">
+          <path d="M12 2v6"/>
+          <path d="M19.07 4.93a10 10 0 1 1-14.14 0"/>
+        </svg>
+      </div>
+      <span class="tag">140px · azul eléctrico</span>
+    </section>
+
+    <section>
+      <h2>Variante Violeta — mismo mix A+B en violeta</h2>
+      <div class="btn-mix btn-violet" title="Haz clic">
+        <div class="btn-mix-ring btn-violet-ring"></div>
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round">
+          <path d="M12 2v6"/>
+          <path d="M19.07 4.93a10 10 0 1 1-14.14 0"/>
+        </svg>
+      </div>
+      <span class="tag">140px · violeta</span>
+    </section>
+
+    <section>
+      <h2>Variante Ámbar — mismo mix A+B en ámbar dorado</h2>
+      <div class="btn-mix btn-amber" title="Haz clic">
+        <div class="btn-mix-ring btn-amber-ring"></div>
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round">
+          <path d="M12 2v6"/>
+          <path d="M19.07 4.93a10 10 0 1 1-14.14 0"/>
+        </svg>
+      </div>
+      <span class="tag">140px · ámbar dorado</span>
+    </section>
+
+    <section>
+      <h2>Opción C — 3D depth · arco cónico · texto START</h2>
+      <div class="btn-c-outer" title="Haz clic">
+        <div class="btn-c-face">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round">
+            <path d="M12 2v6"/>
+            <path d="M19.07 4.93a10 10 0 1 1-14.14 0"/>
+          </svg>
+        </div>
+      </div>
+      <div class="btn-c-sub">START</div>
+      <span class="tag">cónico giratorio · texto debajo · más profundidad 3D</span>
+    </section>
+
+  </body>
+</html>
