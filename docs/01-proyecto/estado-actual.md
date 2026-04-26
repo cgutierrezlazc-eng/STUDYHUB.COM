@@ -2,10 +2,10 @@
 ## Punto de referencia: 26 de abril de 2026
 
 **Mantenido por:** Tori (Asistente Interno)
-**Última actualización:** 2026-04-26 — post-auditoría pre-Fase 2.1 (PRs #43 #51 #54 #55 mergeados)
-**Rama de producción:** `main` — 5 PRs mergeados desde el cierre anterior
-**HEAD actual:** `466f428` (#51 feat/careers navy oscuro — mergeado después de #53 #54 #55)
-**HEAD al cierre anterior:** `8458eef` (#53 feat/M01.6 cookies)
+**Última actualización:** 2026-04-26 — cierre sesión (PRs #43 #51 #55 #56 mergeados + PR #57 abierto)
+**Rama de producción:** `main` — HEAD `c63f6ee` (docs estado-actual post-#55)
+**Rama abierta:** `chore/consolidate-orbit-u-into-repo` — PR #57 pendiente CI + merge
+**HEAD worktree actual:** `9209dff` (AUDITOR_BRIEFING.md agregado)
 
 ---
 
@@ -103,7 +103,7 @@
 
 ---
 
-## PRs mergeados hoy — 2026-04-26
+## PRs mergeados — 2026-04-26 (sesión completa)
 
 | PR | Commit | Contenido |
 |----|--------|-----------|
@@ -112,10 +112,20 @@
 | #53 | `8458eef` | feat(M01.6): página /cookies + footer links + wizard legal activo |
 | #54 | `a7ad8c4` | fix(cookies): intento de corrección — revertido por PR #55 |
 | #55 | `5f04c7b` | fix(cookies): restaura Cookies.tsx a cookies.md v1.0.0 canónico |
+| #56 | `a076cb2` | chore: cleanup imports i18n.tsx (useEffect, Gender) |
 
-## Ramas abiertas
+## PR abierto — pendiente merge
 
-Ninguna — todas las ramas de la sesión fueron mergeadas y eliminadas.
+| PR | Rama | Contenido |
+|----|------|-----------|
+| #57 | `chore/consolidate-orbit-u-into-repo` | ORBIT-U design lab movido al repo + AUDITOR_BRIEFING.md |
+
+## Acciones manuales pendientes para Cristian
+
+1. **`rm -rf /Users/cristiang./CONNIKU/src/i18n/`** — código muerto react-i18next nunca importado
+2. **Mergear PR #57** cuando CI esté verde
+3. **`rm -rf /Users/cristiang./Desktop/ORBIT-U/`** — eliminar original Desktop post-merge PR #57
+4. **Revisar AUDITOR_BRIEFING.md** — 2 hallazgos 🚨 GRAVE requieren decisión
 
 ---
 

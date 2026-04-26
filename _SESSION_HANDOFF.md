@@ -2,7 +2,7 @@
 
 > Documento que la próxima sesión de Tori (Claude) debe leer **completo y antes de cualquier otra acción** para continuar donde quedó la sesión anterior, sin repetir errores ni romper el flujo de trabajo de Cristian.
 >
-> Última actualización: **2026-04-26** al cierre de sesión.
+> Última actualización: **2026-04-26** al cierre de sesión (post-auditoría pre-Fase 2.1).
 
 ---
 
@@ -23,7 +23,7 @@ Si eres una nueva sesión de Tori abriendo esta conversación:
 - **Producto:** Conniku — plataforma educativa colaborativa LATAM (SaaS).
 - **Repo:** `cgutierrezlazc-eng/STUDYHUB.COM` en GitHub.
 - **Working dir local:** `/Users/cristiang./CONNIKU` (frontend React + backend Python).
-- **Diseño fuente / lab:** `/Users/cristiang./CONNIKU/docs/04-diseno/orbit-u` (HTMLs prototipo que se bridgean a `src/pages/*.tsx`).
+- **Diseño fuente / lab:** `/Users/cristiang./CONNIKU/docs/04-diseno/orbit-u` (HTMLs prototipo — ya dentro del repo desde PR #57).
 - **Frontend:** React + TypeScript + Vite. CSS modules. React Router. Pre-commit con husky + prettier + eslint.
 - **Backend:** Python FastAPI + SQLAlchemy + PostgreSQL.
 - **Deploy frontend:** Vercel (auto-deploy main + previews por PR). Servicio: `studyhub-com` en `cgutierrezlazc-9346s-projects`.
@@ -45,6 +45,7 @@ Si eres una nueva sesión de Tori abriendo esta conversación:
 8. **Pre-commit hook:** ejecuta lint-staged + prettier + eslint + ruff. Si falla, arregla antes de retry. NUNCA usar `--no-verify`.
 9. **Idioma:** español neutro latinoamericano, sin voseo.
 10. **Declarar OBJETIVO PRIMARIO** al inicio de cada sesión (CLAUDE.md sec 20).
+11. **VER LA PINTURA COMPLETA ANTES DE CAMBIAR NADA.** Cristian fue explícito: leer el sistema completo (canonical docs, hashes, dependencias) antes de proponer cualquier edición. Incidente PR #54.
 
 ---
 
@@ -59,8 +60,8 @@ Si eres una nueva sesión de Tori abriendo esta conversación:
 | M01.2 | Privacy | `/privacy` | EN PRUEBAS | — |
 | M01.3 | Support | `/support` | EN PRUEBAS | — |
 | M01.4 | Contact | `/contact` | EN PRUEBAS (funcional end-to-end con SMTP real) | — |
-| M01.5 | Careers | `/careers` | EN PRUEBAS — mergeado PR #44 | — |
-| M01.6 | Cookies | `/cookies` | EN PRUEBAS — mergeado PR #53 hoy | — |
+| M01.5 | Careers | `/careers` | EN PRUEBAS — PR #44 + PR #51 mergeados | — |
+| M01.6 | Cookies | `/cookies` | EN PRUEBAS — PR #53 + PR #55 mergeados | — |
 
 **Ningún módulo está APROBADO.** Cristian no ha firmado ninguno todavía.
 
@@ -75,17 +76,29 @@ Si eres una nueva sesión de Tori abriendo esta conversación:
 | Fase 4 | Infraestructura transversal — Auth JWT, notificaciones, mensajería | ❌ NO INICIADA |
 
 ### Próxima acción acordada
-**Iniciar Fase 2** — Perfil Social V2 base. Pendiente autorización explícita de Cristian al abrir la nueva sesión.
+**Iniciar Fase 2.1** — Perfil Social V2 base. Pendiente autorización explícita de Cristian al abrir la nueva sesión.
 
 ---
 
-## 4 · Ramas abiertas SIN MERGEAR
+## 4 · PRs y ramas al cierre
 
-| Rama | Contenido | Estado |
-|---|---|---|
-| `feat/careers-m01.5` | M01.5 Careers completo | PR #44 mergeado ✅ — en main |
-| `feat/careers-dark-theme` | Careers tema navy oscuro + fix width | PR #51 **ABIERTO** — pendiente decisión de Cristian |
-| `docs-claude-lecciones-cierres-autorizacion` | CLAUDE.md sec 17 lecciones A–G + handoff | PR #43 **ABIERTO** — pendiente merge, solo docs |
+### PR abierto — pendiente merge
+
+| PR | Rama | Contenido | Estado |
+|---|---|---|---|
+| #57 | `chore/consolidate-orbit-u-into-repo` | ORBIT-U design lab movido dentro del repo (92 archivos) + AUDITOR_BRIEFING.md | **OPEN — CI corriendo** |
+
+### PRs mergeados esta sesión
+
+| PR | Contenido |
+|---|---|
+| #43 | docs: CLAUDE.md sec 17 lecciones A–G |
+| #51 | feat(careers): tema navy oscuro + fix layout |
+| #55 | fix(cookies): restaura Cookies.tsx al canónico cookies.md v1.0.0 |
+| #56 | chore: cleanup imports i18n.tsx (useEffect, Gender) |
+
+### Ramas abiertas
+Solo `chore/consolidate-orbit-u-into-repo` (PR #57 abierto). Todas las demás mergeadas.
 
 ---
 
@@ -118,9 +131,9 @@ Si eres una nueva sesión de Tori abriendo esta conversación:
 ## 6 · Sistema i18n — estado real
 
 - **Sistema activo:** `src/services/i18n.tsx` — custom Context con `I18nProvider` + `useI18n()` → `{t, setLang, lang}`.
-- **Tamaño:** 275KB — todas las traducciones inline como objetos JS, cubre toda la plataforma.
+- **Tamaño:** ~275KB — todas las traducciones inline como objetos JS, cubre toda la plataforma.
 - **Cómo funciona:** `setLang(code)` actualiza el Context → re-renderiza toda la UI en tiempo real.
-- **Código muerto:** `src/i18n/index.ts` (react-i18next configurado con JSON locales) — creado en PR #52 pero NO importado en ningún archivo. No eliminar sin decisión de Cristian.
+- **Código muerto:** `src/i18n/` (directorio completo — react-i18next + 6 JSON de locales) — creado en PR #52 pero NUNCA importado en ningún archivo. **Cristian debe eliminar manualmente: `rm -rf src/i18n/`**
 - **Patrón para páginas nuevas:** `import { useI18n } from '../services/i18n';` → `const { t } = useI18n();`
 
 ---
@@ -142,24 +155,33 @@ MOTIVO_TO_EMAIL = {
 }
 ```
 
-**SMTP:** Zoho Mail. Env vars en Render deben ser **App Specific Passwords** (no el password de login). Con 2FA activo, el password normal da `535 Authentication Failed`.
+**SMTP:** Zoho Mail. Env vars en Render deben ser **App Specific Passwords**.
 
 ---
 
-## 8 · Perfil Social — referencias de diseño
+## 8 · Sistema legal — estado real
 
-- **V1 "LinkedIn Navy" (elegido):** `/Users/cristiang./CONNIKU/docs/04-diseno/orbit-u/pages/perfil-v1-FINAL.html`
-  - Layout: `280px | 1fr | 280px`, gap 20px, max-width 1200px
-  - Tema: navy-l, fondo `#E8EEF8`, acento `#0A2878`
-- **V2 (listo para integrar):** `/Users/cristiang./CONNIKU/docs/04-diseno/orbit-u/pages/perfil-v2-FINAL.html`
-  - Layout: sidebar 360px + feed 1fr, gap 96px, max 1180px
-  - Componentes: `<TopNav>`, `<HexTideCanvas>`, `<ProfileCoverSection>`, `<ProfileMain>`, `<SettingsDrawer>`, `<CoverModal>`
-
-**Decisión de Cristian:** Perfil Social V2 es la fuente de diseño para Fase 2. `perfil-social-v2.html` es el patrón maestro de UI (sidebar + feed, cards `.d-card`, sticky sidebar, composer).
+- **Cadena canónica:** `docs/02-legal/vigentes/cookies.md` (fuente de verdad) → hash en `backend/constants/legal_versions.py` → renderizado por `src/pages/Cookies.tsx`
+- **NUNCA editar el TSX sin leer el MD y verificar el hash.** Incidente PR #54 documentado.
+- **Hash activo:** `COOKIES_HASH = "80d41f71f075ae954a4e5f1763266b9830d38849bbe79a7bb931c2a4ee30e38c"`
+- **Misma cadena aplica** a Terms, Privacy.
 
 ---
 
-## 9 · Fase 2 — lo que sigue (próxima sesión)
+## 9 · Perfil Social — referencias de diseño
+
+Todos los archivos de diseño ahora viven dentro del repo:
+
+- **V1 "LinkedIn Navy" (elegido):** `docs/04-diseno/orbit-u/pages/perfil-v1-FINAL.html`
+- **V2 (listo para integrar):** `docs/04-diseno/orbit-u/pages/perfil-v2-FINAL.html`
+- **Fuente de verdad layout:** `docs/04-diseno/orbit-u/pages/perfil-social-v2.html`
+- **Tema tokens:** `docs/04-diseno/orbit-u/shared/themes.css`
+
+**Decisión:** Perfil Social V2 es la fuente de diseño para Fase 2.
+
+---
+
+## 10 · Fase 2 — lo que sigue (próxima sesión)
 
 ### Objetivo a declarar
 ```
@@ -169,25 +191,42 @@ FUERA DE SCOPE: Stories efímeras 24h (2.6), feed híbrido (2.7), módulos inter
 ```
 
 ### Antes de planificar, verificar
-1. ¿Existe algún `/profile` en `src/pages/` o `src/components/`?
+1. ¿Existe algún `/profile` en `src/pages/` o `src/components/`? (Auditoría dice NO)
 2. Confirmar con Cristian si usa V1 o V2 como base visual del perfil
 
 ### Fuente de diseño para Fase 2
-- `perfil-social-v2.html` en ORBIT-U — sidebar 360px + feed, cards, sticky sidebar, composer, HexTide canvas
+- `docs/04-diseno/orbit-u/pages/perfil-social-v2.html` — sidebar 360px + feed, cards, sticky sidebar, composer, HexTide canvas
 - Tema: navy-l
-- Patrón de layout: ya documentado en perfil-v2-FINAL.html
 
 ---
 
-## 10 · Errores cometidos en sesión anterior · NO repetir
+## 11 · Acciones pendientes para Cristian (manuales)
 
-1. **Mergear PR entre sesiones sin re-leer handoff.** PR #53 fue mergeado al inicio sin leer CLAUDE.md — autorización de sesión anterior no vale en sesión nueva.
-2. **No declarar OBJETIVO PRIMARIO al inicio.** CLAUDE.md sec 20 lo exige en el primer mensaje.
-3. **No verificar estado real antes de reportar.** Siempre grep/read antes de afirmar algo sobre el código.
+1. **`rm -rf src/i18n/`** — eliminar directorio de código muerto (react-i18next nunca importado)
+2. **`rm -rf /Users/cristiang./Desktop/ORBIT-U/`** — eliminar original del Desktop una vez confirmado PR #57 mergeado
+3. **Mergear PR #57** cuando CI esté verde
+4. **Revisar AUDITOR_BRIEFING.md** — en raíz del repo, PR #57 — hallazgos 🚨 GRAVE requieren decisión
 
 ---
 
-## 11 · Comandos / accesos útiles
+## 12 · Hallazgos 🚨 GRAVE del AUDITOR_BRIEFING.md
+
+Dos hallazgos críticos que requieren decisión de Cristian antes de Fase 2:
+
+1. **`backend/cleanup_production_db.py`** — script que borra todos los usuarios vive en el directorio productivo. Riesgo de ejecución accidental. Decisión: mover a `tools/` o eliminar.
+2. **Formularios de registro no cableados a backend** — `App.tsx` muestra los forms de rol (estudiante, tutor, etc.) pero no hay llamada real a ningún endpoint de registro. El onboarding no persiste datos. Decisión: documentar como in-scope de Fase 2 o corregir antes.
+
+---
+
+## 13 · Errores cometidos esta sesión · NO repetir
+
+1. **PR #54 — editar Cookies.tsx sin leer el sistema legal completo primero.** Se cambió el TSX sin saber que existe `cookies.md` canónico con hash en `legal_versions.py`. Causa: leer archivos aislados sin ver la cadena completa. Prevención: antes de tocar cualquier página legal, leer MD canónico + `legal_versions.py` + TSX como sistema.
+2. **Intentar push directo a main** (protected). Crear siempre rama + PR.
+3. **Memoria leída del path incorrecto** al inicio — path correcto es `-Users-cristiang--Desktop--ARCHIVE-CONNIKU-2026`, NO `-Users-cristiang--CONNIKU`.
+
+---
+
+## 14 · Comandos / accesos útiles
 
 - **Render dashboard backend:** https://dashboard.render.com/web/srv-d751eh75r7bs73d5ata0
 - **Vercel dashboard frontend:** https://vercel.com/cgutierrezlazc-9346s-projects/studyhub-com
@@ -199,47 +238,26 @@ FUERA DE SCOPE: Stories efímeras 24h (2.6), feed híbrido (2.7), módulos inter
     -H 'Content-Type: application/json' \
     -d '{"motivo":"Soporte técnico","nombre":"x","email":"x@y.com","asunto":"test","mensaje":"mensaje suficientemente largo para validacion"}'
   ```
-- **Verificación imports backend (simular Render):**
-  ```bash
-  cd backend && python3 -c "import sys; sys.path = [p for p in sys.path if not p.endswith('/CONNIKU')]; sys.path.insert(0, '.'); import server" && echo OK
-  ```
 
 ---
 
-## 12 · Ubicación de todos los documentos de contexto
+## 15 · Ubicación de todos los documentos de contexto
 
 | Documento | Ruta exacta |
 |-----------|------------|
 | Este handoff | `/Users/cristiang./CONNIKU/_SESSION_HANDOFF.md` |
 | Estado actual | `/Users/cristiang./CONNIKU/docs/01-proyecto/estado-actual.md` |
 | Pendientes | `/Users/cristiang./CONNIKU/docs/01-proyecto/pendientes.md` |
-| Reporte sesión 2026-04-26 | `/Users/cristiang./CONNIKU/docs/05-reportes/sesiones/2026-04-26-cierre-sesion.md` |
+| AUDITOR_BRIEFING.md | `/Users/cristiang./CONNIKU/AUDITOR_BRIEFING.md` |
 | CLAUDE.md (reglas) | `/Users/cristiang./CONNIKU/CLAUDE.md` |
 | BLOCKS.md | `/Users/cristiang./CONNIKU/BLOCKS.md` |
 | FROZEN.md | `/Users/cristiang./CONNIKU/FROZEN.md` |
 | Memoria persistente (índice) | `/Users/cristiang./.claude/projects/-Users-cristiang--Desktop--ARCHIVE-CONNIKU-2026/memory/MEMORY.md` |
-| Memoria — módulos | `/Users/cristiang./.claude/projects/-Users-cristiang--Desktop--ARCHIVE-CONNIKU-2026/memory/project_modulos.md` |
-| Memoria — fases | `/Users/cristiang./.claude/projects/-Users-cristiang--Desktop--ARCHIVE-CONNIKU-2026/memory/project_fases.md` |
-| Memoria — email routing | `/Users/cristiang./.claude/projects/-Users-cristiang--Desktop--ARCHIVE-CONNIKU-2026/memory/project_email_routing.md` |
-| Memoria — proyecto | `/Users/cristiang./.claude/projects/-Users-cristiang--Desktop--ARCHIVE-CONNIKU-2026/memory/project_conniku.md` |
-| Memoria — reset legal | `/Users/cristiang./.claude/projects/-Users-cristiang--Desktop--ARCHIVE-CONNIKU-2026/memory/project_reset_legal.md` |
-| Memoria — autorización | `/Users/cristiang./.claude/projects/-Users-cristiang--Desktop--ARCHIVE-CONNIKU-2026/memory/feedback_autorizacion.md` |
-| Memoria — errores frecuentes | `/Users/cristiang./.claude/projects/-Users-cristiang--Desktop--ARCHIVE-CONNIKU-2026/memory/feedback_errores_frecuentes.md` |
 | Diseño V1 (elegido) | `/Users/cristiang./CONNIKU/docs/04-diseno/orbit-u/pages/perfil-v1-FINAL.html` |
 | Diseño V2 (listo) | `/Users/cristiang./CONNIKU/docs/04-diseno/orbit-u/pages/perfil-v2-FINAL.html` |
 | Layout fuente verdad | `/Users/cristiang./CONNIKU/docs/04-diseno/orbit-u/pages/perfil-social-v2.html` |
-| Variantes light (descartadas) | `/Users/cristiang./CONNIKU/docs/04-diseno/orbit-u/pages/start-perfil-v1-light.html` |
+| Tema tokens | `/Users/cristiang./CONNIKU/docs/04-diseno/orbit-u/shared/themes.css` |
 
 ---
 
-## 13 · Próxima acción concreta al abrir nueva sesión
-
-1. Tori lee este handoff completo + `CLAUDE.md` secciones 17 y 20.
-2. Tori declara: `OBJETIVO PRIMARIO SESIÓN: Fase 2.1 — componente base /profile` + criterio de cierre + fuera de scope.
-3. Tori verifica si existe `/profile` en el codebase actual.
-4. Tori presenta plan al architect antes de construir.
-5. Cristian autoriza → recién entonces ejecuta.
-
----
-
-**Fin del handoff. Última actualización: 2026-04-26.**
+**Fin del handoff. Última actualización: 2026-04-26 — cierre sesión post-auditoría.**
