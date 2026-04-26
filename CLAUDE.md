@@ -1006,6 +1006,35 @@ nuevo debe prevenir. No se replican bajo ninguna circunstancia.
   Las instrucciones de `CLAUDE.md` son fuente de verdad y deben
   consultarse antes de inventar estructura nueva.
 
+- **2026-04-25**: SMTP de Zoho rechazaba autenticación con
+  `535 Authentication Failed` aunque las env vars `SMTP_PASS_NOREPLY`
+  y `SMTP_PASS_CONTACTO` estaban seteadas en Render con el password
+  normal de cada cuenta. Causa: cuando Zoho tiene 2FA activado (lo
+  cual debe estar siempre activado), SMTP/IMAP/POP rechaza el
+  password regular y exige un App Specific Password generado en
+  Zoho Account → Security → App Passwords. Síntoma silencioso: el
+  endpoint `POST /contact` devuelve 200 OK aunque el envío de fondo
+  falle, porque `_send_email_async` corre en thread daemon y solo
+  imprime el error en logs. Prevención aplicada: (1) toda credencial
+  SMTP de Zoho en Render debe ser un App Specific Password, no el
+  password de login; (2) tras cambiar cualquier env SMTP, validar
+  con un POST de prueba al endpoint y mirar logs del web service
+  buscando `[Email]` para confirmar `Sent`, no `Email Error`;
+  (3) considerar bubblear el error de SMTP al cliente (HTTP 502)
+  en vez de devolver 200 fantasma — actualmente el endpoint reporta
+  éxito incluso si el correo no salió.
+
+- **2026-04-25**: Tori manejaba mal `detail` cuando el backend
+  Pydantic devolvía errores de validación (HTTP 422). El frontend
+  hacía `new Error(err.detail || ...)` con `detail` como array de
+  objetos `{loc, msg, type}`, resultando en alert
+  `No se pudo enviar: [object Object]` totalmente inútil para el
+  usuario. Prevención aplicada: cualquier handler que muestre un
+  error de API debe primero detectar si `detail` es string, array
+  de validation items, o algo más, y serializar legible con `loc`
+  + `msg` antes de pasarlo al UI. Patrón canónico en
+  `src/pages/Contact.tsx::handleSubmit`.
+
 Este registro queda vivo. Si en el futuro Tori comete un error con
 implicaciones similares, se agrega a este registro como lección
 adicional, no se oculta ni se relativiza.
