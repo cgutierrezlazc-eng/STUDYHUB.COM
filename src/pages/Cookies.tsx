@@ -198,9 +198,8 @@ export default function Cookies() {
               <span className={`${styles.catChip} ${styles.catFun}`}>FUNCIONALES</span>
             </h3>
             <p>
-              Mejoran la experiencia del Usuario. Se almacenan en el navegador (localStorage o
-              cookies de sesión) bajo base legal de ejecución del contrato (Art. 6(1)(b) GDPR) una
-              vez que el Usuario ha iniciado sesión (ver §4).
+              Mejoran la experiencia del Usuario. Se instalan sobre la base del Art. 6(1)(b) GDPR
+              (ejecución del contrato) una vez que el Usuario ha iniciado sesión (ver §4).
             </p>
             <div className={styles.tableWrap}>
               <table>
@@ -215,8 +214,13 @@ export default function Cookies() {
                   <tr>
                     <td>
                       <code>conniku_language</code>
+                      <br />
+                      <code>conniku_theme</code>
                     </td>
-                    <td>Recuerda la preferencia de idioma del Usuario (es, en, pt, it, fr, de).</td>
+                    <td>
+                      Recuerda las preferencias de idioma (es, en) y tema visual (claro, oscuro) del
+                      Usuario entre visitas.
+                    </td>
                     <td>Persistente hasta cambio manual</td>
                   </tr>
                   <tr>
