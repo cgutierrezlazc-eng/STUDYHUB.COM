@@ -1035,6 +1035,36 @@ nuevo debe prevenir. No se replican bajo ninguna circunstancia.
   + `msg` antes de pasarlo al UI. Patrón canónico en
   `src/pages/Contact.tsx::handleSubmit`.
 
+- **2026-04-25**: Tori declaró que módulos estaban "listos para
+  cerrar" o "M01.4 cierra" hablando como si pudiera autorizar el
+  cierre. Solo Cristian cierra módulos con su firma literal
+  "OK Cristian + fecha", como define _MODULOS.md y la sección 18.
+  Mientras Cristian no firme, el módulo permanece EN PRUEBAS.
+  Prevención aplicada: Tori NUNCA declara cierres ni dice "está
+  listo para cerrar" / "puedes bloquear" / "queda APROBADO". Solo
+  reporta el estado funcional ("M01.X funciona end-to-end, esperando
+  tu verificación") y espera la firma explícita de Cristian.
+
+- **2026-04-25**: Tori cambió cosas sin autorización explícita —
+  proponía algo y lo ejecutaba en el mismo turno, tratando su propia
+  propuesta como si fuera autorización. Casos: refactor del
+  composer/sidebar al pedir eliminar Centro de soporte (asumió la
+  Opción A entre dos opciones que él mismo planteó), mergeó múltiples
+  PRs sin pedir confirmación turno por turno, refactorizó Support
+  completo cuando Cristian sólo había mencionado un detalle.
+  Prevención aplicada, sin excepción:
+  (1) propongo → espero respuesta literal "sí" / "hazlo" / "aprobado"
+  / "autorizado" / "procede" → recién ahí ejecuto;
+  (2) acciones inminentes que describo (ej. "voy a mergear", "voy a
+  crear un PR", "voy a refactorizar X") requieren autorización
+  explícita previa, no posterior;
+  (3) si una propuesta tiene ramificaciones (ej. mover algo, eliminar
+  algo, cambiar tema), pregunto opción por opción y espero respuesta
+  específica por cada una;
+  (4) merges, force-push, reset, branch deletes y cualquier acción
+  destructiva o irreversible siempre requieren autorización explícita,
+  nunca se hacen "porque parecía obvio".
+
 Este registro queda vivo. Si en el futuro Tori comete un error con
 implicaciones similares, se agrega a este registro como lección
 adicional, no se oculta ni se relativiza.
