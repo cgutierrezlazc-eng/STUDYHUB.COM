@@ -19,21 +19,22 @@
  *   ahora los enlaces del footer apuntan a `/` (UnderConstruction).
  * - Backend de tracking de aceptación · esta página es solo lectura pública.
  */
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import styles from './Terms.module.css';
 
 export default function Terms() {
+  const navigate = useNavigate();
   return (
     <div className={styles.page}>
       {/* TODO: cuando se bridgee el motor Nebula → src/lib/hex-nebula */}
 
       <div className={styles.topbar}>
-        <Link to="/" className={styles.backLink}>
+        <button type="button" onClick={() => navigate(-1)} className={styles.backLink}>
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
             <path d="M19 12H5M12 19l-7-7 7-7" />
           </svg>
           Volver
-        </Link>
+        </button>
         <div className={styles.topbarSep} />
         <Link to="/" className={`brand on-dark ${styles.topbarBrand}`} aria-label="Conniku">
           conn<span>i</span>
