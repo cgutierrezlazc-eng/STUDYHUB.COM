@@ -39,6 +39,8 @@
 
 :global(body):has(.page) {
   background: #050608;
+  overflow-y: auto;
+  height: auto;
 }
 
 /* Hex Nebula canvas mounted via React component, fixed fullscreen */

@@ -43,6 +43,8 @@
 
 :global(body):has(.page) {
   background: #050608;
+  overflow-y: auto;
+  height: auto;
 }
 
 .nebulaBg {
