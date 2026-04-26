@@ -518,15 +518,7 @@ export default function Support() {
           >
             Prensa
           </a>
-          <a
-            href="#"
-            onClick={(e) => {
-              e.preventDefault();
-              pendingAlert('Trabaja con nosotros')();
-            }}
-          >
-            Trabaja con nosotros
-          </a>
+          <Link to="/careers">Trabaja con nosotros</Link>
         </nav>
       </footer>
     </div>

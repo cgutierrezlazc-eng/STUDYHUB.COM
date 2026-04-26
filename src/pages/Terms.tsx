@@ -559,7 +559,7 @@ export default function Terms() {
           <Link to="/">Soporte</Link>
           <Link to="/">Contacto</Link>
           <Link to="/">Prensa</Link>
-          <Link to="/">Trabaja con nosotros</Link>
+          <Link to="/careers">Trabaja con nosotros</Link>
         </nav>
       </footer>
     </div>

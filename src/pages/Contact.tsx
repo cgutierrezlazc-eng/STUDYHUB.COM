@@ -669,9 +669,7 @@ export default function Contact() {
           <a href="#" onClick={handlePendiente}>
             Prensa
           </a>
-          <a href="#" onClick={handlePendiente}>
-            Trabaja con nosotros
-          </a>
+          <Link to="/careers">Trabaja con nosotros</Link>
         </nav>
       </footer>
     </div>

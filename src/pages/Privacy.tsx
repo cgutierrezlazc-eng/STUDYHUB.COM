@@ -726,9 +726,7 @@ export default function Privacy() {
           <a href="#" onClick={handlePending}>
             Prensa
           </a>
-          <a href="#" onClick={handlePending}>
-            Trabaja con nosotros
-          </a>
+          <Link to="/careers">Trabaja con nosotros</Link>
         </nav>
       </footer>
     </div>
