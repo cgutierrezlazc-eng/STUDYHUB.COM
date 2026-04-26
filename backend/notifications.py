@@ -58,57 +58,78 @@ def _get_account_config(from_account: str | None = None):
         return NOREPLY_EMAIL, SMTP_PASS_NOREPLY, "Conniku"
 
 
+def _send_email_sync(to_email: str, subject: str, html_body: str, reply_to: str | None = None, email_type: str = "notification", from_account: str | None = None) -> tuple[bool, str | None]:
+    """Send email synchronously, log it, and return (success, error_msg).
+
+    Bloquea hasta confirmar el resultado del SMTP. Útil para endpoints que
+    necesitan reportar el fallo al cliente (ej. POST /contact debe devolver
+    502 si el correo no salió, no 200 fantasma con error sólo en logs).
+
+    Para envíos no críticos (notificaciones internas, welcome emails, etc.)
+    seguir usando _send_email_async, que dispara en thread y devuelve al
+    instante.
+    """
+    send_from, account_pass, sender_name = _get_account_config(from_account)
+    status = "sent"
+    error_msg: str | None = None
+
+    if not account_pass:
+        print(f"[Email] SMTP password not configured for {send_from}. Would send to {to_email}: {subject}")
+        status = "failed"
+        error_msg = f"SMTP password not configured for {send_from}"
+    else:
+        try:
+            msg = MIMEMultipart("alternative")
+            msg["From"] = f"{sender_name} <{send_from}>"
+            msg["To"] = to_email
+            msg["Subject"] = subject
+            msg["Reply-To"] = reply_to or (CONTACT_EMAIL if from_account != "ceo" else CEO_EMAIL)
+            msg.attach(MIMEText(html_body, "html", "utf-8"))
+
+            with smtplib.SMTP(SMTP_HOST, SMTP_PORT) as server:
+                server.starttls()
+                server.login(send_from, account_pass)
+                server.sendmail(send_from, to_email, msg.as_string())
+            print(f"[Email] Sent from {send_from} to {to_email}: {subject}")
+        except Exception as e:
+            print(f"[Email Error] from={send_from} to={to_email}: {e}")
+            status = "failed"
+            error_msg = str(e)
+
+    # Log email in database (best-effort, no rompe el flujo si falla)
+    try:
+        from database import SessionLocal, EmailLog, gen_id
+        db = SessionLocal()
+        log = EmailLog(
+            id=gen_id(), from_email=send_from, to_email=to_email,
+            subject=subject, body_html=html_body, email_type=email_type,
+            status=status, error_message=error_msg, reply_to=reply_to or CONTACT_EMAIL,
+        )
+        db.add(log)
+        db.commit()
+        db.close()
+    except Exception as log_err:
+        print(f"[Email Log Error] {log_err}")
+
+    return (status == "sent", error_msg)
+
+
 def _send_email_async(to_email: str, subject: str, html_body: str, reply_to: str | None = None, email_type: str = "notification", from_account: str | None = None):
     """Send email in background thread and log it.
     from_account: 'noreply' (default), 'contacto', or 'ceo'
 
     Zoho requires that the SMTP login user matches the From address.
     Each account authenticates with its own password.
+
+    Wrapper async sobre _send_email_sync. El cliente NO sabe si el envío
+    tuvo éxito (sólo el log lo registra). Para endpoints públicos donde el
+    usuario espera confirmación real, usar _send_email_sync directamente.
     """
-    send_from, account_pass, sender_name = _get_account_config(from_account)
-
-    def _send():
-        status = "sent"
-        error_msg = None
-        if not account_pass:
-            print(f"[Email] SMTP password not configured for {send_from}. Would send to {to_email}: {subject}")
-            status = "failed"
-            error_msg = f"SMTP password not configured for {send_from}"
-        else:
-            try:
-                msg = MIMEMultipart("alternative")
-                msg["From"] = f"{sender_name} <{send_from}>"
-                msg["To"] = to_email
-                msg["Subject"] = subject
-                msg["Reply-To"] = reply_to or (CONTACT_EMAIL if from_account != "ceo" else CEO_EMAIL)
-                msg.attach(MIMEText(html_body, "html", "utf-8"))
-
-                with smtplib.SMTP(SMTP_HOST, SMTP_PORT) as server:
-                    server.starttls()
-                    server.login(send_from, account_pass)
-                    server.sendmail(send_from, to_email, msg.as_string())
-                print(f"[Email] Sent from {send_from} to {to_email}: {subject}")
-            except Exception as e:
-                print(f"[Email Error] from={send_from} to={to_email}: {e}")
-                status = "failed"
-                error_msg = str(e)
-
-        # Log email in database
-        try:
-            from database import SessionLocal, EmailLog, gen_id
-            db = SessionLocal()
-            log = EmailLog(
-                id=gen_id(), from_email=send_from, to_email=to_email,
-                subject=subject, body_html=html_body, email_type=email_type,
-                status=status, error_message=error_msg, reply_to=reply_to or CONTACT_EMAIL,
-            )
-            db.add(log)
-            db.commit()
-            db.close()
-        except Exception as log_err:
-            print(f"[Email Log Error] {log_err}")
-
-    thread = threading.Thread(target=_send, daemon=True)
+    thread = threading.Thread(
+        target=_send_email_sync,
+        args=(to_email, subject, html_body, reply_to, email_type, from_account),
+        daemon=True,
+    )
     thread.start()
 
 
