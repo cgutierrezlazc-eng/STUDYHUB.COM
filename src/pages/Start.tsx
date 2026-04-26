@@ -18,6 +18,7 @@ import {
   LEGAL_DOC_KEYS,
   type LegalDocKey,
 } from '../services/legalConstants';
+import LanguageSwitcher from '../components/LanguageSwitcher';
 import styles from './Start.module.css';
 
 type ModalKind = null | 'entrar' | 'crear' | 'student' | 'tutor' | 'general' | 'business';
@@ -752,6 +753,8 @@ export default function Start() {
   function visStyle(visId: string): React.CSSProperties {
     return hiddenVis[visId] ? { opacity: 0 } : {};
   }
+
+  const showLangSwitcher = onboarding === 'role' || modal !== null;
 
   return (
     <div className={rootClass}>
@@ -2207,6 +2210,16 @@ export default function Start() {
             )}
           </div>
         </div>
+      )}
+
+      {showLangSwitcher && (
+        <LanguageSwitcher
+          languages={LANGUAGES}
+          currentLang={lang}
+          onChange={(code) => setLang(code as Parameters<typeof setLang>[0])}
+          ariaLabel={t('start.langswitch.aria')}
+          title={t('start.langswitch.title')}
+        />
       )}
     </div>
   );
