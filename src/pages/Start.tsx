@@ -10,9 +10,62 @@
  */
 import React, { useEffect, useRef, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
+import { useI18n } from '../services/i18n';
+import {
+  AGE_DECLARATION_TEXT_HASH,
+  CANONICAL_DOC_HASHES,
+  LEGAL_DOC_KEYS,
+  type LegalDocKey,
+} from '../services/legalConstants';
 import styles from './Start.module.css';
 
-type ModalKind = null | 'entrar' | 'crear';
+type ModalKind = null | 'entrar' | 'crear' | 'student' | 'tutor' | 'general' | 'business';
+type OnboardStep = null | 'language' | 'role';
+
+const LANGUAGES = [
+  {
+    code: 'es',
+    label: 'Español',
+    sub: 'Latinoamérica',
+    flags: ['🇲🇽', '🇦🇷', '🇨🇱', '🇨🇴', '🇵🇪', '🇻🇪'],
+  },
+  { code: 'en', label: 'English', sub: 'United Kingdom', flags: ['🇬🇧'] },
+  { code: 'pt', label: 'Português', sub: 'Brasil · Portugal', flags: ['🇧🇷', '🇵🇹'] },
+  { code: 'it', label: 'Italiano', sub: 'Italia', flags: ['🇮🇹'] },
+  { code: 'fr', label: 'Français', sub: 'France', flags: ['🇫🇷'] },
+  { code: 'de', label: 'Deutsch', sub: 'Deutschland', flags: ['🇩🇪'] },
+];
+
+const ROLE_DEFS = [
+  {
+    code: 'student',
+    labelKey: 'start.roles.student_label',
+    icon: '🎓',
+    subKey: 'start.roles.student_sub',
+    accent: '#00c27a',
+  },
+  {
+    code: 'tutor',
+    labelKey: 'start.roles.tutor_label',
+    icon: '📚',
+    subKey: 'start.roles.tutor_sub',
+    accent: '#4a88ff',
+  },
+  {
+    code: 'general',
+    labelKey: 'start.roles.general_label',
+    icon: '💬',
+    subKey: 'start.roles.general_sub',
+    accent: '#a855f7',
+  },
+  {
+    code: 'business',
+    labelKey: 'start.roles.business_label',
+    icon: '◈',
+    subKey: 'start.roles.business_sub',
+    accent: '#f59e0b',
+  },
+];
 
 const RADII = [85, 140, 195, 250, 305];
 const ARM_IDS = ['arm-conniku', 'arm-tutores', 'arm-empleos', 'arm-entrar', 'arm-crear'];
@@ -25,6 +78,7 @@ const PCONF = [
 
 export default function Start() {
   const navigate = useNavigate();
+  const { t, setLang, lang } = useI18n();
   const canvasRef = useRef<HTMLCanvasElement>(null);
   // eslint-disable-next-line no-undef
   const tickSvgRef = useRef<SVGSVGElement | null>(null);
@@ -39,6 +93,57 @@ export default function Start() {
   const [visibleBtns, setVisibleBtns] = useState<Record<string, boolean>>({});
   const [landingVis, setLandingVis] = useState<Record<string, boolean>>({});
   const [hiddenVis, setHiddenVis] = useState<Record<string, boolean>>({});
+  const [onboarding, setOnboarding] = useState<OnboardStep>(null);
+  const [onboardClosing, setOnboardClosing] = useState(false);
+
+  // Role-specific form state
+  const [rfNombre, setRfNombre] = useState('');
+  const [rfApellido, setRfApellido] = useState('');
+  const [rfEmail, setRfEmail] = useState('');
+  const [rfPass, setRfPass] = useState('');
+  const [rfUniv, setRfUniv] = useState('');
+  const [rfMaterias, setRfMaterias] = useState('');
+  const [rfBio, setRfBio] = useState('');
+  const [rfObjetivo, setRfObjetivo] = useState('');
+  const [rfEmpresa, setRfEmpresa] = useState('');
+  const [rfCargo, setRfCargo] = useState('');
+  const [rfBizTab, setRfBizTab] = useState<'login' | 'contact'>('login');
+  const [rfSending, setRfSending] = useState(false);
+  const [rfSent, setRfSent] = useState(false);
+  const [rfError, setRfError] = useState('');
+  // Legal consent wizard state
+  const [legalSessionToken, setLegalSessionToken] = useState('');
+  const [legalViewed, setLegalViewed] = useState<Partial<Record<LegalDocKey, boolean>>>({});
+  const [legalLoading, setLegalLoading] = useState<Partial<Record<LegalDocKey, boolean>>>({});
+  const [legalDone, setLegalDone] = useState(false);
+  // Registration extra fields
+  const [rfBirthDate, setRfBirthDate] = useState('');
+  const [rfTosAccepted, setRfTosAccepted] = useState(false);
+  const [rfAgeAccepted, setRfAgeAccepted] = useState(false);
+
+  function resetRoleForm() {
+    setRfNombre('');
+    setRfApellido('');
+    setRfEmail('');
+    setRfPass('');
+    setRfUniv('');
+    setRfMaterias('');
+    setRfBio('');
+    setRfObjetivo('');
+    setRfEmpresa('');
+    setRfCargo('');
+    setRfBizTab('login');
+    setRfSending(false);
+    setRfSent(false);
+    setRfError('');
+    setLegalSessionToken('');
+    setLegalViewed({});
+    setLegalLoading({});
+    setLegalDone(false);
+    setRfBirthDate('');
+    setRfTosAccepted(false);
+    setRfAgeAccepted(false);
+  }
 
   const startedRef = useRef(false);
   const revealedRef = useRef(false);
@@ -332,7 +437,13 @@ export default function Start() {
 
   function handleEngineClick() {
     if (!startedRef.current) {
-      startReveal();
+      const hasConfig =
+        localStorage.getItem('conniku_language') && localStorage.getItem('conniku_role');
+      if (hasConfig) {
+        startReveal();
+      } else {
+        setOnboarding('language');
+      }
       return;
     }
     // Durante la animación del reveal (~6 s) el click no responde.
@@ -340,6 +451,29 @@ export default function Start() {
     if (!revealedRef.current) return;
     // TODO: cuando se bridgee conniku.html en CONNIKU, navegar ahí.
     go('/');
+  }
+
+  function handleSelectLang(code: string) {
+    setLang(code as Parameters<typeof setLang>[0]);
+    setOnboarding('role');
+  }
+
+  function handleSelectRole(code: string) {
+    localStorage.setItem('conniku_role', code);
+    setOnboardClosing(true);
+    window.setTimeout(() => {
+      setOnboarding(null);
+      setOnboardClosing(false);
+      setLegalSessionToken(crypto.randomUUID());
+      setLegalViewed({});
+      setLegalDone(false);
+      setModal(code as ModalKind);
+    }, 320);
+  }
+
+  function handleRoleFormDone() {
+    setModal(null);
+    startReveal();
   }
 
   function handleConnikuBtn(e: React.MouseEvent) {
@@ -376,9 +510,191 @@ export default function Start() {
   }
 
   function handleRegistro() {
-    // TODO: cuando se cablee el backend, llamar al endpoint de registro.
     alert('Registro pendiente · backend por cablear');
     setModal(null);
+  }
+
+  async function handleLegalCheck(docKey: LegalDocKey, checked: boolean) {
+    if (!checked || legalViewed[docKey]) return;
+    setLegalLoading((prev) => ({ ...prev, [docKey]: true }));
+    try {
+      const baseUrl = import.meta.env.VITE_API_URL || 'https://studyhub-api-bpco.onrender.com';
+      await fetch(`${baseUrl}/legal/documents/${docKey}/viewed`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ session_token: legalSessionToken, scrolled_to_end: true }),
+      });
+      setLegalViewed((prev) => ({ ...prev, [docKey]: true }));
+    } finally {
+      setLegalLoading((prev) => ({ ...prev, [docKey]: false }));
+    }
+  }
+
+  const allLegalViewed = LEGAL_DOC_KEYS.every((k) => legalViewed[k]);
+
+  function renderLegalWizard() {
+    const docs: { key: LegalDocKey; label: string; href: string | null; desc?: string }[] = [
+      { key: 'terms', label: t('register.legal.terms'), href: '/terms' },
+      { key: 'privacy', label: t('register.legal.privacy'), href: '/privacy' },
+      { key: 'cookies', label: t('register.legal.cookies'), href: null },
+      {
+        key: 'age-declaration',
+        label: t('register.legal.age'),
+        href: null,
+        desc: t('register.legal.age_desc'),
+      },
+    ];
+    return (
+      <div className={styles.legalWizard}>
+        <div className={styles.legalWizardTitle}>{t('register.legal.title')}</div>
+        <div className={styles.legalWizardSub}>{t('register.legal.subtitle')}</div>
+        {docs.map(({ key, label, href, desc }) => (
+          <label
+            key={key}
+            className={`${styles.legalItem} ${legalViewed[key] ? styles.legalItemDone : ''}`}
+          >
+            <input
+              type="checkbox"
+              className={styles.legalCheck}
+              checked={!!legalViewed[key]}
+              onChange={(e) => handleLegalCheck(key, e.target.checked)}
+              disabled={!!legalViewed[key] || !!legalLoading[key]}
+            />
+            <span className={styles.legalItemBody}>
+              <span className={styles.legalItemLabel}>{label}</span>
+              {desc && <span className={styles.legalItemDesc}>{desc}</span>}
+            </span>
+            {href ? (
+              <a
+                href={href}
+                target="_blank"
+                rel="noreferrer"
+                className={styles.legalViewLink}
+                onClick={(e) => e.stopPropagation()}
+              >
+                {t('register.legal.view')} ↗
+              </a>
+            ) : legalLoading[key] ? (
+              <span className={styles.legalSpinner}>…</span>
+            ) : legalViewed[key] ? (
+              <span className={styles.legalCheckDone}>✓</span>
+            ) : null}
+          </label>
+        ))}
+        {!allLegalViewed && (
+          <div className={styles.legalHint}>{t('register.legal.all_required')}</div>
+        )}
+        <button
+          type="button"
+          className={styles.modalBtn}
+          disabled={!allLegalViewed}
+          onClick={() => setLegalDone(true)}
+        >
+          {t('register.legal.continue')}
+        </button>
+      </div>
+    );
+  }
+
+  async function handleRoleSubmit(e: React.FormEvent) {
+    e.preventDefault();
+    setRfError('');
+    setRfSending(true);
+    try {
+      const baseUrl = import.meta.env.VITE_API_URL || 'https://studyhub-api-bpco.onrender.com';
+      const res = await fetch(`${baseUrl}/auth/register`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          email: rfEmail,
+          password: rfPass,
+          first_name: rfNombre,
+          last_name: rfApellido,
+          birth_date: rfBirthDate,
+          university: rfUniv,
+          bio: rfBio,
+          language: lang,
+          offers_mentoring: modal === 'tutor',
+          mentoring_subjects: rfMaterias
+            ? rfMaterias
+                .split(',')
+                .map((s) => s.trim())
+                .filter(Boolean)
+            : [],
+          academic_status: rfObjetivo || 'estudiante',
+          tos_accepted: rfTosAccepted,
+          age_declaration_accepted: rfAgeAccepted,
+          accepted_text_version_hash: AGE_DECLARATION_TEXT_HASH,
+          legal_session_token: legalSessionToken,
+        }),
+      });
+      if (!res.ok) {
+        type ValidationItem = { loc?: (string | number)[]; msg?: string };
+        const err = (await res.json().catch(() => ({}))) as {
+          detail?: string | ValidationItem[];
+        };
+        let msg = 'Error al registrarse';
+        if (typeof err.detail === 'string') {
+          msg = err.detail;
+        } else if (Array.isArray(err.detail)) {
+          msg = err.detail
+            .map((item) => {
+              const field = (item.loc || []).filter((p) => p !== 'body').join('.');
+              return field ? `${field}: ${item.msg}` : item.msg;
+            })
+            .filter(Boolean)
+            .join(' · ');
+        }
+        throw new Error(msg);
+      }
+      setRfSent(true);
+    } catch (err) {
+      setRfError(err instanceof Error ? err.message : 'error desconocido');
+    } finally {
+      setRfSending(false);
+    }
+  }
+
+  async function handleBizContactSubmit(e: React.FormEvent) {
+    e.preventDefault();
+    setRfError('');
+    setRfSending(true);
+    try {
+      const baseUrl = import.meta.env.VITE_API_URL || 'https://studyhub-api-bpco.onrender.com';
+      const res = await fetch(`${baseUrl}/contact`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          motivo: 'Conniku Business',
+          nombre: rfNombre,
+          email: rfEmail,
+          asunto: `Demo Conniku Business — ${rfEmpresa}`,
+          mensaje: `Empresa: ${rfEmpresa}\nCargo: ${rfCargo}\n\nSolicitó contacto con ventas desde el formulario Business.`,
+        }),
+      });
+      if (!res.ok) {
+        type ValidationItem = { loc?: (string | number)[]; msg?: string };
+        const err = (await res.json().catch(() => ({}))) as { detail?: string | ValidationItem[] };
+        let msg = 'Error al enviar';
+        if (typeof err.detail === 'string') {
+          msg = err.detail;
+        } else if (Array.isArray(err.detail)) {
+          msg = err.detail
+            .map((item) => {
+              const field = (item.loc || []).filter((p) => p !== 'body').join('.');
+              return field ? `${field}: ${item.msg}` : item.msg;
+            })
+            .filter(Boolean)
+            .join(' · ');
+        }
+        throw new Error(msg);
+      }
+      setRfSent(true);
+    } catch (err) {
+      setRfError(err instanceof Error ? err.message : 'error desconocido');
+    } finally {
+      setRfSending(false);
+    }
   }
 
   function handleForgot(e: React.MouseEvent) {
@@ -762,7 +1078,7 @@ export default function Start() {
         onClick={handleConnikuBtn}
       >
         <div className={styles.pbDot} style={{ background: '#00C27A' }} />
-        <span>Conoce el Universo Conniku</span>
+        <span>{t('start.planets.conniku')}</span>
         <span className={styles.pbArr}>→</span>
       </a>
       <a
@@ -774,7 +1090,7 @@ export default function Start() {
         }}
       >
         <div className={styles.pbDot} style={{ background: '#6B4EFF' }} />
-        <span>entrar</span>
+        <span>{t('start.planets.entrar')}</span>
         <span className={styles.pbArr}>→</span>
       </a>
       <a
@@ -786,7 +1102,7 @@ export default function Start() {
         }}
       >
         <div className={styles.pbDot} style={{ background: '#FF4A1C' }} />
-        <span>crear cuenta gratis</span>
+        <span>{t('start.planets.crear')}</span>
         <span className={styles.pbArr}>→</span>
       </a>
 
@@ -819,7 +1135,7 @@ export default function Start() {
 
       {/* Panel A */}
       <div className={styles.panelA} ref={panelARef}>
-        <div className={styles.paBadge}>ORBIT-U · CONNIKU</div>
+        <div className={styles.paBadge}>{t('start.panel.badge')}</div>
         <div className={styles.paLogo}>
           <span className="brand on-dark" aria-label="Conniku">
             conn<span>i</span>
@@ -830,58 +1146,109 @@ export default function Start() {
             </span>
           </span>
         </div>
-        <div className={styles.paProduct}>ORBIT · U</div>
+        <div className={styles.paProduct}>{t('start.panel.product')}</div>
         <div className={styles.paSep} />
-        <div className={styles.paTagline}>
-          El <em>sistema operativo</em> de tu vida universitaria.
-        </div>
+        <div className={styles.paTagline}>{t('start.panel.tagline')}</div>
         <div className={styles.paSub}>
-          MENSAJES · WORKSPACE · BIBLIOTECA
+          {t('start.panel.modules_1')}
           <br />
-          TUTORES · EMPLEOS · COMUNIDAD
+          {t('start.panel.modules_2')}
         </div>
         <div className={styles.paSep2} />
-        <div className={styles.paDesc}>
-          Todo lo que necesitas para tu carrera universitaria,{' '}
-          <strong>integrado en una sola plataforma.</strong> Hecha para la realidad latinoamericana.
-        </div>
+        <div className={styles.paDesc}>{t('start.panel.desc')}</div>
         <div className={styles.paStats}>
           <div className={styles.paStat}>
             <div className={styles.paStatN}>9</div>
-            <div className={styles.paStatL}>MÓDULOS</div>
+            <div className={styles.paStatL}>{t('start.panel.stat_modules')}</div>
           </div>
           <div className={styles.paStat}>
             <div className={styles.paStatN}>1</div>
-            <div className={styles.paStatL}>PLATAFORMA</div>
+            <div className={styles.paStatL}>{t('start.panel.stat_platform')}</div>
           </div>
           <div className={styles.paStat}>
             <div className={styles.paStatN}>∞</div>
-            <div className={styles.paStatL}>POSIBILIDADES</div>
+            <div className={styles.paStatL}>{t('start.panel.stat_posib')}</div>
           </div>
           <div className={styles.paStat}>
             <div className={styles.paStatN}>CL</div>
-            <div className={styles.paStatL}>LATINOAMÉRICA</div>
+            <div className={styles.paStatL}>{t('start.panel.stat_region')}</div>
           </div>
         </div>
       </div>
 
       {/* Footer */}
       <footer className={styles.siteFooter}>
-        <span className={styles.footerCopy}>
-          © 2026 Conniku SpA · Todos los derechos reservados
-        </span>
+        <span className={styles.footerCopy}>{t('start.footer.copy')}</span>
         <nav className={styles.footerLinks}>
-          <Link to="/terms">Términos de servicio</Link>
+          <Link to="/terms">{t('start.footer.terms')}</Link>
           <div className={styles.footerSep} />
-          <Link to="/privacy">Política de privacidad</Link>
+          <Link to="/privacy">{t('start.footer.privacy')}</Link>
           <div className={styles.footerSep} />
-          <Link to="/support">Soporte</Link>
+          <Link to="/support">{t('start.footer.support')}</Link>
           <div className={styles.footerSep} />
-          <Link to="/contact">Contacto</Link>
+          <Link to="/contact">{t('start.footer.contact')}</Link>
           <div className={styles.footerSep} />
-          <Link to="/careers">Trabaja con nosotros</Link>
+          <Link to="/careers">{t('start.footer.careers')}</Link>
         </nav>
       </footer>
+
+      {/* Onboarding · Selector de idioma */}
+      {onboarding === 'language' && (
+        <div className={`${styles.onboardOverlay} ${onboardClosing ? styles.onboardClosing : ''}`}>
+          <div className={styles.onboardPanel}>
+            <div className={styles.onboardEyebrow}>{t('start.onboard.eyebrow')}</div>
+            <h2 className={styles.onboardTitle}>{t('start.onboard.lang_title')}</h2>
+            <p className={styles.onboardSub}>{t('start.onboard.lang_sub')}</p>
+            <div className={styles.langGrid}>
+              {LANGUAGES.map((lng) => (
+                <button
+                  key={lng.code}
+                  className={`${styles.langBtn} ${lang === lng.code ? styles.langBtnActive : ''}`}
+                  onClick={() => handleSelectLang(lng.code)}
+                >
+                  <div className={styles.langFlagBg} aria-hidden="true">
+                    {lng.flags.map((f) => (
+                      <span key={f}>{f}</span>
+                    ))}
+                  </div>
+                  <div className={styles.langContent}>
+                    <span className={styles.langName}>{lng.label}</span>
+                    <span className={styles.langSub}>{lng.sub}</span>
+                  </div>
+                </button>
+              ))}
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Onboarding · Selector de rol */}
+      {onboarding === 'role' && (
+        <div className={`${styles.onboardOverlay} ${onboardClosing ? styles.onboardClosing : ''}`}>
+          <div className={styles.onboardPanel}>
+            <div className={styles.onboardEyebrow}>{t('start.onboard.eyebrow')}</div>
+            <h2 className={styles.onboardTitle}>{t('start.onboard.role_title')}</h2>
+            <p className={styles.onboardSub}>{t('start.onboard.role_sub')}</p>
+            <div className={styles.roleGrid}>
+              {ROLE_DEFS.map((role) => (
+                <button
+                  key={role.code}
+                  className={styles.roleBtn}
+                  style={{ '--role-accent': role.accent } as React.CSSProperties}
+                  onClick={() => handleSelectRole(role.code)}
+                >
+                  <span className={styles.roleIcon}>{role.icon}</span>
+                  <span className={styles.roleLabel}>{t(role.labelKey)}</span>
+                  <span className={styles.roleSub}>{t(role.subKey)}</span>
+                </button>
+              ))}
+            </div>
+            <button className={styles.onboardBack} onClick={() => setOnboarding('language')}>
+              {t('start.onboard.back_lang')}
+            </button>
+          </div>
+        </div>
+      )}
 
       {/* Modal · Entrar */}
       {modal === 'entrar' && (
@@ -905,41 +1272,41 @@ export default function Start() {
                 </span>
               </span>
             </div>
-            <div className={styles.modalTitle}>Bienvenido de vuelta</div>
-            <div className={styles.modalSub}>Accede a tu cuenta Conniku</div>
+            <div className={styles.modalTitle}>{t('start.modal.login_title')}</div>
+            <div className={styles.modalSub}>{t('start.modal.login_sub')}</div>
             <div className={styles.modalSep} />
             <div className={styles.mfGroup}>
-              <label className={styles.mfLabel}>Correo electrónico</label>
+              <label className={styles.mfLabel}>{t('start.modal.email')}</label>
               <input
                 className={styles.mfInput}
                 type="email"
-                placeholder="tu@universidad.cl"
+                placeholder={t('start.modal.email_ph')}
                 id="loginEmail"
                 autoComplete="email"
               />
             </div>
             <div className={styles.mfGroup}>
               <label className={styles.mfLabel}>
-                Contraseña
+                {t('start.modal.password')}
                 <a className={styles.mfLink} href="#" onClick={handleForgot}>
-                  ¿Olvidaste tu contraseña?
+                  {t('start.modal.forgot')}
                 </a>
               </label>
               <input
                 className={styles.mfInput}
                 type="password"
-                placeholder="••••••••"
+                placeholder={t('start.modal.pass_ph')}
                 id="loginPass"
                 autoComplete="current-password"
               />
             </div>
             <button type="button" className={styles.modalBtn} onClick={handleLogin}>
-              Entrar →
+              {t('start.modal.btn_login')}
             </button>
             <div className={styles.modalSwitch}>
-              ¿No tienes cuenta?{' '}
+              {t('start.modal.no_account')}{' '}
               <button type="button" onClick={() => setModal('crear')}>
-                Crear cuenta gratis
+                {t('start.modal.create_free')}
               </button>
             </div>
           </div>
@@ -968,57 +1335,57 @@ export default function Start() {
                 </span>
               </span>
             </div>
-            <div className={styles.modalTitle}>Crea tu cuenta</div>
-            <div className={styles.modalSub}>Empieza gratis · Sin tarjeta de crédito</div>
+            <div className={styles.modalTitle}>{t('start.modal.register_title')}</div>
+            <div className={styles.modalSub}>{t('start.modal.register_sub')}</div>
             <div className={styles.modalSep} />
             <div className={styles.mfRow}>
               <div className={styles.mfGroup}>
-                <label className={styles.mfLabel}>Nombre</label>
+                <label className={styles.mfLabel}>{t('start.modal.nombre')}</label>
                 <input
                   className={styles.mfInput}
                   type="text"
-                  placeholder="Tu nombre"
+                  placeholder={t('start.modal.nombre_ph')}
                   id="regNombre"
                   autoComplete="given-name"
                 />
               </div>
               <div className={styles.mfGroup}>
-                <label className={styles.mfLabel}>Apellido</label>
+                <label className={styles.mfLabel}>{t('start.modal.apellido')}</label>
                 <input
                   className={styles.mfInput}
                   type="text"
-                  placeholder="Tu apellido"
+                  placeholder={t('start.modal.apellido_ph')}
                   id="regApellido"
                   autoComplete="family-name"
                 />
               </div>
             </div>
             <div className={styles.mfGroup}>
-              <label className={styles.mfLabel}>Correo electrónico</label>
+              <label className={styles.mfLabel}>{t('start.modal.email')}</label>
               <input
                 className={styles.mfInput}
                 type="email"
-                placeholder="tu@universidad.cl"
+                placeholder={t('start.modal.email_ph')}
                 id="regEmail"
                 autoComplete="email"
               />
             </div>
             <div className={styles.mfGroup}>
-              <label className={styles.mfLabel}>Contraseña</label>
+              <label className={styles.mfLabel}>{t('start.modal.password')}</label>
               <input
                 className={styles.mfInput}
                 type="password"
-                placeholder="Mínimo 8 caracteres"
+                placeholder={t('start.modal.pass_new_ph')}
                 id="regPass"
                 autoComplete="new-password"
               />
-              <div className={styles.mfHint}>Usa letras, números y símbolos</div>
+              <div className={styles.mfHint}>{t('start.modal.pass_hint')}</div>
             </div>
             <div className={styles.mfGroup}>
-              <label className={styles.mfLabel}>Universidad</label>
+              <label className={styles.mfLabel}>{t('start.modal.universidad')}</label>
               <select className={styles.mfSelect} id="regUniv" defaultValue="">
                 <option value="" disabled>
-                  Selecciona tu universidad
+                  {t('start.modal.univ_ph')}
                 </option>
                 <option>Universidad de Chile</option>
                 <option>Pontificia Universidad Católica de Chile</option>
@@ -1033,14 +1400,782 @@ export default function Start() {
               </select>
             </div>
             <button type="button" className={styles.modalBtn} onClick={handleRegistro}>
-              Crear cuenta gratis →
+              {t('start.modal.btn_register')}
             </button>
             <div className={styles.modalSwitch}>
-              ¿Ya tienes cuenta?{' '}
+              {t('start.modal.have_account')}{' '}
               <button type="button" onClick={() => setModal('entrar')}>
-                Entrar
+                {t('start.modal.login_link')}
               </button>
             </div>
+          </div>
+        </div>
+      )}
+
+      {/* Modal · Estudiante */}
+      {modal === 'student' && (
+        <div
+          className={`${styles.modalOverlay} ${styles.open}`}
+          onClick={(e) => {
+            if (e.target === e.currentTarget) {
+              resetRoleForm();
+              handleRoleFormDone();
+            }
+          }}
+        >
+          <div className={styles.modalCard}>
+            <button
+              type="button"
+              className={styles.modalClose}
+              onClick={() => {
+                resetRoleForm();
+                handleRoleFormDone();
+              }}
+            >
+              ✕
+            </button>
+            <div className={styles.modalLogo}>
+              <span className="brand on-dark" aria-label="Conniku">
+                conn<span>i</span>
+                <span className="k-letter">k</span>
+                <span className="u-pack">
+                  <span className="u-letter">u</span>
+                  <span className="dot"></span>
+                </span>
+              </span>
+            </div>
+            <div className={styles.modalBadge}>{t('register.student.badge')}</div>
+            <div className={styles.modalTitle}>{t('register.student.title')}</div>
+            <div className={styles.modalSub}>{t('register.student.sub')}</div>
+            <div className={styles.modalSep} />
+            {rfSent ? (
+              <div className={styles.modalSentBox}>
+                <div className={styles.modalSentIcon}>✓</div>
+                <div className={styles.modalSentTitle}>{t('start.modal.register_title')}</div>
+                <div className={styles.modalSentText}>{t('register.student.sub')}</div>
+                <button
+                  className={styles.modalBtn}
+                  onClick={() => {
+                    resetRoleForm();
+                    handleRoleFormDone();
+                  }}
+                >
+                  {t('start.planets.entrar')} →
+                </button>
+              </div>
+            ) : !legalDone ? (
+              renderLegalWizard()
+            ) : (
+              <form onSubmit={handleRoleSubmit}>
+                <div className={styles.mfRow}>
+                  <div className={styles.mfGroup}>
+                    <label className={styles.mfLabel}>{t('start.modal.nombre')}</label>
+                    <input
+                      className={styles.mfInput}
+                      type="text"
+                      placeholder={t('start.modal.nombre_ph')}
+                      value={rfNombre}
+                      onChange={(e) => setRfNombre(e.target.value)}
+                      required
+                      minLength={2}
+                      maxLength={60}
+                      autoComplete="given-name"
+                    />
+                  </div>
+                  <div className={styles.mfGroup}>
+                    <label className={styles.mfLabel}>{t('start.modal.apellido')}</label>
+                    <input
+                      className={styles.mfInput}
+                      type="text"
+                      placeholder={t('start.modal.apellido_ph')}
+                      value={rfApellido}
+                      onChange={(e) => setRfApellido(e.target.value)}
+                      required
+                      minLength={2}
+                      maxLength={60}
+                      autoComplete="family-name"
+                    />
+                  </div>
+                </div>
+                <div className={styles.mfGroup}>
+                  <label className={styles.mfLabel}>{t('start.modal.email')}</label>
+                  <input
+                    className={styles.mfInput}
+                    type="email"
+                    placeholder={t('start.modal.email_ph')}
+                    value={rfEmail}
+                    onChange={(e) => setRfEmail(e.target.value)}
+                    required
+                    autoComplete="email"
+                  />
+                </div>
+                <div className={styles.mfGroup}>
+                  <label className={styles.mfLabel}>{t('start.modal.password')}</label>
+                  <input
+                    className={styles.mfInput}
+                    type="password"
+                    placeholder={t('start.modal.pass_new_ph')}
+                    value={rfPass}
+                    onChange={(e) => setRfPass(e.target.value)}
+                    required
+                    minLength={8}
+                    autoComplete="new-password"
+                  />
+                  <div className={styles.mfHint}>{t('start.modal.pass_hint')}</div>
+                </div>
+                <div className={styles.mfGroup}>
+                  <label className={styles.mfLabel}>{t('start.modal.universidad')}</label>
+                  <select
+                    className={styles.mfSelect}
+                    value={rfUniv}
+                    onChange={(e) => setRfUniv(e.target.value)}
+                    required
+                  >
+                    <option value="" disabled>
+                      {t('start.modal.univ_ph')}
+                    </option>
+                    <option>Universidad de Chile</option>
+                    <option>Pontificia Universidad Católica de Chile</option>
+                    <option>Universidad de Concepción</option>
+                    <option>Universidad de Santiago de Chile</option>
+                    <option>Universidad Austral de Chile</option>
+                    <option>Universidad Técnica Federico Santa María</option>
+                    <option>Universidad Adolfo Ibáñez</option>
+                    <option>Universidad Diego Portales</option>
+                    <option>Universidad Andrés Bello</option>
+                    <option>Otra universidad</option>
+                  </select>
+                </div>
+                <div className={styles.mfGroup}>
+                  <label className={styles.mfLabel}>{t('register.form.birth_date')}</label>
+                  <input
+                    className={styles.mfInput}
+                    type="date"
+                    value={rfBirthDate}
+                    onChange={(e) => setRfBirthDate(e.target.value)}
+                    required
+                    max={new Date(Date.now() - 18 * 365.25 * 86400000).toISOString().split('T')[0]}
+                  />
+                  <div className={styles.mfHint}>{t('register.form.birth_date_hint')}</div>
+                </div>
+                <label className={styles.mfCheckRow}>
+                  <input
+                    type="checkbox"
+                    checked={rfTosAccepted}
+                    onChange={(e) => setRfTosAccepted(e.target.checked)}
+                    required
+                  />
+                  <span className={styles.mfCheckLabel}>
+                    {t('start.modal.tos_prefix')}{' '}
+                    <Link to="/terms" target="_blank" className={styles.mfLink}>
+                      {t('register.legal.terms')}
+                    </Link>{' '}
+                    {t('start.modal.tos_and')}{' '}
+                    <Link to="/privacy" target="_blank" className={styles.mfLink}>
+                      {t('register.legal.privacy')}
+                    </Link>
+                  </span>
+                </label>
+                <label className={styles.mfCheckRow}>
+                  <input
+                    type="checkbox"
+                    checked={rfAgeAccepted}
+                    onChange={(e) => setRfAgeAccepted(e.target.checked)}
+                    required
+                  />
+                  <span className={styles.mfCheckLabel}>{t('register.legal.age_desc')}</span>
+                </label>
+                {rfError && <p className={styles.mfError}>{rfError}</p>}
+                <button type="submit" className={styles.modalBtn} disabled={rfSending}>
+                  {rfSending ? '…' : t('start.modal.btn_register')}
+                </button>
+                <div className={styles.modalSwitch}>
+                  {t('start.modal.have_account')}{' '}
+                  <button
+                    type="button"
+                    onClick={() => {
+                      resetRoleForm();
+                      setModal('entrar');
+                    }}
+                  >
+                    {t('start.modal.login_link')}
+                  </button>
+                </div>
+              </form>
+            )}
+          </div>
+        </div>
+      )}
+
+      {/* Modal · Tutor */}
+      {modal === 'tutor' && (
+        <div
+          className={`${styles.modalOverlay} ${styles.open}`}
+          onClick={(e) => {
+            if (e.target === e.currentTarget) {
+              resetRoleForm();
+              handleRoleFormDone();
+            }
+          }}
+        >
+          <div className={styles.modalCard}>
+            <button
+              type="button"
+              className={styles.modalClose}
+              onClick={() => {
+                resetRoleForm();
+                handleRoleFormDone();
+              }}
+            >
+              ✕
+            </button>
+            <div className={styles.modalLogo}>
+              <span className="brand on-dark" aria-label="Conniku">
+                conn<span>i</span>
+                <span className="k-letter">k</span>
+                <span className="u-pack">
+                  <span className="u-letter">u</span>
+                  <span className="dot"></span>
+                </span>
+              </span>
+            </div>
+            <div className={styles.modalBadge}>{t('register.tutor.badge')}</div>
+            <div className={styles.modalTitle}>{t('register.tutor.title')}</div>
+            <div className={styles.modalSub}>{t('register.tutor.sub')}</div>
+            <div className={styles.modalSep} />
+            {rfSent ? (
+              <div className={styles.modalSentBox}>
+                <div className={styles.modalSentIcon}>✓</div>
+                <div className={styles.modalSentTitle}>{t('careers.modal.sent_title')}</div>
+                <div className={styles.modalSentText}>{t('register.tutor.sub')}</div>
+                <button
+                  className={styles.modalBtn}
+                  onClick={() => {
+                    resetRoleForm();
+                    handleRoleFormDone();
+                  }}
+                >
+                  {t('start.planets.entrar')} →
+                </button>
+              </div>
+            ) : !legalDone ? (
+              renderLegalWizard()
+            ) : (
+              <form onSubmit={handleRoleSubmit}>
+                <div className={styles.mfRow}>
+                  <div className={styles.mfGroup}>
+                    <label className={styles.mfLabel}>{t('start.modal.nombre')}</label>
+                    <input
+                      className={styles.mfInput}
+                      type="text"
+                      placeholder={t('start.modal.nombre_ph')}
+                      value={rfNombre}
+                      onChange={(e) => setRfNombre(e.target.value)}
+                      required
+                      minLength={2}
+                      autoComplete="given-name"
+                    />
+                  </div>
+                  <div className={styles.mfGroup}>
+                    <label className={styles.mfLabel}>{t('start.modal.apellido')}</label>
+                    <input
+                      className={styles.mfInput}
+                      type="text"
+                      placeholder={t('start.modal.apellido_ph')}
+                      value={rfApellido}
+                      onChange={(e) => setRfApellido(e.target.value)}
+                      required
+                      minLength={2}
+                      autoComplete="family-name"
+                    />
+                  </div>
+                </div>
+                <div className={styles.mfGroup}>
+                  <label className={styles.mfLabel}>{t('start.modal.email')}</label>
+                  <input
+                    className={styles.mfInput}
+                    type="email"
+                    placeholder={t('start.modal.email_ph')}
+                    value={rfEmail}
+                    onChange={(e) => setRfEmail(e.target.value)}
+                    required
+                    autoComplete="email"
+                  />
+                </div>
+                <div className={styles.mfGroup}>
+                  <label className={styles.mfLabel}>{t('start.modal.password')}</label>
+                  <input
+                    className={styles.mfInput}
+                    type="password"
+                    placeholder={t('start.modal.pass_new_ph')}
+                    value={rfPass}
+                    onChange={(e) => setRfPass(e.target.value)}
+                    required
+                    minLength={8}
+                    autoComplete="new-password"
+                  />
+                </div>
+                <div className={styles.mfGroup}>
+                  <label className={styles.mfLabel}>{t('register.tutor.materias')}</label>
+                  <input
+                    className={styles.mfInput}
+                    type="text"
+                    placeholder={t('register.tutor.materias_ph')}
+                    value={rfMaterias}
+                    onChange={(e) => setRfMaterias(e.target.value)}
+                    required
+                    maxLength={200}
+                  />
+                </div>
+                <div className={styles.mfGroup}>
+                  <label className={styles.mfLabel}>{t('register.tutor.bio')}</label>
+                  <textarea
+                    className={styles.mfTextarea}
+                    placeholder={t('register.tutor.bio_ph')}
+                    value={rfBio}
+                    onChange={(e) => setRfBio(e.target.value)}
+                    maxLength={500}
+                    rows={3}
+                  />
+                </div>
+                <div className={styles.mfGroup}>
+                  <label className={styles.mfLabel}>{t('register.form.birth_date')}</label>
+                  <input
+                    className={styles.mfInput}
+                    type="date"
+                    value={rfBirthDate}
+                    onChange={(e) => setRfBirthDate(e.target.value)}
+                    required
+                    max={new Date(Date.now() - 18 * 365.25 * 86400000).toISOString().split('T')[0]}
+                  />
+                  <div className={styles.mfHint}>{t('register.form.birth_date_hint')}</div>
+                </div>
+                <label className={styles.mfCheckRow}>
+                  <input
+                    type="checkbox"
+                    checked={rfTosAccepted}
+                    onChange={(e) => setRfTosAccepted(e.target.checked)}
+                    required
+                  />
+                  <span className={styles.mfCheckLabel}>
+                    {t('start.modal.tos_prefix')}{' '}
+                    <Link to="/terms" target="_blank" className={styles.mfLink}>
+                      {t('register.legal.terms')}
+                    </Link>{' '}
+                    {t('start.modal.tos_and')}{' '}
+                    <Link to="/privacy" target="_blank" className={styles.mfLink}>
+                      {t('register.legal.privacy')}
+                    </Link>
+                  </span>
+                </label>
+                <label className={styles.mfCheckRow}>
+                  <input
+                    type="checkbox"
+                    checked={rfAgeAccepted}
+                    onChange={(e) => setRfAgeAccepted(e.target.checked)}
+                    required
+                  />
+                  <span className={styles.mfCheckLabel}>{t('register.legal.age_desc')}</span>
+                </label>
+                {rfError && <p className={styles.mfError}>{rfError}</p>}
+                <button type="submit" className={styles.modalBtn} disabled={rfSending}>
+                  {rfSending ? '…' : t('start.modal.btn_register')}
+                </button>
+                <div className={styles.modalSwitch}>
+                  {t('start.modal.have_account')}{' '}
+                  <button
+                    type="button"
+                    onClick={() => {
+                      resetRoleForm();
+                      setModal('entrar');
+                    }}
+                  >
+                    {t('start.modal.login_link')}
+                  </button>
+                </div>
+              </form>
+            )}
+          </div>
+        </div>
+      )}
+
+      {/* Modal · General / Laboral */}
+      {modal === 'general' && (
+        <div
+          className={`${styles.modalOverlay} ${styles.open}`}
+          onClick={(e) => {
+            if (e.target === e.currentTarget) {
+              resetRoleForm();
+              handleRoleFormDone();
+            }
+          }}
+        >
+          <div className={styles.modalCard}>
+            <button
+              type="button"
+              className={styles.modalClose}
+              onClick={() => {
+                resetRoleForm();
+                handleRoleFormDone();
+              }}
+            >
+              ✕
+            </button>
+            <div className={styles.modalLogo}>
+              <span className="brand on-dark" aria-label="Conniku">
+                conn<span>i</span>
+                <span className="k-letter">k</span>
+                <span className="u-pack">
+                  <span className="u-letter">u</span>
+                  <span className="dot"></span>
+                </span>
+              </span>
+            </div>
+            <div className={styles.modalBadge}>{t('register.general.badge')}</div>
+            <div className={styles.modalTitle}>{t('register.general.title')}</div>
+            <div className={styles.modalSub}>{t('register.general.sub')}</div>
+            <div className={styles.modalSep} />
+            {rfSent ? (
+              <div className={styles.modalSentBox}>
+                <div className={styles.modalSentIcon}>✓</div>
+                <div className={styles.modalSentTitle}>{t('careers.modal.sent_title')}</div>
+                <div className={styles.modalSentText}>{t('register.general.sub')}</div>
+                <button
+                  className={styles.modalBtn}
+                  onClick={() => {
+                    resetRoleForm();
+                    handleRoleFormDone();
+                  }}
+                >
+                  {t('start.planets.entrar')} →
+                </button>
+              </div>
+            ) : !legalDone ? (
+              renderLegalWizard()
+            ) : (
+              <form onSubmit={handleRoleSubmit}>
+                <div className={styles.mfRow}>
+                  <div className={styles.mfGroup}>
+                    <label className={styles.mfLabel}>{t('start.modal.nombre')}</label>
+                    <input
+                      className={styles.mfInput}
+                      type="text"
+                      placeholder={t('start.modal.nombre_ph')}
+                      value={rfNombre}
+                      onChange={(e) => setRfNombre(e.target.value)}
+                      required
+                      minLength={2}
+                      autoComplete="given-name"
+                    />
+                  </div>
+                  <div className={styles.mfGroup}>
+                    <label className={styles.mfLabel}>{t('start.modal.apellido')}</label>
+                    <input
+                      className={styles.mfInput}
+                      type="text"
+                      placeholder={t('start.modal.apellido_ph')}
+                      value={rfApellido}
+                      onChange={(e) => setRfApellido(e.target.value)}
+                      required
+                      minLength={2}
+                      autoComplete="family-name"
+                    />
+                  </div>
+                </div>
+                <div className={styles.mfGroup}>
+                  <label className={styles.mfLabel}>{t('start.modal.email')}</label>
+                  <input
+                    className={styles.mfInput}
+                    type="email"
+                    placeholder={t('start.modal.email_ph')}
+                    value={rfEmail}
+                    onChange={(e) => setRfEmail(e.target.value)}
+                    required
+                    autoComplete="email"
+                  />
+                </div>
+                <div className={styles.mfGroup}>
+                  <label className={styles.mfLabel}>{t('start.modal.password')}</label>
+                  <input
+                    className={styles.mfInput}
+                    type="password"
+                    placeholder={t('start.modal.pass_new_ph')}
+                    value={rfPass}
+                    onChange={(e) => setRfPass(e.target.value)}
+                    required
+                    minLength={8}
+                    autoComplete="new-password"
+                  />
+                </div>
+                <div className={styles.mfGroup}>
+                  <label className={styles.mfLabel}>{t('register.general.objetivo')}</label>
+                  <select
+                    className={styles.mfSelect}
+                    value={rfObjetivo}
+                    onChange={(e) => setRfObjetivo(e.target.value)}
+                    required
+                  >
+                    <option value="" disabled>
+                      {t('register.general.objetivo_ph')}
+                    </option>
+                    <option value="networking">{t('register.general.obj_network')}</option>
+                    <option value="jobs">{t('register.general.obj_jobs')}</option>
+                    <option value="community">{t('register.general.obj_community')}</option>
+                    <option value="other">{t('register.general.obj_other')}</option>
+                  </select>
+                </div>
+                <div className={styles.mfGroup}>
+                  <label className={styles.mfLabel}>{t('register.form.birth_date')}</label>
+                  <input
+                    className={styles.mfInput}
+                    type="date"
+                    value={rfBirthDate}
+                    onChange={(e) => setRfBirthDate(e.target.value)}
+                    required
+                    max={new Date(Date.now() - 18 * 365.25 * 86400000).toISOString().split('T')[0]}
+                  />
+                  <div className={styles.mfHint}>{t('register.form.birth_date_hint')}</div>
+                </div>
+                <label className={styles.mfCheckRow}>
+                  <input
+                    type="checkbox"
+                    checked={rfTosAccepted}
+                    onChange={(e) => setRfTosAccepted(e.target.checked)}
+                    required
+                  />
+                  <span className={styles.mfCheckLabel}>
+                    {t('start.modal.tos_prefix')}{' '}
+                    <Link to="/terms" target="_blank" className={styles.mfLink}>
+                      {t('register.legal.terms')}
+                    </Link>{' '}
+                    {t('start.modal.tos_and')}{' '}
+                    <Link to="/privacy" target="_blank" className={styles.mfLink}>
+                      {t('register.legal.privacy')}
+                    </Link>
+                  </span>
+                </label>
+                <label className={styles.mfCheckRow}>
+                  <input
+                    type="checkbox"
+                    checked={rfAgeAccepted}
+                    onChange={(e) => setRfAgeAccepted(e.target.checked)}
+                    required
+                  />
+                  <span className={styles.mfCheckLabel}>{t('register.legal.age_desc')}</span>
+                </label>
+                {rfError && <p className={styles.mfError}>{rfError}</p>}
+                <button type="submit" className={styles.modalBtn} disabled={rfSending}>
+                  {rfSending ? '…' : t('start.modal.btn_register')}
+                </button>
+                <div className={styles.modalSwitch}>
+                  {t('start.modal.have_account')}{' '}
+                  <button
+                    type="button"
+                    onClick={() => {
+                      resetRoleForm();
+                      setModal('entrar');
+                    }}
+                  >
+                    {t('start.modal.login_link')}
+                  </button>
+                </div>
+              </form>
+            )}
+          </div>
+        </div>
+      )}
+
+      {/* Modal · Business */}
+      {modal === 'business' && (
+        <div
+          className={`${styles.modalOverlay} ${styles.open}`}
+          onClick={(e) => {
+            if (e.target === e.currentTarget) {
+              resetRoleForm();
+              handleRoleFormDone();
+            }
+          }}
+        >
+          <div className={`${styles.modalCard} ${styles.modalCardBiz}`}>
+            <button
+              type="button"
+              className={styles.modalClose}
+              onClick={() => {
+                resetRoleForm();
+                handleRoleFormDone();
+              }}
+            >
+              ✕
+            </button>
+            <div className={styles.modalLogo}>
+              <span className="brand on-dark" aria-label="Conniku">
+                conn<span>i</span>
+                <span className="k-letter">k</span>
+                <span className="u-pack">
+                  <span className="u-letter">u</span>
+                  <span className="dot"></span>
+                </span>
+              </span>
+            </div>
+            <div className={styles.modalBadge}>{t('register.business.badge')}</div>
+            <div className={styles.modalSep} />
+            {/* Tab switcher */}
+            <div className={styles.bizTabs}>
+              <button
+                type="button"
+                className={`${styles.bizTab} ${rfBizTab === 'login' ? styles.bizTabActive : ''}`}
+                onClick={() => {
+                  setRfSent(false);
+                  setRfBizTab('login');
+                }}
+              >
+                {t('register.business.tab_login')}
+              </button>
+              <button
+                type="button"
+                className={`${styles.bizTab} ${rfBizTab === 'contact' ? styles.bizTabActive : ''}`}
+                onClick={() => {
+                  setRfSent(false);
+                  setRfBizTab('contact');
+                }}
+              >
+                {t('register.business.tab_contact')}
+              </button>
+            </div>
+
+            {rfBizTab === 'login' ? (
+              <>
+                <div className={styles.modalTitle}>{t('register.business.login_title')}</div>
+                <div className={styles.modalSub}>{t('register.business.login_sub')}</div>
+                <div className={styles.modalSep} />
+                <div className={styles.mfGroup}>
+                  <label className={styles.mfLabel}>{t('start.modal.email')}</label>
+                  <input
+                    className={styles.mfInput}
+                    type="email"
+                    placeholder={t('start.modal.email_ph')}
+                    value={rfEmail}
+                    onChange={(e) => setRfEmail(e.target.value)}
+                    autoComplete="email"
+                  />
+                </div>
+                <div className={styles.mfGroup}>
+                  <label className={styles.mfLabel}>
+                    {t('start.modal.password')}
+                    <a className={styles.mfLink} href="#" onClick={handleForgot}>
+                      {t('start.modal.forgot')}
+                    </a>
+                  </label>
+                  <input
+                    className={styles.mfInput}
+                    type="password"
+                    placeholder={t('start.modal.pass_ph')}
+                    value={rfPass}
+                    onChange={(e) => setRfPass(e.target.value)}
+                    autoComplete="current-password"
+                  />
+                </div>
+                <button type="button" className={styles.modalBtn} onClick={handleLogin}>
+                  {t('start.modal.btn_login')}
+                </button>
+              </>
+            ) : rfSent ? (
+              <div className={styles.modalSentBox}>
+                <div className={styles.modalSentIcon}>✓</div>
+                <div className={styles.modalSentTitle}>{t('register.business.sent_title')}</div>
+                <div className={styles.modalSentText}>{t('register.business.sent_text')}</div>
+                <button
+                  className={styles.modalBtn}
+                  onClick={() => {
+                    resetRoleForm();
+                    handleRoleFormDone();
+                  }}
+                >
+                  {t('careers.modal.close')}
+                </button>
+              </div>
+            ) : (
+              <>
+                <div className={styles.modalTitle}>{t('register.business.contact_title')}</div>
+                <div className={styles.modalSub}>{t('register.business.contact_sub')}</div>
+                <div className={styles.modalSep} />
+                {/* Modules info */}
+                <div className={styles.bizModulesWrap}>
+                  <div className={styles.bizModulesLabel}>
+                    {t('register.business.modules_title')}
+                  </div>
+                  <ul className={styles.bizModulesList}>
+                    <li>◈ {t('register.business.module_mi_empresa')}</li>
+                    <li>◈ {t('register.business.module_workspace')}</li>
+                    <li>◈ {t('register.business.module_analytics')}</li>
+                    <li>◈ {t('register.business.module_hr')}</li>
+                  </ul>
+                </div>
+                <form onSubmit={handleBizContactSubmit}>
+                  <div className={styles.mfRow}>
+                    <div className={styles.mfGroup}>
+                      <label className={styles.mfLabel}>{t('start.modal.nombre')}</label>
+                      <input
+                        className={styles.mfInput}
+                        type="text"
+                        placeholder={t('start.modal.nombre_ph')}
+                        value={rfNombre}
+                        onChange={(e) => setRfNombre(e.target.value)}
+                        required
+                        minLength={2}
+                        autoComplete="given-name"
+                      />
+                    </div>
+                    <div className={styles.mfGroup}>
+                      <label className={styles.mfLabel}>{t('start.modal.email')}</label>
+                      <input
+                        className={styles.mfInput}
+                        type="email"
+                        placeholder={t('start.modal.email_ph')}
+                        value={rfEmail}
+                        onChange={(e) => setRfEmail(e.target.value)}
+                        required
+                        autoComplete="email"
+                      />
+                    </div>
+                  </div>
+                  <div className={styles.mfRow}>
+                    <div className={styles.mfGroup}>
+                      <label className={styles.mfLabel}>{t('register.business.empresa')}</label>
+                      <input
+                        className={styles.mfInput}
+                        type="text"
+                        placeholder={t('register.business.empresa_ph')}
+                        value={rfEmpresa}
+                        onChange={(e) => setRfEmpresa(e.target.value)}
+                        required
+                        maxLength={100}
+                      />
+                    </div>
+                    <div className={styles.mfGroup}>
+                      <label className={styles.mfLabel}>{t('register.business.cargo')}</label>
+                      <input
+                        className={styles.mfInput}
+                        type="text"
+                        placeholder={t('register.business.cargo_ph')}
+                        value={rfCargo}
+                        onChange={(e) => setRfCargo(e.target.value)}
+                        required
+                        maxLength={80}
+                      />
+                    </div>
+                  </div>
+                  {rfError && <p className={styles.mfError}>{rfError}</p>}
+                  <button
+                    type="submit"
+                    className={`${styles.modalBtn} ${styles.modalBtnAmber}`}
+                    disabled={rfSending}
+                  >
+                    {rfSending ? t('register.business.sending') : t('register.business.send')}
+                  </button>
+                </form>
+              </>
+            )}
           </div>
         </div>
       )}

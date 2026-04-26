@@ -39,6 +39,7 @@ MOTIVO_TO_EMAIL: dict[str, tuple[str, str]] = {
     "Legal": ("legal@conniku.com", "noreply"),
     "Seguridad y Ley Karin": ("seguridad@conniku.com", "noreply"),
     "Prensa y medios": ("prensa@conniku.com", "noreply"),
+    "Conniku Business": ("contacto@conniku.com", "contacto"),
 }
 
 # Rate limit en memoria por IP.

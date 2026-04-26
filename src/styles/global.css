@@ -543,6 +543,7 @@ html {
 
 .route-transition {
   animation: pageIn 160ms ease forwards;
+  width: 100%;
 }
 
 body {

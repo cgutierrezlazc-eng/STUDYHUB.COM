@@ -1023,6 +1023,12 @@
   letter-spacing: 0.03em;
   margin-top: 4px;
 }
+.mfError {
+  font-size: 12px;
+  color: #f87171;
+  font-family: 'Geist Mono', monospace;
+  margin: 6px 0 0;
+}
 .mfLink {
   font-size: 11px;
   color: rgba(0, 194, 122, 0.6);
@@ -1174,4 +1180,510 @@
   to {
     opacity: 0;
   }
+}
+
+/* ─── Onboarding overlay ─────────────────────────────────────── */
+.onboardOverlay {
+  position: fixed;
+  inset: 0;
+  z-index: 200;
+  background: rgba(5, 6, 8, 0.78);
+  backdrop-filter: blur(22px);
+  -webkit-backdrop-filter: blur(22px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 24px;
+  animation: onboardIn 0.32s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+}
+.onboardOverlay.onboardClosing {
+  animation: onboardOut 0.28s ease forwards;
+}
+@keyframes onboardIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+@keyframes onboardOut {
+  from {
+    opacity: 1;
+  }
+  to {
+    opacity: 0;
+  }
+}
+
+.onboardPanel {
+  width: 100%;
+  max-width: 560px;
+  background: rgba(8, 6, 18, 0.95);
+  border: 1px solid rgba(168, 85, 247, 0.22);
+  border-radius: 24px;
+  padding: 40px 36px 36px;
+  box-shadow:
+    0 0 80px rgba(168, 85, 247, 0.12),
+    0 32px 64px rgba(0, 0, 0, 0.65);
+  animation: panelSlideIn 0.38s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+}
+.onboardClosing .onboardPanel {
+  animation: panelSlideOut 0.26s ease forwards;
+}
+@keyframes panelSlideIn {
+  from {
+    transform: translateY(24px) scale(0.97);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0) scale(1);
+    opacity: 1;
+  }
+}
+@keyframes panelSlideOut {
+  from {
+    transform: translateY(0) scale(1);
+    opacity: 1;
+  }
+  to {
+    transform: translateY(16px) scale(0.97);
+    opacity: 0;
+  }
+}
+
+.onboardEyebrow {
+  font-family: 'Geist Mono', monospace;
+  font-size: 9px;
+  letter-spacing: 0.22em;
+  color: rgba(168, 85, 247, 0.6);
+  background: rgba(168, 85, 247, 0.07);
+  border: 1px solid rgba(168, 85, 247, 0.18);
+  padding: 4px 10px;
+  border-radius: 4px;
+  width: fit-content;
+  margin-bottom: 18px;
+}
+.onboardTitle {
+  font-family: 'Funnel Display', sans-serif;
+  font-weight: 900;
+  font-size: 28px;
+  letter-spacing: -0.04em;
+  color: #f5f4ef;
+  margin: 0 0 6px;
+  line-height: 1.1;
+}
+.onboardSub {
+  font-family: 'Geist Mono', monospace;
+  font-size: 11px;
+  color: rgba(245, 244, 239, 0.32);
+  letter-spacing: 0.04em;
+  margin: 0 0 28px;
+}
+
+/* Language grid */
+.langGrid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+  margin-bottom: 8px;
+}
+.langBtn {
+  position: relative;
+  overflow: hidden;
+  border-radius: 14px;
+  border: 1px solid rgba(168, 85, 247, 0.16);
+  background: rgba(168, 85, 247, 0.05);
+  padding: 18px 16px 16px;
+  cursor: pointer;
+  text-align: left;
+  transition:
+    border-color 0.18s,
+    background 0.18s,
+    box-shadow 0.18s,
+    transform 0.14s;
+}
+.langBtn:hover {
+  border-color: rgba(168, 85, 247, 0.55);
+  background: rgba(168, 85, 247, 0.12);
+  box-shadow: 0 0 24px rgba(168, 85, 247, 0.18);
+  transform: translateY(-2px);
+}
+.langBtn:active {
+  transform: translateY(0);
+}
+.langBtnActive {
+  border-color: rgba(168, 85, 247, 0.7);
+  background: rgba(168, 85, 247, 0.16);
+  box-shadow: 0 0 20px rgba(168, 85, 247, 0.2);
+}
+
+/* Flag emoji scattered in background */
+.langFlagBg {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  justify-content: flex-end;
+  gap: 2px;
+  padding: 6px 8px;
+  pointer-events: none;
+  opacity: 0.18;
+  filter: blur(0.5px);
+  font-size: 28px;
+  line-height: 1;
+}
+.langBtn:hover .langFlagBg {
+  opacity: 0.28;
+}
+.langContent {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+.langName {
+  font-family: 'Funnel Display', sans-serif;
+  font-weight: 800;
+  font-size: 17px;
+  letter-spacing: -0.03em;
+  color: #f5f4ef;
+}
+.langSub {
+  font-family: 'Geist Mono', monospace;
+  font-size: 9px;
+  color: rgba(245, 244, 239, 0.38);
+  letter-spacing: 0.07em;
+}
+
+/* Role grid */
+.roleGrid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+  margin-bottom: 20px;
+}
+.roleBtn {
+  position: relative;
+  overflow: hidden;
+  border-radius: 14px;
+  border: 1px solid color-mix(in srgb, var(--role-accent, #a855f7) 30%, transparent);
+  background: color-mix(in srgb, var(--role-accent, #a855f7) 6%, transparent);
+  padding: 20px 16px 18px;
+  cursor: pointer;
+  text-align: left;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  transition:
+    border-color 0.18s,
+    background 0.18s,
+    box-shadow 0.18s,
+    transform 0.14s;
+}
+.roleBtn:hover {
+  border-color: color-mix(in srgb, var(--role-accent, #a855f7) 75%, transparent);
+  background: color-mix(in srgb, var(--role-accent, #a855f7) 14%, transparent);
+  box-shadow: 0 0 28px color-mix(in srgb, var(--role-accent, #a855f7) 22%, transparent);
+  transform: translateY(-2px);
+}
+.roleBtn:active {
+  transform: translateY(0);
+}
+.roleIcon {
+  font-size: 22px;
+  line-height: 1;
+}
+.roleLabel {
+  font-family: 'Funnel Display', sans-serif;
+  font-weight: 800;
+  font-size: 15px;
+  letter-spacing: -0.025em;
+  color: #f5f4ef;
+  line-height: 1.15;
+}
+.roleSub {
+  font-family: 'Geist Mono', monospace;
+  font-size: 9px;
+  color: rgba(245, 244, 239, 0.35);
+  letter-spacing: 0.06em;
+  line-height: 1.5;
+}
+
+/* Back button */
+.onboardBack {
+  background: none;
+  border: none;
+  cursor: pointer;
+  font-family: 'Geist Mono', monospace;
+  font-size: 10px;
+  letter-spacing: 0.08em;
+  color: rgba(168, 85, 247, 0.5);
+  padding: 0;
+  transition: color 0.15s;
+}
+.onboardBack:hover {
+  color: rgba(168, 85, 247, 0.9);
+}
+
+/* ── Role-specific modal additions ── */
+
+/* Badge chip above modal title */
+.modalBadge {
+  font-family: 'Geist Mono', monospace;
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: rgba(0, 194, 122, 0.7);
+  border: 1px solid rgba(0, 194, 122, 0.18);
+  border-radius: 999px;
+  padding: 3px 10px;
+  display: inline-block;
+  margin-bottom: 10px;
+}
+
+/* Success state inside role modals */
+.modalSentBox {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+  padding: 24px 0 8px;
+  text-align: center;
+}
+.modalSentIcon {
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  background: rgba(0, 194, 122, 0.12);
+  border: 1.5px solid rgba(0, 194, 122, 0.35);
+  display: grid;
+  place-items: center;
+  font-size: 22px;
+  color: #00c27a;
+}
+.modalSentTitle {
+  font-size: 17px;
+  font-weight: 800;
+  color: #f5f4ef;
+  letter-spacing: -0.02em;
+}
+.modalSentText {
+  font-size: 13px;
+  color: rgba(245, 244, 239, 0.45);
+  line-height: 1.5;
+  max-width: 280px;
+}
+
+/* Textarea for tutor bio */
+.mfTextarea {
+  width: 100%;
+  background: rgba(245, 244, 239, 0.04);
+  border: 1px solid rgba(245, 244, 239, 0.1);
+  border-radius: 9px;
+  padding: 11px 14px;
+  font-family: 'Inter', sans-serif;
+  font-size: 14px;
+  color: #f5f4ef;
+  outline: none;
+  resize: vertical;
+  min-height: 72px;
+  transition: border-color 0.18s;
+}
+.mfTextarea::placeholder {
+  color: rgba(245, 244, 239, 0.25);
+}
+.mfTextarea:focus {
+  border-color: rgba(0, 194, 122, 0.55);
+  box-shadow: 0 0 0 3px rgba(0, 194, 122, 0.08);
+}
+
+/* Business modal — wider card */
+.modalCardBiz {
+  max-width: 520px;
+}
+
+/* Tab switcher */
+.bizTabs {
+  display: flex;
+  gap: 4px;
+  background: rgba(245, 244, 239, 0.04);
+  border: 1px solid rgba(245, 244, 239, 0.08);
+  border-radius: 10px;
+  padding: 4px;
+  margin-bottom: 20px;
+}
+.bizTab {
+  flex: 1;
+  background: transparent;
+  border: none;
+  border-radius: 7px;
+  padding: 8px 12px;
+  font-family: 'Geist Mono', monospace;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: rgba(245, 244, 239, 0.35);
+  cursor: pointer;
+  transition: background 0.15s, color 0.15s;
+}
+.bizTab:hover {
+  color: rgba(245, 244, 239, 0.7);
+}
+.bizTabActive {
+  background: rgba(245, 244, 239, 0.08);
+  color: #f5f4ef;
+}
+
+/* Business modules list */
+.bizModulesWrap {
+  background: rgba(245, 158, 11, 0.04);
+  border: 1px solid rgba(245, 158, 11, 0.14);
+  border-radius: 10px;
+  padding: 12px 16px;
+  margin-bottom: 18px;
+}
+.bizModulesLabel {
+  font-family: 'Geist Mono', monospace;
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: rgba(245, 158, 11, 0.6);
+  margin-bottom: 8px;
+}
+.bizModulesList {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 6px;
+}
+.bizModulesList li {
+  font-size: 11px;
+  color: rgba(245, 244, 239, 0.55);
+  font-family: 'Geist Mono', monospace;
+  letter-spacing: 0.02em;
+}
+
+/* Amber CTA button for Business contact */
+.modalBtnAmber {
+  background: #f59e0b;
+  color: #0a0c0f;
+}
+.modalBtnAmber:hover {
+  background: #fbbf24;
+  box-shadow: 0 0 24px rgba(245, 158, 11, 0.35);
+}
+
+/* ── Legal consent wizard ──────────────────────────────────────── */
+.legalWizard {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+.legalWizardTitle {
+  font-size: 15px;
+  font-weight: 600;
+  color: rgba(245, 244, 239, 0.92);
+  letter-spacing: 0.01em;
+}
+.legalWizardSub {
+  font-size: 12px;
+  color: rgba(245, 244, 239, 0.44);
+  margin-top: -6px;
+}
+.legalItem {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  padding: 10px 12px;
+  border-radius: 8px;
+  border: 1px solid rgba(255, 255, 255, 0.07);
+  cursor: pointer;
+  transition: background 0.15s;
+}
+.legalItem:hover {
+  background: rgba(255, 255, 255, 0.04);
+}
+.legalItemDone {
+  border-color: rgba(0, 194, 122, 0.3);
+  background: rgba(0, 194, 122, 0.05);
+}
+.legalCheck {
+  margin-top: 2px;
+  accent-color: #00c27a;
+  width: 15px;
+  height: 15px;
+  flex-shrink: 0;
+}
+.legalItemBody {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  flex: 1;
+}
+.legalItemLabel {
+  font-size: 13px;
+  color: rgba(245, 244, 239, 0.86);
+  font-weight: 500;
+}
+.legalItemDesc {
+  font-size: 11px;
+  color: rgba(245, 244, 239, 0.4);
+  line-height: 1.4;
+}
+.legalViewLink {
+  font-size: 11px;
+  color: #00c27a;
+  text-decoration: none;
+  white-space: nowrap;
+  flex-shrink: 0;
+  margin-top: 2px;
+}
+.legalViewLink:hover {
+  text-decoration: underline;
+}
+.legalSpinner {
+  font-size: 14px;
+  color: rgba(245, 244, 239, 0.4);
+  flex-shrink: 0;
+}
+.legalCheckDone {
+  font-size: 13px;
+  color: #00c27a;
+  flex-shrink: 0;
+  margin-top: 2px;
+}
+.legalHint {
+  font-size: 11px;
+  color: rgba(245, 244, 239, 0.3);
+  font-family: 'Geist Mono', monospace;
+  text-align: center;
+}
+
+/* ── Form checkbox rows ─────────────────────────────────────────── */
+.mfCheckRow {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  cursor: pointer;
+  margin: 4px 0;
+}
+.mfCheckRow input[type='checkbox'] {
+  margin-top: 2px;
+  accent-color: #00c27a;
+  width: 14px;
+  height: 14px;
+  flex-shrink: 0;
+}
+.mfCheckLabel {
+  font-size: 12px;
+  color: rgba(245, 244, 239, 0.5);
+  line-height: 1.5;
 }

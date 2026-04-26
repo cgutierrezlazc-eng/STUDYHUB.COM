@@ -22,6 +22,7 @@ import React, { useEffect, useLayoutEffect, useRef, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import HexNebulaCanvas from '../lib/hex-nebula/HexNebulaCanvas';
 import styles from './Contact.module.css';
+import { useI18n } from '../services/i18n';
 
 type MotivoValue =
   | 'Soporte técnico'
@@ -37,6 +38,8 @@ type MotivoOption = {
   desc: string;
   /** Clave del item del sidebar al que conecta el cable. */
   sidebarKey: string;
+  /** Sufijo de clave i18n: contact.motivo.{i18nKey} */
+  i18nKey: string;
 };
 
 const MOTIVOS: MotivoOption[] = [
@@ -45,36 +48,42 @@ const MOTIVOS: MotivoOption[] = [
     label: 'Soporte técnico',
     desc: 'Errores, acceso a cuenta, bugs',
     sidebarKey: 'soporte',
+    i18nKey: 'soporte',
   },
   {
     value: 'Contacto general',
     label: 'Contacto general',
     desc: 'Consultas generales e institucionales',
     sidebarKey: 'contacto',
+    i18nKey: 'general',
   },
   {
     value: 'Privacidad',
     label: 'Privacidad',
     desc: 'Ejercicio de derechos sobre tus datos',
     sidebarKey: 'privacidad',
+    i18nKey: 'privacidad',
   },
   {
     value: 'Legal',
     label: 'Legal',
     desc: 'Consultas jurídicas y términos',
     sidebarKey: 'legal',
+    i18nKey: 'legal',
   },
   {
     value: 'Seguridad y Ley Karin',
     label: 'Seguridad y Ley Karin',
     desc: 'Denuncias y reportes de seguridad',
     sidebarKey: 'seguridad',
+    i18nKey: 'seguridad',
   },
   {
     value: 'Prensa y medios',
     label: 'Prensa y medios',
     desc: 'Entrevistas, notas y cobertura',
     sidebarKey: 'prensa',
+    i18nKey: 'prensa',
   },
 ];
 
@@ -89,6 +98,7 @@ type CablePoints = {
 
 export default function Contact() {
   const navigate = useNavigate();
+  const { t } = useI18n();
   const [motivo, setMotivo] = useState<MotivoValue | null>(null);
   const [open, setOpen] = useState(false);
   const [nombre, setNombre] = useState('');
@@ -279,7 +289,7 @@ export default function Contact() {
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
             <path d="M19 12H5M12 19l-7-7 7-7" />
           </svg>
-          Volver
+          {t('chrome.back') || 'Volver'}
         </button>
         <div className={styles.topbarSep} />
         <Link to="/" className={`brand on-dark ${styles.topbarBrand}`} aria-label="Conniku">
@@ -291,26 +301,28 @@ export default function Contact() {
           </span>
         </Link>
         <div className={styles.topbarSep} />
-        <span className={styles.topbarTitle}>CONTACTO</span>
+        <span className={styles.topbarTitle}>{t('chrome.topbar_contact') || 'CONTACTO'}</span>
       </div>
 
       <div className={styles.layout}>
         {/* SIDEBAR · 360px */}
         <aside className={styles.sidebar}>
           <section className={styles.dCard}>
-            <h2 className={styles.dCardTitle}>Sobre Conniku</h2>
+            <h2 className={styles.dCardTitle}>{t('contact.sidebar.about') || 'Sobre Conniku'}</h2>
             <p className={styles.dCardText}>
-              Conniku SpA es una plataforma digital colaborativa para educación, con domicilio en
-              Antofagasta, Chile. Conectamos estudiantes, docentes e instituciones en un mismo
-              espacio de trabajo.
+              {t('contact.sidebar.about_t1') ||
+                'Conniku SpA es una plataforma digital colaborativa para educación, con domicilio en Antofagasta, Chile.'}
             </p>
             <p className={styles.dCardText}>
-              Si tienes una consulta, escríbenos desde el formulario o usa los canales directos.
+              {t('contact.sidebar.about_t2') ||
+                'Si tienes una consulta, escríbenos desde el formulario o usa los canales directos.'}
             </p>
           </section>
 
           <section className={styles.dCard}>
-            <h2 className={styles.dCardTitle}>Tiempos de respuesta</h2>
+            <h2 className={styles.dCardTitle}>
+              {t('contact.sidebar.response') || 'Tiempos de respuesta'}
+            </h2>
             <ul className={styles.infoList}>
               <li>
                 <span className={styles.infoKey}>Soporte técnico</span>
@@ -336,18 +348,22 @@ export default function Contact() {
               que el usuario distinga entre "leerme yo solo" vs "escribir a
               un humano". */}
           <section className={styles.dCard}>
-            <h2 className={styles.dCardTitle}>Antes de escribirnos</h2>
+            <h2 className={styles.dCardTitle}>
+              {t('contact.sidebar.before') || 'Antes de escribirnos'}
+            </h2>
             <p className={styles.dCardText}>
-              Visita el <strong>Centro de ayuda</strong> con artículos, guías y respuestas
-              frecuentes. Suele resolver tu duda al instante.
+              {t('contact.sidebar.before_t') ||
+                'Visita el Centro de ayuda con artículos, guías y respuestas frecuentes.'}
             </p>
             <Link to="/support" className={styles.helpLinkBtn}>
-              Ir al Centro de ayuda →
+              {t('contact.sidebar.before_link') || 'Ir al Centro de ayuda →'}
             </Link>
           </section>
 
           <section className={styles.dCard}>
-            <h2 className={styles.dCardTitle}>Otros canales</h2>
+            <h2 className={styles.dCardTitle}>
+              {t('contact.sidebar.channels') || 'Otros canales'}
+            </h2>
             <div className={styles.channelsList}>
               <a
                 href="mailto:soporte@conniku.com"
@@ -357,9 +373,13 @@ export default function Contact() {
                 }}
                 className={`${styles.channelRow} ${activeSidebarKey === 'soporte' ? styles.enchufado : ''}`}
               >
-                <span className={styles.channelRowLabel}>Soporte técnico</span>
+                <span className={styles.channelRowLabel}>
+                  {t('contact.motivo.soporte') || 'Soporte técnico'}
+                </span>
                 <span className={styles.channelRowAddr}>soporte@conniku.com</span>
-                <span className={styles.channelRowDesc}>Errores, acceso a cuenta, bugs</span>
+                <span className={styles.channelRowDesc}>
+                  {t('contact.motivo.soporte_desc') || 'Errores, acceso a cuenta, bugs'}
+                </span>
               </a>
               <a
                 href="mailto:contacto@conniku.com"
@@ -369,9 +389,13 @@ export default function Contact() {
                 }}
                 className={`${styles.channelRow} ${activeSidebarKey === 'contacto' ? styles.enchufado : ''}`}
               >
-                <span className={styles.channelRowLabel}>Contacto general</span>
+                <span className={styles.channelRowLabel}>
+                  {t('contact.motivo.general') || 'Contacto general'}
+                </span>
                 <span className={styles.channelRowAddr}>contacto@conniku.com</span>
-                <span className={styles.channelRowDesc}>Consultas generales e institucionales</span>
+                <span className={styles.channelRowDesc}>
+                  {t('contact.motivo.general_desc') || 'Consultas generales e institucionales'}
+                </span>
               </a>
               <a
                 href="mailto:privacidad@conniku.com"
@@ -381,9 +405,13 @@ export default function Contact() {
                 }}
                 className={`${styles.channelRow} ${activeSidebarKey === 'privacidad' ? styles.enchufado : ''}`}
               >
-                <span className={styles.channelRowLabel}>Privacidad y datos</span>
+                <span className={styles.channelRowLabel}>
+                  {t('contact.ch.privacy_label') || 'Privacidad y datos'}
+                </span>
                 <span className={styles.channelRowAddr}>privacidad@conniku.com</span>
-                <span className={styles.channelRowDesc}>Ejercicio de derechos sobre tus datos</span>
+                <span className={styles.channelRowDesc}>
+                  {t('contact.ch.privacy_desc') || 'Ejercicio de derechos sobre tus datos'}
+                </span>
               </a>
               <a
                 href="mailto:legal@conniku.com"
@@ -393,9 +421,13 @@ export default function Contact() {
                 }}
                 className={`${styles.channelRow} ${activeSidebarKey === 'legal' ? styles.enchufado : ''}`}
               >
-                <span className={styles.channelRowLabel}>Legal</span>
+                <span className={styles.channelRowLabel}>
+                  {t('contact.motivo.legal') || 'Legal'}
+                </span>
                 <span className={styles.channelRowAddr}>legal@conniku.com</span>
-                <span className={styles.channelRowDesc}>Consultas jurídicas y términos</span>
+                <span className={styles.channelRowDesc}>
+                  {t('contact.motivo.legal_desc') || 'Consultas jurídicas y términos'}
+                </span>
               </a>
               <a
                 href="mailto:seguridad@conniku.com"
@@ -405,9 +437,13 @@ export default function Contact() {
                 }}
                 className={`${styles.channelRow} ${activeSidebarKey === 'seguridad' ? styles.enchufado : ''}`}
               >
-                <span className={styles.channelRowLabel}>Seguridad y Ley Karin</span>
+                <span className={styles.channelRowLabel}>
+                  {t('contact.motivo.seguridad') || 'Seguridad y Ley Karin'}
+                </span>
                 <span className={styles.channelRowAddr}>seguridad@conniku.com</span>
-                <span className={styles.channelRowDesc}>Denuncias y reportes de seguridad</span>
+                <span className={styles.channelRowDesc}>
+                  {t('contact.motivo.seguridad_desc') || 'Denuncias y reportes de seguridad'}
+                </span>
               </a>
               <a
                 href="mailto:prensa@conniku.com"
@@ -417,15 +453,21 @@ export default function Contact() {
                 }}
                 className={`${styles.channelRow} ${activeSidebarKey === 'prensa' ? styles.enchufado : ''}`}
               >
-                <span className={styles.channelRowLabel}>Prensa y medios</span>
+                <span className={styles.channelRowLabel}>
+                  {t('contact.motivo.prensa') || 'Prensa y medios'}
+                </span>
                 <span className={styles.channelRowAddr}>prensa@conniku.com</span>
-                <span className={styles.channelRowDesc}>Entrevistas, notas y cobertura</span>
+                <span className={styles.channelRowDesc}>
+                  {t('contact.motivo.prensa_desc') || 'Entrevistas, notas y cobertura'}
+                </span>
               </a>
             </div>
           </section>
 
           <section className={styles.dCard}>
-            <h2 className={styles.dCardTitle}>Información legal</h2>
+            <h2 className={styles.dCardTitle}>
+              {t('contact.sidebar.legal') || 'Información legal'}
+            </h2>
             <p className={styles.legalText}>
               Conniku SpA · RUT: 78.395.702-7
               <br />
@@ -441,11 +483,13 @@ export default function Contact() {
         {/* COLUMNA DERECHA · feed */}
         <main className={styles.feed}>
           <section className={styles.pageHead}>
-            <div className={styles.pageBadge}>FORMULARIO DE CONTACTO</div>
-            <h1 className={styles.pageTitle}>Escríbenos</h1>
+            <div className={styles.pageBadge}>
+              {t('contact.head.badge') || 'FORMULARIO DE CONTACTO'}
+            </div>
+            <h1 className={styles.pageTitle}>{t('contact.head.title') || 'Escríbenos'}</h1>
             <p className={styles.pageSub}>
-              Elige el motivo de tu consulta y te dirigimos al equipo correcto. Respondemos dentro
-              de 24–48 horas hábiles.
+              {t('contact.head.sub') ||
+                'Elige el motivo de tu consulta y te dirigimos al equipo correcto. Respondemos dentro de 24–48 horas hábiles.'}
             </p>
           </section>
 
@@ -453,12 +497,14 @@ export default function Contact() {
           <section className={`${styles.dCard} ${styles.composerCard}`} ref={composerRef}>
             <div className={styles.composer}>
               <div className={styles.composerAvatar} aria-hidden="true" />
-              <h2 className={styles.composerPill}>Cuéntanos qué necesitas</h2>
+              <h2 className={styles.composerPill}>
+                {t('contact.composer.tell') || 'Cuéntanos qué necesitas'}
+              </h2>
             </div>
 
             <div className={styles.composerActs}>
               <span className={styles.pgLabel} ref={motivoLabelRef}>
-                Motivo
+                {t('contact.composer.reason') || 'Motivo'}
               </span>
               <div className={styles.dropdownWrap} ref={wrapRef}>
                 <button
@@ -469,7 +515,10 @@ export default function Contact() {
                   aria-haspopup="listbox"
                   aria-expanded={open}
                 >
-                  {motivo ? motivo : 'Selecciona un motivo'}
+                  {motivo
+                    ? t(`contact.motivo.${MOTIVOS.find((m) => m.value === motivo)?.i18nKey}`) ||
+                      motivo
+                    : t('contact.composer.reason_ph') || 'Selecciona un motivo'}
                   <span className={styles.dropdownCaret} aria-hidden="true">
                     ▾
                   </span>
@@ -492,8 +541,12 @@ export default function Contact() {
                         className={`${styles.dropdownItem} ${motivo === m.value ? styles.dropdownItemOn : ''}`}
                         title={m.desc}
                       >
-                        <span className={styles.dropdownItemLabel}>{m.label}</span>
-                        <span className={styles.dropdownItemDesc}>{m.desc}</span>
+                        <span className={styles.dropdownItemLabel}>
+                          {t(`contact.motivo.${m.i18nKey}`) || m.label}
+                        </span>
+                        <span className={styles.dropdownItemDesc}>
+                          {t(`contact.motivo.${m.i18nKey}_desc`) || m.desc}
+                        </span>
                       </li>
                     ))}
                   </ul>
@@ -504,9 +557,12 @@ export default function Contact() {
             {/* Cuerpo del composer: form, link a /support, o confirmación. */}
             {sent ? (
               <div className={styles.sentBox}>
-                <h3 className={styles.sentTitle}>¡Mensaje enviado!</h3>
+                <h3 className={styles.sentTitle}>
+                  {t('contact.composer.sent_title') || '¡Mensaje enviado!'}
+                </h3>
                 <p className={styles.sentText}>
-                  Te respondemos en 24–48 h hábiles al correo que indicaste.
+                  {t('contact.composer.sent_text') ||
+                    'Te respondemos en 24–48 h hábiles al correo que indicaste.'}
                 </p>
                 <button
                   type="button"
@@ -520,7 +576,7 @@ export default function Contact() {
                     setMensaje('');
                   }}
                 >
-                  Enviar otro mensaje
+                  {t('contact.composer.send_another') || 'Enviar otro mensaje'}
                 </button>
               </div>
             ) : (
@@ -529,11 +585,13 @@ export default function Contact() {
 
                 <div className={styles.formRow}>
                   <div className={styles.formGroup}>
-                    <label className={styles.formLabel}>Nombre</label>
+                    <label className={styles.formLabel}>
+                      {t('contact.form.nombre') || 'Nombre'}
+                    </label>
                     <input
                       className={styles.formInput}
                       type="text"
-                      placeholder="Tu nombre"
+                      placeholder={t('contact.form.nombre_ph') || 'Tu nombre'}
                       value={nombre}
                       onChange={(e) => setNombre(e.target.value)}
                       required
@@ -542,11 +600,13 @@ export default function Contact() {
                     />
                   </div>
                   <div className={styles.formGroup}>
-                    <label className={styles.formLabel}>Correo electrónico</label>
+                    <label className={styles.formLabel}>
+                      {t('contact.form.email') || 'Correo electrónico'}
+                    </label>
                     <input
                       className={styles.formInput}
                       type="email"
-                      placeholder="tu@correo.com"
+                      placeholder={t('contact.form.email_ph') || 'tu@correo.com'}
                       value={email}
                       onChange={(e) => setEmail(e.target.value)}
                       required
@@ -555,14 +615,16 @@ export default function Contact() {
                 </div>
 
                 <div className={styles.formGroup}>
-                  <label className={styles.formLabel}>Asunto</label>
+                  <label className={styles.formLabel}>
+                    {t('contact.form.subject') || 'Asunto'}
+                  </label>
                   <input
                     className={styles.formInput}
                     type="text"
                     placeholder={
                       motivo
-                        ? `${motivo} — describe tu consulta`
-                        : 'Describe brevemente tu consulta'
+                        ? `${t(`contact.motivo.${MOTIVOS.find((m) => m.value === motivo)?.i18nKey}`) || motivo} — ${t('contact.form.subject_ph') || 'describe tu consulta'}`
+                        : t('contact.form.subject_ph') || 'Describe brevemente tu consulta'
                     }
                     value={asunto}
                     onChange={(e) => setAsunto(e.target.value)}
@@ -573,10 +635,15 @@ export default function Contact() {
                 </div>
 
                 <div className={styles.formGroup}>
-                  <label className={styles.formLabel}>Mensaje</label>
+                  <label className={styles.formLabel}>
+                    {t('contact.form.message') || 'Mensaje'}
+                  </label>
                   <textarea
                     className={styles.formTextarea}
-                    placeholder="Cuéntanos con detalle. Entre más información nos des, mejor podremos ayudarte."
+                    placeholder={
+                      t('contact.form.message_ph') ||
+                      'Cuéntanos con detalle. Entre más información nos des, mejor podremos ayudarte.'
+                    }
                     value={mensaje}
                     onChange={(e) => setMensaje(e.target.value)}
                     required
@@ -586,7 +653,9 @@ export default function Contact() {
                 </div>
 
                 <button type="submit" className={styles.btnSend} disabled={sending}>
-                  {sending ? 'Enviando…' : 'Enviar mensaje →'}
+                  {sending
+                    ? t('contact.form.sending') || 'Enviando…'
+                    : t('contact.form.send') || 'Enviar mensaje →'}
                 </button>
               </form>
             )}
@@ -658,19 +727,21 @@ export default function Contact() {
 
       {/* Footer · TODO: cuando se bridgeen cookies/prensa/empleo */}
       <footer className={styles.pageFooter}>
-        <span className={styles.footerCopy}>© 2026 Conniku SpA · Antofagasta, Chile</span>
+        <span className={styles.footerCopy}>
+          {t('contact.footer_copy') || '© 2026 Conniku SpA · Antofagasta, Chile'}
+        </span>
         <nav className={styles.footerLinks}>
-          <Link to="/terms">Términos</Link>
-          <Link to="/privacy">Privacidad</Link>
+          <Link to="/terms">{t('chrome.footer_terms') || 'Términos'}</Link>
+          <Link to="/privacy">{t('chrome.footer_privacy') || 'Privacidad'}</Link>
           <a href="#" onClick={handlePendiente}>
-            Cookies
+            {t('chrome.footer_cookies') || 'Cookies'}
           </a>
-          <Link to="/support">Soporte</Link>
-          <span className={styles.active}>Contacto</span>
+          <Link to="/support">{t('chrome.footer_support') || 'Soporte'}</Link>
+          <span className={styles.active}>{t('chrome.footer_contact') || 'Contacto'}</span>
           <a href="#" onClick={handlePendiente}>
-            Prensa
+            {t('chrome.footer_press') || 'Prensa'}
           </a>
-          <Link to="/careers">Trabaja con nosotros</Link>
+          <Link to="/careers">{t('chrome.footer_careers') || 'Trabaja con nosotros'}</Link>
         </nav>
       </footer>
     </div>

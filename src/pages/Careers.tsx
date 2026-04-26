@@ -13,6 +13,7 @@ import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import HexNebulaCanvas from '../lib/hex-nebula/HexNebulaCanvas';
 import styles from './Careers.module.css';
+import { useI18n } from '../services/i18n';
 
 type ModalTipo = 'laboral' | null;
 
@@ -84,12 +85,14 @@ const PASOS = [
 
 export default function Careers() {
   const navigate = useNavigate();
+  const { t } = useI18n();
   const [modalTipo, setModalTipo] = useState<ModalTipo>(null);
   const [nombre, setNombre] = useState('');
   const [email, setEmail] = useState('');
   const [area, setArea] = useState('');
   const [porQue, setPorQue] = useState('');
   const [linkedin, setLinkedin] = useState('');
+  const [pais, setPais] = useState('');
   const [sending, setSending] = useState(false);
   const [sent, setSent] = useState(false);
 
@@ -106,6 +109,7 @@ export default function Careers() {
     setArea('');
     setPorQue('');
     setLinkedin('');
+    setPais('');
   }
 
   async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
@@ -120,6 +124,7 @@ export default function Careers() {
           tipo: 'laboral',
           nombre,
           email,
+          pais: pais || undefined,
           area,
           por_que: porQue,
           linkedin: linkedin || undefined,
@@ -155,7 +160,7 @@ export default function Careers() {
   return (
     <div className={styles.page}>
       <HexNebulaCanvas
-        options={{ hexSize: 34, intensity: 0.42, bgColor: '#E8EEF8' }}
+        options={{ hexSize: 34, intensity: 0.18, bgColor: '#060f1e' }}
         className={styles.nebulaBg}
       />
 
@@ -165,7 +170,7 @@ export default function Careers() {
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
             <path d="M19 12H5M12 19l-7-7 7-7" />
           </svg>
-          Volver
+          {t('chrome.back') || 'Volver'}
         </button>
         <div className={styles.topbarSep} />
         <Link to="/" className={`brand ${styles.topbarBrand}`} aria-label="Conniku">
@@ -177,7 +182,9 @@ export default function Careers() {
           </span>
         </Link>
         <div className={styles.topbarSep} />
-        <span className={styles.topbarTitle}>TRABAJA CON NOSOTROS</span>
+        <span className={styles.topbarTitle}>
+          {t('chrome.topbar_careers') || 'TRABAJA CON NOSOTROS'}
+        </span>
       </div>
 
       {/* Layout sidebar + feed */}
@@ -185,20 +192,21 @@ export default function Careers() {
         {/* ── SIDEBAR ── */}
         <aside className={styles.sidebar}>
           <section className={styles.dCard}>
-            <h2 className={styles.dCardTitle}>Sobre el equipo</h2>
+            <h2 className={styles.dCardTitle}>{t('careers.sidebar.about') || 'Sobre el equipo'}</h2>
             <p className={styles.dCardText}>
-              Conniku es una plataforma educativa colaborativa para estudiantes universitarios
-              latinoamericanos. Somos un equipo pequeño construyendo algo grande desde Antofagasta,
-              Chile.
+              {t('careers.sidebar.about_t1') ||
+                'Conniku es una plataforma educativa colaborativa para estudiantes universitarios latinoamericanos.'}
             </p>
             <p className={styles.dCardText}>
-              No tenemos posiciones formales abiertas por ahora, pero nos interesa conocer personas
-              que compartan la misión. Si eres una de ellas, deja tu perfil.
+              {t('careers.sidebar.about_t2') ||
+                'No tenemos posiciones formales abiertas por ahora, pero nos interesa conocer personas que compartan la misión.'}
             </p>
           </section>
 
           <section className={styles.dCard}>
-            <h2 className={styles.dCardTitle}>Posiciones abiertas</h2>
+            <h2 className={styles.dCardTitle}>
+              {t('careers.sidebar.positions') || 'Posiciones abiertas'}
+            </h2>
             <div className={styles.emptyBox}>
               <svg
                 width="24"
@@ -214,20 +222,32 @@ export default function Careers() {
                 <circle cx="11" cy="11" r="8" />
                 <line x1="21" y1="21" x2="16.65" y2="16.65" />
               </svg>
-              <span>Sin posiciones activas por ahora</span>
+              <span>
+                {t('careers.sidebar.positions_empty') || 'Sin posiciones activas por ahora'}
+              </span>
             </div>
           </section>
 
           <section className={styles.dCard}>
-            <h2 className={styles.dCardTitle}>Tiempos de respuesta</h2>
+            <h2 className={styles.dCardTitle}>
+              {t('careers.sidebar.response') || 'Tiempos de respuesta'}
+            </h2>
             <ul className={styles.infoList}>
               <li>
-                <span className={styles.infoKey}>Revisión de perfil</span>
-                <span className={styles.infoVal}>5 días hábiles</span>
+                <span className={styles.infoKey}>
+                  {t('careers.sidebar.review') || 'Revisión de perfil'}
+                </span>
+                <span className={styles.infoVal}>
+                  {t('careers.sidebar.review_val') || '5 días hábiles'}
+                </span>
               </li>
               <li>
-                <span className={styles.infoKey}>Contacto si hay fit</span>
-                <span className={styles.infoVal}>Cuando surja posición</span>
+                <span className={styles.infoKey}>
+                  {t('careers.sidebar.contact_key') || 'Contacto si hay fit'}
+                </span>
+                <span className={styles.infoVal}>
+                  {t('careers.sidebar.contact_val') || 'Cuando surja posición'}
+                </span>
               </li>
               <li>
                 <span className={styles.infoKey}>Email directo</span>
@@ -249,12 +269,15 @@ export default function Careers() {
           </section>
 
           <section className={styles.dCard}>
-            <h2 className={styles.dCardTitle}>¿Listo para postular?</h2>
+            <h2 className={styles.dCardTitle}>
+              {t('careers.sidebar.cta_title') || '¿Listo para postular?'}
+            </h2>
             <p className={styles.dCardText}>
-              Deja tu perfil laboral y te contactamos cuando surja la posición correcta para ti.
+              {t('careers.sidebar.cta_text') ||
+                'Deja tu perfil laboral y te contactamos cuando surja la posición correcta para ti.'}
             </p>
             <button className={styles.btnCta} onClick={openModal}>
-              Dejar mi perfil →
+              {t('careers.sidebar.cta_btn') || 'Dejar mi perfil →'}
             </button>
           </section>
         </aside>
@@ -263,36 +286,36 @@ export default function Careers() {
         <main className={styles.feed}>
           {/* Hero compacto */}
           <section className={styles.heroCard}>
-            <div className={styles.planetVis} aria-hidden="true">
-              <div className={`${styles.planetRing} ${styles.r1}`} />
-              <div className={`${styles.planetRing} ${styles.r2}`} />
-              <div className={styles.planetCore}>
-                <img src="/icon-256.png" alt="" className={styles.heroIcon} />
-              </div>
+            <div className={styles.heroIconWrap} aria-hidden="true">
+              <img src="/icon-256.png" alt="" className={styles.heroFloatIcon} />
             </div>
-            <div className={styles.heroEyebrow}>Conniku · Equipo</div>
+            <div className={styles.heroEyebrow}>
+              {t('careers.hero.eyebrow') || 'Conniku · Equipo'}
+            </div>
             <h1 className={styles.heroTitle}>
-              Construye el futuro
+              {t('careers.hero.title1') || 'Construye el futuro'}
               <br />
-              de la <span>educación</span>
+              <span>{t('careers.hero.title2') || 'de la educación'}</span>
             </h1>
             <p className={styles.heroSub}>
-              No hay posiciones abiertas en este momento, pero si compartes la misión, queremos
-              conocerte. Deja tu perfil y te contactamos cuando surja la oportunidad correcta.
+              {t('careers.hero.sub') ||
+                'No hay posiciones abiertas en este momento, pero si compartes la misión, queremos conocerte.'}
             </p>
             <div className={styles.heroCtas}>
               <button className={styles.btnPrimary} onClick={openModal}>
-                Solo módulo laboral
+                {t('careers.hero.btn_primary') || 'Solo módulo laboral'}
               </button>
               <Link to="/start" className={styles.btnSecondary}>
-                Perfil Conniku completo
+                {t('careers.hero.btn_secondary') || 'Perfil Conniku completo'}
               </Link>
             </div>
           </section>
 
           {/* Perfiles */}
           <section className={styles.dCard}>
-            <div className={styles.sectionLabel}>Elige cómo quieres vincularte</div>
+            <div className={styles.sectionLabel}>
+              {t('careers.profiles.label') || 'Elige cómo quieres vincularte'}
+            </div>
             <div className={styles.profilesGrid}>
               <div
                 className={styles.profileCard}
@@ -301,10 +324,12 @@ export default function Careers() {
                 tabIndex={0}
                 onKeyDown={(e) => e.key === 'Enter' && openModal()}
               >
-                <div className={styles.profileName}>Perfil Laboral</div>
+                <div className={styles.profileName}>
+                  {t('careers.profiles.laboral') || 'Perfil Laboral'}
+                </div>
                 <p className={styles.profilePitch}>
-                  Para quienes quieren visibilidad ante el equipo de Conniku en el contexto laboral,
-                  sin necesidad de usar la plataforma completa.
+                  {t('careers.profiles.laboral_pitch') ||
+                    'Para quienes quieren visibilidad ante el equipo de Conniku en el contexto laboral.'}
                 </p>
                 <ul className={styles.profileFeatures}>
                   <li>Acceso únicamente al módulo de Empleo</li>
@@ -313,7 +338,7 @@ export default function Careers() {
                   <li>Sin compromiso de uso de la plataforma</li>
                 </ul>
                 <span className={`${styles.profileTag} ${styles.tagLite}`}>
-                  Lite · Solo módulo laboral
+                  {t('careers.profiles.laboral_tag') || 'Lite · Solo módulo laboral'}
                 </span>
               </div>
 
@@ -333,8 +358,8 @@ export default function Careers() {
                   </span>
                 </div>
                 <p className={styles.profilePitch}>
-                  Acceso completo a la plataforma. Vívela desde adentro: así conocemos tu forma de
-                  trabajar y colaborar antes de cualquier entrevista.
+                  {t('careers.profiles.full_pitch') ||
+                    'Acceso completo a la plataforma. Vívela desde adentro: así conocemos tu forma de trabajar y colaborar antes de cualquier entrevista.'}
                 </p>
                 <ul className={styles.profileFeatures}>
                   <li>Acceso completo a todos los módulos</li>
@@ -344,7 +369,7 @@ export default function Careers() {
                   <li>Comunidad de early adopters y colaboradores</li>
                 </ul>
                 <span className={`${styles.profileTag} ${styles.tagFull}`}>
-                  Completo · Plataforma entera
+                  {t('careers.profiles.full_tag') || 'Completo · Plataforma entera'}
                 </span>
               </Link>
             </div>
@@ -352,7 +377,9 @@ export default function Careers() {
 
           {/* Valores */}
           <section className={styles.dCard}>
-            <div className={styles.sectionLabel}>Lo que nos importa en el equipo</div>
+            <div className={styles.sectionLabel}>
+              {t('careers.values.label') || 'Lo que nos importa en el equipo'}
+            </div>
             <div className={styles.valoresGrid}>
               {VALORES.map((v) => (
                 <div key={v.nombre} className={styles.valorCard}>
@@ -366,7 +393,7 @@ export default function Careers() {
           {/* Proceso */}
           <section className={styles.dCard}>
             <div className={styles.sectionLabel}>
-              Cómo funciona el proceso cuando haya posiciones
+              {t('careers.process.label') || 'Cómo funciona el proceso cuando haya posiciones'}
             </div>
             <div className={styles.proceso}>
               {PASOS.map((p, i) => (
@@ -386,14 +413,16 @@ export default function Careers() {
       {/* Footer */}
       <footer className={styles.pageFooter}>
         <span className={styles.footerCopy}>
-          © 2026 Conniku SpA · RUT 78.395.702-7 · Antofagasta, Chile
+          {t('careers.footer_copy') || '© 2026 Conniku SpA · RUT 78.395.702-7 · Antofagasta, Chile'}
         </span>
         <nav className={styles.footerLinks}>
-          <Link to="/terms">Términos</Link>
-          <Link to="/privacy">Privacidad</Link>
-          <Link to="/support">Soporte</Link>
-          <Link to="/contact">Contacto</Link>
-          <span className={styles.active}>Trabaja con nosotros</span>
+          <Link to="/terms">{t('chrome.footer_terms') || 'Términos'}</Link>
+          <Link to="/privacy">{t('chrome.footer_privacy') || 'Privacidad'}</Link>
+          <Link to="/support">{t('chrome.footer_support') || 'Soporte'}</Link>
+          <Link to="/contact">{t('chrome.footer_contact') || 'Contacto'}</Link>
+          <span className={styles.active}>
+            {t('chrome.footer_careers') || 'Trabaja con nosotros'}
+          </span>
         </nav>
       </footer>
 
@@ -407,22 +436,25 @@ export default function Careers() {
             <button className={styles.modalClose} onClick={closeModal} aria-label="Cerrar">
               ✕
             </button>
-            <div className={styles.modalType}>PERFIL LABORAL</div>
-            <h2 className={styles.modalTitle}>Deja tu perfil</h2>
+            <div className={styles.modalType}>{t('careers.modal.type') || 'PERFIL LABORAL'}</div>
+            <h2 className={styles.modalTitle}>{t('careers.modal.title') || 'Deja tu perfil'}</h2>
             <p className={styles.modalSub}>
-              Te contactamos cuando surja la posición correcta para ti.
+              {t('careers.modal.sub') ||
+                'Te contactamos cuando surja la posición correcta para ti.'}
             </p>
 
             {sent ? (
               <div className={styles.sentBox}>
                 <div className={styles.sentIcon}>✓</div>
-                <h3 className={styles.sentTitle}>¡Perfil recibido!</h3>
+                <h3 className={styles.sentTitle}>
+                  {t('careers.modal.sent_title') || '¡Perfil recibido!'}
+                </h3>
                 <p className={styles.sentText}>
-                  Te contactaremos cuando surja algo que encaje contigo. ¡Gracias por el interés en
-                  Conniku!
+                  {t('careers.modal.sent_text') ||
+                    'Te contactaremos cuando surja algo que encaje contigo. ¡Gracias por el interés en Conniku!'}
                 </p>
                 <button className={styles.btnModalSecondary} onClick={closeModal}>
-                  Cerrar
+                  {t('careers.modal.close') || 'Cerrar'}
                 </button>
               </div>
             ) : (
@@ -431,11 +463,13 @@ export default function Careers() {
 
                 <div className={styles.formRow}>
                   <div className={styles.formGroup}>
-                    <label className={styles.formLabel}>Nombre completo</label>
+                    <label className={styles.formLabel}>
+                      {t('careers.modal.nombre') || 'Nombre completo'}
+                    </label>
                     <input
                       className={styles.formInput}
                       type="text"
-                      placeholder="Tu nombre"
+                      placeholder={t('start.modal.nombre_ph') || 'Tu nombre'}
                       value={nombre}
                       onChange={(e) => setNombre(e.target.value)}
                       required
@@ -444,7 +478,9 @@ export default function Careers() {
                     />
                   </div>
                   <div className={styles.formGroup}>
-                    <label className={styles.formLabel}>Correo electrónico</label>
+                    <label className={styles.formLabel}>
+                      {t('careers.modal.email') || 'Correo electrónico'}
+                    </label>
                     <input
                       className={styles.formInput}
                       type="email"
@@ -457,7 +493,44 @@ export default function Careers() {
                 </div>
 
                 <div className={styles.formGroup}>
-                  <label className={styles.formLabel}>¿En qué área te ves aportando?</label>
+                  <label className={styles.formLabel}>{t('careers.modal.pais') || 'País'}</label>
+                  <select
+                    className={styles.formSelect}
+                    value={pais}
+                    onChange={(e) => setPais(e.target.value)}
+                    required
+                  >
+                    <option value="" disabled>
+                      {t('careers.modal.pais_ph') || 'Selecciona tu país'}
+                    </option>
+                    <option>Argentina</option>
+                    <option>Bolivia</option>
+                    <option>Brasil</option>
+                    <option>Chile</option>
+                    <option>Colombia</option>
+                    <option>Costa Rica</option>
+                    <option>Cuba</option>
+                    <option>Ecuador</option>
+                    <option>El Salvador</option>
+                    <option>Guatemala</option>
+                    <option>Honduras</option>
+                    <option>México</option>
+                    <option>Nicaragua</option>
+                    <option>Panamá</option>
+                    <option>Paraguay</option>
+                    <option>Perú</option>
+                    <option>República Dominicana</option>
+                    <option>Uruguay</option>
+                    <option>Venezuela</option>
+                    <option>España</option>
+                    <option>Otro</option>
+                  </select>
+                </div>
+
+                <div className={styles.formGroup}>
+                  <label className={styles.formLabel}>
+                    {t('careers.modal.area') || '¿En qué área te ves aportando?'}
+                  </label>
                   <select
                     className={styles.formSelect}
                     value={area}
@@ -465,7 +538,7 @@ export default function Careers() {
                     required
                   >
                     <option value="" disabled>
-                      Selecciona un área
+                      {t('careers.modal.area_ph') || 'Selecciona un área'}
                     </option>
                     {AREAS.map((a) => (
                       <option key={a} value={a}>
@@ -476,10 +549,15 @@ export default function Careers() {
                 </div>
 
                 <div className={styles.formGroup}>
-                  <label className={styles.formLabel}>¿Por qué Conniku?</label>
+                  <label className={styles.formLabel}>
+                    {t('careers.modal.porq') || '¿Por qué Conniku?'}
+                  </label>
                   <textarea
                     className={styles.formTextarea}
-                    placeholder="Cuéntanos brevemente qué te atrae de construir Conniku."
+                    placeholder={
+                      t('careers.modal.porq_ph') ||
+                      'Cuéntanos brevemente qué te atrae de construir Conniku.'
+                    }
                     value={porQue}
                     onChange={(e) => setPorQue(e.target.value)}
                     required
@@ -489,11 +567,13 @@ export default function Careers() {
                 </div>
 
                 <div className={styles.formGroup}>
-                  <label className={styles.formLabel}>LinkedIn u otro perfil (opcional)</label>
+                  <label className={styles.formLabel}>
+                    {t('careers.modal.linkedin') || 'LinkedIn u otro perfil (opcional)'}
+                  </label>
                   <input
                     className={styles.formInput}
                     type="url"
-                    placeholder="linkedin.com/in/tu-perfil"
+                    placeholder={t('careers.modal.linkedin_ph') || 'linkedin.com/in/tu-perfil'}
                     value={linkedin}
                     onChange={(e) => setLinkedin(e.target.value)}
                     maxLength={300}
@@ -501,7 +581,9 @@ export default function Careers() {
                 </div>
 
                 <button type="submit" className={styles.btnSubmit} disabled={sending}>
-                  {sending ? 'Enviando…' : 'Enviar mi perfil →'}
+                  {sending
+                    ? t('careers.modal.sending') || 'Enviando…'
+                    : t('careers.modal.send') || 'Enviar mi perfil →'}
                 </button>
               </form>
             )}
