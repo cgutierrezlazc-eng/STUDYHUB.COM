@@ -6,7 +6,10 @@ export default function Privacy() {
   const navigate = useNavigate();
   return (
     <div className={styles.page}>
-      <HexNebulaCanvas options={{ bgColor: '#050608', intensity: 0.35 }} />
+      <HexNebulaCanvas
+        options={{ bgColor: '#050608', intensity: 0.35 }}
+        className={styles.nebulaBg}
+      />
 
       <div className={styles.topbar}>
         <button type="button" onClick={() => navigate(-1)} className={styles.backLink}>

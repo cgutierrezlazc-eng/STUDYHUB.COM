@@ -993,8 +993,8 @@ nuevo debe prevenir. No se replican bajo ninguna circunstancia.
   cwd `backend/` — nunca `from backend.X` ni `from shared.X`;
   (2) antes de mergear cambios al backend, simular el cwd de Render
   con `cd backend && python3 -c "import sys; sys.path = [p for p in
-  sys.path if not p.endswith('/CONNIKU')]; sys.path.insert(0, '.');
-  import server"` y confirmar que no hay `ModuleNotFoundError`;
+sys.path if not p.endswith('/CONNIKU')]; sys.path.insert(0, '.');
+import server"` y confirmar que no hay `ModuleNotFoundError`;
   (3) idealmente añadir ese check al pre-commit o al gate "Verify Full
   Stack" para que un import roto bloquee push automáticamente.
 
@@ -1032,13 +1032,13 @@ nuevo debe prevenir. No se replican bajo ninguna circunstancia.
   usuario. Prevención aplicada: cualquier handler que muestre un
   error de API debe primero detectar si `detail` es string, array
   de validation items, o algo más, y serializar legible con `loc`
-  + `msg` antes de pasarlo al UI. Patrón canónico en
-  `src/pages/Contact.tsx::handleSubmit`.
+  - `msg` antes de pasarlo al UI. Patrón canónico en
+    `src/pages/Contact.tsx::handleSubmit`.
 
 - **2026-04-25**: Tori declaró que módulos estaban "listos para
   cerrar" o "M01.4 cierra" hablando como si pudiera autorizar el
   cierre. Solo Cristian cierra módulos con su firma literal
-  "OK Cristian + fecha", como define _MODULOS.md y la sección 18.
+  "OK Cristian + fecha", como define \_MODULOS.md y la sección 18.
   Mientras Cristian no firme, el módulo permanece EN PRUEBAS.
   Prevención aplicada: Tori NUNCA declara cierres ni dice "está
   listo para cerrar" / "puedes bloquear" / "queda APROBADO". Solo
@@ -1079,9 +1079,23 @@ nuevo debe prevenir. No se replican bajo ninguna circunstancia.
   pública) y navegar manualmente hasta la nueva ruta, no solo
   navegar directo a la URL interna.
 
+- **2026-04-26**: `HexNebulaCanvas` en Terms.tsx y Privacy.tsx no recibía
+  el prop `className={styles.nebulaBg}` — el canvas se renderizaba inline
+  en el flujo normal del DOM, empujando el contenido hacia abajo y
+  cortándose visualmente en la parte superior. En Contact.tsx sí se pasa
+  ese className (que aplica `position: fixed; inset: 0; z-index: 0`).
+  Prevención: al usar `HexNebulaCanvas` en cualquier página, siempre pasar
+  `className={styles.nebulaBg}` y definir esa clase con `position: fixed;
+inset: 0` en el CSS module. Nunca dejar el canvas sin className.
+  Adicionalmente, el CSS module tenía `position` duplicado en `.topbar`
+  (`sticky` luego sobreescrito por `relative`), eliminando el sticky y
+  bajando el z-index. Prevención: revisar el CSS generado antes de commitear;
+  una propiedad declarada dos veces siempre indica error de copia.
+
 Este registro queda vivo. Si en el futuro Tori comete un error con
 implicaciones similares, se agrega a este registro como lección
 adicional, no se oculta ni se relativiza.
+
 ## Sección 18 - Filosofía de desarrollo modular
 
 El proyecto Conniku se construye por bloques modulares independientes.
@@ -1106,16 +1120,19 @@ condiciones:
   (de horas a semanas, nunca meses indefinidos)
 
 Ejemplos de bloques apropiados:
+
 - "Sistema de inicio de sesión con Google"
 - "Dashboard para profesores con estadísticas de sus cursos"
 - "Módulo de pago con MercadoPago"
 - "Política de reembolso con derecho de retracto de 10 días"
 
 Ejemplos de lo que NO es un bloque (demasiado grande):
+
 - "Todo el sistema de usuarios"
 - "Todas las funcionalidades de cursos"
 
 Ejemplos de lo que NO es un bloque (demasiado pequeño):
+
 - "Cambiar el color de un botón"
 - "Corregir una falta ortográfica"
 
@@ -1145,6 +1162,7 @@ mal y deshacer es alto.
 **Principio 4: aislamiento de fallas.**
 Los bloques se diseñan de manera que un bloque roto no afecta a los
 demás. Esto implica:
+
 - Usar flags de feature para bloques nuevos que se pueden desactivar
   sin romper otros
 - Mantener interfaces estables entre bloques
@@ -1217,6 +1235,7 @@ enfrenta al usuario real. Reglas específicas:
   sustituir esta decisión
 
 Tipos de mejoras que pueden surgir en Capa 6:
+
 - Bugs de funcionalidad (algo no funciona como debería)
 - Problemas de UX (funciona pero es confuso para el usuario)
 - Ajustes de texto (copy, idioma, tono)
@@ -1226,6 +1245,7 @@ Tipos de mejoras que pueden surgir en Capa 6:
 
 Cuando Cristian identifica mejoras, el protocolo retrocede a la capa
 apropiada:
+
 - Si el cambio es cosmético: retrocede a Capa 1 con frontend-builder
 - Si el cambio es estructural: retrocede a Capa 1 con web-architect
   primero para replanificar, después con el builder apropiado
@@ -1235,8 +1255,7 @@ apropiada:
   legal-docs-keeper + builder
 
 Después de las correcciones, el bloque vuelve a ejecutar las Capas 1-5
-completas antes de regresar a Cristian en una nueva iteración de Capa
-6. No hay atajos.
+completas antes de regresar a Cristian en una nueva iteración de Capa 6. No hay atajos.
 
 ### 18.5 Prohibición de trabajo paralelo
 
