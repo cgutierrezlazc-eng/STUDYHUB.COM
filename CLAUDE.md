@@ -57,7 +57,10 @@ Backend: Python con FastAPI y SQLAlchemy. Desplegado en Render bajo la URL
 studyhub-api-bpco.onrender.com (nombre legado, no renombrado por razones de
 historia de URLs).
 
-Base de datos y autenticación: Supabase.
+Base de datos: PostgreSQL accedido vía SQLAlchemy.
+Autenticación: JWT propio implementado en backend/auth_routes.py
+(tokens almacenados en localStorage del cliente, validados por
+middleware FastAPI).
 
 Asistente conversacional al usuario final: Claude API de Anthropic, modelo
 claude-haiku-4-5-20251001 para chatbot y soporte.
@@ -247,9 +250,9 @@ Los ocho agentes son:
   con lint, typecheck, test y build antes de reportar. No cierra tareas
   sin ejecutar la verificación completa.
 
-- **backend-builder**: implementa Python, FastAPI, integraciones Supabase
-  siguiendo TDD obligatorio. Mismo principio de plan previo y verificación
-  obligatoria con ruff check, ruff format, mypy y pytest.
+- **backend-builder**: implementa Python, FastAPI y SQLAlchemy sobre
+  PostgreSQL siguiendo TDD obligatorio. Mismo principio de plan previo y
+  verificación obligatoria con ruff check, ruff format, mypy y pytest.
 
 - **qa-tester**: valida funcionamiento real end-to-end. Levanta servidores
   locales, hace requests reales con curl, captura errores de consola del
@@ -754,7 +757,8 @@ tanto, el texto se mantiene en la forma genérica "legislación vigente".
 **Componente 3: Almacenamiento legal de la declaración**
 
 Cada aceptación del checkbox se almacena en la tabla `user_agreements`
-de Supabase con los siguientes campos:
+de PostgreSQL (modelo SQLAlchemy en `backend/database.py`) con los
+siguientes campos:
 
 - Timestamp UTC exacto de cuándo se marcó el checkbox
 - Zona horaria del usuario en ese momento
