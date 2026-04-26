@@ -24,7 +24,7 @@ from datetime import datetime, timedelta
 from fastapi import APIRouter, HTTPException, Request
 from pydantic import BaseModel, EmailStr, constr
 
-from notifications import _send_email_async
+from notifications import _send_email_sync
 
 logger = logging.getLogger(__name__)
 router = APIRouter()
@@ -107,8 +107,11 @@ async def post_contact(req: ContactRequest, request: Request) -> dict:
     subject = f"[Conniku · {req.motivo}] {req.asunto}"
     html_body = _build_html_body(req, ip)
 
-    # _send_email_async lanza el envío en thread; no bloquea la respuesta.
-    _send_email_async(
+    # Envío sincrónico: bloquea hasta confirmar el resultado del SMTP.
+    # Si falla, devolvemos 502 con detalle al cliente en vez de 200 fantasma
+    # (la versión async sólo dejaba el error en logs y el usuario nunca se
+    # enteraba de que el correo no llegó).
+    success, error_msg = _send_email_sync(
         to_email=to_addr,
         subject=subject,
         html_body=html_body,
@@ -117,8 +120,20 @@ async def post_contact(req: ContactRequest, request: Request) -> dict:
         from_account=smtp_account,
     )
 
+    if not success:
+        logger.error(
+            "[Contact] FAIL motivo=%s to=%s from_user=%s ip=%s error=%s",
+            req.motivo, to_addr, req.email, ip, error_msg,
+        )
+        # No exponemos detalles internos del SMTP al cliente (puede revelar
+        # config). Mensaje genérico + log completo en server.
+        raise HTTPException(
+            status_code=502,
+            detail="No pudimos entregar tu mensaje en este momento. Por favor intenta nuevamente en unos minutos o escríbenos directamente al correo del canal correspondiente.",
+        )
+
     logger.info(
-        "[Contact] motivo=%s to=%s from_user=%s ip=%s",
+        "[Contact] OK motivo=%s to=%s from_user=%s ip=%s",
         req.motivo, to_addr, req.email, ip,
     )
     return {"ok": True}
