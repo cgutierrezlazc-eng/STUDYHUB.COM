@@ -304,8 +304,13 @@
   animation: heroIconFloat 3.6s ease-in-out infinite;
 }
 @keyframes heroIconFloat {
-  0%, 100% { transform: translateY(0px); }
-  50%       { transform: translateY(-8px); }
+  0%,
+  100% {
+    transform: translateY(0px);
+  }
+  50% {
+    transform: translateY(-8px);
+  }
 }
 @media (prefers-reduced-motion: reduce) {
   .heroFloatIcon {
