@@ -289,83 +289,26 @@
   overflow: hidden;
 }
 
-/* Planet */
-.planetVis {
-  position: relative;
-  width: 100px;
-  height: 100px;
+/* Hero floating icon */
+.heroIconWrap {
   margin-bottom: 24px;
 }
-.planetCore {
-  width: 60px;
-  height: 60px;
-  border-radius: 50%;
-  background: rgba(74, 136, 255, 0.08);
-  border: 1px solid rgba(74, 136, 255, 0.22);
-  display: grid;
-  place-items: center;
-  position: absolute;
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%);
-  box-shadow:
-    0 0 24px rgba(74, 136, 255, 0.2),
-    0 0 48px rgba(74, 136, 255, 0.08);
-  animation: corePulse 3s ease-in-out infinite;
-}
-.heroIcon {
-  width: 36px;
-  height: 36px;
+.heroFloatIcon {
+  width: 72px;
+  height: 72px;
   display: block;
+  border-radius: 18px;
+  filter:
+    drop-shadow(0 8px 24px rgba(74, 136, 255, 0.45))
+    drop-shadow(0 2px 8px rgba(0, 0, 0, 0.55));
+  animation: heroIconFloat 3.6s ease-in-out infinite;
 }
-.planetRing {
-  position: absolute;
-  border-radius: 50%;
-  border: 1px solid rgba(74, 136, 255, 0.2);
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%);
-  animation: ringPulse 3s ease-in-out infinite;
-}
-.r1 {
-  width: 76px;
-  height: 76px;
-  animation-delay: 0.3s;
-}
-.r2 {
-  width: 100px;
-  height: 100px;
-  border-style: dashed;
-  animation-delay: 0.7s;
-}
-
-@keyframes corePulse {
-  0%,
-  100% {
-    box-shadow:
-      0 0 24px rgba(74, 136, 255, 0.35),
-      0 0 48px rgba(74, 136, 255, 0.12);
-  }
-  50% {
-    box-shadow:
-      0 0 36px rgba(74, 136, 255, 0.5),
-      0 0 72px rgba(74, 136, 255, 0.2);
-  }
-}
-@keyframes ringPulse {
-  0%,
-  100% {
-    opacity: 1;
-    transform: translate(-50%, -50%) scale(1);
-  }
-  50% {
-    opacity: 0.4;
-    transform: translate(-50%, -50%) scale(1.04);
-  }
+@keyframes heroIconFloat {
+  0%, 100% { transform: translateY(0px); }
+  50%       { transform: translateY(-8px); }
 }
 @media (prefers-reduced-motion: reduce) {
-  .planetCore,
-  .planetRing {
+  .heroFloatIcon {
     animation: none;
   }
 }
