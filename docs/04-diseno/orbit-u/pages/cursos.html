@@ -1,0 +1,285 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Cursos · Conniku</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Funnel+Display:wght@400;600;700;800;900&family=Inter:wght@400;500;600;700&family=Geist+Mono:wght@400;500;600&display=swap" />
+<link rel="stylesheet" href="../shared/tokens.css" />
+<link rel="stylesheet" href="../shared/base.css" />
+<link rel="stylesheet" href="../shared/nav.css" />
+<link rel="stylesheet" href="../shared/sidebar.css" />
+<style>
+  :root { --mod: #A8C800; --mod-2: rgba(217,255,58,0.08); --mod-3: #D9FF3A; }
+
+  .page { max-width: 1280px; margin: 0 auto; padding: 28px 24px; }
+
+  /* ── Stats header ── */
+  .stats-row {
+    display: grid; grid-template-columns: repeat(4,1fr); gap: 12px;
+    margin-bottom: 28px;
+  }
+  .stat-card {
+    background: var(--surface); border: 1px solid var(--border);
+    border-radius: 12px; padding: 16px 18px;
+    display: flex; flex-direction: column; gap: 4px;
+  }
+  .stat-card-n {
+    font-family: 'Funnel Display', sans-serif; font-weight: 900;
+    font-size: 28px; letter-spacing: -.04em; line-height: 1;
+  }
+  .stat-card-l { font-family: 'Geist Mono', monospace; font-size: 10px; color: var(--text-4); text-transform: uppercase; letter-spacing: .08em; }
+
+  /* ── Sección ── */
+  .section-title {
+    font-weight: 700; font-size: 15px; color: var(--text);
+    margin-bottom: 14px; display: flex; align-items: center; gap: 8px;
+  }
+  .section-title .cnt {
+    font-family: 'Geist Mono', monospace; font-size: 10px;
+    color: var(--text-4); background: var(--surface-2);
+    padding: 2px 7px; border-radius: 4px; font-weight: 400;
+  }
+
+  /* ── Cursos en progreso ── */
+  .progress-list { display: flex; flex-direction: column; gap: 12px; margin-bottom: 32px; }
+  .prog-card {
+    background: var(--surface); border: 1px solid var(--border);
+    border-radius: 12px; padding: 18px 20px;
+    display: grid; grid-template-columns: 48px 1fr auto;
+    gap: 16px; align-items: center; cursor: pointer;
+    transition: all .18s;
+  }
+  .prog-card:hover { border-color: var(--mod); box-shadow: 0 2px 16px rgba(217,255,58,0.08); }
+  .prog-icon {
+    width: 48px; height: 48px; border-radius: 12px;
+    display: grid; place-items: center; flex-shrink: 0;
+  }
+  .prog-icon svg { width: 24px; height: 24px; }
+  .prog-info { display: flex; flex-direction: column; gap: 6px; }
+  .prog-title { font-weight: 600; font-size: 14px; color: var(--text); }
+  .prog-meta { font-size: 12px; color: var(--text-3); display: flex; align-items: center; gap: 10px; }
+  .prog-bar-wrap { display: flex; align-items: center; gap: 10px; }
+  .prog-bar { flex: 1; height: 4px; background: var(--border); border-radius: 999px; }
+  .prog-bar-fill { height: 100%; border-radius: 999px; }
+  .prog-pct { font-family: 'Geist Mono', monospace; font-size: 10px; color: var(--text-3); white-space: nowrap; }
+  .prog-cta {
+    padding: 8px 16px; border-radius: 8px; font-size: 12px; font-weight: 600;
+    cursor: pointer; transition: all .15s; white-space: nowrap;
+  }
+
+  /* ── Catálogo grid ── */
+  .catalog-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+    gap: 16px; margin-bottom: 32px;
+  }
+  .course-card {
+    background: var(--surface); border: 1px solid var(--border);
+    border-radius: 14px; overflow: hidden; cursor: pointer;
+    transition: all .2s;
+  }
+  .course-card:hover { border-color: var(--mod); transform: translateY(-2px); box-shadow: 0 6px 24px rgba(217,255,58,0.10); }
+  .course-thumb {
+    height: 110px; display: flex; align-items: center; justify-content: center;
+    position: relative; overflow: hidden;
+  }
+  .course-thumb svg { width: 40px; height: 40px; opacity: .4; }
+  .course-badge {
+    position: absolute; top: 10px; left: 10px;
+    font-family: 'Geist Mono', monospace; font-size: 8.5px; font-weight: 700;
+    letter-spacing: .08em; text-transform: uppercase;
+    padding: 3px 8px; border-radius: 4px;
+  }
+  .course-body { padding: 14px 16px 16px; }
+  .course-cat { font-family: 'Geist Mono', monospace; font-size: 9px; color: var(--text-4); text-transform: uppercase; letter-spacing: .1em; margin-bottom: 5px; }
+  .course-title { font-weight: 700; font-size: 14px; color: var(--text); line-height: 1.3; margin-bottom: 6px; }
+  .course-desc { font-size: 12px; color: var(--text-3); line-height: 1.55; margin-bottom: 12px; }
+  .course-footer { display: flex; align-items: center; justify-content: space-between; }
+  .course-dur { font-family: 'Geist Mono', monospace; font-size: 10px; color: var(--text-4); }
+  .course-enroll {
+    font-size: 11px; font-weight: 600; padding: 5px 12px;
+    border-radius: 6px; cursor: pointer; transition: all .15s;
+    background: var(--mod-2); border: 1px solid var(--mod); color: var(--mod-3);
+  }
+  .course-enroll:hover { background: rgba(217,255,58,0.15); }
+  .course-diploma {
+    display: flex; align-items: center; gap: 5px;
+    font-family: 'Geist Mono', monospace; font-size: 9px; color: var(--mod-3);
+    margin-top: 8px;
+  }
+  .course-diploma svg { width: 11px; height: 11px; }
+</style>
+</head>
+<body>
+
+<nav class="nav">
+  <div class="nav-inner">
+    <div class="nav-brand">
+      <a href="orbit-u.html" class="nav-back">
+        <span class="orbit-ico" aria-hidden="true"></span>
+        Orbit<span class="nav-back-u">·U</span>
+      </a>
+      <span class="nav-sep" aria-hidden="true"></span>
+      <a href="orbit-u.html" class="brand">conn<span>i</span>k<span class="u-pack">u<span class="dot">.</span></span></a>
+    </div>
+    <span class="nav-mod-name">Cursos & Diploma</span>
+    <div class="nav-right">
+      <button class="nav-ico" aria-label="Notificaciones">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" width="18" height="18"><path d="M18 8A6 6 0 006 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 01-3.46 0"/></svg>
+      </button>
+      <div class="nav-av">CG</div>
+    </div>
+  </div>
+</nav>
+
+<div class="page">
+
+  <div class="stats-row">
+    <div class="stat-card">
+      <div class="stat-card-n" style="color:var(--mod-3)">3</div>
+      <div class="stat-card-l">Cursos activos</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-card-n" style="color:var(--green-3)">7</div>
+      <div class="stat-card-l">Completados</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-card-n" style="color:var(--cream)">4</div>
+      <div class="stat-card-l">Badges ganados</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-card-n" style="color:var(--mod-3)">68%</div>
+      <div class="stat-card-l">Diploma Conniku</div>
+    </div>
+  </div>
+
+  <div class="section-title">En progreso <span class="cnt">3</span></div>
+  <div class="progress-list">
+    <div class="prog-card">
+      <div class="prog-icon" style="background:rgba(107,78,255,0.12)">
+        <svg viewBox="0 0 24 24" fill="none" stroke="#B8A6FF" stroke-width="1.8"><circle cx="12" cy="12" r="3"/><path d="M12 2v3M12 19v3M4.22 4.22l2.12 2.12M17.66 17.66l2.12 2.12M2 12h3M19 12h3M4.22 19.78l2.12-2.12M17.66 6.34l2.12-2.12"/></svg>
+      </div>
+      <div class="prog-info">
+        <div class="prog-title">Machine Learning con Python</div>
+        <div class="prog-meta"><span>Módulo 4 de 8</span><span>·</span><span>Scikit-learn · Pandas</span></div>
+        <div class="prog-bar-wrap">
+          <div class="prog-bar"><div class="prog-bar-fill" style="width:48%;background:#B8A6FF"></div></div>
+          <span class="prog-pct">48%</span>
+        </div>
+      </div>
+      <button class="prog-cta" style="background:rgba(107,78,255,0.12);border:1px solid #6B4EFF;color:#B8A6FF">Continuar</button>
+    </div>
+
+    <div class="prog-card">
+      <div class="prog-icon" style="background:rgba(217,255,58,0.08)">
+        <svg viewBox="0 0 24 24" fill="none" stroke="#D9FF3A" stroke-width="1.8"><rect x="2" y="3" width="20" height="14" rx="2"/><path d="M8 21h8M12 17v4"/></svg>
+      </div>
+      <div class="prog-info">
+        <div class="prog-title">Diseño UX/UI · Fundamentos</div>
+        <div class="prog-meta"><span>Módulo 6 de 7</span><span>·</span><span>Figma · Design Thinking</span></div>
+        <div class="prog-bar-wrap">
+          <div class="prog-bar"><div class="prog-bar-fill" style="width:82%;background:#D9FF3A"></div></div>
+          <span class="prog-pct">82%</span>
+        </div>
+      </div>
+      <button class="prog-cta" style="background:rgba(217,255,58,0.08);border:1px solid #A8C800;color:#D9FF3A">Continuar</button>
+    </div>
+
+    <div class="prog-card">
+      <div class="prog-icon" style="background:rgba(0,194,122,0.10)">
+        <svg viewBox="0 0 24 24" fill="none" stroke="#8AEAC0" stroke-width="1.8"><path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/></svg>
+      </div>
+      <div class="prog-info">
+        <div class="prog-title">Bases de Datos Relacionales</div>
+        <div class="prog-meta"><span>Módulo 2 de 6</span><span>·</span><span>SQL · PostgreSQL</span></div>
+        <div class="prog-bar-wrap">
+          <div class="prog-bar"><div class="prog-bar-fill" style="width:22%;background:#00C27A"></div></div>
+          <span class="prog-pct">22%</span>
+        </div>
+      </div>
+      <button class="prog-cta" style="background:rgba(0,194,122,0.10);border:1px solid #00C27A;color:#8AEAC0">Continuar</button>
+    </div>
+  </div>
+
+  <div class="section-title">Explorar catálogo <span class="cnt">200+</span></div>
+  <div class="catalog-grid">
+    <div class="course-card">
+      <div class="course-thumb" style="background:linear-gradient(135deg,#0A0818,#1C1838)">
+        <svg viewBox="0 0 24 24" fill="none" stroke="#C084FC" stroke-width="1.5"><path d="M21 16V8a2 2 0 00-1-1.73l-7-4a2 2 0 00-2 0l-7 4A2 2 0 003 8v8a2 2 0 001 1.73l7 4a2 2 0 002 0l7-4A2 2 0 0021 16z"/></svg>
+        <div class="course-badge" style="background:rgba(192,132,252,0.15);color:#C084FC">+Diploma</div>
+      </div>
+      <div class="course-body">
+        <div class="course-cat">Tecnología</div>
+        <div class="course-title">Introducción a la Ciberseguridad</div>
+        <div class="course-desc">Fundamentos de seguridad informática, criptografía y protección de sistemas.</div>
+        <div class="course-footer">
+          <span class="course-dur">8 módulos · 24h</span>
+          <button class="course-enroll">Inscribirse</button>
+        </div>
+        <div class="course-diploma">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="8" r="6"/><path d="M15.477 12.89L17 22l-5-3-5 3 1.523-9.11"/></svg>
+          Incluye badge verificable
+        </div>
+      </div>
+    </div>
+
+    <div class="course-card">
+      <div class="course-thumb" style="background:linear-gradient(135deg,#060E0A,#0E2018)">
+        <svg viewBox="0 0 24 24" fill="none" stroke="#8AEAC0" stroke-width="1.5"><path d="M12 20h9M16.5 3.5a2.121 2.121 0 013 3L7 19l-4 1 1-4L16.5 3.5z"/></svg>
+        <div class="course-badge" style="background:rgba(0,194,122,0.12);color:#8AEAC0">+Diploma</div>
+      </div>
+      <div class="course-body">
+        <div class="course-cat">Escritura</div>
+        <div class="course-title">Escritura Académica Avanzada</div>
+        <div class="course-desc">Redacción de ensayos, papers APA/MLA y tesis. Con asistencia de Athena.</div>
+        <div class="course-footer">
+          <span class="course-dur">6 módulos · 18h</span>
+          <button class="course-enroll">Inscribirse</button>
+        </div>
+        <div class="course-diploma">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="8" r="6"/><path d="M15.477 12.89L17 22l-5-3-5 3 1.523-9.11"/></svg>
+          Incluye badge verificable
+        </div>
+      </div>
+    </div>
+
+    <div class="course-card">
+      <div class="course-thumb" style="background:linear-gradient(135deg,#0E0A06,#241808)">
+        <svg viewBox="0 0 24 24" fill="none" stroke="#FFE9B8" stroke-width="1.5"><path d="M12 2v20M17 5H9.5a3.5 3.5 0 000 7h5a3.5 3.5 0 010 7H6"/></svg>
+      </div>
+      <div class="course-body">
+        <div class="course-cat">Finanzas</div>
+        <div class="course-title">Finanzas Personales para Estudiantes</div>
+        <div class="course-desc">Presupuesto, ahorro, inversión básica y planificación financiera universitaria.</div>
+        <div class="course-footer">
+          <span class="course-dur">4 módulos · 8h</span>
+          <button class="course-enroll">Inscribirse</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="course-card">
+      <div class="course-thumb" style="background:linear-gradient(135deg,#060A0E,#0E1820)">
+        <svg viewBox="0 0 24 24" fill="none" stroke="#7FDAFF" stroke-width="1.5"><circle cx="12" cy="12" r="10"/><path d="M2 12h20M12 2a15.3 15.3 0 014 10 15.3 15.3 0 01-4 10 15.3 15.3 0 01-4-10 15.3 15.3 0 014-10z"/></svg>
+      </div>
+      <div class="course-body">
+        <div class="course-cat">Idiomas</div>
+        <div class="course-title">Inglés Académico B2→C1</div>
+        <div class="course-desc">Vocabulario técnico, papers en inglés y presentaciones para entornos universitarios internacionales.</div>
+        <div class="course-footer">
+          <span class="course-dur">12 módulos · 36h</span>
+          <button class="course-enroll">Inscribirse</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<script src="../shared/sidebar.js"></script>
+<script src="../shared/theme-loader.js"></script>
+</body>
+</html>

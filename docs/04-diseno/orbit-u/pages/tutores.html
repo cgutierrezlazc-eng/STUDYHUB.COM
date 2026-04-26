@@ -1,0 +1,310 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Tutores · Conniku</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Funnel+Display:wght@400;600;700;800;900&family=Inter:wght@400;500;600;700&family=Geist+Mono:wght@400;500;600&display=swap" />
+<link rel="stylesheet" href="../shared/tokens.css" />
+<link rel="stylesheet" href="../shared/base.css" />
+<link rel="stylesheet" href="../shared/nav.css" />
+<link rel="stylesheet" href="../shared/sidebar.css" />
+<style>
+  :root { --mod: #CC3D2A; --mod-2: rgba(255,77,58,0.08); --mod-3: #FF9787; }
+
+  .page { max-width: 1280px; margin: 0 auto; padding: 28px 24px; }
+
+  .page-header { margin-bottom: 24px; }
+  .page-header h1 {
+    font-family: 'Funnel Display', sans-serif; font-weight: 800;
+    font-size: clamp(22px,2.5vw,30px); letter-spacing: -.03em;
+    color: var(--text); margin-bottom: 4px;
+  }
+  .page-header p { font-size: 13px; color: var(--text-3); }
+
+  /* ── Filtros ── */
+  .filters {
+    display: flex; gap: 10px; flex-wrap: wrap; margin-bottom: 24px;
+    align-items: center;
+  }
+  .filter-label { font-family: 'Geist Mono', monospace; font-size: 10px; color: var(--text-4); text-transform: uppercase; letter-spacing: .08em; }
+  .chip {
+    padding: 5px 12px; border-radius: 999px; font-size: 11px; font-weight: 600;
+    background: var(--surface); border: 1px solid var(--border);
+    color: var(--text-3); cursor: pointer; transition: all .15s; white-space: nowrap;
+  }
+  .chip:hover { border-color: var(--mod-3); color: var(--mod-3); }
+  .chip.active { background: var(--mod-2); border-color: var(--mod); color: var(--mod-3); }
+
+  /* ── Grid tutores ── */
+  .tutores-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    gap: 16px;
+  }
+  .tutor-card {
+    background: var(--surface); border: 1px solid var(--border);
+    border-radius: 14px; padding: 20px; cursor: pointer;
+    transition: all .2s; display: flex; flex-direction: column; gap: 14px;
+  }
+  .tutor-card:hover { border-color: var(--mod-3); box-shadow: 0 4px 20px rgba(255,77,58,0.10); }
+
+  .tutor-top { display: flex; gap: 12px; align-items: flex-start; }
+  .tutor-av {
+    width: 48px; height: 48px; border-radius: 50%; flex-shrink: 0;
+    display: grid; place-items: center;
+    font-weight: 800; font-size: 18px; color: #0B0C0E;
+    position: relative;
+  }
+  .tutor-verified {
+    position: absolute; bottom: -2px; right: -2px;
+    width: 16px; height: 16px; border-radius: 50%;
+    background: var(--green); border: 2px solid var(--surface);
+    display: grid; place-items: center;
+  }
+  .tutor-verified svg { width: 8px; height: 8px; color: #0B0C0E; }
+  .tutor-info { flex: 1; }
+  .tutor-name { font-weight: 700; font-size: 14px; color: var(--text); margin-bottom: 2px; }
+  .tutor-u { font-family: 'Geist Mono', monospace; font-size: 10px; color: var(--text-4); margin-bottom: 4px; }
+  .tutor-rating { display: flex; align-items: center; gap: 4px; }
+  .stars { color: #FFD96B; font-size: 11px; letter-spacing: -.5px; }
+  .rating-n { font-family: 'Geist Mono', monospace; font-size: 10px; color: var(--text-3); }
+
+  .tutor-tags { display: flex; flex-wrap: wrap; gap: 5px; }
+  .tutor-tag {
+    padding: 3px 8px; border-radius: 4px; font-size: 10px; font-weight: 600;
+    background: var(--surface-2); border: 1px solid var(--border);
+    color: var(--text-3);
+  }
+
+  .tutor-bio { font-size: 12px; color: var(--text-3); line-height: 1.6; }
+
+  .tutor-footer { display: flex; align-items: center; justify-content: space-between; margin-top: auto; }
+  .tutor-price {
+    font-family: 'Funnel Display', sans-serif; font-weight: 800;
+    font-size: 18px; color: var(--text); letter-spacing: -.03em;
+  }
+  .tutor-price span { font-family: 'Geist Mono', monospace; font-size: 10px; color: var(--text-4); font-weight: 400; }
+  .book-btn {
+    padding: 8px 16px; border-radius: 8px; font-size: 12px; font-weight: 700;
+    background: var(--mod-2); border: 1px solid var(--mod);
+    color: var(--mod-3); cursor: pointer; transition: all .15s;
+  }
+  .book-btn:hover { background: rgba(255,77,58,0.15); }
+  .book-btn.premium { background: var(--mod); color: #fff; border-color: var(--mod); }
+  .book-btn.premium:hover { background: #e03520; }
+
+  .tutor-sessions {
+    font-family: 'Geist Mono', monospace; font-size: 9px; color: var(--text-4);
+    display: flex; align-items: center; gap: 4px;
+  }
+  .tutor-sessions::before { content:""; width:5px;height:5px;border-radius:50%;background:var(--green); }
+
+  /* ── Banner Mi tutor ── */
+  .my-tutor-banner {
+    background: var(--surface); border: 1px solid var(--border);
+    border-radius: 14px; padding: 18px 20px; margin-bottom: 24px;
+    display: flex; align-items: center; gap: 16px;
+  }
+  .mtu-label {
+    font-family: 'Geist Mono', monospace; font-size: 10px;
+    color: var(--mod-3); text-transform: uppercase; letter-spacing: .1em;
+    margin-bottom: 4px;
+  }
+  .mtu-name { font-weight: 700; font-size: 16px; }
+  .mtu-next {
+    font-size: 12px; color: var(--text-3);
+    display: flex; align-items: center; gap: 6px; margin-top: 4px;
+  }
+  .mtu-next::before { content:""; width:6px;height:6px;border-radius:50%;background:var(--green);box-shadow:0 0 6px var(--green); }
+  .mtu-join {
+    margin-left: auto; padding: 10px 20px; border-radius: 10px;
+    background: var(--mod-2); border: 1px solid var(--mod);
+    color: var(--mod-3); font-size: 13px; font-weight: 700;
+    cursor: pointer; transition: all .15s;
+  }
+  .mtu-join:hover { background: rgba(255,77,58,0.15); }
+</style>
+</head>
+<body>
+
+<nav class="nav">
+  <div class="nav-inner">
+    <div class="nav-brand">
+      <a href="orbit-u.html" class="nav-back">
+        <span class="orbit-ico" aria-hidden="true"></span>
+        Orbit<span class="nav-back-u">·U</span>
+      </a>
+      <span class="nav-sep" aria-hidden="true"></span>
+      <a href="orbit-u.html" class="brand">conn<span>i</span>k<span class="u-pack">u<span class="dot">.</span></span></a>
+    </div>
+    <span class="nav-mod-name">Tutores</span>
+    <div class="nav-right">
+      <button class="nav-ico" aria-label="Notificaciones">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" width="18" height="18"><path d="M18 8A6 6 0 006 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 01-3.46 0"/></svg>
+      </button>
+      <div class="nav-av">CG</div>
+    </div>
+  </div>
+</nav>
+
+<div class="page">
+
+  <div class="my-tutor-banner">
+    <div class="tutor-av" style="background:linear-gradient(135deg,#FF9787,#FF4D3A);width:44px;height:44px;flex-shrink:0">DP</div>
+    <div>
+      <div class="mtu-label">Mi tutora actual</div>
+      <div class="mtu-name">Daniela Paredes · Cálculo III</div>
+      <div class="mtu-next">Próxima sesión: Hoy 19:00 · Online (30 min)</div>
+    </div>
+    <button class="mtu-join">Unirse ahora →</button>
+  </div>
+
+  <div class="page-header">
+    <h1>Encontrar tutor</h1>
+    <p>Tutores verificados por Conniku. Todos son estudiantes avanzados o egresados de universidades acreditadas.</p>
+  </div>
+
+  <div class="filters">
+    <span class="filter-label">Área:</span>
+    <button class="chip active">Todas</button>
+    <button class="chip">Matemáticas</button>
+    <button class="chip">Programación</button>
+    <button class="chip">Física</button>
+    <button class="chip">Química</button>
+    <button class="chip">Idiomas</button>
+    <button class="chip">Economía</button>
+  </div>
+
+  <div class="tutores-grid">
+
+    <div class="tutor-card">
+      <div class="tutor-top">
+        <div class="tutor-av" style="background:linear-gradient(135deg,#FF9787,#FF4D3A)">
+          DP
+          <div class="tutor-verified"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><path d="M20 6L9 17l-5-5"/></svg></div>
+        </div>
+        <div class="tutor-info">
+          <div class="tutor-name">Daniela Paredes</div>
+          <div class="tutor-u">PUC · Ing. Matemática · 5to año</div>
+          <div class="tutor-rating">
+            <span class="stars">★★★★★</span>
+            <span class="rating-n">4.9 (86 sesiones)</span>
+          </div>
+        </div>
+      </div>
+      <div class="tutor-tags">
+        <span class="tutor-tag">Cálculo I–III</span>
+        <span class="tutor-tag">Álgebra lineal</span>
+        <span class="tutor-tag">EDO</span>
+      </div>
+      <div class="tutor-bio">Especialista en análisis y cálculo avanzado. Metodología visual con GeoGebra + ejercicios personalizados según tu ramo.</div>
+      <div class="tutor-footer">
+        <div>
+          <div class="tutor-price">$8.000 <span>/ hora</span></div>
+          <div class="tutor-sessions">142 horas dictadas</div>
+        </div>
+        <button class="book-btn premium">Reservar</button>
+      </div>
+    </div>
+
+    <div class="tutor-card">
+      <div class="tutor-top">
+        <div class="tutor-av" style="background:linear-gradient(135deg,#B8A6FF,#6B4EFF)">
+          AS
+          <div class="tutor-verified"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><path d="M20 6L9 17l-5-5"/></svg></div>
+        </div>
+        <div class="tutor-info">
+          <div class="tutor-name">Andrés Soto</div>
+          <div class="tutor-u">UCH · Ing. Civil Informática · Egresado</div>
+          <div class="tutor-rating">
+            <span class="stars">★★★★★</span>
+            <span class="rating-n">4.8 (112 sesiones)</span>
+          </div>
+        </div>
+      </div>
+      <div class="tutor-tags">
+        <span class="tutor-tag">Python</span>
+        <span class="tutor-tag">Algoritmos</span>
+        <span class="tutor-tag">SQL</span>
+        <span class="tutor-tag">ML</span>
+      </div>
+      <div class="tutor-bio">Desarrollador backend con foco en algoritmos y estructuras de datos. Preparo para entrevistas técnicas y proyectos de tesis.</div>
+      <div class="tutor-footer">
+        <div>
+          <div class="tutor-price">$10.000 <span>/ hora</span></div>
+          <div class="tutor-sessions">198 horas dictadas</div>
+        </div>
+        <button class="book-btn">Reservar</button>
+      </div>
+    </div>
+
+    <div class="tutor-card">
+      <div class="tutor-top">
+        <div class="tutor-av" style="background:linear-gradient(135deg,#8AEAC0,#006E4A)">
+          VM
+          <div class="tutor-verified"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><path d="M20 6L9 17l-5-5"/></svg></div>
+        </div>
+        <div class="tutor-info">
+          <div class="tutor-name">Valentina Moreno</div>
+          <div class="tutor-u">USACH · Física · 4to año</div>
+          <div class="tutor-rating">
+            <span class="stars">★★★★☆</span>
+            <span class="rating-n">4.7 (54 sesiones)</span>
+          </div>
+        </div>
+      </div>
+      <div class="tutor-tags">
+        <span class="tutor-tag">Física I–II</span>
+        <span class="tutor-tag">Termodinámica</span>
+        <span class="tutor-tag">Mecánica</span>
+      </div>
+      <div class="tutor-bio">Explico con ejemplos visuales y simulaciones. Especializada en mecánica clásica y preparación para certámenes.</div>
+      <div class="tutor-footer">
+        <div>
+          <div class="tutor-price">$7.500 <span>/ hora</span></div>
+          <div class="tutor-sessions">68 horas dictadas</div>
+        </div>
+        <button class="book-btn">Reservar</button>
+      </div>
+    </div>
+
+    <div class="tutor-card">
+      <div class="tutor-top">
+        <div class="tutor-av" style="background:linear-gradient(135deg,#FFD96B,#C47A00)">
+          FC
+          <div class="tutor-verified"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><path d="M20 6L9 17l-5-5"/></svg></div>
+        </div>
+        <div class="tutor-info">
+          <div class="tutor-name">Felipe Contreras</div>
+          <div class="tutor-u">UAI · MBA · Egresado</div>
+          <div class="tutor-rating">
+            <span class="stars">★★★★★</span>
+            <span class="rating-n">4.9 (73 sesiones)</span>
+          </div>
+        </div>
+      </div>
+      <div class="tutor-tags">
+        <span class="tutor-tag">Microeconomía</span>
+        <span class="tutor-tag">Finanzas</span>
+        <span class="tutor-tag">Estadística</span>
+      </div>
+      <div class="tutor-bio">Consultor y tutor de economía con experiencia en preparación para certámenes de admisión a postgrado.</div>
+      <div class="tutor-footer">
+        <div>
+          <div class="tutor-price">$9.000 <span>/ hora</span></div>
+          <div class="tutor-sessions">124 horas dictadas</div>
+        </div>
+        <button class="book-btn">Reservar</button>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<script src="../shared/sidebar.js"></script>
+<script src="../shared/theme-loader.js"></script>
+</body>
+</html>

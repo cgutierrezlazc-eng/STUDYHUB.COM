@@ -1,0 +1,319 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Biblioteca · Conniku</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Funnel+Display:wght@400;600;700;800;900&family=Inter:wght@400;500;600;700&family=Geist+Mono:wght@400;500;600&display=swap" />
+<link rel="stylesheet" href="../shared/tokens.css" />
+<link rel="stylesheet" href="../shared/base.css" />
+<link rel="stylesheet" href="../shared/nav.css" />
+<link rel="stylesheet" href="../shared/sidebar.css" />
+<style>
+  :root { --mod: #C49A3A; --mod-2: rgba(255,233,184,0.10); --mod-3: #FFE9B8; }
+
+  .page { max-width: 1280px; margin: 0 auto; padding: 28px 24px; }
+
+  /* ── Hero ── */
+  .lib-hero {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    padding: 28px 32px;
+    margin-bottom: 24px;
+    display: flex; align-items: center; gap: 32px;
+  }
+  .lib-hero-text { flex: 1; }
+  .lib-kicker {
+    font-family: 'Geist Mono', monospace; font-size: 10px;
+    font-weight: 600; letter-spacing: .12em; text-transform: uppercase;
+    color: var(--mod); margin-bottom: 8px;
+    display: flex; align-items: center; gap: 6px;
+  }
+  .lib-kicker::before { content:""; width:6px;height:6px;border-radius:50%;background:var(--mod); }
+  .lib-hero h1 {
+    font-family: 'Funnel Display', sans-serif; font-weight: 800;
+    font-size: clamp(22px, 2.5vw, 32px); letter-spacing: -.03em;
+    color: var(--text); margin-bottom: 6px;
+  }
+  .lib-hero p { font-size: 13px; color: var(--text-3); max-width: 480px; }
+  .lib-stat {
+    text-align: center; padding: 0 24px;
+    border-left: 1px solid var(--border);
+  }
+  .lib-stat-n {
+    font-family: 'Funnel Display', sans-serif; font-weight: 900;
+    font-size: 36px; color: var(--mod-3); letter-spacing: -.04em;
+    line-height: 1;
+  }
+  .lib-stat-l { font-family: 'Geist Mono', monospace; font-size: 10px; color: var(--text-4); text-transform: uppercase; letter-spacing: .08em; margin-top: 3px; }
+
+  /* ── Search + filtros ── */
+  .lib-search-row {
+    display: flex; align-items: center; gap: 12px;
+    margin-bottom: 20px; flex-wrap: wrap;
+  }
+  .lib-search {
+    flex: 1; min-width: 240px;
+    background: var(--surface); border: 1px solid var(--border);
+    border-radius: 10px; padding: 10px 14px;
+    display: flex; align-items: center; gap: 8px;
+    transition: border-color .18s;
+  }
+  .lib-search:focus-within { border-color: var(--mod); box-shadow: 0 0 0 3px rgba(196,154,58,0.10); }
+  .lib-search svg { width: 14px; height: 14px; color: var(--text-3); flex-shrink: 0; }
+  .lib-search input {
+    flex: 1; background: transparent; border: 0; outline: 0;
+    font-family: inherit; font-size: 13px; color: var(--text);
+  }
+  .lib-search input::placeholder { color: var(--text-4); }
+
+  .filter-chips { display: flex; gap: 6px; flex-wrap: wrap; }
+  .chip {
+    padding: 5px 12px; border-radius: 999px;
+    font-size: 11px; font-weight: 600;
+    background: var(--surface); border: 1px solid var(--border);
+    color: var(--text-3); cursor: pointer; transition: all .15s;
+    white-space: nowrap;
+  }
+  .chip:hover { border-color: var(--mod); color: var(--mod-3); }
+  .chip.active { background: var(--mod-2); border-color: var(--mod); color: var(--mod-3); }
+
+  /* ── Sección ── */
+  .lib-section-title {
+    font-weight: 700; font-size: 15px; color: var(--text);
+    margin-bottom: 14px; display: flex; align-items: center; gap: 8px;
+  }
+  .lib-section-title .cnt {
+    font-family: 'Geist Mono', monospace; font-size: 10px;
+    color: var(--text-4); background: var(--surface-2);
+    padding: 2px 7px; border-radius: 4px; font-weight: 400;
+  }
+
+  /* ── Grid de libros ── */
+  .books-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+    gap: 16px;
+    margin-bottom: 32px;
+  }
+  .book-card {
+    background: var(--surface); border: 1px solid var(--border);
+    border-radius: 12px; overflow: hidden; cursor: pointer;
+    transition: all .2s; display: flex; flex-direction: column;
+  }
+  .book-card:hover { border-color: var(--mod); box-shadow: 0 4px 20px rgba(196,154,58,0.12); transform: translateY(-2px); }
+  .book-cover {
+    height: 130px; position: relative;
+    display: flex; align-items: center; justify-content: center;
+  }
+  .book-spine {
+    width: 6px; height: 100%; position: absolute; left: 0; top: 0;
+    border-radius: 2px 0 0 0;
+  }
+  .book-cover-icon { opacity: 0.35; }
+  .book-cover-icon svg { width: 48px; height: 48px; }
+  .book-body { padding: 12px 14px 14px; flex: 1; display: flex; flex-direction: column; gap: 6px; }
+  .book-cat {
+    font-family: 'Geist Mono', monospace; font-size: 9px;
+    font-weight: 600; letter-spacing: .08em; text-transform: uppercase;
+  }
+  .book-title { font-size: 13px; font-weight: 600; color: var(--text); line-height: 1.3; }
+  .book-author { font-size: 11px; color: var(--text-3); }
+  .book-footer {
+    margin-top: auto; padding-top: 10px;
+    display: flex; align-items: center; justify-content: space-between;
+  }
+  .book-pages { font-family: 'Geist Mono', monospace; font-size: 9px; color: var(--text-4); }
+  .book-read-btn {
+    font-size: 10px; font-weight: 600; padding: 4px 10px;
+    border-radius: 6px; border: 1px solid var(--border);
+    background: var(--surface-2); color: var(--text-2);
+    cursor: pointer; transition: all .15s;
+  }
+  .book-read-btn:hover { background: var(--mod-2); border-color: var(--mod); color: var(--mod-3); }
+  .book-read-btn.reading { background: var(--mod-2); border-color: var(--mod); color: var(--mod-3); }
+
+  /* progress bar */
+  .book-progress { height: 2px; background: var(--border); border-radius: 999px; margin-top: 6px; }
+  .book-progress-fill { height: 100%; border-radius: 999px; background: var(--mod); }
+</style>
+</head>
+<body>
+
+<nav class="nav">
+  <div class="nav-inner">
+    <div class="nav-brand">
+      <a href="orbit-u.html" class="nav-back">
+        <span class="orbit-ico" aria-hidden="true"></span>
+        Orbit<span class="nav-back-u">·U</span>
+      </a>
+      <span class="nav-sep" aria-hidden="true"></span>
+      <a href="orbit-u.html" class="brand">conn<span>i</span>k<span class="u-pack">u<span class="dot">.</span></span></a>
+    </div>
+    <span class="nav-mod-name">Biblioteca</span>
+    <div class="nav-right">
+      <button class="nav-ico" aria-label="Notificaciones">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" width="18" height="18"><path d="M18 8A6 6 0 006 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 01-3.46 0"/></svg>
+      </button>
+      <div class="nav-av">CG</div>
+    </div>
+  </div>
+</nav>
+
+<div class="page">
+
+  <div class="lib-hero">
+    <div class="lib-hero-text">
+      <div class="lib-kicker">Biblioteca digital Conniku</div>
+      <h1>+70.000 títulos académicos</h1>
+      <p>Textos universitarios, papers y manuales en un solo lugar. Acceso inmediato, lectura inline y citas automáticas para tus workspaces.</p>
+    </div>
+    <div class="lib-stat">
+      <div class="lib-stat-n">70k+</div>
+      <div class="lib-stat-l">Títulos</div>
+    </div>
+    <div class="lib-stat">
+      <div class="lib-stat-n">12</div>
+      <div class="lib-stat-l">Categorías</div>
+    </div>
+    <div class="lib-stat">
+      <div class="lib-stat-n">3</div>
+      <div class="lib-stat-l">Leyendo</div>
+    </div>
+  </div>
+
+  <div class="lib-search-row">
+    <div class="lib-search">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
+      <input type="text" placeholder="Buscar por título, autor, ISBN o tema..." />
+    </div>
+  </div>
+  <div class="filter-chips" style="margin-bottom:24px">
+    <button class="chip active">Todos</button>
+    <button class="chip">Ingeniería</button>
+    <button class="chip">Ciencias</button>
+    <button class="chip">Humanidades</button>
+    <button class="chip">Derecho</button>
+    <button class="chip">Medicina</button>
+    <button class="chip">Arte y Diseño</button>
+    <button class="chip">Economía</button>
+  </div>
+
+  <div class="lib-section-title">Continuando lectura <span class="cnt">3</span></div>
+  <div class="books-grid">
+    <div class="book-card">
+      <div class="book-cover" style="background:linear-gradient(135deg,#1A1D23,#252830)">
+        <div class="book-spine" style="background:#6B4EFF"></div>
+        <div class="book-cover-icon"><svg viewBox="0 0 24 24" fill="none" stroke="#B8A6FF" stroke-width="1.5"><path d="M2 3h6a4 4 0 014 4v14a3 3 0 00-3-3H2z"/><path d="M22 3h-6a4 4 0 00-4 4v14a3 3 0 013-3h7z"/></svg></div>
+      </div>
+      <div class="book-body">
+        <div class="book-cat" style="color:#B8A6FF">Matemáticas</div>
+        <div class="book-title">Análisis Matemático Vol. II</div>
+        <div class="book-author">Apostol, T. M.</div>
+        <div class="book-progress"><div class="book-progress-fill" style="width:64%"></div></div>
+        <div class="book-footer">
+          <span class="book-pages">p. 384 / 600</span>
+          <button class="book-read-btn reading">Continuar</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="book-card">
+      <div class="book-cover" style="background:linear-gradient(135deg,#1A1D23,#252830)">
+        <div class="book-spine" style="background:#00C27A"></div>
+        <div class="book-cover-icon"><svg viewBox="0 0 24 24" fill="none" stroke="#8AEAC0" stroke-width="1.5"><path d="M2 3h6a4 4 0 014 4v14a3 3 0 00-3-3H2z"/><path d="M22 3h-6a4 4 0 00-4 4v14a3 3 0 013-3h7z"/></svg></div>
+      </div>
+      <div class="book-body">
+        <div class="book-cat" style="color:#8AEAC0">Computación</div>
+        <div class="book-title">Algorithms, 4th Edition</div>
+        <div class="book-author">Sedgewick, R. & Wayne, K.</div>
+        <div class="book-progress"><div class="book-progress-fill" style="width:28%;background:#00C27A"></div></div>
+        <div class="book-footer">
+          <span class="book-pages">p. 168 / 976</span>
+          <button class="book-read-btn reading" style="background:rgba(0,194,122,0.10);border-color:#00C27A;color:#8AEAC0">Continuar</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="book-card">
+      <div class="book-cover" style="background:linear-gradient(135deg,#1A1D23,#252830)">
+        <div class="book-spine" style="background:#C49A3A"></div>
+        <div class="book-cover-icon"><svg viewBox="0 0 24 24" fill="none" stroke="#FFE9B8" stroke-width="1.5"><path d="M2 3h6a4 4 0 014 4v14a3 3 0 00-3-3H2z"/><path d="M22 3h-6a4 4 0 00-4 4v14a3 3 0 013-3h7z"/></svg></div>
+      </div>
+      <div class="book-body">
+        <div class="book-cat" style="color:#FFE9B8">Filosofía</div>
+        <div class="book-title">Crítica de la Razón Pura</div>
+        <div class="book-author">Kant, I.</div>
+        <div class="book-progress"><div class="book-progress-fill" style="width:11%"></div></div>
+        <div class="book-footer">
+          <span class="book-pages">p. 55 / 480</span>
+          <button class="book-read-btn reading">Continuar</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="lib-section-title">Recomendados para ti <span class="cnt">12</span></div>
+  <div class="books-grid">
+    <div class="book-card">
+      <div class="book-cover" style="background:linear-gradient(135deg,#0F1C1A,#1A2E28)">
+        <div class="book-spine" style="background:#00C27A"></div>
+        <div class="book-cover-icon"><svg viewBox="0 0 24 24" fill="none" stroke="#8AEAC0" stroke-width="1.5"><path d="M2 3h6a4 4 0 014 4v14a3 3 0 00-3-3H2z"/><path d="M22 3h-6a4 4 0 00-4 4v14a3 3 0 013-3h7z"/></svg></div>
+      </div>
+      <div class="book-body">
+        <div class="book-cat" style="color:#8AEAC0">Redes</div>
+        <div class="book-title">Computer Networks, 5th Ed.</div>
+        <div class="book-author">Tanenbaum, A.</div>
+        <div class="book-footer"><span class="book-pages">912 págs.</span><button class="book-read-btn">Leer</button></div>
+      </div>
+    </div>
+
+    <div class="book-card">
+      <div class="book-cover" style="background:linear-gradient(135deg,#1A1023,#251838)">
+        <div class="book-spine" style="background:#6B4EFF"></div>
+        <div class="book-cover-icon"><svg viewBox="0 0 24 24" fill="none" stroke="#B8A6FF" stroke-width="1.5"><path d="M2 3h6a4 4 0 014 4v14a3 3 0 00-3-3H2z"/><path d="M22 3h-6a4 4 0 00-4 4v14a3 3 0 013-3h7z"/></svg></div>
+      </div>
+      <div class="book-body">
+        <div class="book-cat" style="color:#B8A6FF">Computación</div>
+        <div class="book-title">Artificial Intelligence: A Modern Approach</div>
+        <div class="book-author">Russell & Norvig</div>
+        <div class="book-footer"><span class="book-pages">1.115 págs.</span><button class="book-read-btn">Leer</button></div>
+      </div>
+    </div>
+
+    <div class="book-card">
+      <div class="book-cover" style="background:linear-gradient(135deg,#1C1A0F,#2E2818)">
+        <div class="book-spine" style="background:#C49A3A"></div>
+        <div class="book-cover-icon"><svg viewBox="0 0 24 24" fill="none" stroke="#FFE9B8" stroke-width="1.5"><path d="M2 3h6a4 4 0 014 4v14a3 3 0 00-3-3H2z"/><path d="M22 3h-6a4 4 0 00-4 4v14a3 3 0 013-3h7z"/></svg></div>
+      </div>
+      <div class="book-body">
+        <div class="book-cat" style="color:#FFE9B8">Economía</div>
+        <div class="book-title">Principios de Microeconomía</div>
+        <div class="book-author">Mankiw, N. G.</div>
+        <div class="book-footer"><span class="book-pages">586 págs.</span><button class="book-read-btn">Leer</button></div>
+      </div>
+    </div>
+
+    <div class="book-card">
+      <div class="book-cover" style="background:linear-gradient(135deg,#0F1A1C,#182830)">
+        <div class="book-spine" style="background:#00C2FF"></div>
+        <div class="book-cover-icon"><svg viewBox="0 0 24 24" fill="none" stroke="#7FDAFF" stroke-width="1.5"><path d="M2 3h6a4 4 0 014 4v14a3 3 0 00-3-3H2z"/><path d="M22 3h-6a4 4 0 00-4 4v14a3 3 0 013-3h7z"/></svg></div>
+      </div>
+      <div class="book-body">
+        <div class="book-cat" style="color:#7FDAFF">Estadística</div>
+        <div class="book-title">Introduction to Probability</div>
+        <div class="book-author">Blitzstein & Hwang</div>
+        <div class="book-footer"><span class="book-pages">596 págs.</span><button class="book-read-btn">Leer</button></div>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<script src="../shared/sidebar.js"></script>
+<script src="../shared/theme-loader.js"></script>
+</body>
+</html>

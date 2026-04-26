@@ -1,0 +1,559 @@
+<!DOCTYPE html>
+<html lang="es" data-theme="ember-dk">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>Dark Themes v2 · Conniku</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"/>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Funnel+Display:wght@700;800;900&family=Inter:wght@400;500;600;700&family=Geist+Mono:wght@400;500;600&display=swap"/>
+<style>
+* { box-sizing: border-box; margin: 0; padding: 0; }
+
+/* ═══════════════════════════════════════════════════════
+   DARK THEMES — misma lógica que light:
+   el fondo contrasta con el signature, pero todo oscuro.
+   Opuesto al light: donde el light tenía bg frío → dark tiene bg cálido, y viceversa.
+   ═══════════════════════════════════════════════════════ */
+
+/* 1 · EMBER DARK */
+[data-theme="ember-dk"] {
+  --bg:        #10141E;
+  --surface:   #1E2538;
+  --surface-2: #28304A;
+  --surface-3: #333D5A;
+  --border:    rgba(255,255,255,.11);
+  --border-2:  rgba(255,255,255,.07);
+  --text:      #F0EAE2;
+  --text-2:    #CCB8A0;
+  --text-3:    #7A6A58;
+  --text-4:    #48382C;
+  --sig:       #FF4A1C;
+  --sig-soft:  rgba(255,74,28,.14);
+  --sig-mid:   rgba(255,74,28,.28);
+  --sig-ink:   #FFFFFF;
+  --hex-bg:    #10141E;
+  --ban1:      rgba(255,74,28,.22);
+  --ban2:      rgba(255,74,28,.07);
+}
+
+/* 2 · COSMOS DARK */
+[data-theme="cosmos-dk"] {
+  --bg:        #1A1510;
+  --surface:   #2C2218;
+  --surface-2: #382C22;
+  --surface-3: #46382E;
+  --border:    rgba(255,255,255,.11);
+  --border-2:  rgba(255,255,255,.07);
+  --text:      #EEE4FF;
+  --text-2:    #C0AADC;
+  --text-3:    #7060A0;
+  --text-4:    #443858;
+  --sig:       #8B6FFF;
+  --sig-soft:  rgba(139,111,255,.14);
+  --sig-mid:   rgba(139,111,255,.28);
+  --sig-ink:   #FFFFFF;
+  --hex-bg:    #1A1510;
+  --ban1:      rgba(139,111,255,.22);
+  --ban2:      rgba(139,111,255,.07);
+}
+
+/* 3 · FOREST DARK */
+[data-theme="forest-dk"] {
+  --bg:        #181210;
+  --surface:   #28201E;
+  --surface-2: #342A28;
+  --surface-3: #403632;
+  --border:    rgba(255,255,255,.11);
+  --border-2:  rgba(255,255,255,.07);
+  --text:      #E4F4E8;
+  --text-2:    #AACCA0;
+  --text-3:    #587858;
+  --text-4:    #304030;
+  --sig:       #00C87A;
+  --sig-soft:  rgba(0,200,122,.12);
+  --sig-mid:   rgba(0,200,122,.26);
+  --sig-ink:   #0D1A10;
+  --hex-bg:    #181210;
+  --ban1:      rgba(0,200,122,.20);
+  --ban2:      rgba(0,200,122,.06);
+}
+
+/* 4 · OCEAN DARK */
+[data-theme="ocean-dk"] {
+  --bg:        #1A1710;
+  --surface:   #2C2618;
+  --surface-2: #383022;
+  --surface-3: #463C2C;
+  --border:    rgba(255,255,255,.11);
+  --border-2:  rgba(255,255,255,.07);
+  --text:      #DCEEFA;
+  --text-2:    #A0C0DC;
+  --text-3:    #587090;
+  --text-4:    #344458;
+  --sig:       #00C2FF;
+  --sig-soft:  rgba(0,194,255,.12);
+  --sig-mid:   rgba(0,194,255,.26);
+  --sig-ink:   #06141E;
+  --hex-bg:    #1A1710;
+  --ban1:      rgba(0,194,255,.20);
+  --ban2:      rgba(0,194,255,.06);
+}
+
+/* 5 · AMBER DARK */
+[data-theme="amber-dk"] {
+  --bg:        #0E1220;
+  --surface:   #1C2440;
+  --surface-2: #263050;
+  --surface-3: #303C62;
+  --border:    rgba(255,255,255,.11);
+  --border-2:  rgba(255,255,255,.07);
+  --text:      #F4ECD4;
+  --text-2:    #D4BC88;
+  --text-3:    #787050;
+  --text-4:    #444028;
+  --sig:       #E8A820;
+  --sig-soft:  rgba(232,168,32,.12);
+  --sig-mid:   rgba(232,168,32,.26);
+  --sig-ink:   #1A1400;
+  --hex-bg:    #0E1220;
+  --ban1:      rgba(232,168,32,.20);
+  --ban2:      rgba(232,168,32,.06);
+}
+
+/* 6 · NAVY DARK */
+[data-theme="navy-dk"] {
+  --bg:        #181410;
+  --surface:   #282018;
+  --surface-2: #342A22;
+  --surface-3: #40342C;
+  --border:    rgba(255,255,255,.11);
+  --border-2:  rgba(255,255,255,.07);
+  --text:      #DCE8FC;
+  --text-2:    #A0BADC;
+  --text-3:    #587090;
+  --text-4:    #344460;
+  --sig:       #4A80FF;
+  --sig-soft:  rgba(74,128,255,.14);
+  --sig-mid:   rgba(74,128,255,.28);
+  --sig-ink:   #FFFFFF;
+  --hex-bg:    #181410;
+  --ban1:      rgba(74,128,255,.22);
+  --ban2:      rgba(74,128,255,.07);
+}
+
+/* ═══════════════════════════
+   BASE STYLES
+   ═══════════════════════════ */
+html, body {
+  background: var(--bg) !important;
+  min-height: 100vh;
+  font-family: 'Inter', sans-serif;
+  font-size: 14px;
+  -webkit-font-smoothing: antialiased;
+  color: var(--text);
+  transition: background .35s, color .35s;
+}
+
+#hexTide { position: fixed; inset: 0; pointer-events: none; z-index: 0; width: 100%; height: 100%; }
+.wrap { position: relative; z-index: 2; max-width: 1160px; margin: 0 auto; padding: 24px; }
+
+/* ── SELECTOR ── */
+.switcher {
+  position: sticky; top: 0; z-index: 50;
+  background: var(--surface);
+  border-bottom: 1px solid var(--border);
+  padding: 11px 24px;
+  display: flex; gap: 6px; align-items: center;
+  box-shadow: 0 2px 20px rgba(0,0,0,.35);
+  transition: background .35s;
+}
+.switcher-label {
+  font-family: 'Geist Mono', monospace; font-size: 9px;
+  letter-spacing: .14em; color: var(--text-3); text-transform: uppercase; margin-right: 6px;
+}
+.tbtn {
+  border: 1.5px solid var(--border); cursor: pointer;
+  font-family: 'Geist Mono', monospace; font-size: 10px; font-weight: 600;
+  padding: 5px 14px; border-radius: 20px; transition: all .18s;
+  background: var(--surface-2); color: var(--text-3);
+}
+.tbtn:hover { border-color: var(--sig); color: var(--sig); }
+.tbtn.on    { background: var(--sig); color: var(--sig-ink); border-color: transparent; }
+.badge-cur  { margin-left: auto; font-family: 'Geist Mono', monospace; font-size: 10px; color: var(--text-4); }
+
+/* ── NAV ── */
+.nav {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 14px; height: 54px;
+  display: flex; align-items: center; padding: 0 18px; gap: 10px;
+  margin-bottom: 18px;
+  box-shadow: 0 2px 20px rgba(0,0,0,.25);
+  transition: background .35s, border-color .35s;
+}
+.nav-name { font-family: 'Funnel Display', sans-serif; font-weight: 800; font-size: 16px; color: var(--text); transition: color .35s; }
+.nav-link { padding: 5px 12px; border-radius: 20px; font-size: 12px; font-weight: 600; background: transparent; border: none; color: var(--text-3); cursor: pointer; transition: all .2s; }
+.nav-link.on { background: var(--sig-soft); color: var(--sig); }
+.nav-link:hover { background: rgba(255,255,255,.06); color: var(--text-2); }
+.nav-search { flex: 1; max-width: 240px; margin-left: 6px; background: var(--surface-2); border: 1.5px solid var(--border-2); border-radius: 10px; height: 34px; padding: 0 12px; font-size: 12px; font-family: 'Inter', sans-serif; color: var(--text-2); outline: none; transition: all .3s; }
+.nav-search:focus { border-color: var(--sig); }
+.nav-search::placeholder { color: var(--text-4); }
+.nav-r { margin-left: auto; display: flex; gap: 8px; align-items: center; }
+.nav-btn { width: 34px; height: 34px; border-radius: 10px; position: relative; background: var(--surface-2); border: 1px solid var(--border-2); display: grid; place-items: center; cursor: pointer; font-size: 15px; color: var(--text-3); transition: all .2s; }
+.nav-btn:hover { background: var(--surface-3); }
+.ndot { position: absolute; top: 5px; right: 5px; width: 8px; height: 8px; border-radius: 50%; background: var(--sig); border: 2px solid var(--surface); }
+.nav-me { width: 34px; height: 34px; border-radius: 50%; background: var(--sig); color: var(--sig-ink); font-size: 11px; font-weight: 800; display: grid; place-items: center; cursor: pointer; border: 2px solid var(--surface-3); transition: background .35s; }
+
+/* ── COVER ── */
+.cover {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 18px; overflow: hidden; margin-bottom: 18px;
+  box-shadow: 0 4px 28px rgba(0,0,0,.30);
+  transition: background .35s, border-color .35s;
+}
+.cover-band {
+  height: 110px; position: relative;
+  background:
+    radial-gradient(ellipse at 20% 60%, var(--ban1), transparent 60%),
+    radial-gradient(ellipse at 85% 30%, var(--ban2), transparent 55%),
+    var(--surface-2);
+}
+.cover-band::before {
+  content: ''; position: absolute; top: 0; left: 0; right: 0; height: 3px;
+  background: linear-gradient(90deg, var(--sig), transparent 70%);
+}
+.cover-band::after {
+  content: ''; position: absolute; inset: 0;
+  background: linear-gradient(180deg, transparent 40%, var(--surface) 100%);
+}
+.cover-body { padding: 0 22px 18px; }
+.cover-row  { display: flex; align-items: flex-end; gap: 16px; margin-bottom: 16px; }
+.cover-av   { width: 74px; height: 74px; border-radius: 18px; flex-shrink: 0; background: linear-gradient(135deg, var(--sig), color-mix(in srgb, var(--sig) 55%, var(--surface-3))); border: 4px solid var(--surface); margin-top: -37px; display: grid; place-items: center; font-size: 12px; font-weight: 900; color: var(--sig-ink); box-shadow: 0 4px 20px rgba(0,0,0,.35); transition: border-color .35s; }
+.cover-info { flex: 1; }
+.cover-n    { font-weight: 800; font-size: 18px; color: var(--text); letter-spacing: -.3px; transition: color .35s; }
+.cover-s    { font-size: 12px; color: var(--text-3); margin-top: 3px; transition: color .35s; }
+.cover-chips { display: flex; gap: 6px; flex-wrap: wrap; margin-top: 8px; }
+.chip       { padding: 3px 10px; border-radius: 20px; font-size: 10px; font-weight: 700; letter-spacing: .05em; border: 1.5px solid; transition: all .35s; }
+.chip-sig   { background: var(--sig); color: var(--sig-ink); border-color: transparent; }
+.chip-out   { background: var(--surface-2); color: var(--text-3); border-color: var(--border-2); }
+.cover-btns { display: flex; gap: 8px; }
+.btn-p { padding: 8px 20px; border-radius: 10px; background: var(--sig); border: none; color: var(--sig-ink); font-weight: 700; font-size: 12px; cursor: pointer; font-family: 'Inter', sans-serif; transition: all .2s; box-shadow: 0 2px 12px rgba(0,0,0,.3); }
+.btn-p:hover { filter: brightness(1.12); transform: translateY(-1px); }
+.btn-o { padding: 8px 18px; border-radius: 10px; background: transparent; border: 1.5px solid var(--border); color: var(--text-2); font-weight: 600; font-size: 12px; cursor: pointer; font-family: 'Inter', sans-serif; transition: all .2s; }
+.btn-o:hover { border-color: var(--sig); color: var(--sig); }
+.cover-stats { display: flex; padding-top: 14px; border-top: 1px solid var(--border-2); }
+.cs   { flex: 1; text-align: center; border-right: 1px solid var(--border-2); padding: 0 8px; }
+.cs:last-child { border-right: none; }
+.cs-n { font-weight: 800; font-size: 16px; color: var(--sig); transition: color .35s; }
+.cs-l { font-size: 10px; color: var(--text-4); text-transform: uppercase; letter-spacing: .06em; margin-top: 2px; }
+
+/* ── LAYOUT ── */
+.layout { display: grid; grid-template-columns: 1fr 308px; gap: 16px; }
+
+/* ── CARDS ── */
+.card {
+  background: var(--surface);
+  border: 1px solid var(--border-2); border-radius: 14px; padding: 16px; margin-bottom: 14px;
+  box-shadow: 0 2px 16px rgba(0,0,0,.20);
+  transition: background .35s, border-color .35s, box-shadow .2s;
+}
+.card:hover { background: var(--surface-2); border-color: var(--border); box-shadow: 0 4px 24px rgba(0,0,0,.28); }
+
+/* ── COMPOSER ── */
+.cmp-row  { display: flex; gap: 12px; align-items: flex-start; }
+.cmp-av   { width: 40px; height: 40px; border-radius: 50%; background: var(--sig); color: var(--sig-ink); font-weight: 800; font-size: 12px; display: grid; place-items: center; flex-shrink: 0; transition: background .35s; }
+.cmp-r    { flex: 1; }
+.cmp-in   { width: 100%; background: var(--surface-3); border: 1.5px solid var(--border); border-radius: 12px; outline: none; resize: none; font-family: 'Inter', sans-serif; font-size: 13px; color: var(--text); padding: 10px 14px; min-height: 50px; line-height: 1.5; transition: all .3s; }
+.cmp-in:focus { border-color: var(--sig); background: var(--surface-2); }
+.cmp-in::placeholder { color: var(--text-3); }
+.cmp-foot { display: flex; align-items: center; gap: 6px; margin-top: 10px; }
+.cmp-act  { height: 30px; padding: 0 10px; border-radius: 8px; background: var(--surface-2); border: 1px solid var(--border-2); cursor: pointer; font-size: 11px; color: var(--text-3); font-family: 'Inter', sans-serif; transition: all .2s; }
+.cmp-act:hover { background: var(--surface-3); color: var(--text); }
+.btn-pub  { margin-left: auto; padding: 8px 20px; border-radius: 20px; border: none; cursor: pointer; font-family: 'Inter', sans-serif; font-weight: 700; font-size: 12px; background: var(--sig); color: var(--sig-ink); transition: all .2s; }
+.btn-pub:hover { filter: brightness(1.1); }
+
+/* ── POST ── */
+.ph     { display: flex; gap: 10px; align-items: flex-start; margin-bottom: 12px; }
+.pav    { width: 40px; height: 40px; border-radius: 50%; flex-shrink: 0; background: var(--surface-2); border: 2px solid var(--border-2); display: grid; place-items: center; font-size: 18px; }
+.pmt    { flex: 1; }
+.pn     { font-weight: 700; font-size: 13px; color: var(--text); transition: color .35s; }
+.pt     { font-size: 11px; color: var(--text-3); margin-top: 1px; }
+.pm     { color: var(--text-4); font-size: 18px; cursor: pointer; }
+.ptag   { display: inline-flex; align-items: center; gap: 4px; padding: 3px 10px; border-radius: 20px; font-size: 10px; font-weight: 700; letter-spacing: .05em; margin-bottom: 10px; background: var(--sig-soft); color: var(--sig); border: 1px solid var(--sig-mid); transition: all .35s; }
+.pbody  { font-size: 13px; line-height: 1.65; color: var(--text); opacity: .85; }
+.pbody strong { color: var(--text); font-weight: 700; opacity: 1; }
+.pimg   { width: 100%; height: 120px; border-radius: 10px; margin: 10px 0; background: linear-gradient(135deg, var(--surface-3), var(--surface-2)); border: 1px solid var(--border); display: flex; align-items: center; justify-content: center; gap: 10px; }
+.pimg-ic { font-size: 28px; }
+.pimg-tx { font-size: 12px; color: var(--text-2); font-weight: 600; }
+.pstat  { display: flex; margin: 10px 0; background: var(--surface-3); border-radius: 10px; border: 1px solid var(--border); overflow: hidden; }
+.psi    { flex: 1; text-align: center; padding: 10px 6px; border-right: 1px solid var(--border-2); }
+.psi:last-child { border-right: none; }
+.psi-n  { font-weight: 800; font-size: 15px; color: var(--sig); }
+.psi-l  { font-size: 9px; color: var(--text-4); text-transform: uppercase; letter-spacing: .06em; margin-top: 1px; }
+.pacts  { display: flex; gap: 2px; margin-top: 10px; padding-top: 10px; border-top: 1px solid var(--border-2); }
+.pa     { flex: 1; padding: 7px 4px; border-radius: 8px; background: transparent; border: none; cursor: pointer; font-family: 'Inter', sans-serif; font-size: 11px; font-weight: 600; color: var(--text-3); display: flex; align-items: center; justify-content: center; gap: 5px; transition: all .18s; }
+.pa:hover { background: var(--sig-soft); color: var(--sig); }
+.pa-l   { color: #E06060; }
+.pa-l:hover { background: rgba(224,96,96,.10); }
+
+/* ── SIDE ── */
+.sc  { background: var(--surface); border: 1px solid var(--border-2); border-radius: 14px; padding: 16px; margin-bottom: 14px; box-shadow: 0 2px 16px rgba(0,0,0,.18); transition: background .35s, border-color .35s; }
+.sc-top { height: 3px; margin: -16px -16px 14px; border-radius: 14px 14px 0 0; background: var(--sig); opacity: .7; }
+.sh  { display: flex; align-items: center; justify-content: space-between; margin-bottom: 14px; }
+.st  { font-weight: 800; font-size: 13px; color: var(--text); letter-spacing: -.2px; }
+.sl  { font-size: 11px; color: var(--sig); font-weight: 600; cursor: pointer; }
+.pri { display: flex; align-items: center; gap: 10px; padding: 9px 0; border-bottom: 1px solid var(--border-2); }
+.pri:last-child { border-bottom: none; padding-bottom: 0; }
+.prico { width: 36px; height: 36px; border-radius: 10px; flex-shrink: 0; background: var(--sig-soft); border: 1px solid var(--sig-mid); display: grid; place-items: center; font-size: 16px; }
+.prin { font-weight: 600; font-size: 12px; color: var(--text); }
+.pris { font-size: 10px; color: var(--text-3); margin-top: 1px; }
+.prbw { height: 5px; background: var(--surface-3); border-radius: 5px; margin-top: 5px; overflow: hidden; }
+.prb  { height: 100%; border-radius: 5px; background: var(--sig); transition: background .35s; }
+.prpct { font-size: 11px; font-weight: 800; color: var(--sig); white-space: nowrap; }
+.li   { display: flex; align-items: center; gap: 10px; padding: 8px 0; border-bottom: 1px solid var(--border-2); }
+.li:last-child { border-bottom: none; }
+.lpos { width: 22px; font-size: 12px; font-weight: 800; text-align: center; color: var(--text-3); flex-shrink: 0; }
+.gold { color: #D4920E; } .silver { color: #808898; } .bronze { color: #B06838; }
+.lav  { width: 32px; height: 32px; border-radius: 50%; flex-shrink: 0; background: var(--surface-2); border: 2px solid var(--border); display: grid; place-items: center; font-size: 14px; }
+.lme .lav   { background: var(--sig); border-color: transparent; font-size: 10px; font-weight: 800; color: var(--sig-ink); }
+.lname      { font-weight: 600; font-size: 12px; color: var(--text); flex: 1; }
+.lme .lname { color: var(--sig); font-weight: 700; }
+.lpts { font-size: 11px; font-weight: 800; color: var(--text-2); }
+.lxp  { font-size: 9px; color: var(--text-4); text-align: right; }
+.mgrid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+.mc   { border-radius: 12px; padding: 12px 10px; cursor: pointer; background: var(--surface-2); border: 1.5px solid var(--border-2); transition: all .2s; }
+.mc:hover { background: var(--surface-3); transform: translateY(-2px); box-shadow: 0 4px 16px rgba(0,0,0,.25); }
+.mc-ic { font-size: 22px; margin-bottom: 6px; }
+.mc-n  { font-weight: 700; font-size: 11px; color: var(--text); }
+.mc-s  { font-size: 10px; color: var(--text-3); margin-top: 1px; }
+.mc-b  { display: inline-block; margin-top: 5px; padding: 2px 7px; border-radius: 20px; font-size: 9px; font-weight: 700; background: var(--sig-soft); color: var(--sig); }
+.si   { display: flex; align-items: center; gap: 10px; padding: 8px 0; border-bottom: 1px solid var(--border-2); }
+.si:last-child { border-bottom: none; }
+.sav  { width: 36px; height: 36px; border-radius: 50%; flex-shrink: 0; background: var(--surface-2); border: 2px solid var(--border-2); display: grid; place-items: center; font-size: 16px; }
+.sn   { font-weight: 600; font-size: 12px; color: var(--text); }
+.ss   { font-size: 10px; color: var(--text-3); margin-top: 1px; }
+.bflw { padding: 5px 12px; border-radius: 20px; background: var(--sig-soft); border: 1.5px solid var(--sig-mid); color: var(--sig); font-family: 'Inter', sans-serif; font-weight: 700; font-size: 11px; cursor: pointer; transition: all .2s; white-space: nowrap; }
+.bflw:hover { background: var(--sig); color: var(--sig-ink); border-color: transparent; }
+.mstats { display: flex; gap: 10px; margin-bottom: 16px; }
+.ms  { flex: 1; background: var(--surface); border: 1px solid var(--border-2); border-radius: 12px; padding: 12px; text-align: center; box-shadow: 0 2px 10px rgba(0,0,0,.18); transition: all .35s; }
+.msn { font-weight: 800; font-size: 18px; margin-bottom: 2px; color: var(--sig); transition: color .35s; }
+.msl { font-size: 10px; color: var(--text-4); text-transform: uppercase; letter-spacing: .06em; }
+</style>
+</head>
+<body>
+<canvas id="hexTide"></canvas>
+
+<!-- SELECTOR -->
+<div class="switcher">
+  <span class="switcher-label">Dark v2 ·</span>
+  <button class="tbtn on"  data-t="ember-dk">🔥 Ember</button>
+  <button class="tbtn" data-t="cosmos-dk">🪐 Cosmos</button>
+  <button class="tbtn" data-t="forest-dk">🌿 Forest</button>
+  <button class="tbtn" data-t="ocean-dk">🌊 Ocean</button>
+  <button class="tbtn" data-t="amber-dk">🍯 Amber</button>
+  <button class="tbtn" data-t="navy-dk">🔵 Navy</button>
+  <span class="badge-cur" id="cur">ember-dk</span>
+</div>
+
+<div class="wrap">
+
+  <div class="mstats">
+    <div class="ms"><div class="msn">1,240</div><div class="msl">XP</div></div>
+    <div class="ms"><div class="msn">48</div><div class="msl">Módulos</div></div>
+    <div class="ms"><div class="msn">4</div><div class="msl">Certs.</div></div>
+    <div class="ms"><div class="msn">23</div><div class="msl">Conexiones</div></div>
+    <div class="ms"><div class="msn">#4</div><div class="msl">Ranking</div></div>
+  </div>
+
+  <nav class="nav">
+    <!-- LOGO PENDIENTE -->
+    <span class="nav-name">Conniku</span>
+    <button class="nav-link on">Inicio</button>
+    <button class="nav-link">Módulos</button>
+    <button class="nav-link">Empleo</button>
+    <input class="nav-search" placeholder="🔍  Buscar…"/>
+    <div class="nav-r">
+      <button class="nav-btn">🔔<span class="ndot"></span></button>
+      <button class="nav-btn">✉️</button>
+      <div class="nav-me">CG</div>
+    </div>
+  </nav>
+
+  <div class="cover">
+    <div class="cover-band"></div>
+    <div class="cover-body">
+      <div class="cover-row">
+        <div class="cover-av">CG</div>
+        <div class="cover-info">
+          <div class="cover-n">Cristian G.</div>
+          <div class="cover-s">Diseñador UX/UI · Ciudad de México · Conniku Beta</div>
+          <div class="cover-chips">
+            <span class="chip chip-sig">✦ Platino</span>
+            <span class="chip chip-out">UX/UI</span>
+            <span class="chip chip-out">IA Aplicada</span>
+            <span class="chip chip-out">Open to work</span>
+          </div>
+        </div>
+        <div class="cover-btns">
+          <button class="btn-o">+ Conectar</button>
+          <button class="btn-p">Mensaje</button>
+        </div>
+      </div>
+      <div class="cover-stats">
+        <div class="cs"><div class="cs-n">48</div><div class="cs-l">Módulos</div></div>
+        <div class="cs"><div class="cs-n">1,240</div><div class="cs-l">XP</div></div>
+        <div class="cs"><div class="cs-n">23</div><div class="cs-l">Conexiones</div></div>
+        <div class="cs"><div class="cs-n">4</div><div class="cs-l">Certs.</div></div>
+        <div class="cs"><div class="cs-n">#4</div><div class="cs-l">Ranking</div></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="layout">
+    <div>
+      <div class="card">
+        <div class="cmp-row">
+          <div class="cmp-av">CG</div>
+          <div class="cmp-r">
+            <textarea class="cmp-in" placeholder="Comparte un logro, pregunta o idea…"></textarea>
+            <div class="cmp-foot">
+              <button class="cmp-act">📷 Foto</button>
+              <button class="cmp-act">🎬 Video</button>
+              <button class="cmp-act">🏷 Tema</button>
+              <button class="btn-pub">Publicar →</button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="ph">
+          <div class="pav">👩‍💻</div>
+          <div class="pmt"><div class="pn">Ana Martínez</div><div class="pt">hace 15 min · <span style="color:var(--sig);font-weight:700">Biblioteca</span></div></div>
+          <div class="pm">···</div>
+        </div>
+        <div class="ptag">📚 Módulo completado</div>
+        <div class="pbody">Terminé <strong>Fundamentos de IA Generativa</strong> con 98/100. La metodología de Conniku es increíble: aprendes haciendo desde el día 1.</div>
+        <div class="pstat">
+          <div class="psi"><div class="psi-n">98</div><div class="psi-l">Puntaje</div></div>
+          <div class="psi"><div class="psi-n">14d</div><div class="psi-l">Duración</div></div>
+          <div class="psi"><div class="psi-n">+280</div><div class="psi-l">XP ganados</div></div>
+        </div>
+        <div class="pacts">
+          <button class="pa pa-l">❤️ 24</button>
+          <button class="pa">💬 8</button>
+          <button class="pa">🔁 Compartir</button>
+          <button class="pa">🔖</button>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="ph">
+          <div class="pav">🧑‍🎓</div>
+          <div class="pmt"><div class="pn">Rodrigo Vargas</div><div class="pt">hace 1 h · <span style="color:var(--sig);font-weight:700">Empleo</span></div></div>
+          <div class="pm">···</div>
+        </div>
+        <div class="ptag">🏆 Logro desbloqueado</div>
+        <div class="pbody">Primera entrevista con el módulo de <strong>Portafolio Profesional</strong>. Athena me ayudó en solo 3 sesiones 🚀</div>
+        <div class="pimg"><div class="pimg-ic">🎓</div><div class="pimg-tx">Portafolio · 8 proyectos · Nivel Avanzado</div></div>
+        <div class="pacts">
+          <button class="pa">🔥 41</button>
+          <button class="pa">💬 15</button>
+          <button class="pa">🔁 Compartir</button>
+          <button class="pa">🔖</button>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="ph">
+          <div class="pav">👨‍🏫</div>
+          <div class="pmt"><div class="pn">Sofía Pedraza</div><div class="pt">hace 3 h · <span style="color:var(--sig);font-weight:700">Comunidad</span></div></div>
+          <div class="pm">···</div>
+        </div>
+        <div class="ptag">⭐ Top Semanal</div>
+        <div class="pbody">Llegué a nivel <strong>Platino</strong> esta semana 🥇 El reto fue duro pero valió cada minuto!</div>
+        <div class="pacts">
+          <button class="pa">⭐ 87</button>
+          <button class="pa">💬 32</button>
+          <button class="pa">🔁 Compartir</button>
+          <button class="pa">🔖</button>
+        </div>
+      </div>
+    </div>
+
+    <div>
+      <div class="sc">
+        <div class="sc-top"></div>
+        <div class="sh"><div class="st">Mi progreso</div><span class="sl">Ver todo →</span></div>
+        <div class="pri"><div class="prico">📐</div><div style="flex:1"><div class="prin">Diseño UX</div><div class="pris">Activo</div><div class="prbw"><div class="prb" style="width:68%"></div></div></div><div class="prpct">68%</div></div>
+        <div class="pri"><div class="prico">🤖</div><div style="flex:1"><div class="prin">IA Aplicada</div><div class="pris">Activo</div><div class="prbw"><div class="prb" style="width:41%"></div></div></div><div class="prpct">41%</div></div>
+        <div class="pri"><div class="prico">📊</div><div style="flex:1"><div class="prin">Data Analytics</div><div class="pris">Próximo</div><div class="prbw"><div class="prb" style="width:0%"></div></div></div><div class="prpct" style="color:var(--text-4)">—</div></div>
+      </div>
+
+      <div class="sc">
+        <div class="sc-top"></div>
+        <div class="sh"><div class="st">Top semana 🏆</div><span class="sl">Ranking →</span></div>
+        <div class="li"><div class="lpos gold">1</div><div class="lav">👑</div><div class="lname">Sofía P.</div><div><div class="lpts">2,840</div><div class="lxp">XP</div></div></div>
+        <div class="li"><div class="lpos silver">2</div><div class="lav">🎓</div><div class="lname">Ana M.</div><div><div class="lpts">2,612</div><div class="lxp">XP</div></div></div>
+        <div class="li"><div class="lpos bronze">3</div><div class="lav">🧑‍💻</div><div class="lname">Rodrigo V.</div><div><div class="lpts">2,480</div><div class="lxp">XP</div></div></div>
+        <div class="li lme"><div class="lpos" style="color:var(--sig)">4</div><div class="lav">CG</div><div class="lname">Tú · Cristian G.</div><div><div class="lpts">1,240</div><div class="lxp">XP</div></div></div>
+      </div>
+
+      <div class="sc">
+        <div class="sc-top"></div>
+        <div class="sh"><div class="st">Explorar módulos</div><span class="sl">Ver todos →</span></div>
+        <div class="mgrid">
+          <div class="mc"><div class="mc-ic">🎨</div><div class="mc-n">UI Design</div><div class="mc-s">Figma · Tokens</div><div class="mc-b">Nuevo</div></div>
+          <div class="mc"><div class="mc-ic">📱</div><div class="mc-n">Mobile UX</div><div class="mc-s">iOS · Android</div><div class="mc-b">Popular</div></div>
+          <div class="mc"><div class="mc-ic">💡</div><div class="mc-n">Innovación</div><div class="mc-s">Design Thinking</div><div class="mc-b">Beta</div></div>
+          <div class="mc"><div class="mc-ic">🔐</div><div class="mc-n">Ciberseg.</div><div class="mc-s">Fundamentos</div><div class="mc-b">+XP</div></div>
+        </div>
+      </div>
+
+      <div class="sc">
+        <div class="sc-top"></div>
+        <div class="sh"><div class="st">Personas sugeridas</div><span class="sl">Ver más →</span></div>
+        <div class="si"><div class="sav">👩‍🔬</div><div><div class="sn">Laura Soto</div><div class="ss">Data Science · 3 módulos comunes</div></div><button class="bflw">+ Seguir</button></div>
+        <div class="si"><div class="sav">👨‍💼</div><div><div class="sn">Marcos Ruiz</div><div class="ss">Product Manager · UX/UI</div></div><button class="bflw">+ Seguir</button></div>
+        <div class="si"><div class="sav">👩‍🎨</div><div><div class="sn">Daniela V.</div><div class="ss">UI Designer · Figma Expert</div></div><button class="bflw">+ Seguir</button></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script src="../shared/hex-tide/hex-tide.js"></script>
+<script>
+const CFG = {
+  'ember-dk':  { bg: '#10141E', maxOpacity: 0.30, vignette: 0.28 },
+  'cosmos-dk': { bg: '#1A1510', maxOpacity: 0.28, vignette: 0.28 },
+  'forest-dk': { bg: '#181210', maxOpacity: 0.28, vignette: 0.28 },
+  'ocean-dk':  { bg: '#1A1710', maxOpacity: 0.28, vignette: 0.28 },
+  'amber-dk':  { bg: '#0E1220', maxOpacity: 0.30, vignette: 0.28 },
+  'navy-dk':   { bg: '#181410', maxOpacity: 0.28, vignette: 0.28 },
+};
+
+const INIT = 'ember-dk';
+window._hx = HexTide.mount('#hexTide', {
+  variant: 'whisper', background: CFG[INIT].bg,
+  hexSize: 30, maxOpacity: CFG[INIT].maxOpacity,
+  mouseReactive: true, vignette: CFG[INIT].vignette,
+});
+
+const btns = document.querySelectorAll('.tbtn');
+const cur  = document.getElementById('cur');
+const html = document.documentElement;
+
+function apply(id) {
+  html.setAttribute('data-theme', id);
+  cur.textContent = id;
+  btns.forEach(b => b.classList.toggle('on', b.dataset.t === id));
+  const c = CFG[id];
+  if (c) window._hx.setOptions({ background: c.bg, maxOpacity: c.maxOpacity, vignette: c.vignette });
+}
+
+btns.forEach(b => b.addEventListener('click', () => apply(b.dataset.t)));
+apply(INIT);
+</script>
+</body>
+</html>

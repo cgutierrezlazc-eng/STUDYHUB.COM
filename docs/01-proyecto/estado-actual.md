@@ -74,10 +74,10 @@
 
 | Archivo | Descripción | Ruta |
 |---------|-------------|------|
-| perfil-v1-FINAL.html | Perfil Social V1 "LinkedIn Navy" — diseño definitivo | `/Users/cristiang./Desktop/ORBIT-U/pages/perfil-v1-FINAL.html` |
-| perfil-v2-FINAL.html | Perfil Social V2 — listo para integrar | `/Users/cristiang./Desktop/ORBIT-U/pages/perfil-v2-FINAL.html` |
-| perfil-social-v2.html | Fuente de verdad layout V2 (sidebar 360px + feed 1fr) | `/Users/cristiang./Desktop/ORBIT-U/pages/perfil-social-v2.html` |
-| start-perfil-v1-light.html | 6 variantes light (descartadas por ahora) | `/Users/cristiang./Desktop/ORBIT-U/pages/start-perfil-v1-light.html` |
+| perfil-v1-FINAL.html | Perfil Social V1 "LinkedIn Navy" — diseño definitivo | `/Users/cristiang./CONNIKU/docs/04-diseno/orbit-u/pages/perfil-v1-FINAL.html` |
+| perfil-v2-FINAL.html | Perfil Social V2 — listo para integrar | `/Users/cristiang./CONNIKU/docs/04-diseno/orbit-u/pages/perfil-v2-FINAL.html` |
+| perfil-social-v2.html | Fuente de verdad layout V2 (sidebar 360px + feed 1fr) | `/Users/cristiang./CONNIKU/docs/04-diseno/orbit-u/pages/perfil-social-v2.html` |
+| start-perfil-v1-light.html | 6 variantes light (descartadas por ahora) | `/Users/cristiang./CONNIKU/docs/04-diseno/orbit-u/pages/start-perfil-v1-light.html` |
 
 **Tema visual activo:** `navy-l`
 ```

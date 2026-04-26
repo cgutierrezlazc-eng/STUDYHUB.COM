@@ -1,0 +1,1622 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Conniku — Perfil Social · Prototipo de Variantes</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet" />
+  <style>
+    /* ============================================================
+       RESET & BASE
+    ============================================================ */
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    :root {
+      --navy: #0A2878;
+      --green: #00C27A;
+      --white: #ffffff;
+      --ff-main: 'Inter', system-ui, sans-serif;
+      --ff-snap: 'Space Grotesk', system-ui, sans-serif;
+    }
+    body {
+      font-family: var(--ff-main);
+      background: #f0f2f5;
+      min-height: 100vh;
+    }
+
+    /* ============================================================
+       SELECTOR DE VARIANTES (STICKY TOP BAR)
+    ============================================================ */
+    #variant-bar {
+      position: sticky;
+      top: 0;
+      z-index: 9999;
+      background: #111827;
+      display: flex;
+      align-items: center;
+      gap: 0;
+      padding: 0 20px;
+      height: 52px;
+      box-shadow: 0 2px 12px rgba(0,0,0,0.4);
+    }
+    #variant-bar .logo {
+      color: var(--green);
+      font-family: var(--ff-snap);
+      font-weight: 700;
+      font-size: 15px;
+      letter-spacing: 0.5px;
+      margin-right: 24px;
+      white-space: nowrap;
+    }
+    #variant-bar .label {
+      color: #9ca3af;
+      font-size: 11px;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      margin-right: 12px;
+    }
+    .variant-btn {
+      display: flex;
+      align-items: center;
+      gap: 7px;
+      padding: 6px 16px;
+      border: 1.5px solid #374151;
+      background: transparent;
+      color: #9ca3af;
+      font-family: var(--ff-main);
+      font-size: 12px;
+      font-weight: 600;
+      letter-spacing: 0.3px;
+      cursor: pointer;
+      border-radius: 6px;
+      margin-right: 8px;
+      transition: all 0.15s ease;
+      white-space: nowrap;
+    }
+    .variant-btn:hover {
+      border-color: #6b7280;
+      color: #e5e7eb;
+    }
+    .variant-btn.active {
+      background: var(--navy);
+      border-color: var(--navy);
+      color: #ffffff;
+    }
+    .variant-btn.active.snap { background: #1a1a2e; border-color: var(--green); color: var(--green); }
+    .variant-btn.active.hybrid { background: linear-gradient(135deg, var(--navy), #1a3a6e); border-color: var(--green); color: #fff; }
+    .variant-btn .dot {
+      width: 8px; height: 8px;
+      border-radius: 50%;
+      flex-shrink: 0;
+    }
+    .dot-a { background: var(--navy); }
+    .dot-b { background: var(--green); }
+    .dot-c { background: linear-gradient(135deg, var(--navy), var(--green)); }
+
+    /* ============================================================
+       HIDE/SHOW VARIANTS
+    ============================================================ */
+    .variant { display: none; }
+    .variant.active { display: block; }
+
+    /* ============================================================
+       VARIANTE A — FACEGRAM CLASSIC
+    ============================================================ */
+    .va-body {
+      background: #E8EEF8;
+      min-height: calc(100vh - 52px);
+      font-family: var(--ff-main);
+    }
+
+    /* Cover */
+    .va-cover {
+      width: 100%;
+      height: 280px;
+      background: linear-gradient(135deg, #0A2878 0%, #1e4fc4 35%, #3a6fd8 60%, #0a8fd8 80%, #00C27A 100%);
+      position: relative;
+      overflow: hidden;
+    }
+    .va-cover::after {
+      content: '';
+      position: absolute; inset: 0;
+      background: url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23ffffff' fill-opacity='0.04'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E") repeat;
+    }
+    .va-cover-actions {
+      position: absolute;
+      bottom: 14px; right: 20px;
+      display: flex; gap: 8px;
+    }
+    .va-cover-actions button {
+      background: rgba(0,0,0,0.35);
+      color: #fff;
+      border: 1px solid rgba(255,255,255,0.3);
+      border-radius: 6px;
+      padding: 6px 14px;
+      font-size: 12px;
+      font-weight: 600;
+      cursor: pointer;
+      backdrop-filter: blur(4px);
+    }
+
+    /* Profile bar */
+    .va-profile-bar {
+      background: #fff;
+      box-shadow: 0 1px 4px rgba(10,40,120,0.08);
+    }
+    .va-profile-inner {
+      max-width: 1100px;
+      margin: 0 auto;
+      padding: 0 20px;
+      display: flex;
+      align-items: flex-end;
+      gap: 20px;
+      padding-bottom: 0;
+    }
+    .va-avatar-wrap {
+      position: relative;
+      flex-shrink: 0;
+      margin-top: -48px;
+      margin-bottom: 0;
+    }
+    .va-avatar {
+      width: 120px; height: 120px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, #0A2878, #1e4fc4);
+      display: flex; align-items: center; justify-content: center;
+      font-size: 38px;
+      font-weight: 800;
+      color: #fff;
+      border: 4px solid #fff;
+      box-shadow: 0 4px 16px rgba(10,40,120,0.25);
+      letter-spacing: -1px;
+    }
+    .va-avatar-status {
+      position: absolute;
+      bottom: 6px; right: 6px;
+      width: 18px; height: 18px;
+      background: var(--green);
+      border-radius: 50%;
+      border: 3px solid #fff;
+    }
+    .va-profile-info {
+      flex: 1;
+      padding: 14px 0 14px;
+    }
+    .va-name {
+      font-size: 22px;
+      font-weight: 800;
+      color: #111827;
+      line-height: 1.2;
+    }
+    .va-uni {
+      font-size: 13px;
+      color: #4b5563;
+      margin-top: 3px;
+    }
+    .va-uni span {
+      color: var(--navy);
+      font-weight: 600;
+    }
+    .va-stats {
+      display: flex;
+      gap: 28px;
+      margin-top: 12px;
+    }
+    .va-stat { text-align: center; }
+    .va-stat .num {
+      display: block;
+      font-size: 20px;
+      font-weight: 800;
+      color: var(--navy);
+      line-height: 1;
+    }
+    .va-stat .lbl {
+      font-size: 11px;
+      color: #6b7280;
+      font-weight: 500;
+      margin-top: 2px;
+    }
+    .va-profile-actions {
+      padding-bottom: 14px;
+      display: flex; gap: 8px;
+      align-self: center;
+    }
+    .va-btn-primary {
+      background: var(--navy);
+      color: #fff;
+      border: none;
+      border-radius: 8px;
+      padding: 9px 20px;
+      font-size: 13px;
+      font-weight: 700;
+      cursor: pointer;
+      transition: background 0.15s;
+    }
+    .va-btn-primary:hover { background: #0d35a0; }
+    .va-btn-outline {
+      background: transparent;
+      color: var(--navy);
+      border: 1.5px solid var(--navy);
+      border-radius: 8px;
+      padding: 9px 20px;
+      font-size: 13px;
+      font-weight: 700;
+      cursor: pointer;
+    }
+    /* Nav tabs */
+    .va-nav {
+      max-width: 1100px;
+      margin: 0 auto;
+      padding: 0 20px;
+      display: flex;
+      gap: 0;
+      border-top: 1px solid #e5e7eb;
+      margin-top: 4px;
+    }
+    .va-nav a {
+      padding: 12px 18px;
+      font-size: 13px;
+      font-weight: 600;
+      color: #6b7280;
+      text-decoration: none;
+      border-bottom: 2.5px solid transparent;
+      transition: all 0.15s;
+    }
+    .va-nav a.active, .va-nav a:hover { color: var(--navy); border-bottom-color: var(--navy); }
+
+    /* Main content */
+    .va-main {
+      max-width: 1100px;
+      margin: 20px auto;
+      padding: 0 20px;
+      display: flex;
+      gap: 20px;
+      align-items: flex-start;
+    }
+    .va-sidebar {
+      width: 340px;
+      flex-shrink: 0;
+      display: flex;
+      flex-direction: column;
+      gap: 14px;
+    }
+    .va-feed {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      gap: 14px;
+    }
+
+    /* Cards reutilizables variante A */
+    .va-card {
+      background: #fff;
+      border-radius: 12px;
+      box-shadow: 0 1px 4px rgba(10,40,120,0.07);
+      overflow: hidden;
+    }
+    .va-card-header {
+      padding: 16px 18px 10px;
+      font-size: 14px;
+      font-weight: 700;
+      color: #111827;
+      border-bottom: 1px solid #f1f5f9;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    .va-card-header a {
+      font-size: 12px;
+      font-weight: 600;
+      color: var(--navy);
+      text-decoration: none;
+    }
+    .va-card-body { padding: 14px 18px; }
+
+    /* About */
+    .va-about-row {
+      display: flex; align-items: flex-start;
+      gap: 10px;
+      margin-bottom: 12px;
+      font-size: 13px;
+      color: #374151;
+    }
+    .va-about-row .icon { font-size: 16px; flex-shrink: 0; margin-top: 1px; }
+
+    /* Skills */
+    .va-skill-tags { display: flex; flex-wrap: wrap; gap: 7px; }
+    .va-skill-tag {
+      background: #EEF2FF;
+      color: var(--navy);
+      border-radius: 99px;
+      padding: 4px 12px;
+      font-size: 11px;
+      font-weight: 600;
+    }
+
+    /* Modulos activos */
+    .va-mod-list { display: flex; flex-direction: column; gap: 10px; }
+    .va-mod-item {
+      display: flex; align-items: center; gap: 10px;
+    }
+    .va-mod-icon {
+      width: 36px; height: 36px;
+      border-radius: 8px;
+      background: #EEF2FF;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 18px;
+      flex-shrink: 0;
+    }
+    .va-mod-name { font-size: 13px; font-weight: 600; color: #111827; }
+    .va-mod-sub  { font-size: 11px; color: #9ca3af; }
+    .va-mod-badge {
+      margin-left: auto;
+      background: #DCFCE7;
+      color: #15803d;
+      font-size: 10px;
+      font-weight: 700;
+      border-radius: 99px;
+      padding: 3px 9px;
+    }
+
+    /* Post cards */
+    .va-post {
+      background: #fff;
+      border-radius: 12px;
+      box-shadow: 0 1px 4px rgba(10,40,120,0.07);
+      overflow: hidden;
+    }
+    .va-post-header {
+      padding: 14px 18px 10px;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+    .va-post-avatar {
+      width: 40px; height: 40px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, #0A2878, #1e4fc4);
+      display: flex; align-items: center; justify-content: center;
+      font-size: 14px; font-weight: 700; color: #fff;
+      flex-shrink: 0;
+    }
+    .va-post-meta .name { font-size: 14px; font-weight: 700; color: #111827; }
+    .va-post-meta .time { font-size: 12px; color: #9ca3af; }
+    .va-post-body { padding: 0 18px 14px; font-size: 14px; color: #374151; line-height: 1.6; }
+    .va-post-highlight {
+      background: #EEF2FF;
+      border-left: 3px solid var(--navy);
+      border-radius: 0 8px 8px 0;
+      padding: 12px 14px;
+      margin: 10px 0;
+    }
+    .va-post-highlight .title { font-size: 13px; font-weight: 700; color: var(--navy); }
+    .va-post-highlight .sub { font-size: 12px; color: #6b7280; }
+    .va-post-actions {
+      padding: 0 18px 14px;
+      display: flex; gap: 16px;
+    }
+    .va-post-action {
+      display: flex; align-items: center; gap: 6px;
+      font-size: 12px; color: #6b7280; font-weight: 500;
+      cursor: pointer;
+    }
+    .va-post-action:hover { color: var(--navy); }
+
+    /* Write post box */
+    .va-write-box {
+      background: #fff;
+      border-radius: 12px;
+      padding: 14px 18px;
+      box-shadow: 0 1px 4px rgba(10,40,120,0.07);
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+    .va-write-input {
+      flex: 1;
+      background: #f1f5f9;
+      border: none;
+      border-radius: 99px;
+      padding: 10px 18px;
+      font-size: 13px;
+      color: #9ca3af;
+      outline: none;
+      cursor: pointer;
+    }
+
+    /* ============================================================
+       VARIANTE B — SNAP DARK
+    ============================================================ */
+    .vb-body {
+      background: #0a0c0f;
+      min-height: calc(100vh - 52px);
+      font-family: var(--ff-snap);
+      color: #fff;
+    }
+
+    /* Header con stories */
+    .vb-stories-bar {
+      background: #0f1117;
+      padding: 0 20px;
+      border-bottom: 1px solid #1a1e28;
+    }
+    .vb-stories-inner {
+      max-width: 700px;
+      margin: 0 auto;
+      display: flex;
+      gap: 20px;
+      padding: 14px 0;
+      overflow-x: auto;
+      scrollbar-width: none;
+    }
+    .vb-stories-inner::-webkit-scrollbar { display: none; }
+    .vb-story-item {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 6px;
+      flex-shrink: 0;
+      cursor: pointer;
+    }
+    .vb-story-ring {
+      width: 62px; height: 62px;
+      border-radius: 50%;
+      padding: 2.5px;
+      background: linear-gradient(135deg, #00C27A, #00a868, #0a8fd8);
+    }
+    .vb-story-ring.seen {
+      background: linear-gradient(135deg, #374151, #4b5563);
+    }
+    .vb-story-inner {
+      width: 100%; height: 100%;
+      border-radius: 50%;
+      background: #1a1e28;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 24px;
+      border: 2.5px solid #0a0c0f;
+    }
+    .vb-story-label {
+      font-size: 10px;
+      font-weight: 700;
+      color: #9ca3af;
+      text-align: center;
+      max-width: 64px;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
+    /* Profile section */
+    .vb-profile {
+      max-width: 700px;
+      margin: 32px auto 0;
+      padding: 0 20px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 0;
+    }
+    .vb-avatar {
+      width: 96px; height: 96px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, #0A2878, #00C27A);
+      display: flex; align-items: center; justify-content: center;
+      font-size: 32px;
+      font-weight: 800;
+      color: #fff;
+      letter-spacing: -1px;
+    }
+    .vb-name {
+      font-size: 26px;
+      font-weight: 800;
+      color: #fff;
+      margin-top: 14px;
+      letter-spacing: -0.5px;
+    }
+    .vb-uni {
+      font-size: 13px;
+      color: #6b7280;
+      margin-top: 4px;
+      text-align: center;
+    }
+    .vb-uni span { color: var(--green); font-weight: 700; }
+    .vb-stats {
+      display: flex;
+      gap: 0;
+      margin-top: 20px;
+      background: #0f1117;
+      border-radius: 14px;
+      overflow: hidden;
+      border: 1px solid #1a1e28;
+    }
+    .vb-stat {
+      padding: 16px 28px;
+      text-align: center;
+    }
+    .vb-stat + .vb-stat {
+      border-left: 1px solid #1a1e28;
+    }
+    .vb-stat .num {
+      display: block;
+      font-size: 22px;
+      font-weight: 800;
+      color: #fff;
+      line-height: 1;
+    }
+    .vb-stat .lbl {
+      font-size: 10px;
+      color: #6b7280;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      margin-top: 4px;
+    }
+    .vb-actions {
+      display: flex;
+      gap: 10px;
+      margin-top: 20px;
+    }
+    .vb-btn-primary {
+      background: var(--green);
+      color: #0a0c0f;
+      border: none;
+      border-radius: 10px;
+      padding: 11px 28px;
+      font-family: var(--ff-snap);
+      font-size: 14px;
+      font-weight: 700;
+      cursor: pointer;
+      transition: opacity 0.15s;
+    }
+    .vb-btn-primary:hover { opacity: 0.88; }
+    .vb-btn-outline {
+      background: transparent;
+      color: #fff;
+      border: 1.5px solid #374151;
+      border-radius: 10px;
+      padding: 11px 22px;
+      font-family: var(--ff-snap);
+      font-size: 14px;
+      font-weight: 700;
+      cursor: pointer;
+    }
+    .vb-btn-outline:hover { border-color: #6b7280; }
+
+    /* Feed grid */
+    .vb-feed-section {
+      max-width: 700px;
+      margin: 32px auto;
+      padding: 0 20px;
+    }
+    .vb-section-title {
+      font-size: 13px;
+      font-weight: 700;
+      color: #4b5563;
+      text-transform: uppercase;
+      letter-spacing: 1.5px;
+      margin-bottom: 16px;
+    }
+    .vb-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px;
+    }
+    .vb-card {
+      background: #0f1117;
+      border: 1px solid #1a1e28;
+      border-radius: 14px;
+      overflow: hidden;
+      transition: border-color 0.15s;
+    }
+    .vb-card:hover { border-color: #374151; }
+    .vb-card-banner {
+      height: 80px;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 32px;
+    }
+    .vb-card-banner.g1 { background: linear-gradient(135deg, #0A2878, #1e4fc4); }
+    .vb-card-banner.g2 { background: linear-gradient(135deg, #0a5c36, #00C27A); }
+    .vb-card-banner.g3 { background: linear-gradient(135deg, #7c3aed, #ec4899); }
+    .vb-card-banner.g4 { background: linear-gradient(135deg, #c2410c, #f59e0b); }
+    .vb-card-content { padding: 14px; }
+    .vb-card-type {
+      font-size: 10px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      color: var(--green);
+      margin-bottom: 5px;
+    }
+    .vb-card-title {
+      font-size: 14px;
+      font-weight: 700;
+      color: #fff;
+      line-height: 1.3;
+      margin-bottom: 6px;
+    }
+    .vb-card-meta {
+      font-size: 11px;
+      color: #6b7280;
+    }
+    .vb-card-footer {
+      padding: 0 14px 12px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+    .vb-badge {
+      background: rgba(0,194,122,0.15);
+      color: var(--green);
+      font-size: 10px;
+      font-weight: 700;
+      border-radius: 99px;
+      padding: 3px 10px;
+    }
+    .vb-card-time { font-size: 11px; color: #374151; }
+
+    /* Skills row in Snap */
+    .vb-skills { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 4px; }
+    .vb-skill {
+      background: #0f1117;
+      border: 1px solid #1a1e28;
+      color: #9ca3af;
+      font-size: 11px;
+      font-weight: 700;
+      border-radius: 99px;
+      padding: 5px 14px;
+    }
+
+    /* ============================================================
+       VARIANTE C — HÍBRIDO
+    ============================================================ */
+    .vc-body {
+      background: #060E24;
+      min-height: calc(100vh - 52px);
+      font-family: var(--ff-main);
+      color: #fff;
+    }
+
+    /* Cover gradient */
+    .vc-cover {
+      width: 100%;
+      height: 240px;
+      background: linear-gradient(135deg, #060E24 0%, #0A2878 40%, #1e4fc4 65%, #00C27A 100%);
+      position: relative;
+      overflow: hidden;
+    }
+    .vc-cover::before {
+      content: '';
+      position: absolute; inset: 0;
+      background: radial-gradient(ellipse at 70% 50%, rgba(0,194,122,0.2) 0%, transparent 60%),
+                  radial-gradient(ellipse at 20% 80%, rgba(10,40,120,0.4) 0%, transparent 50%);
+    }
+    .vc-cover::after {
+      content: '';
+      position: absolute;
+      bottom: 0; left: 0; right: 0;
+      height: 80px;
+      background: linear-gradient(to bottom, transparent, #060E24);
+    }
+
+    /* Profile centered header */
+    .vc-profile-centered {
+      max-width: 1020px;
+      margin: 0 auto;
+      padding: 0 20px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+    .vc-avatar-wrap {
+      position: relative;
+      margin-top: -56px;
+      z-index: 2;
+    }
+    .vc-avatar {
+      width: 112px; height: 112px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, #0A2878, #00C27A);
+      display: flex; align-items: center; justify-content: center;
+      font-size: 36px;
+      font-weight: 800;
+      color: #fff;
+      border: 4px solid #060E24;
+      box-shadow: 0 0 0 2px var(--green), 0 8px 32px rgba(0,194,122,0.3);
+      letter-spacing: -1px;
+    }
+    .vc-online {
+      position: absolute;
+      bottom: 8px; right: 8px;
+      width: 16px; height: 16px;
+      background: var(--green);
+      border-radius: 50%;
+      border: 2.5px solid #060E24;
+      box-shadow: 0 0 8px rgba(0,194,122,0.6);
+    }
+    .vc-name {
+      font-size: 24px;
+      font-weight: 800;
+      color: #fff;
+      margin-top: 12px;
+      letter-spacing: -0.3px;
+    }
+    .vc-uni {
+      font-size: 13px;
+      color: #6b7280;
+      margin-top: 4px;
+    }
+    .vc-uni span { color: #93c5fd; font-weight: 600; }
+    .vc-stats-row {
+      display: flex;
+      gap: 32px;
+      margin-top: 18px;
+    }
+    .vc-stat { text-align: center; }
+    .vc-stat .num {
+      font-size: 22px;
+      font-weight: 800;
+      color: #fff;
+      display: block;
+    }
+    .vc-stat .lbl {
+      font-size: 11px;
+      color: #6b7280;
+      font-weight: 500;
+    }
+    .vc-actions {
+      display: flex; gap: 10px;
+      margin-top: 18px;
+      margin-bottom: 28px;
+    }
+    .vc-btn-primary {
+      background: var(--green);
+      color: #060E24;
+      border: none;
+      border-radius: 10px;
+      padding: 10px 24px;
+      font-family: var(--ff-main);
+      font-size: 13px;
+      font-weight: 700;
+      cursor: pointer;
+      transition: box-shadow 0.15s;
+    }
+    .vc-btn-primary:hover { box-shadow: 0 0 16px rgba(0,194,122,0.4); }
+    .vc-btn-outline {
+      background: transparent;
+      color: #fff;
+      border: 1.5px solid #1e3a6e;
+      border-radius: 10px;
+      padding: 10px 22px;
+      font-family: var(--ff-main);
+      font-size: 13px;
+      font-weight: 700;
+      cursor: pointer;
+    }
+
+    /* Main layout 2 cols */
+    .vc-main {
+      max-width: 1020px;
+      margin: 0 auto;
+      padding: 0 20px 40px;
+      display: flex;
+      gap: 20px;
+      align-items: flex-start;
+    }
+    .vc-sidebar {
+      width: 300px;
+      flex-shrink: 0;
+      display: flex;
+      flex-direction: column;
+      gap: 14px;
+    }
+    .vc-feed { flex: 1; display: flex; flex-direction: column; gap: 14px; }
+
+    /* Hybrid card */
+    .vc-card {
+      background: #0d1a3a;
+      border: 1px solid #1e3a6e;
+      border-radius: 14px;
+      overflow: hidden;
+    }
+    .vc-card-header {
+      padding: 14px 16px 10px;
+      font-size: 13px;
+      font-weight: 700;
+      color: #93c5fd;
+      border-bottom: 1px solid #1e3a6e;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    .vc-card-header a {
+      font-size: 11px;
+      font-weight: 600;
+      color: var(--green);
+      text-decoration: none;
+    }
+    .vc-card-body { padding: 14px 16px; }
+
+    /* About C */
+    .vc-about-row {
+      display: flex; align-items: flex-start;
+      gap: 10px;
+      margin-bottom: 10px;
+      font-size: 13px;
+      color: #9ca3af;
+    }
+    .vc-about-row .icon { font-size: 15px; flex-shrink: 0; margin-top: 1px; }
+
+    /* Skills C */
+    .vc-skills { display: flex; flex-wrap: wrap; gap: 7px; }
+    .vc-skill {
+      background: rgba(10,40,120,0.4);
+      border: 1px solid #1e3a6e;
+      color: #93c5fd;
+      font-size: 11px;
+      font-weight: 600;
+      border-radius: 99px;
+      padding: 4px 12px;
+    }
+
+    /* Modulos C */
+    .vc-mod-item {
+      display: flex; align-items: center; gap: 10px;
+      margin-bottom: 10px;
+    }
+    .vc-mod-icon {
+      width: 34px; height: 34px;
+      border-radius: 8px;
+      background: rgba(10,40,120,0.5);
+      border: 1px solid #1e3a6e;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 16px;
+    }
+    .vc-mod-name { font-size: 13px; font-weight: 600; color: #e5e7eb; }
+    .vc-mod-sub  { font-size: 11px; color: #6b7280; }
+    .vc-mod-badge {
+      margin-left: auto;
+      background: rgba(0,194,122,0.15);
+      color: var(--green);
+      font-size: 10px;
+      font-weight: 700;
+      border-radius: 99px;
+      padding: 3px 9px;
+      border: 1px solid rgba(0,194,122,0.3);
+    }
+
+    /* Stories horizontal C */
+    .vc-stories-row {
+      display: flex;
+      gap: 16px;
+      overflow-x: auto;
+      padding: 4px 0 4px;
+      scrollbar-width: none;
+    }
+    .vc-stories-row::-webkit-scrollbar { display: none; }
+    .vc-story-item {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 6px;
+      flex-shrink: 0;
+      cursor: pointer;
+    }
+    .vc-story-ring {
+      width: 54px; height: 54px;
+      border-radius: 50%;
+      padding: 2px;
+      background: linear-gradient(135deg, #0A2878, #00C27A);
+    }
+    .vc-story-inner {
+      width: 100%; height: 100%;
+      border-radius: 50%;
+      background: #0d1a3a;
+      border: 2px solid #060E24;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 20px;
+    }
+    .vc-story-label {
+      font-size: 10px;
+      font-weight: 600;
+      color: #6b7280;
+      text-align: center;
+      max-width: 56px;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
+    /* Post C */
+    .vc-post {
+      background: #0d1a3a;
+      border: 1px solid #1e3a6e;
+      border-radius: 14px;
+      overflow: hidden;
+    }
+    .vc-post-header {
+      padding: 14px 16px 10px;
+      display: flex; align-items: center; gap: 10px;
+    }
+    .vc-post-avatar {
+      width: 38px; height: 38px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, #0A2878, #00C27A);
+      display: flex; align-items: center; justify-content: center;
+      font-size: 13px; font-weight: 700; color: #fff;
+      flex-shrink: 0;
+    }
+    .vc-post-meta .name { font-size: 14px; font-weight: 700; color: #e5e7eb; }
+    .vc-post-meta .time { font-size: 12px; color: #4b5563; }
+    .vc-post-body { padding: 0 16px 14px; font-size: 14px; color: #9ca3af; line-height: 1.6; }
+    .vc-post-highlight {
+      background: rgba(10,40,120,0.4);
+      border-left: 3px solid var(--green);
+      border-radius: 0 8px 8px 0;
+      padding: 10px 12px;
+      margin: 8px 0;
+    }
+    .vc-post-highlight .title { font-size: 13px; font-weight: 700; color: #93c5fd; }
+    .vc-post-highlight .sub { font-size: 12px; color: #6b7280; }
+    .vc-post-actions {
+      padding: 0 16px 12px;
+      display: flex; gap: 16px;
+    }
+    .vc-post-action {
+      display: flex; align-items: center; gap: 6px;
+      font-size: 12px; color: #4b5563; font-weight: 500;
+      cursor: pointer;
+    }
+    .vc-post-action:hover { color: var(--green); }
+
+    /* Write box C */
+    .vc-write-box {
+      background: #0d1a3a;
+      border: 1px solid #1e3a6e;
+      border-radius: 14px;
+      padding: 14px 16px;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+    .vc-write-input {
+      flex: 1;
+      background: rgba(255,255,255,0.05);
+      border: 1px solid #1e3a6e;
+      border-radius: 99px;
+      padding: 9px 16px;
+      font-size: 13px;
+      color: #4b5563;
+      outline: none;
+      cursor: pointer;
+      font-family: var(--ff-main);
+    }
+
+    /* ============================================================
+       RESPONSIVE
+    ============================================================ */
+    @media (max-width: 768px) {
+      #variant-bar { gap: 6px; padding: 0 12px; overflow-x: auto; }
+      #variant-bar .label { display: none; }
+
+      .va-profile-inner { flex-wrap: wrap; }
+      .va-profile-actions { width: 100%; justify-content: flex-start; padding-bottom: 12px; }
+      .va-main { flex-direction: column; }
+      .va-sidebar { width: 100%; }
+
+      .vb-grid { grid-template-columns: 1fr; }
+      .vb-stats { flex-direction: column; }
+      .vb-stat + .vb-stat { border-left: none; border-top: 1px solid #1a1e28; }
+
+      .vc-main { flex-direction: column; }
+      .vc-sidebar { width: 100%; }
+    }
+  </style>
+</head>
+<body>
+
+<!-- ============================================================
+     TOP BAR — SELECTOR DE VARIANTES
+============================================================ -->
+<div id="variant-bar">
+  <div class="logo">Conniku</div>
+  <span class="label">Variante:</span>
+  <button class="variant-btn active" id="btn-a" onclick="showVariant('a')">
+    <span class="dot dot-a"></span>
+    A — FaceGram Classic
+  </button>
+  <button class="variant-btn snap" id="btn-b" onclick="showVariant('b')">
+    <span class="dot dot-b"></span>
+    B — Snap Dark
+  </button>
+  <button class="variant-btn hybrid" id="btn-c" onclick="showVariant('c')">
+    <span class="dot dot-c"></span>
+    C — Híbrido
+  </button>
+</div>
+
+
+<!-- ============================================================
+     VARIANTE A — FACEGRAM CLASSIC
+============================================================ -->
+<div class="variant active" id="variant-a">
+  <div class="va-body">
+
+    <!-- Cover -->
+    <div class="va-cover">
+      <div class="va-cover-actions">
+        <button>✏️ Editar cover</button>
+      </div>
+    </div>
+
+    <!-- Profile bar -->
+    <div class="va-profile-bar">
+      <div class="va-profile-inner">
+        <div class="va-avatar-wrap">
+          <div class="va-avatar">VR</div>
+          <div class="va-avatar-status"></div>
+        </div>
+        <div class="va-profile-info">
+          <div class="va-name">Valentina Reyes</div>
+          <div class="va-uni"><span>Universidad de Chile</span> · Ing. Comercial 4to año</div>
+          <div class="va-stats">
+            <div class="va-stat">
+              <span class="num">12</span>
+              <span class="lbl">Cursos</span>
+            </div>
+            <div class="va-stat">
+              <span class="num">847</span>
+              <span class="lbl">Conexiones</span>
+            </div>
+            <div class="va-stat">
+              <span class="num">3</span>
+              <span class="lbl">Tutorías activas</span>
+            </div>
+          </div>
+        </div>
+        <div class="va-profile-actions">
+          <button class="va-btn-primary">+ Conectar</button>
+          <button class="va-btn-outline">Mensaje</button>
+        </div>
+      </div>
+      <nav class="va-nav">
+        <a href="#" class="active">Inicio</a>
+        <a href="#">Actividad</a>
+        <a href="#">Cursos</a>
+        <a href="#">Tutorías</a>
+        <a href="#">Comunidad</a>
+      </nav>
+    </div>
+
+    <!-- Main content -->
+    <div class="va-main">
+
+      <!-- Sidebar -->
+      <div class="va-sidebar">
+
+        <div class="va-card">
+          <div class="va-card-header">Sobre mí <a href="#">Editar</a></div>
+          <div class="va-card-body">
+            <div class="va-about-row">
+              <span class="icon">🎓</span>
+              <span>Estudiante de Ingeniería Comercial en la <strong>U. de Chile</strong></span>
+            </div>
+            <div class="va-about-row">
+              <span class="icon">📍</span>
+              <span>Santiago, Chile</span>
+            </div>
+            <div class="va-about-row">
+              <span class="icon">💼</span>
+              <span>Interesada en Finanzas y Estrategia</span>
+            </div>
+            <div class="va-about-row">
+              <span class="icon">🔗</span>
+              <span style="color:#0A2878">linkedin.com/in/valentina-reyes</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="va-card">
+          <div class="va-card-header">Habilidades</div>
+          <div class="va-card-body">
+            <div class="va-skill-tags">
+              <span class="va-skill-tag">Excel Avanzado</span>
+              <span class="va-skill-tag">Python</span>
+              <span class="va-skill-tag">Power BI</span>
+              <span class="va-skill-tag">Marketing Digital</span>
+              <span class="va-skill-tag">Estadística</span>
+              <span class="va-skill-tag">Inglés B2</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="va-card">
+          <div class="va-card-header">Módulos activos <a href="#">Ver todos</a></div>
+          <div class="va-card-body">
+            <div class="va-mod-list">
+              <div class="va-mod-item">
+                <div class="va-mod-icon">🧑‍💻</div>
+                <div>
+                  <div class="va-mod-name">Workspace</div>
+                  <div class="va-mod-sub">3 proyectos abiertos</div>
+                </div>
+                <span class="va-mod-badge">Activo</span>
+              </div>
+              <div class="va-mod-item">
+                <div class="va-mod-icon">📚</div>
+                <div>
+                  <div class="va-mod-name">Biblioteca</div>
+                  <div class="va-mod-sub">14 recursos guardados</div>
+                </div>
+                <span class="va-mod-badge">Activo</span>
+              </div>
+              <div class="va-mod-item">
+                <div class="va-mod-icon">💼</div>
+                <div>
+                  <div class="va-mod-name">Empleos</div>
+                  <div class="va-mod-sub">2 aplicaciones enviadas</div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- Feed -->
+      <div class="va-feed">
+
+        <!-- Write box -->
+        <div class="va-write-box">
+          <div class="va-avatar" style="width:36px;height:36px;font-size:13px;">VR</div>
+          <div class="va-write-input">¿Qué estás aprendiendo hoy, Valentina?</div>
+        </div>
+
+        <!-- Post 1 -->
+        <div class="va-post">
+          <div class="va-post-header">
+            <div class="va-post-avatar">VR</div>
+            <div class="va-post-meta">
+              <div class="name">Valentina Reyes</div>
+              <div class="time">Hace 2 horas · Conniku</div>
+            </div>
+          </div>
+          <div class="va-post-body">
+            <p>¡Acabo de completar mi curso de Power BI! 📊 Fue un camino intenso pero aprendí muchísimo sobre visualización de datos financieros. Gracias a los tutores del módulo por el acompañamiento.</p>
+            <div class="va-post-highlight">
+              <div class="title">🏅 Curso completado — Power BI para Finanzas</div>
+              <div class="sub">Duración: 6 semanas · Nivel Intermedio · Certificado obtenido</div>
+            </div>
+          </div>
+          <div class="va-post-actions">
+            <span class="va-post-action">👍 Me gusta · 24</span>
+            <span class="va-post-action">💬 Comentar · 8</span>
+            <span class="va-post-action">↗️ Compartir</span>
+          </div>
+        </div>
+
+        <!-- Post 2 -->
+        <div class="va-post">
+          <div class="va-post-header">
+            <div class="va-post-avatar">VR</div>
+            <div class="va-post-meta">
+              <div class="name">Valentina Reyes</div>
+              <div class="time">Ayer · Comunidad Conniku</div>
+            </div>
+          </div>
+          <div class="va-post-body">
+            <p>Publiqué en la comunidad una guía rápida sobre cómo usar tablas dinámicas en Excel para análisis de costos. Si estás en Ing. Comercial o Admin, te puede servir mucho 🙌</p>
+          </div>
+          <div class="va-post-actions">
+            <span class="va-post-action">👍 Me gusta · 61</span>
+            <span class="va-post-action">💬 Comentar · 15</span>
+            <span class="va-post-action">↗️ Compartir</span>
+          </div>
+        </div>
+
+        <!-- Post 3 -->
+        <div class="va-post">
+          <div class="va-post-header">
+            <div class="va-post-avatar">VR</div>
+            <div class="va-post-meta">
+              <div class="name">Valentina Reyes</div>
+              <div class="time">Hace 3 días · Tutorías</div>
+            </div>
+          </div>
+          <div class="va-post-body">
+            <p>Inicié mi tercera tutoría activa este semestre. Estoy apoyando a estudiantes de primer año con Matemáticas y Estadística. Si necesitas ayuda, puedes contactarme por el módulo Tutores 🧑‍🏫</p>
+            <div class="va-post-highlight">
+              <div class="title">📅 Nueva tutoría registrada — Estadística I</div>
+              <div class="sub">Modalidad online · 2 sesiones/semana · Cupos disponibles: 2</div>
+            </div>
+          </div>
+          <div class="va-post-actions">
+            <span class="va-post-action">👍 Me gusta · 33</span>
+            <span class="va-post-action">💬 Comentar · 5</span>
+            <span class="va-post-action">↗️ Compartir</span>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </div>
+</div>
+
+
+<!-- ============================================================
+     VARIANTE B — SNAP DARK
+============================================================ -->
+<div class="variant" id="variant-b">
+  <div class="vb-body">
+
+    <!-- Stories bar -->
+    <div class="vb-stories-bar">
+      <div class="vb-stories-inner">
+        <div class="vb-story-item">
+          <div class="vb-story-ring">
+            <div class="vb-story-inner">🧑‍💻</div>
+          </div>
+          <span class="vb-story-label">Workspace</span>
+        </div>
+        <div class="vb-story-item">
+          <div class="vb-story-ring">
+            <div class="vb-story-inner">📚</div>
+          </div>
+          <span class="vb-story-label">Biblioteca</span>
+        </div>
+        <div class="vb-story-item">
+          <div class="vb-story-ring">
+            <div class="vb-story-inner">💼</div>
+          </div>
+          <span class="vb-story-label">Empleos</span>
+        </div>
+        <div class="vb-story-item">
+          <div class="vb-story-ring seen">
+            <div class="vb-story-inner">🧑‍🏫</div>
+          </div>
+          <span class="vb-story-label">Tutores</span>
+        </div>
+        <div class="vb-story-item">
+          <div class="vb-story-ring seen">
+            <div class="vb-story-inner">🌐</div>
+          </div>
+          <span class="vb-story-label">Comunidad</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Profile -->
+    <div class="vb-profile">
+      <div class="vb-avatar">VR</div>
+      <div class="vb-name">Valentina Reyes</div>
+      <div class="vb-uni"><span>Universidad de Chile</span> · Ing. Comercial 4to año</div>
+      <div class="vb-stats">
+        <div class="vb-stat">
+          <span class="num">12</span>
+          <span class="lbl">Cursos</span>
+        </div>
+        <div class="vb-stat">
+          <span class="num">847</span>
+          <span class="lbl">Conexiones</span>
+        </div>
+        <div class="vb-stat">
+          <span class="num">3</span>
+          <span class="lbl">Tutorías</span>
+        </div>
+      </div>
+      <div class="vb-actions">
+        <button class="vb-btn-primary">+ Conectar</button>
+        <button class="vb-btn-outline">Mensaje</button>
+        <button class="vb-btn-outline">···</button>
+      </div>
+
+      <!-- Skills inline -->
+      <div class="vb-skills">
+        <span class="vb-skill">Excel Avanzado</span>
+        <span class="vb-skill">Python</span>
+        <span class="vb-skill">Power BI</span>
+        <span class="vb-skill">Marketing Digital</span>
+        <span class="vb-skill">Estadística</span>
+      </div>
+    </div>
+
+    <!-- Feed grid -->
+    <div class="vb-feed-section">
+      <div class="vb-section-title">Actividad reciente</div>
+      <div class="vb-grid">
+
+        <div class="vb-card">
+          <div class="vb-card-banner g1">📊</div>
+          <div class="vb-card-content">
+            <div class="vb-card-type">Curso completado</div>
+            <div class="vb-card-title">Power BI para Finanzas</div>
+            <div class="vb-card-meta">6 semanas · Nivel Intermedio</div>
+          </div>
+          <div class="vb-card-footer">
+            <span class="vb-badge">Certificado</span>
+            <span class="vb-card-time">Hace 2h</span>
+          </div>
+        </div>
+
+        <div class="vb-card">
+          <div class="vb-card-banner g2">🌐</div>
+          <div class="vb-card-content">
+            <div class="vb-card-type">Publicación</div>
+            <div class="vb-card-title">Guía: Tablas dinámicas para análisis de costos</div>
+            <div class="vb-card-meta">61 likes · 15 comentarios</div>
+          </div>
+          <div class="vb-card-footer">
+            <span class="vb-badge">Popular</span>
+            <span class="vb-card-time">Ayer</span>
+          </div>
+        </div>
+
+        <div class="vb-card">
+          <div class="vb-card-banner g3">🧑‍🏫</div>
+          <div class="vb-card-content">
+            <div class="vb-card-type">Tutoría activa</div>
+            <div class="vb-card-title">Estadística I · Primer año</div>
+            <div class="vb-card-meta">Online · 2 sesiones/semana</div>
+          </div>
+          <div class="vb-card-footer">
+            <span class="vb-badge">En curso</span>
+            <span class="vb-card-time">Hace 3d</span>
+          </div>
+        </div>
+
+        <div class="vb-card">
+          <div class="vb-card-banner g4">💼</div>
+          <div class="vb-card-content">
+            <div class="vb-card-type">Empleo</div>
+            <div class="vb-card-title">Aplicó a Analista Jr. en Banco Santander</div>
+            <div class="vb-card-meta">Santiago · Tiempo completo</div>
+          </div>
+          <div class="vb-card-footer">
+            <span class="vb-badge">En revisión</span>
+            <span class="vb-card-time">Hace 1sem</span>
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+  </div>
+</div>
+
+
+<!-- ============================================================
+     VARIANTE C — HÍBRIDO
+============================================================ -->
+<div class="variant" id="variant-c">
+  <div class="vc-body">
+
+    <!-- Cover -->
+    <div class="vc-cover"></div>
+
+    <!-- Profile centered -->
+    <div class="vc-profile-centered">
+      <div class="vc-avatar-wrap">
+        <div class="vc-avatar">VR</div>
+        <div class="vc-online"></div>
+      </div>
+      <div class="vc-name">Valentina Reyes</div>
+      <div class="vc-uni"><span>Universidad de Chile</span> · Ing. Comercial 4to año</div>
+      <div class="vc-stats-row">
+        <div class="vc-stat">
+          <span class="num">12</span>
+          <span class="lbl">Cursos</span>
+        </div>
+        <div class="vc-stat">
+          <span class="num">847</span>
+          <span class="lbl">Conexiones</span>
+        </div>
+        <div class="vc-stat">
+          <span class="num">3</span>
+          <span class="lbl">Tutorías activas</span>
+        </div>
+      </div>
+      <div class="vc-actions">
+        <button class="vc-btn-primary">+ Conectar</button>
+        <button class="vc-btn-outline">Mensaje</button>
+        <button class="vc-btn-outline">···</button>
+      </div>
+    </div>
+
+    <!-- 2-col layout -->
+    <div class="vc-main">
+
+      <!-- Sidebar -->
+      <div class="vc-sidebar">
+
+        <div class="vc-card">
+          <div class="vc-card-header">Sobre mí <a href="#">Editar</a></div>
+          <div class="vc-card-body">
+            <div class="vc-about-row">
+              <span class="icon">🎓</span>
+              <span>Ingeniería Comercial · <strong style="color:#93c5fd">U. de Chile</strong></span>
+            </div>
+            <div class="vc-about-row">
+              <span class="icon">📍</span>
+              <span>Santiago, Chile</span>
+            </div>
+            <div class="vc-about-row">
+              <span class="icon">💼</span>
+              <span>Finanzas y Estrategia</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="vc-card">
+          <div class="vc-card-header">Habilidades</div>
+          <div class="vc-card-body">
+            <div class="vc-skills">
+              <span class="vc-skill">Excel Avanzado</span>
+              <span class="vc-skill">Python</span>
+              <span class="vc-skill">Power BI</span>
+              <span class="vc-skill">Marketing Digital</span>
+              <span class="vc-skill">Estadística</span>
+              <span class="vc-skill">Inglés B2</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="vc-card">
+          <div class="vc-card-header">Módulos activos <a href="#">Ver todos</a></div>
+          <div class="vc-card-body">
+            <div class="vc-mod-item">
+              <div class="vc-mod-icon">🧑‍💻</div>
+              <div>
+                <div class="vc-mod-name">Workspace</div>
+                <div class="vc-mod-sub">3 proyectos</div>
+              </div>
+              <span class="vc-mod-badge">Activo</span>
+            </div>
+            <div class="vc-mod-item">
+              <div class="vc-mod-icon">📚</div>
+              <div>
+                <div class="vc-mod-name">Biblioteca</div>
+                <div class="vc-mod-sub">14 recursos</div>
+              </div>
+              <span class="vc-mod-badge">Activo</span>
+            </div>
+            <div class="vc-mod-item">
+              <div class="vc-mod-icon">💼</div>
+              <div>
+                <div class="vc-mod-name">Empleos</div>
+                <div class="vc-mod-sub">2 aplicaciones</div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- Feed -->
+      <div class="vc-feed">
+
+        <!-- Stories row en header del feed -->
+        <div class="vc-card">
+          <div class="vc-card-header">Mis módulos</div>
+          <div class="vc-card-body" style="padding-top:10px;padding-bottom:10px;">
+            <div class="vc-stories-row">
+              <div class="vc-story-item">
+                <div class="vc-story-ring"><div class="vc-story-inner">🧑‍💻</div></div>
+                <span class="vc-story-label">Workspace</span>
+              </div>
+              <div class="vc-story-item">
+                <div class="vc-story-ring"><div class="vc-story-inner">📚</div></div>
+                <span class="vc-story-label">Biblioteca</span>
+              </div>
+              <div class="vc-story-item">
+                <div class="vc-story-ring"><div class="vc-story-inner">💼</div></div>
+                <span class="vc-story-label">Empleos</span>
+              </div>
+              <div class="vc-story-item">
+                <div class="vc-story-ring"><div class="vc-story-inner">🧑‍🏫</div></div>
+                <span class="vc-story-label">Tutores</span>
+              </div>
+              <div class="vc-story-item">
+                <div class="vc-story-ring"><div class="vc-story-inner">🌐</div></div>
+                <span class="vc-story-label">Comunidad</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Write box -->
+        <div class="vc-write-box">
+          <div class="vc-avatar" style="width:36px;height:36px;font-size:13px;border:2px solid #060E24;">VR</div>
+          <div class="vc-write-input">¿Qué estás aprendiendo hoy, Valentina?</div>
+        </div>
+
+        <!-- Post 1 -->
+        <div class="vc-post">
+          <div class="vc-post-header">
+            <div class="vc-post-avatar">VR</div>
+            <div class="vc-post-meta">
+              <div class="name">Valentina Reyes</div>
+              <div class="time">Hace 2 horas · Conniku</div>
+            </div>
+          </div>
+          <div class="vc-post-body">
+            <p>¡Acabo de completar mi curso de Power BI! 📊 Aprendí muchísimo sobre visualización de datos financieros. Gracias a los tutores del módulo.</p>
+            <div class="vc-post-highlight">
+              <div class="title">🏅 Curso completado — Power BI para Finanzas</div>
+              <div class="sub">6 semanas · Intermedio · Certificado obtenido</div>
+            </div>
+          </div>
+          <div class="vc-post-actions">
+            <span class="vc-post-action">👍 24</span>
+            <span class="vc-post-action">💬 8</span>
+            <span class="vc-post-action">↗️ Compartir</span>
+          </div>
+        </div>
+
+        <!-- Post 2 -->
+        <div class="vc-post">
+          <div class="vc-post-header">
+            <div class="vc-post-avatar">VR</div>
+            <div class="vc-post-meta">
+              <div class="name">Valentina Reyes</div>
+              <div class="time">Ayer · Comunidad</div>
+            </div>
+          </div>
+          <div class="vc-post-body">
+            <p>Publiqué en la comunidad una guía sobre tablas dinámicas en Excel para análisis de costos. ¡Si estás en Ing. Comercial te puede servir mucho! 🙌</p>
+          </div>
+          <div class="vc-post-actions">
+            <span class="vc-post-action">👍 61</span>
+            <span class="vc-post-action">💬 15</span>
+            <span class="vc-post-action">↗️ Compartir</span>
+          </div>
+        </div>
+
+        <!-- Post 3 -->
+        <div class="vc-post">
+          <div class="vc-post-header">
+            <div class="vc-post-avatar">VR</div>
+            <div class="vc-post-meta">
+              <div class="name">Valentina Reyes</div>
+              <div class="time">Hace 3 días · Tutorías</div>
+            </div>
+          </div>
+          <div class="vc-post-body">
+            <p>Inicié mi tercera tutoría activa este semestre. Apoyo a estudiantes de primer año con Estadística. Cupos disponibles si me quieres contactar.</p>
+            <div class="vc-post-highlight">
+              <div class="title">📅 Nueva tutoría — Estadística I</div>
+              <div class="sub">Online · 2 sesiones/semana · 2 cupos disponibles</div>
+            </div>
+          </div>
+          <div class="vc-post-actions">
+            <span class="vc-post-action">👍 33</span>
+            <span class="vc-post-action">💬 5</span>
+            <span class="vc-post-action">↗️ Compartir</span>
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+  </div>
+</div>
+
+
+<!-- ============================================================
+     JS — SWITCHER
+============================================================ -->
+<script>
+  function showVariant(id) {
+    // Ocultar todas
+    document.querySelectorAll('.variant').forEach(el => el.classList.remove('active'));
+    document.querySelectorAll('.variant-btn').forEach(el => el.classList.remove('active'));
+
+    // Mostrar la seleccionada
+    document.getElementById('variant-' + id).classList.add('active');
+    const btn = document.getElementById('btn-' + id);
+    btn.classList.add('active');
+  }
+</script>
+
+</body>
+</html>

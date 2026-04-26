@@ -1,0 +1,2276 @@
+<!DOCTYPE html>
+<html lang="es" data-theme="profundo-dark">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Perfil · Conniku</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Funnel+Display:wght@400;500;600;700;800;900&family=Inter:wght@400;500;600;700&family=Geist+Mono:wght@400;500;600&display=swap" />
+<link rel="stylesheet" href="../shared/themes.css" />
+<link rel="stylesheet" href="../shared/hex-tide/hex-tide.css" />
+<style>
+  /* Variables de color: controladas por themes.css via data-theme en <html> */
+  /* ── Fondo fijo — nunca cambia con el tema ── */
+  html, body { background: #060E20 !important; }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html, body {
+    background: var(--bg); color: var(--text);
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+    font-size: 14px; line-height: 1.5;
+    -webkit-font-smoothing: antialiased;
+    min-height: 100vh;
+  }
+  a { color: inherit; text-decoration: none; }
+  button { font-family: inherit; cursor: pointer; }
+
+  /* ═══ NAV (top) ═══ */
+  .nav {
+    background: rgba(0,0,0,.26);
+    backdrop-filter: blur(22px);
+    -webkit-backdrop-filter: blur(22px);
+    border-bottom: 1px solid var(--border);
+    position: sticky; top: 0; z-index: 30;
+  }
+  .nav-top {
+    max-width: 1280px; margin: 0 auto;
+    padding: 14px 24px;
+    display: grid;
+    grid-template-columns: auto 1fr auto;
+    gap: 24px;
+    align-items: center;
+  }
+  /* Logo + back */
+  .nav-brand {
+    display: inline-flex; align-items: center; gap: 14px;
+  }
+  .nav-back {
+    height: 32px;
+    padding: 0 12px 0 8px;
+    border-radius: 999px;
+    background: var(--surface-2);
+    border: 1px solid var(--border);
+    display: inline-flex; align-items: center; gap: 8px;
+    color: var(--text-2);
+    transition: all .18s;
+    font-family: 'Geist Mono', monospace;
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: .08em;
+    text-transform: uppercase;
+  }
+  .nav-back:hover {
+    background: var(--surface-3);
+    color: var(--green);
+    border-color: var(--green);
+    box-shadow: 0 0 0 3px rgba(0,194,122,0.10);
+  }
+  .nav-back .orbit-ico {
+    width: 18px; height: 18px;
+    position: relative;
+    display: inline-grid; place-items: center;
+  }
+  .nav-back .orbit-ico::before {
+    /* anillo orbital */
+    content: ""; position: absolute; inset: 0;
+    border-radius: 50%;
+    border: 1px dashed currentColor;
+    opacity: 0.55;
+    transform: rotate(-25deg);
+  }
+  .nav-back .orbit-ico::after {
+    /* sol central */
+    content: ""; width: 7px; height: 7px;
+    border-radius: 50%;
+    background: var(--green);
+    box-shadow: 0 0 6px var(--green);
+  }
+  .nav-back:hover .orbit-ico::after {
+    background: var(--green-3);
+    box-shadow: 0 0 10px var(--green-3);
+  }
+  .nav-back-label-u { color: var(--green); }
+  .brand-logo {
+    display: inline-flex; align-items: center;
+    line-height: 1;
+  }
+  .brand-logo svg { display: block; }
+
+  /* Search */
+  .search {
+    max-width: 480px; width: 100%; justify-self: start;
+    background: rgba(0,0,0,.18);
+    border: 1px solid var(--border);
+    border-radius: 999px;
+    padding: 7px 14px;
+    display: inline-flex; align-items: center; gap: 8px;
+    font-family: 'Geist Mono', monospace; font-size: 11px;
+    color: var(--text-3);
+  }
+  .search input {
+    flex: 1; background: transparent; border: 0; outline: 0;
+    color: var(--text); font-size: 12px; font-family: inherit;
+  }
+  .search .kbd {
+    font-size: 10px; padding: 1px 6px;
+    background: var(--surface-3); color: var(--text-3);
+    border: 1px solid var(--border);
+    border-radius: 4px;
+  }
+
+  .nav-right { display: inline-flex; align-items: center; gap: 8px; }
+  .nav-ico {
+    width: 36px; height: 36px; border-radius: 10px;
+    background: transparent;
+    border: 1px solid transparent;
+    display: grid; place-items: center;
+    color: var(--text-2);
+    transition: all .18s;
+  }
+  .nav-ico:hover { background: var(--surface-2); color: var(--text); border-color: var(--border); }
+  .nav-ico.has-badge { position: relative; }
+  .nav-ico.has-badge::after {
+    content: ""; position: absolute; top: 6px; right: 8px;
+    width: 6px; height: 6px; border-radius: 50%;
+    background: var(--orange);
+    box-shadow: 0 0 6px rgba(255,74,28,0.6);
+  }
+  .nav-av {
+    width: 36px; height: 36px; border-radius: 50%;
+    background: linear-gradient(135deg, var(--green-3), var(--green-2));
+    color: #0B0C0E; font-weight: 700; font-size: 13px;
+    display: grid; place-items: center;
+    border: 1.5px solid var(--green);
+    cursor: pointer;
+  }
+
+  /* Tabs */
+  .nav-tabs {
+    max-width: 1280px; margin: 0 auto;
+    padding: 0 24px;
+    display: flex; gap: 4px;
+    overflow-x: auto;
+    scrollbar-width: none;
+  }
+  .nav-tabs::-webkit-scrollbar { display: none; }
+  .tab {
+    padding: 10px 14px;
+    border-bottom: 2px solid transparent;
+    font-size: 13px; font-weight: 500;
+    color: var(--text-3);
+    display: inline-flex; align-items: center; gap: 6px;
+    white-space: nowrap;
+    cursor: pointer;
+    transition: color .15s;
+  }
+  .tab:hover { color: var(--text); }
+  .tab.active { color: var(--text); border-bottom-color: var(--green); }
+  .tab .cnt {
+    font-family: 'Geist Mono', monospace; font-size: 10px;
+    color: var(--text-4);
+    padding: 1px 6px;
+    background: var(--surface-2); border-radius: 4px;
+  }
+  .tab.active .cnt { color: var(--green); background: rgba(0,194,122,0.10); }
+
+  /* ═══ PAGE LAYOUT ═══ */
+  .page {
+    max-width: 1280px; margin: 0 auto;
+    padding: 24px;
+    display: grid;
+    grid-template-columns: 1fr 320px;
+    gap: 24px;
+    align-items: start;
+    position: relative; z-index: 2; /* sits above hex canvas (z-index:0) */
+  }
+  @media (max-width: 980px) {
+    .page { grid-template-columns: 1fr; }
+    .side { order: -1; }
+  }
+
+  /* ═══ COVER (banner horizontal) ═══ */
+  .cover {
+    background: #060E20;              /* fijo — siempre oscuro, bloquea hex */
+    border: 1px solid rgba(165,195,240,.10);
+    border-radius: 18px;
+    overflow: hidden;
+    margin-bottom: 18px;
+    box-shadow: 0 4px 32px rgba(0,194,122,.04);
+    transition: all .3s;
+  }
+  .cover-banner {
+    height: 140px;
+    background:
+      radial-gradient(circle at 30% 50%, rgba(0,194,122,0.30), transparent 55%),
+      radial-gradient(circle at 75% 30%, rgba(255,74,28,0.18), transparent 50%),
+      linear-gradient(135deg, #0E1A18 0%, #0A0E12 100%);
+    position: relative;
+  }
+  /* Estrellas en el banner · cosmos */
+  .cover-banner::before {
+    content: ""; position: absolute; inset: 0;
+    background:
+      radial-gradient(circle at 8% 30%, var(--green) 0.8px, transparent 1.2px),
+      radial-gradient(circle at 22% 70%, var(--paper) 0.6px, transparent 1px),
+      radial-gradient(circle at 38% 20%, var(--orange) 0.7px, transparent 1px),
+      radial-gradient(circle at 52% 60%, var(--paper) 0.5px, transparent 1px),
+      radial-gradient(circle at 68% 35%, var(--green) 0.6px, transparent 1px),
+      radial-gradient(circle at 78% 75%, var(--paper) 0.7px, transparent 1px),
+      radial-gradient(circle at 88% 25%, var(--pink) 0.6px, transparent 1px),
+      radial-gradient(circle at 95% 60%, var(--paper) 0.5px, transparent 1px);
+  }
+  /* Cover edit button · top-right */
+  .cover-edit-btn {
+    position: absolute; top: 14px; right: 14px;
+    display: inline-flex; align-items: center; gap: 6px;
+    padding: 7px 14px 7px 10px;
+    background: rgba(13,14,17,0.65);
+    backdrop-filter: blur(10px);
+    border: 1px solid rgba(255,255,255,0.10);
+    border-radius: 999px;
+    font-family: 'Geist Mono', monospace; font-size: 10px;
+    color: var(--paper);
+    letter-spacing: 0.10em;
+    text-transform: uppercase;
+    cursor: pointer;
+    transition: all .18s;
+    font-weight: 600;
+    z-index: 5;
+  }
+  .cover-edit-btn:hover {
+    background: rgba(13,14,17,0.85);
+    border-color: var(--green);
+    color: var(--green);
+  }
+
+  /* Cover image (cuando hay foto subida) */
+  .cover-banner .cover-img {
+    position: absolute; inset: 0;
+    width: 100%; height: 100%;
+    object-fit: cover; object-position: center;
+    pointer-events: none;
+  }
+
+  /* ═══════════════════════════════════════════════
+     MODAL CAMBIAR PORTADA
+     ═══════════════════════════════════════════════ */
+  #cv-modal {
+    position: fixed; inset: 0;
+    background: rgba(0,0,0,0.7); backdrop-filter: blur(8px);
+    display: none; place-items: center;
+    z-index: 100001;
+    padding: 20px;
+  }
+  #cv-modal.on { display: grid; }
+  #cv-box {
+    width: 720px; max-width: 100%; max-height: 90vh;
+    background: #0D0E11; color: #E8E8E6;
+    border: 1px solid #262A32; border-radius: 14px;
+    overflow: hidden;
+    display: flex; flex-direction: column;
+    font-family: 'Inter', sans-serif;
+  }
+  #cv-head {
+    padding: 16px 20px; background: #15181D;
+    border-bottom: 1px solid #262A32;
+    display: flex; justify-content: space-between; align-items: center;
+  }
+  #cv-head h3 {
+    font-family: 'Funnel Display', sans-serif; font-weight: 800;
+    font-size: 15px; display: flex; align-items: center; gap: 8px;
+  }
+  #cv-close {
+    background: transparent; color: #8A8A86; border: 0;
+    font-size: 18px; cursor: pointer;
+  }
+  #cv-close:hover { color: #E8E8E6; }
+
+  #cv-tabs {
+    display: flex; padding: 0 20px;
+    background: #0D0E11; border-bottom: 1px solid #262A32;
+  }
+  .cv-tab {
+    padding: 12px 16px; background: transparent; border: 0;
+    color: #8A8A86; font-size: 12px; font-weight: 600;
+    cursor: pointer; font-family: 'Inter', sans-serif;
+    border-bottom: 2px solid transparent;
+  }
+  .cv-tab.active { color: #E8E8E6; border-bottom-color: #00C27A; }
+
+  #cv-body { flex: 1; overflow-y: auto; padding: 20px; }
+  #cv-body::-webkit-scrollbar { width: 8px; }
+  #cv-body::-webkit-scrollbar-thumb { background: #262A32; border-radius: 4px; }
+
+  /* Templates grid */
+  .cv-templates {
+    display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px;
+  }
+  .cv-tpl {
+    aspect-ratio: 16 / 7;
+    border-radius: 8px;
+    border: 2px solid #262A32;
+    cursor: pointer; transition: all .15s;
+    position: relative; overflow: hidden;
+  }
+  .cv-tpl:hover { transform: translateY(-1px); }
+  .cv-tpl.selected { border-color: #00C27A; box-shadow: 0 0 0 3px rgba(0,194,122,0.25); }
+  .cv-tpl::after {
+    content: attr(data-name);
+    position: absolute; bottom: 5px; left: 7px;
+    font-family: 'Geist Mono', monospace; font-size: 8px;
+    color: #fff; letter-spacing: .08em;
+    background: rgba(0,0,0,0.55); padding: 2px 6px; border-radius: 4px;
+    font-weight: 600; text-transform: uppercase;
+    pointer-events: none;
+  }
+
+  /* Upload section */
+  .cv-upload-zone {
+    border: 2px dashed #262A32;
+    border-radius: 10px;
+    padding: 36px 20px;
+    text-align: center;
+    cursor: pointer;
+    transition: all .18s;
+  }
+  .cv-upload-zone:hover, .cv-upload-zone.drag {
+    border-color: #00C27A;
+    background: rgba(0,194,122,0.05);
+  }
+  .cv-upload-zone .ico {
+    width: 44px; height: 44px;
+    margin: 0 auto 12px;
+    border-radius: 50%;
+    background: #15181D; border: 1px solid #262A32;
+    display: grid; place-items: center;
+    color: #00C27A;
+  }
+  .cv-upload-zone h4 {
+    font-family: 'Funnel Display', sans-serif; font-weight: 700;
+    font-size: 13px; margin-bottom: 4px;
+  }
+  .cv-upload-zone p {
+    font-family: 'Geist Mono', monospace; font-size: 10px;
+    color: #8A8A86; letter-spacing: .04em;
+  }
+
+  /* Image editor */
+  .cv-editor { display: none; }
+  .cv-editor.on { display: block; }
+  .cv-editor-stage {
+    position: relative;
+    width: 100%; aspect-ratio: 16 / 7;
+    background: #050608; border-radius: 10px;
+    overflow: hidden; cursor: grab;
+    user-select: none;
+    border: 1px solid #262A32;
+  }
+  .cv-editor-stage.dragging { cursor: grabbing; }
+  .cv-editor-stage img {
+    position: absolute; top: 50%; left: 50%;
+    transform-origin: center;
+    pointer-events: none;
+    max-width: none; max-height: none;
+    user-select: none; -webkit-user-drag: none;
+  }
+  .cv-editor-stage::after {
+    /* indicador área visible · grid pattern para mostrar transparencia/limites */
+    content: ""; position: absolute; inset: 0;
+    border: 1px dashed rgba(255,255,255,0.15);
+    pointer-events: none; border-radius: 10px;
+  }
+  .cv-controls {
+    margin-top: 14px;
+    display: flex; align-items: center; gap: 14px;
+  }
+  .cv-controls label {
+    display: flex; align-items: center; gap: 8px;
+    font-family: 'Geist Mono', monospace; font-size: 10px;
+    color: #8A8A86; letter-spacing: .08em; text-transform: uppercase;
+    flex: 1;
+  }
+  .cv-controls input[type=range] {
+    flex: 1; accent-color: #00C27A;
+  }
+  .cv-tip {
+    font-family: 'Geist Mono', monospace; font-size: 10px;
+    color: #8A8A86; margin-top: 8px; text-align: center;
+    letter-spacing: .04em;
+  }
+
+  #cv-foot {
+    padding: 14px 20px; background: #15181D;
+    border-top: 1px solid #262A32;
+    display: flex; gap: 8px; justify-content: flex-end;
+  }
+  #cv-foot button {
+    padding: 9px 18px; border-radius: 8px; border: 0;
+    font-size: 12px; font-weight: 600;
+    font-family: 'Inter', sans-serif; cursor: pointer;
+  }
+  .cv-btn-cancel { background: #262A32; color: #E8E8E6; }
+  .cv-btn-cancel:hover { background: #1A1D23; }
+  .cv-btn-apply {
+    background: #00C27A; color: #0B0C0E;
+  }
+  .cv-btn-apply:hover { background: #8AEAC0; }
+  .cv-btn-apply:disabled { opacity: .35; cursor: not-allowed; }
+
+  .cover-info {
+    padding: 0 24px 22px;
+    margin-top: -42px;
+    position: relative;
+    display: grid;
+    grid-template-columns: auto 1fr auto;
+    gap: 20px;
+    align-items: end;
+  }
+  .cover-av {
+    width: 96px; height: 96px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, var(--green-3), var(--green-2));
+    color: #0B0C0E; font-weight: 700; font-size: 38px;
+    font-family: 'Funnel Display', sans-serif; letter-spacing: -.04em;
+    display: grid; place-items: center;
+    border: 4px solid #060E20;
+    position: relative;
+  }
+  .cover-av::after {
+    content: ""; position: absolute; bottom: 4px; right: 6px;
+    width: 14px; height: 14px; border-radius: 50%;
+    background: var(--green);
+    border: 3px solid #060E20;
+    box-shadow: 0 0 6px rgba(0,194,122,0.5);
+  }
+  .cover-meta { padding-bottom: 6px; }
+  .cover-name {
+    font-family: 'Funnel Display', sans-serif; font-weight: 800;
+    font-size: 24px; color: #D0E2F5; letter-spacing: -.025em;
+    line-height: 1;
+  }
+  .cover-sub {
+    font-family: 'Geist Mono', monospace; font-size: 11px;
+    color: #4E6A8A; letter-spacing: 0.04em;
+    margin-top: 4px;
+  }
+  .cover-badges {
+    display: inline-flex; gap: 6px; margin-top: 10px;
+  }
+  .badge {
+    font-family: 'Geist Mono', monospace; font-size: 9px;
+    letter-spacing: 0.10em; font-weight: 600;
+    text-transform: uppercase;
+    padding: 3px 8px; border-radius: 999px;
+    border: 1px solid var(--border);
+    color: var(--text-3);
+  }
+  .badge.live { color: var(--green); border-color: rgba(0,194,122,0.4); }
+  .badge.lime-ph { color: var(--paper); border-color: var(--paper); opacity: .7; }
+  .cover-cta {
+    display: inline-flex; gap: 8px; padding-bottom: 6px;
+  }
+  .btn {
+    padding: 8px 14px; border-radius: 10px;
+    font-size: 12px; font-weight: 600;
+    border: 1px solid var(--border); background: transparent;
+    color: var(--text); transition: all .15s;
+  }
+  .btn:hover { background: var(--surface-2); }
+  .btn.primary {
+    background: var(--green); color: #0B0C0E;
+    border-color: var(--green);
+  }
+  .btn.primary:hover { background: var(--green-3); }
+
+  /* ═══ FEED COL ═══ */
+  .feed { display: flex; flex-direction: column; gap: 18px; }
+
+  /* Composer · tinted con left-accent */
+  .composer {
+    background:
+      linear-gradient(135deg, var(--cover-tint-mist, transparent), transparent 40%),
+      rgba(255,255,255,.055);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    border: 1px solid var(--cover-tint-line, var(--border));
+    border-left: 3px solid var(--cover-tint-edge, var(--border));
+    border-radius: 14px;
+    padding: 14px;
+    display: grid; grid-template-columns: auto 1fr; gap: 12px;
+    transition: all .3s;
+  }
+  .composer-av {
+    width: 36px; height: 36px; border-radius: 50%;
+    background: var(--surface-2); border: 1px solid var(--border);
+    color: var(--text-3);
+    display: grid; place-items: center;
+    font-family: 'Funnel Display', sans-serif; font-weight: 700; font-size: 14px;
+  }
+  .composer-input {
+    background: rgba(255,255,255,.06);
+    border: 1px solid rgba(165,195,240,.10);
+    border-radius: 10px;
+    padding: 10px 14px;
+    color: #4E6A8A; font-size: 13px;
+    cursor: text;
+  }
+  .composer-input:hover { border-color: var(--border); color: var(--text-2); }
+  .composer-actions {
+    grid-column: 2;
+    display: inline-flex; gap: 6px; margin-top: 4px;
+  }
+  .composer-act {
+    width: 32px; height: 32px; border-radius: 8px;
+    background: var(--surface-2); color: var(--text-3);
+    border: 1px solid transparent;
+    display: grid; place-items: center; cursor: pointer;
+    transition: all .15s;
+  }
+  .composer-act:hover { color: var(--green); border-color: rgba(0,194,122,0.3); }
+
+  /* Privacy selector · elige quién puede ver el post */
+  .privacy-group {
+    grid-column: 2;
+    margin-top: 10px;
+    padding-top: 10px;
+    border-top: 1px dashed var(--border);
+    display: flex; align-items: center; gap: 8px;
+    flex-wrap: wrap;
+  }
+  .privacy-group .pg-label {
+    font-family: 'Geist Mono', monospace; font-size: 9px;
+    color: var(--text-3); letter-spacing: .12em;
+    text-transform: uppercase; font-weight: 600;
+    margin-right: 4px;
+  }
+  .privacy-chip {
+    display: inline-flex; align-items: center; gap: 6px;
+    padding: 5px 10px 5px 8px;
+    border-radius: 999px;
+    background: var(--surface-2);
+    border: 1px solid transparent;
+    color: var(--text-3);
+    font-size: 11px; font-weight: 500;
+    font-family: inherit;
+    cursor: pointer; transition: all .15s;
+  }
+  .privacy-chip:hover { color: var(--text); background: var(--surface-3); }
+  .privacy-chip.active {
+    color: var(--text);
+    background: var(--surface-3);
+    border-color: var(--cover-tint-edge, var(--green));
+  }
+  .privacy-chip.active .sig-ico::after {
+    background: #FF4A1C;
+    box-shadow: 0 0 0 1.5px var(--surface), 0 0 8px rgba(255,74,28,0.6);
+  }
+
+  /* Post privacy indicator · en el header de cada post */
+  .post-privacy {
+    display: inline-flex; align-items: center; gap: 5px;
+    padding: 3px 9px 3px 7px;
+    border-radius: 999px;
+    background: var(--surface-2);
+    border: 1px solid var(--border);
+    font-family: 'Geist Mono', monospace; font-size: 9px;
+    letter-spacing: .10em; text-transform: uppercase; font-weight: 600;
+    color: var(--text-3);
+  }
+  .post-privacy.public    { color: #8AEAC0; border-color: rgba(138,234,192,0.30); background: rgba(138,234,192,0.06); }
+  .post-privacy.mi-u      { color: #7FDAFF; border-color: rgba(127,218,255,0.30); background: rgba(127,218,255,0.06); }
+  .post-privacy.private   { color: #FF9787; border-color: rgba(255,151,135,0.30); background: rgba(255,151,135,0.06); }
+  .post-privacy .sig-ico::after { display: none; } /* sin dot en el indicador del post · no es interactivo */
+
+  /* Filter chips */
+  .chips {
+    display: flex; gap: 6px; align-items: center; flex-wrap: wrap;
+    padding: 0 4px;
+  }
+  .chip {
+    font-family: 'Geist Mono', monospace; font-size: 11px;
+    letter-spacing: 0.04em; font-weight: 500;
+    color: var(--text-3);
+    padding: 5px 11px; border-radius: 999px;
+    border: 1px solid var(--border);
+    background: rgba(255,255,255,.04);
+    cursor: pointer; transition: all .15s;
+    display: inline-flex; align-items: center; gap: 6px;
+  }
+  .chip:hover { color: var(--text); border-color: var(--text-3); }
+  .chip.active {
+    background: var(--surface-3); color: var(--text);
+    border-color: var(--text-3);
+  }
+  .chip .dot {
+    width: 6px; height: 6px; border-radius: 50%;
+  }
+
+  /* Post card · borde tenue con glow tintado */
+  .post {
+    background: rgba(255,255,255,.055);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    border: 1px solid var(--cover-tint-line, var(--border));
+    border-radius: 14px;
+    padding: 18px;
+    box-shadow: 0 2px 20px var(--cover-tint-glow, transparent);
+    position: relative;
+    transition: border-color .3s, box-shadow .3s;
+  }
+  .post::before {
+    /* filo superior tintado · acento muy sutil */
+    content: "";
+    position: absolute; top: 0; left: 14px; right: 14px;
+    height: 1px;
+    background: linear-gradient(90deg, transparent, var(--cover-tint-edge, transparent), transparent);
+    border-radius: 1px;
+    opacity: 0.7;
+    pointer-events: none;
+  }
+  .post-head {
+    display: grid; grid-template-columns: auto 1fr auto;
+    gap: 12px; align-items: start;
+    margin-bottom: 12px;
+  }
+  .post-av {
+    width: 38px; height: 38px; border-radius: 50%;
+    background: var(--surface-2); border: 1px solid var(--border);
+    color: var(--text-3);
+    display: grid; place-items: center;
+    font-family: 'Funnel Display', sans-serif; font-weight: 700; font-size: 14px;
+  }
+  .post-meta { font-size: 12px; }
+  .post-name { font-weight: 600; color: var(--text); font-size: 13px; }
+  .post-time {
+    font-family: 'Geist Mono', monospace; font-size: 10px;
+    color: var(--text-4); letter-spacing: 0.04em;
+    margin-top: 2px;
+  }
+  .post-tag {
+    font-family: 'Geist Mono', monospace; font-size: 9px;
+    letter-spacing: 0.10em; text-transform: uppercase; font-weight: 600;
+    padding: 3px 8px; border-radius: 999px;
+    background: var(--surface-2); color: var(--text-3);
+    border: 1px solid var(--border-2);
+  }
+  .post-body {
+    color: var(--text-2); font-size: 13.5px; line-height: 1.55;
+  }
+  .post-body .placeholder {
+    display: block; padding: 16px;
+    background: var(--surface-2);
+    border: 1px dashed var(--border);
+    border-radius: 10px;
+    color: var(--text-4);
+    font-family: 'Geist Mono', monospace; font-size: 11px;
+    letter-spacing: 0.04em;
+    text-align: center;
+  }
+  .post-actions {
+    display: flex; gap: 4px;
+    margin-top: 14px; padding-top: 14px;
+    border-top: 1px solid var(--border-2);
+  }
+  .post-act {
+    display: inline-flex; align-items: center; gap: 6px;
+    padding: 6px 10px; border-radius: 8px;
+    color: var(--text-3); font-size: 12px;
+    background: transparent;
+    border: 0; cursor: pointer; transition: all .15s;
+  }
+  .post-act:hover { background: var(--surface-2); color: var(--text); }
+
+  /* ═══ SIDE COL ═══ */
+  .side { display: flex; flex-direction: column; gap: 18px; position: sticky; top: 110px; }
+
+  /* Side cards · border tenue + sombra tintada */
+  .side-card {
+    background: rgba(255,255,255,.055);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    border: 1px solid var(--cover-tint-line, var(--border));
+    border-radius: 14px;
+    padding: 18px;
+    box-shadow: 0 2px 24px var(--cover-tint-glow, transparent);
+    transition: all .3s;
+  }
+  .side-card h3 {
+    font-family: 'Geist Mono', monospace;
+    font-size: 10px; letter-spacing: 0.14em;
+    color: var(--text-3); font-weight: 600;
+    text-transform: uppercase;
+    margin-bottom: 14px;
+  }
+
+  /* Mi U card destacada */
+  .miu-card {
+    background: linear-gradient(135deg, rgba(255,255,255,.08), rgba(0,194,122,.06));
+    border-color: rgba(0,194,122,0.30);
+    position: relative; overflow: hidden;
+  }
+  .miu-card::before {
+    content: ""; position: absolute; top: -40px; right: -40px;
+    width: 140px; height: 140px;
+    border-radius: 50%;
+    background: radial-gradient(circle, rgba(0,194,122,0.12), transparent 70%);
+  }
+  .miu-card .miu-row {
+    display: flex; align-items: center; gap: 10px;
+    margin-bottom: 14px; position: relative;
+  }
+  .miu-card .miu-mi {
+    font-family: 'Funnel Display', sans-serif; font-weight: 900;
+    font-size: 22px; color: var(--text);
+    letter-spacing: -0.04em; line-height: 1;
+  }
+  .miu-card .miu-logo {
+    width: 30px; height: 30px;
+    transform: rotate(-12deg);
+    display: inline-block;
+  }
+  .miu-card .miu-logo svg { width: 100%; height: 100%; display: block; }
+  .miu-card .miu-meta-row {
+    display: flex; justify-content: space-between;
+    padding: 7px 0;
+    border-top: 1px solid var(--border-2);
+    font-family: 'Geist Mono', monospace; font-size: 10px;
+  }
+  .miu-card .miu-meta-row .l { color: var(--text-4); letter-spacing: 0.06em; text-transform: uppercase; font-size: 9px; }
+  .miu-card .miu-meta-row .v { color: var(--text-2); }
+  .miu-card .miu-meta-row .v.empty { color: var(--text-4); font-style: italic; }
+
+  /* Modules quick-access · lista 2 col · uso del sistema signature */
+  .mod-grid {
+    display: grid; grid-template-columns: 1fr 1fr; gap: 4px;
+  }
+  .mod-cell {
+    display: grid; grid-template-columns: 24px 1fr;
+    align-items: center; gap: 10px;
+    padding: 8px 10px;
+    border-radius: 8px;
+    background: transparent;
+    border: 1px solid transparent;
+    color: var(--text);
+    cursor: pointer; transition: all .15s;
+    text-align: left;
+    font-family: inherit;
+  }
+  .mod-cell:hover { background: var(--surface-2); }
+  .mod-cell .mod-name {
+    font-size: 12px; color: var(--text);
+    font-weight: 500;
+    overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+  }
+
+  /* Leaderboard */
+  .lb-row {
+    display: grid; grid-template-columns: 16px 28px 1fr auto;
+    gap: 10px; align-items: center;
+    padding: 8px 0;
+    font-size: 12px;
+    border-bottom: 1px solid var(--border-2);
+  }
+  .lb-row:last-child { border-bottom: 0; }
+  .lb-row .rank {
+    font-family: 'Geist Mono', monospace; font-size: 10px;
+    color: var(--text-4); font-weight: 600;
+  }
+  .lb-row .av {
+    width: 28px; height: 28px; border-radius: 50%;
+    background: var(--surface-2); border: 1px solid var(--border);
+    color: var(--text-3);
+    display: grid; place-items: center;
+    font-family: 'Funnel Display', sans-serif; font-weight: 700; font-size: 11px;
+  }
+  .lb-row .name { color: var(--text-2); }
+  .lb-row .pts {
+    font-family: 'Geist Mono', monospace; font-size: 10px;
+    color: var(--text-4);
+  }
+
+  /* Bio card · top-accent band tintado */
+  .bio-card {
+    background:
+      linear-gradient(180deg, var(--cover-tint-mist, transparent), transparent 50%),
+      rgba(255,255,255,.055);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    border: 1px solid var(--cover-tint-line, var(--border));
+    border-radius: 14px;
+    padding: 18px 18px 16px;
+    position: relative;
+    overflow: hidden;
+    transition: all .3s;
+  }
+  .bio-card::before {
+    /* banda superior tintada · acento estilo stick */
+    content: "";
+    position: absolute; top: 0; left: 0; right: 0;
+    height: 2px;
+    background: linear-gradient(90deg,
+      transparent 0%,
+      var(--cover-tint-edge, transparent) 30%,
+      var(--cover-tint-edge, transparent) 70%,
+      transparent 100%);
+    pointer-events: none;
+  }
+  .bio-card .bio-head {
+    display: flex; align-items: center; justify-content: space-between;
+    margin-bottom: 10px;
+  }
+  .bio-card .bio-label {
+    font-family: 'Geist Mono', monospace; font-size: 10px;
+    color: var(--text-3); letter-spacing: .14em; font-weight: 600;
+    text-transform: uppercase;
+  }
+  .bio-card .bio-counter {
+    font-family: 'Geist Mono', monospace; font-size: 10px;
+    color: var(--text-4); letter-spacing: .04em;
+    transition: color .15s;
+  }
+  .bio-card .bio-counter.warn { color: var(--orange); }
+  .bio-card .bio-text {
+    width: 100%; min-height: 64px;
+    background: transparent; color: var(--text);
+    border: 0; outline: 0;
+    font-family: inherit; font-size: 13.5px;
+    line-height: 1.55; resize: none;
+    padding: 0;
+  }
+  .bio-card .bio-text::placeholder { color: var(--text-4); font-style: italic; }
+  .bio-card .bio-actions {
+    display: none;
+    margin-top: 12px;
+    gap: 6px; justify-content: flex-end;
+  }
+  .bio-card.editing .bio-actions { display: flex; }
+  .bio-card .bio-btn {
+    padding: 6px 14px; border-radius: 8px;
+    font-size: 11px; font-weight: 600;
+    border: 0; cursor: pointer;
+    font-family: inherit;
+  }
+  .bio-card .bio-cancel { background: var(--surface-2); color: var(--text-2); }
+  .bio-card .bio-save { background: var(--green); color: #0B0C0E; }
+  .bio-card .bio-edit-btn {
+    background: transparent; border: 1px solid var(--border);
+    color: var(--text-3); padding: 4px 10px; border-radius: 6px;
+    font-family: 'Geist Mono', monospace; font-size: 9px;
+    letter-spacing: .08em; text-transform: uppercase;
+    cursor: pointer; transition: all .15s;
+    display: inline-flex; align-items: center; gap: 6px;
+  }
+  .bio-card .bio-edit-btn:hover { color: var(--green); border-color: var(--green); }
+  .bio-card.editing .bio-edit-btn { display: none; }
+
+  /* ═══════════════════════════════════════════════
+     SISTEMA DE ICONOS · Stroke + Dot Naranja (V2)
+     Dot apagado por default · enciende con hover
+     ═══════════════════════════════════════════════ */
+  .sig-ico {
+    position: relative;
+    display: inline-grid; place-items: center;
+    width: 20px; height: 20px;
+    color: var(--text);
+    flex-shrink: 0;
+  }
+  .sig-ico svg {
+    width: 100%; height: 100%;
+    stroke-width: 1.6; fill: none; stroke: currentColor;
+    stroke-linecap: round; stroke-linejoin: round;
+  }
+  .sig-ico::after {
+    content: ""; position: absolute;
+    bottom: -2px; right: -2px;
+    width: 5px; height: 5px;
+    border-radius: 50%;
+    background: rgba(255,74,28,0.22);   /* dot apagado */
+    box-shadow: 0 0 0 1.5px var(--surface);
+    transition: background .25s, box-shadow .25s, transform .25s;
+  }
+  /* Encender el dot al hover del contenedor padre */
+  button:hover .sig-ico::after,
+  a:hover .sig-ico::after,
+  .st-nav-item:hover .sig-ico::after,
+  .st-nav-item.active .sig-ico::after,
+  .mod-cell:hover .sig-ico::after,
+  .nav-ico:hover .sig-ico::after {
+    background: #FF4A1C;
+    box-shadow: 0 0 0 1.5px var(--surface), 0 0 10px rgba(255,74,28,0.7);
+    transform: scale(1.1);
+  }
+
+  /* Colores sutiles por categoría · diferencian sin saturar */
+  .sig-ico.c-account    { color: #9FC3FF; }  /* azul suave */
+  .sig-ico.c-appearance { color: #B8A6FF; }  /* violet */
+  .sig-ico.c-cover      { color: #7FDAFF; }  /* cyan */
+  .sig-ico.c-notif      { color: #FFD180; }  /* ámbar */
+  .sig-ico.c-privacy    { color: #C4E63D; }  /* lime */
+  .sig-ico.c-data       { color: #8AEAC0; }  /* verde claro */
+  .sig-ico.c-lang       { color: #FF9787; }  /* coral */
+  .sig-ico.c-plan       { color: #E8C770; }  /* gold */
+  .sig-ico.c-integ      { color: #7FBFFF; }  /* sky */
+  .sig-ico.c-help       { color: #C5B5FF; }  /* lavender */
+  .sig-ico.c-logout     { color: #FF8873; }  /* rojo muted */
+  .sig-ico.c-search     { color: #B8B8B4; }  /* neutro */
+  .sig-ico.c-bell       { color: #FFD180; }  /* ámbar */
+  .sig-ico.c-settings   { color: #7FDAFF; }  /* cyan */
+  /* Composer · post · cover · bio */
+  .sig-ico.c-photo      { color: #B8A6FF; }  /* violet */
+  .sig-ico.c-poll       { color: #D9FF3A; }  /* lime */
+  .sig-ico.c-question   { color: #7FDAFF; }  /* cyan */
+  .sig-ico.c-doc        { color: #8AEAC0; }  /* verde claro */
+  .sig-ico.c-like       { color: #FF9787; }  /* coral */
+  .sig-ico.c-comment    { color: #7FBFFF; }  /* sky */
+  .sig-ico.c-share      { color: #FFD180; }  /* ámbar */
+  .sig-ico.c-edit       { color: #C5B5FF; }  /* lavender */
+  /* Módulos · coinciden con los colores del sidebar */
+  .sig-ico.c-workspaces { color: #B8A6FF; }
+  .sig-ico.c-messages   { color: #8AEAC0; }
+  .sig-ico.c-friends    { color: #FF9572; }
+  .sig-ico.c-communities{ color: #7FDAFF; }
+  .sig-ico.c-library    { color: #FFE9B8; }
+  .sig-ico.c-courses    { color: #D9FF3A; }
+  .sig-ico.c-tutors     { color: #FF9787; }
+  .sig-ico.c-calendar   { color: #F5F4EF; }
+
+  /* Tamaños alternativos · cuando el icono vive en un botón pequeño */
+  .sig-ico.sm { width: 16px; height: 16px; }
+  .sig-ico.sm::after { width: 4px; height: 4px; bottom: -1px; right: -1px; }
+  .sig-ico.xs { width: 14px; height: 14px; }
+  .sig-ico.xs::after { width: 3.5px; height: 3.5px; bottom: -1px; right: -1px; }
+
+  /* Empty placeholder */
+  .empty-placeholder {
+    text-align: center; padding: 24px 16px;
+    color: var(--text-4);
+    font-family: 'Geist Mono', monospace; font-size: 11px;
+    letter-spacing: 0.04em;
+    border: 1px dashed var(--border);
+    border-radius: 10px;
+  }
+
+  /* ═══════════════════════════════════════════════
+     SETTINGS DRAWER · drawer general con sidebar de secciones
+     ═══════════════════════════════════════════════ */
+  #st-drawer {
+    position: fixed; top: 0; right: 0; bottom: 0;
+    width: 760px; max-width: 96vw;
+    background: #0D0E11; color: #E8E8E6;
+    border-left: 1px solid #262A32;
+    z-index: 99999;
+    transform: translateX(100%);
+    transition: transform .28s cubic-bezier(0.2,0.8,0.2,1);
+    display: grid; grid-template-columns: 220px 1fr;
+    font-family: 'Inter', sans-serif;
+    box-shadow: -20px 0 60px rgba(0,0,0,0.5);
+  }
+  #st-drawer.on { transform: translateX(0); }
+  #st-overlay {
+    position: fixed; inset: 0; background: rgba(0,0,0,0.55);
+    backdrop-filter: blur(4px);
+    z-index: 99998;
+    opacity: 0; pointer-events: none;
+    transition: opacity .25s;
+  }
+  #st-overlay.on { opacity: 1; pointer-events: all; }
+
+  #st-sidebar {
+    background: #050608;
+    border-right: 1px solid #262A32;
+    padding: 18px 0;
+    overflow-y: auto;
+    display: flex; flex-direction: column;
+  }
+  #st-sidebar::-webkit-scrollbar { width: 4px; }
+  #st-sidebar::-webkit-scrollbar-thumb { background: #262A32; }
+  #st-sidebar h2 {
+    padding: 0 18px 14px;
+    font-family: 'Funnel Display', sans-serif; font-weight: 800;
+    font-size: 16px; letter-spacing: -.01em;
+    border-bottom: 1px solid #15181D;
+    margin-bottom: 14px;
+  }
+  .st-nav-item {
+    display: flex; align-items: center; gap: 12px;
+    padding: 10px 18px;
+    color: #B8B8B4;
+    background: transparent; border: 0;
+    text-align: left; cursor: pointer;
+    font-size: 13px; font-family: inherit;
+    transition: all .12s;
+    border-left: 2px solid transparent;
+  }
+  .st-nav-item:hover { background: #0D0E11; color: #E8E8E6; }
+  .st-nav-item.active {
+    background: #0D0E11; color: #E8E8E6;
+    border-left-color: var(--green);
+  }
+  .st-divider {
+    height: 1px; background: #15181D;
+    margin: 8px 18px;
+  }
+
+  #st-main {
+    overflow-y: auto;
+    display: flex; flex-direction: column;
+    background: #0D0E11;
+  }
+  #st-main::-webkit-scrollbar { width: 8px; }
+  #st-main::-webkit-scrollbar-thumb { background: #262A32; border-radius: 4px; }
+  #st-head {
+    padding: 18px 24px; background: #15181D;
+    border-bottom: 1px solid #262A32;
+    display: flex; justify-content: space-between; align-items: center;
+    position: sticky; top: 0; z-index: 2;
+  }
+  #st-head h3 {
+    font-family: 'Funnel Display', sans-serif; font-weight: 800;
+    font-size: 17px; letter-spacing: -.01em;
+    display: flex; align-items: center; gap: 10px;
+  }
+  #st-head h3 .id-tag {
+    font-family: 'Geist Mono', monospace; font-size: 9px;
+    color: #00C27A; letter-spacing: .14em; font-weight: 600;
+    background: rgba(0,194,122,0.10); padding: 3px 7px;
+    border-radius: 4px;
+  }
+  #st-close {
+    background: transparent; color: #8A8A86; border: 0;
+    font-size: 20px; cursor: pointer; padding: 4px 10px;
+  }
+  #st-close:hover { color: #E8E8E6; }
+
+  #st-body {
+    flex: 1; padding: 22px 24px 28px;
+    overflow-y: auto;
+  }
+  #st-foot {
+    padding: 14px 24px; background: #15181D;
+    border-top: 1px solid #262A32;
+    display: flex; gap: 8px; justify-content: flex-end;
+    position: sticky; bottom: 0;
+  }
+  #st-foot button {
+    padding: 9px 18px; border-radius: 8px; border: 0;
+    font-size: 12px; font-weight: 600;
+    font-family: 'Inter', sans-serif; cursor: pointer;
+  }
+  .st-btn-secondary { background: #262A32; color: #E8E8E6; }
+  .st-btn-secondary:hover { background: #1A1D23; }
+  .st-btn-primary { background: #00C27A; color: #0B0C0E; }
+  .st-btn-primary:hover { background: #8AEAC0; }
+  .st-btn-danger { background: #FF4A1C; color: #fff; }
+  .st-btn-danger:hover { background: #d93b14; }
+
+  .st-pane { display: none; }
+  .st-pane.on { display: block; }
+  .st-section { margin-bottom: 22px; }
+  .st-section-title {
+    font-family: 'Geist Mono', monospace; font-size: 9px;
+    color: #8A8A86; letter-spacing: .16em; font-weight: 600;
+    text-transform: uppercase;
+    padding-bottom: 8px;
+    border-bottom: 1px solid #262A32;
+    margin-bottom: 12px;
+  }
+
+  /* Form rows (cuenta, notif, etc.) */
+  .st-row {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 11px 0;
+    border-bottom: 1px solid #15181D;
+  }
+  .st-row:last-child { border-bottom: 0; }
+  .st-row .st-label {
+    font-size: 13px; color: #E8E8E6; font-weight: 500;
+  }
+  .st-row .st-label small {
+    display: block;
+    font-family: 'Geist Mono', monospace; font-size: 10px;
+    color: #8A8A86; margin-top: 2px;
+    letter-spacing: .02em;
+  }
+  .st-input {
+    background: #050608; color: #E8E8E6;
+    border: 1px solid #262A32; border-radius: 6px;
+    padding: 7px 10px; font-size: 12px;
+    font-family: inherit; width: 220px;
+  }
+  .st-input:focus { outline: 0; border-color: #00C27A; }
+  .st-select {
+    background: #050608; color: #E8E8E6;
+    border: 1px solid #262A32; border-radius: 6px;
+    padding: 7px 28px 7px 10px; font-size: 12px;
+    font-family: inherit;
+    appearance: none;
+    background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='10' height='6' viewBox='0 0 10 6'><path d='M1 1l4 4 4-4' stroke='%238A8A86' stroke-width='1.5' fill='none'/></svg>");
+    background-repeat: no-repeat;
+    background-position: right 10px center;
+  }
+
+  /* Toggle switch */
+  .st-toggle {
+    position: relative; width: 36px; height: 20px;
+    background: #262A32; border-radius: 999px;
+    cursor: pointer; transition: background .15s;
+  }
+  .st-toggle::after {
+    content: ""; position: absolute;
+    top: 2px; left: 2px;
+    width: 16px; height: 16px;
+    background: #E8E8E6; border-radius: 50%;
+    transition: transform .15s;
+  }
+  .st-toggle.on { background: #00C27A; }
+  .st-toggle.on::after { transform: translateX(16px); background: #0B0C0E; }
+
+  /* Btn block (descargar, etc.) */
+  .st-btn-block {
+    display: flex; align-items: center; gap: 12px;
+    padding: 14px 16px;
+    background: #15181D;
+    border: 1px solid #262A32;
+    border-radius: 10px;
+    width: 100%;
+    cursor: pointer;
+    color: #E8E8E6;
+    transition: all .15s;
+    text-align: left;
+  }
+  .st-btn-block:hover { border-color: #00C27A; background: #1A1D23; }
+  .st-btn-block .ico-lg {
+    width: 40px; height: 40px; border-radius: 10px;
+    background: #050608; border: 1px solid #262A32;
+    display: grid; place-items: center;
+    color: #00C27A; flex-shrink: 0;
+  }
+  .st-btn-block .info { flex: 1; }
+  .st-btn-block .info .t { font-weight: 600; font-size: 13px; }
+  .st-btn-block .info .d {
+    font-family: 'Geist Mono', monospace; font-size: 10px;
+    color: #8A8A86; margin-top: 2px;
+  }
+  .st-btn-block .arrow { color: #8A8A86; }
+
+  /* ── Theme selector · 12 temas ── */
+  .theme-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr;
+    gap: 8px;
+  }
+  .theme-card {
+    background: #15181D;
+    border: 2px solid #262A32;
+    border-radius: 10px;
+    padding: 10px 8px 8px;
+    cursor: pointer;
+    transition: all .18s;
+    text-align: center;
+    font-family: 'Inter', sans-serif;
+    color: #E8E8E6;
+  }
+  .theme-card:hover { border-color: #00C27A; transform: translateY(-1px); }
+  .theme-card.active { border-color: #D9FF3A; box-shadow: 0 0 0 2px rgba(217,255,58,0.22); }
+  .theme-card-swatch {
+    display: flex; gap: 2px; margin-bottom: 7px; border-radius: 6px; overflow: hidden;
+  }
+  .theme-card-swatch span { flex: 1; height: 22px; }
+  .theme-card-name {
+    font-family: 'Funnel Display', sans-serif; font-weight: 700;
+    font-size: 11px; letter-spacing: -.01em; margin-bottom: 2px;
+  }
+  .theme-card-mode {
+    font-family: 'Geist Mono', monospace; font-size: 8px;
+    color: #8A8A86; letter-spacing: .06em;
+  }
+
+</style>
+</head>
+<body>
+
+<!-- ══ HEX BACKGROUND · HexTide · variante whisper (social) ══ -->
+<canvas id="hexTide" class="hex-tide" aria-hidden="true"></canvas>
+
+<!-- ═══ NAV ═══ -->
+<nav class="nav">
+  <div class="nav-top">
+    <div class="nav-brand">
+      <a href="conniku.html" class="nav-back" aria-label="Volver al Universo" title="Volver al Universo">
+        <span class="orbit-ico" aria-hidden="true"></span>
+        <span>Orbit·<span class="nav-back-label-u">U</span></span>
+      </a>
+      <span class="brand-logo" aria-label="Conniku">
+  <!-- LOGO PENDIENTE -->
+</span>
+    </div>
+
+    <div class="search">
+      <span class="sig-ico sm c-search"><svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.5-4.5"/></svg></span>
+      <input type="text" placeholder="Buscar gente, comunidades, libros…" />
+      <span class="kbd">⌘K</span>
+    </div>
+
+    <div class="nav-right">
+      <button class="nav-ico" aria-label="Notificaciones">
+        <span class="sig-ico c-bell"><svg viewBox="0 0 24 24"><path d="M6 8a6 6 0 0112 0c0 7 3 9 3 9H3s3-2 3-9 M10 21a2 2 0 004 0"/></svg></span>
+      </button>
+      <button class="nav-ico" id="st-open-btn" aria-label="Configuración" title="Configuración">
+        <span class="sig-ico c-settings"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 11-2.83 2.83l-.06-.06a1.65 1.65 0 00-1.82-.33 1.65 1.65 0 00-1 1.51V21a2 2 0 11-4 0v-.09A1.65 1.65 0 008 19.4a1.65 1.65 0 00-1.82.33l-.06.06a2 2 0 11-2.83-2.83l.06-.06A1.65 1.65 0 004.6 15a1.65 1.65 0 00-1.51-1H3a2 2 0 110-4h.09A1.65 1.65 0 004.6 9a1.65 1.65 0 00-.33-1.82l-.06-.06a2 2 0 112.83-2.83l.06.06a1.65 1.65 0 001.82.33H9a1.65 1.65 0 001-1.51V3a2 2 0 114 0v.09a1.65 1.65 0 001 1.51 1.65 1.65 0 001.82-.33l.06-.06a2 2 0 112.83-2.83l.06.06a1.65 1.65 0 001.82.33H21a2 2 0 110 4h-.09a1.65 1.65 0 00-1.51 1z"/></svg></span>
+      </button>
+    </div>
+  </div>
+
+  <div class="nav-tabs">
+    <a class="tab active">Feed</a>
+    <a class="tab">Logros</a>
+    <a class="tab">CV público</a>
+    <a class="tab">Sobre mí</a>
+  </div>
+</nav>
+
+<!-- ═══ PAGE ═══ -->
+<main class="page">
+
+  <!-- COL · feed -->
+  <section class="feed">
+
+    <!-- Cover -->
+    <div class="cover">
+      <div class="cover-banner" id="cv-banner">
+        <button class="cover-edit-btn" id="cv-open-btn" aria-label="Cambiar portada">
+          <span class="sig-ico xs c-edit"><svg viewBox="0 0 24 24"><path d="M3 17.25V21h3.75L17.81 9.94l-3.75-3.75L3 17.25z M14.06 6.19l3.75 3.75"/></svg></span>
+          Portada
+        </button>
+      </div>
+      <div class="cover-info">
+        <div class="cover-av">—</div>
+        <div class="cover-meta">
+          <div class="cover-name">Nombre</div>
+          <div class="cover-sub">@usuario · Carrera · Universidad</div>
+          <div class="cover-badges">
+            <span class="badge live">● online</span>
+            <span class="badge">verificado</span>
+            <span class="badge">racha · —</span>
+          </div>
+        </div>
+        <div class="cover-cta">
+          <button class="btn">Mensaje</button>
+          <button class="btn primary">Editar perfil</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Bio · max 300 palabras -->
+    <div class="bio-card" id="bio-card">
+      <div class="bio-head">
+        <span class="bio-label">Bio</span>
+        <button class="bio-edit-btn" id="bio-edit-btn">
+          <span class="sig-ico xs c-edit"><svg viewBox="0 0 24 24"><path d="M3 17.25V21h3.75L17.81 9.94l-3.75-3.75L3 17.25z M14.06 6.19l3.75 3.75"/></svg></span>
+          Editar
+        </button>
+        <span class="bio-counter" id="bio-counter" style="display:none;">0 / 300</span>
+      </div>
+      <textarea class="bio-text" id="bio-text" rows="3" readonly placeholder="Contale al mundo en pocas palabras quién sos y qué te apasiona estudiar. Máximo 300 palabras."></textarea>
+      <div class="bio-actions">
+        <button class="bio-btn bio-cancel" id="bio-cancel">Cancelar</button>
+        <button class="bio-btn bio-save" id="bio-save">Guardar</button>
+      </div>
+    </div>
+
+    <!-- Composer -->
+    <div class="composer">
+      <div class="composer-av">—</div>
+      <div class="composer-input">Compartí algo con tu red…</div>
+      <div class="composer-actions">
+        <button class="composer-act" title="Apunte"><span class="sig-ico xs c-doc"><svg viewBox="0 0 24 24"><path d="M5 3h10l4 4v14H5z M15 3v4h4 M9 12h6 M9 16h4"/></svg></span></button>
+        <button class="composer-act" title="Foto"><span class="sig-ico xs c-photo"><svg viewBox="0 0 24 24"><rect x="3" y="5" width="18" height="14" rx="2"/><circle cx="9" cy="11" r="2"/><path d="M3 17l5-5 4 4 3-3 6 6"/></svg></span></button>
+        <button class="composer-act" title="Evento"><span class="sig-ico xs c-calendar"><svg viewBox="0 0 24 24"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M3 10h18 M8 3v4 M16 3v4"/></svg></span></button>
+        <button class="composer-act" title="Pregunta"><span class="sig-ico xs c-question"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M9.5 9a2.5 2.5 0 015 0c0 1.5-2.5 2-2.5 4 M12 17h.01"/></svg></span></button>
+      </div>
+
+      <div class="privacy-group" role="radiogroup" aria-label="Privacidad del post">
+        <span class="pg-label">Quién puede ver</span>
+        <button class="privacy-chip active" data-privacy="public">
+          <span class="sig-ico xs c-data"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M3 12h18 M12 3a13 13 0 010 18 M12 3a13 13 0 000 18"/></svg></span>
+          Público
+        </button>
+        <button class="privacy-chip" data-privacy="mi-u">
+          <span class="sig-ico xs c-communities"><svg viewBox="0 0 24 24"><path d="M2 9l10-5 10 5-10 5z M6 11v5c0 1.5 3 3 6 3s6-1.5 6-3v-5"/></svg></span>
+          Solo mi Universidad
+        </button>
+        <button class="privacy-chip" data-privacy="private">
+          <span class="sig-ico xs c-like"><svg viewBox="0 0 24 24"><rect x="5" y="11" width="14" height="10" rx="2"/><path d="M8 11V7a4 4 0 018 0v4"/></svg></span>
+          Privado
+        </button>
+      </div>
+    </div>
+
+    <!-- Post placeholder -->
+    <article class="post">
+      <div class="post-head">
+        <div class="post-av">—</div>
+        <div class="post-meta">
+          <div class="post-name">Nombre</div>
+          <div class="post-time">—</div>
+        </div>
+        <span class="post-privacy public" title="Visible para todos">
+          <span class="sig-ico xs c-data"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M3 12h18 M12 3a13 13 0 010 18 M12 3a13 13 0 000 18"/></svg></span>
+          Público
+        </span>
+      </div>
+      <div class="post-body">
+        <span class="placeholder">// contenido del post · pendiente de data</span>
+      </div>
+      <div class="post-actions">
+        <button class="post-act">
+          <span class="sig-ico xs c-like"><svg viewBox="0 0 24 24"><path d="M20.84 4.61a5.5 5.5 0 00-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 00-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 000-7.78z"/></svg></span>
+          —
+        </button>
+        <button class="post-act">
+          <span class="sig-ico xs c-comment"><svg viewBox="0 0 24 24"><path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"/></svg></span>
+          —
+        </button>
+        <button class="post-act">
+          <span class="sig-ico xs c-share"><svg viewBox="0 0 24 24"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><path d="M8.59 13.51l6.83 3.98 M15.41 6.51l-6.82 3.98"/></svg></span>
+          Compartir
+        </button>
+      </div>
+    </article>
+
+    <article class="post">
+      <div class="post-head">
+        <div class="post-av">—</div>
+        <div class="post-meta">
+          <div class="post-name">Nombre</div>
+          <div class="post-time">—</div>
+        </div>
+        <span class="post-privacy mi-u" title="Visible solo para tu universidad">
+          <span class="sig-ico xs c-communities"><svg viewBox="0 0 24 24"><path d="M2 9l10-5 10 5-10 5z M6 11v5c0 1.5 3 3 6 3s6-1.5 6-3v-5"/></svg></span>
+          Solo mi U
+        </span>
+      </div>
+      <div class="post-body">
+        <span class="placeholder">// contenido del post · pendiente de data</span>
+      </div>
+    </article>
+
+  </section>
+
+  <!-- COL · side -->
+  <aside class="side">
+
+    <!-- Mi U card -->
+    <div class="side-card miu-card">
+      <h3>Tu universidad</h3>
+      <div class="miu-row">
+        <span class="miu-mi">Mi</span>
+        <span class="miu-logo">
+          <svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg" aria-label="Conniku">
+            <defs>
+              <linearGradient id="miu-grad" x1="0%" y1="0%" x2="100%" y2="100%">
+                <stop offset="0%" stop-color="#8AEAC0"/>
+                <stop offset="100%" stop-color="#006E4A"/>
+              </linearGradient>
+            </defs>
+            <rect width="100" height="100" rx="22" fill="url(#miu-grad)"/>
+            <text x="50" y="71" text-anchor="middle"
+                  font-family="Funnel Display, sans-serif"
+                  font-weight="900" font-size="84" fill="#0D0F10"
+                  letter-spacing="-4">u</text>
+            <circle cx="77" cy="68" r="6" fill="#FF4A1C"/>
+          </svg>
+        </span>
+      </div>
+      <div class="miu-meta-row"><span class="l">Universidad</span><span class="v empty">—</span></div>
+      <div class="miu-meta-row"><span class="l">Promedio</span><span class="v empty">—</span></div>
+      <div class="miu-meta-row"><span class="l">Asistencia</span><span class="v empty">—</span></div>
+      <div class="miu-meta-row"><span class="l">Ramos</span><span class="v empty">—</span></div>
+    </div>
+
+    <!-- Quick access modules -->
+    <div class="side-card">
+      <h3>Accesos · módulos</h3>
+      <div class="mod-grid">
+        <button class="mod-cell">
+          <span class="sig-ico c-workspaces"><svg viewBox="0 0 24 24"><path d="M5 3h10l4 4v14H5z M15 3v4h4 M9 12h6 M9 16h4"/></svg></span>
+          <span class="mod-name">Workspaces</span>
+        </button>
+        <button class="mod-cell">
+          <span class="sig-ico c-messages"><svg viewBox="0 0 24 24"><path d="M4 5h14a2 2 0 012 2v8a2 2 0 01-2 2h-8l-5 4v-4H4V7a2 2 0 010-2z"/></svg></span>
+          <span class="mod-name">Mensajes</span>
+        </button>
+        <button class="mod-cell">
+          <span class="sig-ico c-friends"><svg viewBox="0 0 24 24"><circle cx="9" cy="8" r="3"/><circle cx="17" cy="9" r="2.5"/><path d="M3 19c0-3.5 3-5 6-5s6 1.5 6 5 M14 18c.5-2 2-3 3.5-3s3 1 3 3"/></svg></span>
+          <span class="mod-name">Amigos</span>
+        </button>
+        <button class="mod-cell">
+          <span class="sig-ico c-communities"><svg viewBox="0 0 24 24"><circle cx="12" cy="6" r="2.5"/><circle cx="6" cy="17" r="2.5"/><circle cx="18" cy="17" r="2.5"/><path d="M11 8l-4 7 M13 8l4 7 M8 17h8"/></svg></span>
+          <span class="mod-name">Comunidades</span>
+        </button>
+        <button class="mod-cell">
+          <span class="sig-ico c-library"><svg viewBox="0 0 24 24"><rect x="4" y="5" width="3" height="14"/><rect x="8" y="5" width="3" height="14"/><rect x="12" y="3" width="3" height="16"/><rect x="16" y="6" width="3" height="13"/></svg></span>
+          <span class="mod-name">Biblioteca</span>
+        </button>
+        <button class="mod-cell">
+          <span class="sig-ico c-courses"><svg viewBox="0 0 24 24"><path d="M2 9l10-5 10 5-10 5z M6 11v5c0 1.5 3 3 6 3s6-1.5 6-3v-5 M22 9v6"/></svg></span>
+          <span class="mod-name">Cursos</span>
+        </button>
+        <button class="mod-cell">
+          <span class="sig-ico c-tutors"><svg viewBox="0 0 24 24"><circle cx="12" cy="8" r="3.5"/><path d="M5 21c0-4 3-6.5 7-6.5s7 2.5 7 6.5"/></svg></span>
+          <span class="mod-name">Tutores</span>
+        </button>
+        <button class="mod-cell">
+          <span class="sig-ico c-calendar"><svg viewBox="0 0 24 24"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M3 10h18 M8 3v4 M16 3v4"/></svg></span>
+          <span class="mod-name">Calendario</span>
+        </button>
+      </div>
+    </div>
+
+    <!-- Leaderboard -->
+    <div class="side-card">
+      <h3>Leaderboard · 30d</h3>
+      <div class="empty-placeholder">// pendiente de data</div>
+    </div>
+
+    <!-- Comunidades -->
+    <div class="side-card">
+      <h3>Tus comunidades</h3>
+      <div class="empty-placeholder">// pendiente de data</div>
+    </div>
+
+  </aside>
+
+</main>
+
+<!-- ═══ MODAL CAMBIAR PORTADA ═══ -->
+<div id="cv-modal" role="dialog" aria-labelledby="cv-title">
+  <div id="cv-box">
+    <div id="cv-head">
+      <h3 id="cv-title">🖼  Cambiar portada</h3>
+      <button id="cv-close" aria-label="Cerrar">✕</button>
+    </div>
+
+    <div id="cv-tabs">
+      <button class="cv-tab active" data-tab="tpl">Templates</button>
+      <button class="cv-tab" data-tab="upload">Subir foto</button>
+    </div>
+
+    <div id="cv-body">
+
+      <!-- Tab · Templates -->
+      <div class="cv-pane" data-pane="tpl">
+        <div class="cv-templates" id="cv-tpl-grid">
+          <!-- generados por JS -->
+        </div>
+      </div>
+
+      <!-- Tab · Upload -->
+      <div class="cv-pane" data-pane="upload" style="display:none;">
+        <div class="cv-upload-zone" id="cv-drop">
+          <div class="ico">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 19V5 M5 12l7-7 7 7"/></svg>
+          </div>
+          <h4>Subí una foto desde tu PC o teléfono</h4>
+          <p>JPG · PNG · WebP · arrastrá o tocá para elegir</p>
+          <input type="file" id="cv-file" accept="image/*" hidden>
+        </div>
+
+        <div class="cv-editor" id="cv-editor">
+          <div class="cv-editor-stage" id="cv-stage">
+            <img id="cv-img" alt="Preview portada">
+          </div>
+          <div class="cv-controls">
+            <label>Zoom
+              <input type="range" id="cv-zoom" min="100" max="300" value="100" step="1">
+            </label>
+            <button class="cv-btn-cancel" id="cv-reset" style="padding:6px 10px;font-size:11px;">↺ Reset</button>
+          </div>
+          <div class="cv-tip">Arrastrá la imagen para reposicionar · usá el slider para zoom</div>
+        </div>
+      </div>
+
+    </div>
+
+    <div id="cv-foot">
+      <button class="cv-btn-cancel" id="cv-cancel">Cancelar</button>
+      <button class="cv-btn-apply" id="cv-apply" disabled>Aplicar</button>
+    </div>
+  </div>
+</div>
+
+<!-- ═══ SETTINGS DRAWER ═══ -->
+<div id="st-overlay"></div>
+<aside id="st-drawer" aria-hidden="true">
+  <nav id="st-sidebar">
+    <h2>Configuración</h2>
+    <button class="st-nav-item active" data-pane="cuenta"><span class="sig-ico c-account"><svg viewBox="0 0 24 24"><circle cx="12" cy="8" r="4"/><path d="M4 21c0-4.5 3.5-7 8-7s8 2.5 8 7"/></svg></span>Cuenta</button>
+    <button class="st-nav-item" data-pane="apariencia"><span class="sig-ico c-appearance"><svg viewBox="0 0 24 24"><circle cx="13" cy="7" r="2"/><circle cx="17" cy="12" r="2"/><circle cx="13" cy="17" r="2"/><circle cx="7" cy="14" r="2"/><path d="M3 11a9 9 0 0118-1 9 9 0 01-4 13L3 11z"/></svg></span>Apariencia</button>
+    <button class="st-nav-item" data-pane="portada"><span class="sig-ico c-cover"><svg viewBox="0 0 24 24"><rect x="3" y="5" width="18" height="14" rx="2"/><circle cx="9" cy="11" r="2"/><path d="M3 17l5-5 4 4 3-3 6 6"/></svg></span>Portada</button>
+    <button class="st-nav-item" data-pane="notif"><span class="sig-ico c-notif"><svg viewBox="0 0 24 24"><path d="M6 8a6 6 0 0112 0c0 7 3 9 3 9H3s3-2 3-9 M10 21a2 2 0 004 0"/></svg></span>Notificaciones</button>
+    <button class="st-nav-item" data-pane="privacidad"><span class="sig-ico c-privacy"><svg viewBox="0 0 24 24"><rect x="5" y="11" width="14" height="10" rx="2"/><path d="M8 11V7a4 4 0 018 0v4"/></svg></span>Privacidad</button>
+    <button class="st-nav-item" data-pane="datos"><span class="sig-ico c-data"><svg viewBox="0 0 24 24"><path d="M3 21V11 M9 21V5 M15 21V8 M21 21V3"/></svg></span>Mis datos</button>
+    <button class="st-nav-item" data-pane="idioma"><span class="sig-ico c-lang"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M3 12h18 M12 3a13 13 0 010 18 M12 3a13 13 0 000 18"/></svg></span>Idioma & región</button>
+    <button class="st-nav-item" data-pane="plan"><span class="sig-ico c-plan"><svg viewBox="0 0 24 24"><rect x="2" y="6" width="20" height="14" rx="2"/><path d="M2 11h20 M6 16h4"/></svg></span>Plan & facturación</button>
+    <button class="st-nav-item" data-pane="integraciones"><span class="sig-ico c-integ"><svg viewBox="0 0 24 24"><path d="M10 14a4 4 0 015 0l3-3a4 4 0 00-6-6l-1 1 M14 10a4 4 0 01-5 0l-3 3a4 4 0 006 6l1-1"/></svg></span>Integraciones</button>
+    <div class="st-divider"></div>
+    <button class="st-nav-item" data-pane="ayuda"><span class="sig-ico c-help"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M9.5 9a2.5 2.5 0 015 0c0 1.5-2.5 2-2.5 4 M12 17h.01"/></svg></span>Ayuda</button>
+    <button class="st-nav-item" data-pane="cerrar"><span class="sig-ico c-logout"><svg viewBox="0 0 24 24"><path d="M9 21H5a2 2 0 01-2-2V5a2 2 0 012-2h4 M16 17l5-5-5-5 M21 12H9"/></svg></span>Cerrar sesión</button>
+  </nav>
+
+  <div id="st-main">
+    <div id="st-head">
+      <h3 id="st-title">👤 Cuenta <span class="id-tag">SETTINGS</span></h3>
+      <button id="st-close" aria-label="Cerrar">✕</button>
+    </div>
+
+    <div id="st-body">
+
+      <!-- ── CUENTA ── -->
+      <div class="st-pane on" data-pane="cuenta">
+        <div class="st-section">
+          <div class="st-section-title">Información personal</div>
+          <div class="st-row"><div class="st-label">Nombre completo<small>visible en tu perfil</small></div><input class="st-input" type="text" placeholder="—"></div>
+          <div class="st-row"><div class="st-label">Usuario<small>tu @handle único</small></div><input class="st-input" type="text" placeholder="@usuario"></div>
+          <div class="st-row"><div class="st-label">Email<small>institucional preferido</small></div><input class="st-input" type="email" placeholder="—"></div>
+          <div class="st-row"><div class="st-label">Carrera<small>—</small></div><input class="st-input" type="text" placeholder="—"></div>
+          <div class="st-row"><div class="st-label">Año<small>—</small></div><select class="st-select"><option>—</option><option>1°</option><option>2°</option><option>3°</option><option>4°</option><option>5°+</option></select></div>
+        </div>
+        <div class="st-section">
+          <div class="st-section-title">Seguridad</div>
+          <div class="st-row"><div class="st-label">Contraseña<small>última vez —</small></div><button class="st-btn-secondary" style="padding:7px 14px;border-radius:6px;border:0;color:#E8E8E6;background:#262A32;cursor:pointer;">Cambiar</button></div>
+          <div class="st-row"><div class="st-label">2FA<small>autenticación de dos factores</small></div><div class="st-toggle" data-key="2fa"></div></div>
+          <div class="st-row"><div class="st-label">Sesiones activas<small>dispositivos conectados</small></div><button class="st-btn-secondary" style="padding:7px 14px;border-radius:6px;border:0;color:#E8E8E6;background:#262A32;cursor:pointer;">Ver</button></div>
+        </div>
+      </div>
+
+      <!-- ── APARIENCIA · 12 TEMAS ── -->
+      <div class="st-pane" data-pane="apariencia">
+        <div class="st-section">
+          <div class="st-section-title">Tema de la interfaz</div>
+          <div class="theme-grid" id="theme-grid">
+
+
+            <!-- ORBIT·U DEFAULT -->
+            <button class="theme-card active" data-theme="profundo-dark" style="grid-column:span 3;">
+              <div class="theme-card-swatch">
+                <span style="background:#142040"></span>
+                <span style="background:#1a2a52"></span>
+                <span style="background:#253a70"></span>
+                <span style="background:#00C27A"></span>
+                <span style="background:#D0E2F5"></span>
+              </div>
+              <div class="theme-card-name">Profundo ⭐ <span style="font-size:8px;opacity:.6;font-family:'Geist Mono',monospace;">DEFAULT</span></div>
+              <div class="theme-card-mode">Dark · Azul marino · ORBIT·U</div>
+            </button>
+
+            <!-- DARK -->
+            <button class="theme-card" data-theme="ember-dark">
+              <div class="theme-card-swatch">
+                <span style="background:#1F1A1A"></span>
+                <span style="background:#26211F"></span>
+                <span style="background:#473C36"></span>
+                <span style="background:#FF4A1C"></span>
+                <span style="background:#EFE7DC"></span>
+              </div>
+              <div class="theme-card-name">Ember</div>
+              <div class="theme-card-mode">Dark · Naranja</div>
+            </button>
+
+            <button class="theme-card" data-theme="cosmos-dark">
+              <div class="theme-card-swatch">
+                <span style="background:#1A1A28"></span>
+                <span style="background:#222236"></span>
+                <span style="background:#3D3D5C"></span>
+                <span style="background:#6B4EFF"></span>
+                <span style="background:#E8E5F2"></span>
+              </div>
+              <div class="theme-card-name">Cosmos</div>
+              <div class="theme-card-mode">Dark · Violeta</div>
+            </button>
+
+            <button class="theme-card" data-theme="forest-dark">
+              <div class="theme-card-swatch">
+                <span style="background:#16201C"></span>
+                <span style="background:#1E2A26"></span>
+                <span style="background:#3A4F46"></span>
+                <span style="background:#00C27A"></span>
+                <span style="background:#E0E8E2"></span>
+              </div>
+              <div class="theme-card-name">Forest</div>
+              <div class="theme-card-mode">Dark · Verde</div>
+            </button>
+
+            <button class="theme-card" data-theme="punk-dark">
+              <div class="theme-card-swatch">
+                <span style="background:#181A22"></span>
+                <span style="background:#21242E"></span>
+                <span style="background:#3D4150"></span>
+                <span style="background:#D9FF3A"></span>
+                <span style="background:#E8E8E6"></span>
+              </div>
+              <div class="theme-card-name">Punk</div>
+              <div class="theme-card-mode">Dark · Lime</div>
+            </button>
+
+            <button class="theme-card" data-theme="ocean-dark">
+              <div class="theme-card-swatch">
+                <span style="background:#161E26"></span>
+                <span style="background:#1E2A36"></span>
+                <span style="background:#3A4D60"></span>
+                <span style="background:#00C2FF"></span>
+                <span style="background:#DEE8F0"></span>
+              </div>
+              <div class="theme-card-name">Ocean</div>
+              <div class="theme-card-mode">Dark · Cyan</div>
+            </button>
+
+            <button class="theme-card" data-theme="amber-dark">
+              <div class="theme-card-swatch">
+                <span style="background:#1E1B16"></span>
+                <span style="background:#2A261E"></span>
+                <span style="background:#4A4338"></span>
+                <span style="background:#FFE9B8"></span>
+                <span style="background:#EFE7D5"></span>
+              </div>
+              <div class="theme-card-name">Amber</div>
+              <div class="theme-card-mode">Dark · Cream</div>
+            </button>
+
+            <!-- LIGHT -->
+            <button class="theme-card" data-theme="ember-light">
+              <div class="theme-card-swatch">
+                <span style="background:#F5EFE8"></span>
+                <span style="background:#FFFAF2"></span>
+                <span style="background:#D6CCBC"></span>
+                <span style="background:#FF4A1C"></span>
+                <span style="background:#1F1A1A"></span>
+              </div>
+              <div class="theme-card-name">Ember</div>
+              <div class="theme-card-mode">Light · Naranja</div>
+            </button>
+
+            <button class="theme-card" data-theme="cosmos-light">
+              <div class="theme-card-swatch">
+                <span style="background:#F0EEF7"></span>
+                <span style="background:#FAF8FF"></span>
+                <span style="background:#CFC8E0"></span>
+                <span style="background:#6B4EFF"></span>
+                <span style="background:#1A1A28"></span>
+              </div>
+              <div class="theme-card-name">Cosmos</div>
+              <div class="theme-card-mode">Light · Violeta</div>
+            </button>
+
+            <button class="theme-card" data-theme="forest-light">
+              <div class="theme-card-swatch">
+                <span style="background:#EBF2EE"></span>
+                <span style="background:#F8FCF9"></span>
+                <span style="background:#BFD0C5"></span>
+                <span style="background:#00C27A"></span>
+                <span style="background:#16201C"></span>
+              </div>
+              <div class="theme-card-name">Forest</div>
+              <div class="theme-card-mode">Light · Verde</div>
+            </button>
+
+            <button class="theme-card" data-theme="punk-light">
+              <div class="theme-card-swatch">
+                <span style="background:#F0F0EE"></span>
+                <span style="background:#FAFAF8"></span>
+                <span style="background:#C8C8C2"></span>
+                <span style="background:#D9FF3A"></span>
+                <span style="background:#1A1D24"></span>
+              </div>
+              <div class="theme-card-name">Punk</div>
+              <div class="theme-card-mode">Light · Lime</div>
+            </button>
+
+            <button class="theme-card" data-theme="ocean-light">
+              <div class="theme-card-swatch">
+                <span style="background:#EBF1F5"></span>
+                <span style="background:#F8FBFD"></span>
+                <span style="background:#BFCDDB"></span>
+                <span style="background:#00C2FF"></span>
+                <span style="background:#161E26"></span>
+              </div>
+              <div class="theme-card-name">Ocean</div>
+              <div class="theme-card-mode">Light · Cyan</div>
+            </button>
+
+            <button class="theme-card" data-theme="amber-light">
+              <div class="theme-card-swatch">
+                <span style="background:#F5EFE0"></span>
+                <span style="background:#FFFCF2"></span>
+                <span style="background:#D6CBAE"></span>
+                <span style="background:#E8C770"></span>
+                <span style="background:#1E1B16"></span>
+              </div>
+              <div class="theme-card-name">Amber</div>
+              <div class="theme-card-mode">Light · Cream</div>
+            </button>
+
+          </div>
+        </div>
+      </div>
+
+      <!-- ── PORTADA ── -->
+      <div class="st-pane" data-pane="portada">
+        <div class="st-section">
+          <div class="st-section-title">Foto de portada</div>
+          <button class="st-btn-block" id="st-open-cover">
+            <div class="ico-lg">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="5" width="18" height="14" rx="2"/><circle cx="9" cy="11" r="2"/><path d="M3 17l5-5 4 4 3-3 6 6"/></svg>
+            </div>
+            <div class="info">
+              <div class="t">Cambiar portada</div>
+              <div class="d">Elegí un template predefinido o subí tu propia foto</div>
+            </div>
+            <div class="arrow">→</div>
+          </button>
+        </div>
+      </div>
+
+      <!-- ── NOTIFICACIONES ── -->
+      <div class="st-pane" data-pane="notif">
+        <div class="st-section">
+          <div class="st-section-title">Canales</div>
+          <div class="st-row"><div class="st-label">Push<small>notificaciones del navegador / móvil</small></div><div class="st-toggle on" data-key="push"></div></div>
+          <div class="st-row"><div class="st-label">Email<small>resumen diario</small></div><div class="st-toggle" data-key="email"></div></div>
+          <div class="st-row"><div class="st-label">In-app<small>notificaciones dentro de Conniku</small></div><div class="st-toggle on" data-key="inapp"></div></div>
+        </div>
+        <div class="st-section">
+          <div class="st-section-title">Tipos</div>
+          <div class="st-row"><div class="st-label">Mensajes nuevos<small>1:1 y grupos</small></div><div class="st-toggle on"></div></div>
+          <div class="st-row"><div class="st-label">Actividad de comunidades<small>posts, eventos</small></div><div class="st-toggle on"></div></div>
+          <div class="st-row"><div class="st-label">Logros y racha<small>milestones</small></div><div class="st-toggle on"></div></div>
+          <div class="st-row"><div class="st-label">Recordatorios académicos<small>deadlines, clases</small></div><div class="st-toggle on"></div></div>
+        </div>
+      </div>
+
+      <!-- ── PRIVACIDAD ── -->
+      <div class="st-pane" data-pane="privacidad">
+        <div class="st-section">
+          <div class="st-section-title">Visibilidad del perfil</div>
+          <div class="st-row"><div class="st-label">¿Quién puede ver mi perfil?<small>—</small></div><select class="st-select"><option>Cualquiera</option><option>Solo mi U</option><option>Solo amigos</option></select></div>
+          <div class="st-row"><div class="st-label">¿Quién puede mensajearme?<small>—</small></div><select class="st-select"><option>Cualquiera verificado</option><option>Solo mi U</option><option>Solo amigos</option></select></div>
+          <div class="st-row"><div class="st-label">Mostrar mi racha<small>—</small></div><div class="st-toggle on"></div></div>
+          <div class="st-row"><div class="st-label">Mostrar mis logros<small>—</small></div><div class="st-toggle on"></div></div>
+        </div>
+        <div class="st-section">
+          <div class="st-section-title">Bloqueados</div>
+          <div class="st-row"><div class="st-label">Lista de bloqueados<small>0 usuarios</small></div><button class="st-btn-secondary" style="padding:7px 14px;border-radius:6px;border:0;color:#E8E8E6;background:#262A32;cursor:pointer;">Ver lista</button></div>
+        </div>
+      </div>
+
+      <!-- ── DATOS ── -->
+      <div class="st-pane" data-pane="datos">
+        <div class="st-section">
+          <div class="st-section-title">Mis datos · Ley 19.628</div>
+          <div class="st-row"><div class="st-label">Descargar mis datos<small>JSON con todo tu historial</small></div><button class="st-btn-secondary" style="padding:7px 14px;border-radius:6px;border:0;color:#E8E8E6;background:#262A32;cursor:pointer;">Descargar</button></div>
+          <div class="st-row"><div class="st-label">Solicitar copia legal<small>archivo PDF</small></div><button class="st-btn-secondary" style="padding:7px 14px;border-radius:6px;border:0;color:#E8E8E6;background:#262A32;cursor:pointer;">Solicitar</button></div>
+          <div class="st-row"><div class="st-label">Borrar mi cuenta<small>permanente · irreversible</small></div><button class="st-btn-danger" style="padding:7px 14px;border-radius:6px;border:0;color:#fff;background:#FF4A1C;cursor:pointer;">Borrar</button></div>
+        </div>
+      </div>
+
+      <!-- ── IDIOMA ── -->
+      <div class="st-pane" data-pane="idioma">
+        <div class="st-section">
+          <div class="st-section-title">Preferencias regionales</div>
+          <div class="st-row"><div class="st-label">Idioma<small>—</small></div><select class="st-select"><option>Español (Chile)</option><option>Español (LATAM)</option><option>English</option><option>Português (BR)</option></select></div>
+          <div class="st-row"><div class="st-label">Zona horaria<small>—</small></div><select class="st-select"><option>America/Santiago (UTC−4)</option><option>America/Lima</option><option>America/Buenos_Aires</option></select></div>
+          <div class="st-row"><div class="st-label">Formato fecha<small>—</small></div><select class="st-select"><option>DD/MM/YYYY</option><option>YYYY-MM-DD</option></select></div>
+        </div>
+      </div>
+
+      <!-- ── PLAN ── -->
+      <div class="st-pane" data-pane="plan">
+        <div class="st-section">
+          <div class="st-section-title">Tu plan actual</div>
+          <div class="st-btn-block" style="cursor:default;">
+            <div class="ico-lg">🎓</div>
+            <div class="info">
+              <div class="t">Estudiante · Free</div>
+              <div class="d">Acceso completo · sin tarjeta requerida</div>
+            </div>
+          </div>
+        </div>
+        <div class="st-section">
+          <div class="st-section-title">Upgrade</div>
+          <button class="st-btn-block">
+            <div class="ico-lg" style="background:rgba(217,255,58,0.10);color:#D9FF3A;">⭐</div>
+            <div class="info">
+              <div class="t">Conniku Pro</div>
+              <div class="d">IA Athena ilimitada · biblioteca premium · sin anuncios</div>
+            </div>
+            <div class="arrow">→</div>
+          </button>
+        </div>
+        <div class="st-section">
+          <div class="st-section-title">Facturación</div>
+          <div class="st-row"><div class="st-label">Método de pago<small>—</small></div><button class="st-btn-secondary" style="padding:7px 14px;border-radius:6px;border:0;color:#E8E8E6;background:#262A32;cursor:pointer;">Agregar</button></div>
+          <div class="st-row"><div class="st-label">Historial<small>—</small></div><button class="st-btn-secondary" style="padding:7px 14px;border-radius:6px;border:0;color:#E8E8E6;background:#262A32;cursor:pointer;">Ver</button></div>
+        </div>
+      </div>
+
+      <!-- ── INTEGRACIONES ── -->
+      <div class="st-pane" data-pane="integraciones">
+        <div class="st-section">
+          <div class="st-section-title">Universidad</div>
+          <button class="st-btn-block" id="st-conectar-u">
+            <div class="ico-lg" style="background:rgba(0,194,122,0.10);">🎓</div>
+            <div class="info">
+              <div class="t">Conectar mi universidad</div>
+              <div class="d">Vinculá tu cuenta institucional para sincronizar notas, asistencia y ramos</div>
+            </div>
+            <div class="arrow">→</div>
+          </button>
+        </div>
+        <div class="st-section">
+          <div class="st-section-title">Extensiones</div>
+          <button class="st-btn-block" id="st-ext-chrome">
+            <div class="ico-lg" style="background:rgba(255,233,184,0.10);color:#FFE9B8;">⚡</div>
+            <div class="info">
+              <div class="t">Extensión Chrome Conniku</div>
+              <div class="d">Capturá apuntes, citas y referencias desde cualquier sitio web</div>
+            </div>
+            <div class="arrow">⬇</div>
+          </button>
+        </div>
+      </div>
+
+      <!-- ── AYUDA ── -->
+      <div class="st-pane" data-pane="ayuda">
+        <div class="st-section">
+          <div class="st-section-title">Centro de ayuda</div>
+          <button class="st-btn-block">
+            <div class="ico-lg">📚</div>
+            <div class="info"><div class="t">Documentación</div><div class="d">Guías, tutoriales, FAQ</div></div>
+            <div class="arrow">→</div>
+          </button>
+          <button class="st-btn-block" style="margin-top:8px;">
+            <div class="ico-lg">💬</div>
+            <div class="info"><div class="t">Contactar soporte</div><div class="d">Respondemos en menos de 24h</div></div>
+            <div class="arrow">→</div>
+          </button>
+          <button class="st-btn-block" style="margin-top:8px;">
+            <div class="ico-lg">📝</div>
+            <div class="info"><div class="t">Enviar feedback</div><div class="d">Sugerencias o reporte de bug</div></div>
+            <div class="arrow">→</div>
+          </button>
+        </div>
+        <div class="st-section">
+          <div class="st-section-title">Legal</div>
+          <div class="st-row"><div class="st-label">Términos y condiciones</div><a class="st-btn-secondary" href="#" style="padding:7px 14px;border-radius:6px;text-decoration:none;color:#E8E8E6;background:#262A32;">Leer</a></div>
+          <div class="st-row"><div class="st-label">Política de privacidad</div><a class="st-btn-secondary" href="#" style="padding:7px 14px;border-radius:6px;text-decoration:none;color:#E8E8E6;background:#262A32;">Leer</a></div>
+          <div class="st-row"><div class="st-label">Cookies</div><a class="st-btn-secondary" href="#" style="padding:7px 14px;border-radius:6px;text-decoration:none;color:#E8E8E6;background:#262A32;">Leer</a></div>
+        </div>
+      </div>
+
+      <!-- ── CERRAR SESIÓN ── -->
+      <div class="st-pane" data-pane="cerrar">
+        <div class="st-section">
+          <div class="st-section-title">Cerrar sesión</div>
+          <p style="color:#B8B8B4;font-size:13px;line-height:1.6;margin-bottom:14px;">Vas a cerrar la sesión en este dispositivo. Tus datos se mantienen seguros.</p>
+          <button class="st-btn-danger" style="padding:10px 20px;border-radius:8px;border:0;color:#fff;background:#FF4A1C;cursor:pointer;font-weight:600;">Cerrar sesión</button>
+        </div>
+      </div>
+
+    </div>
+
+    <div id="st-foot">
+      <button class="st-btn-secondary" id="st-cancel">Cancelar</button>
+      <button class="st-btn-primary" id="st-save">Guardar cambios</button>
+    </div>
+  </div>
+</aside>
+
+
+<script>
+/* ── Theme Selector · 12 temas Conniku ── */
+(function(){
+  const THEME_KEY = 'conniku-theme';
+  const DEFAULT   = 'profundo-dark';
+
+  function applyTheme(id) {
+    document.documentElement.setAttribute('data-theme', id);
+    localStorage.setItem(THEME_KEY, id);
+    document.querySelectorAll('.theme-card').forEach(c =>
+      c.classList.toggle('active', c.dataset.theme === id)
+    );
+  }
+
+  function initThemeSelector() {
+    const saved = localStorage.getItem(THEME_KEY) || DEFAULT;
+    applyTheme(saved);
+    document.querySelectorAll('.theme-card').forEach(card => {
+      card.addEventListener('click', () => applyTheme(card.dataset.theme));
+    });
+  }
+
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', initThemeSelector);
+  } else {
+    initThemeSelector();
+  }
+})();
+
+// ═══════════════════════════════════════════════════
+// SETTINGS DRAWER · open/close + tab switching
+// ═══════════════════════════════════════════════════
+(function(){
+'use strict';
+const TITLES = {
+  cuenta: '👤 Cuenta',
+  apariencia: '🎨 Apariencia',
+  portada: '🖼 Portada',
+  notif: '🔔 Notificaciones',
+  privacidad: '🔒 Privacidad',
+  datos: '📊 Mis datos',
+  idioma: '🌐 Idioma & región',
+  plan: '💳 Plan & facturación',
+  integraciones: '🔗 Integraciones',
+  ayuda: '❓ Ayuda',
+  cerrar: '↪ Cerrar sesión',
+};
+const $ = id => document.getElementById(id);
+function openDrawer(){ $('st-drawer').classList.add('on'); $('st-overlay').classList.add('on'); }
+function closeDrawer(){ $('st-drawer').classList.remove('on'); $('st-overlay').classList.remove('on'); }
+function selectPane(name){
+  document.querySelectorAll('.st-nav-item').forEach(b=> b.classList.toggle('active', b.dataset.pane === name));
+  document.querySelectorAll('.st-pane').forEach(p=> p.classList.toggle('on', p.dataset.pane === name));
+  $('st-title').innerHTML = (TITLES[name] || '⚙ Configuración') + ' <span class="id-tag">SETTINGS</span>';
+}
+function init(){
+  $('st-open-btn').addEventListener('click', openDrawer);
+  $('st-close').addEventListener('click', closeDrawer);
+  $('st-cancel').addEventListener('click', closeDrawer);
+  $('st-overlay').addEventListener('click', closeDrawer);
+  document.querySelectorAll('.st-nav-item').forEach(b=>{
+    b.addEventListener('click', ()=> selectPane(b.dataset.pane));
+  });
+  // Toggles
+  document.querySelectorAll('.st-toggle').forEach(t=>{
+    t.addEventListener('click', ()=> t.classList.toggle('on'));
+  });
+  // Save · cierra el drawer (los cambios ya se guardan en vivo en localStorage)
+  $('st-save').addEventListener('click', ()=>{
+    const btn = $('st-save'); const orig = btn.textContent;
+    btn.textContent = '✓ Guardado'; btn.style.background = '#8AEAC0';
+    setTimeout(()=>{ btn.textContent = orig; btn.style.background = ''; closeDrawer(); }, 700);
+  });
+  // Atajo Portada → abre modal cover
+  const stCover = $('st-open-cover');
+  if(stCover) stCover.addEventListener('click', ()=>{ closeDrawer(); setTimeout(()=> $('cv-open-btn').click(), 200); });
+  // Conectar U y Extensión Chrome (placeholders)
+  const stU = $('st-conectar-u');
+  if(stU) stU.addEventListener('click', ()=> alert('Próximamente: vincular cuenta institucional'));
+  const stExt = $('st-ext-chrome');
+  if(stExt) stExt.addEventListener('click', ()=> alert('Próximamente: descarga de extensión Chrome'));
+}
+if(document.readyState === 'loading'){
+  document.addEventListener('DOMContentLoaded', init);
+} else { init(); }
+})();
+
+// ═══════════════════════════════════════════════════
+// COVER · cambiar portada (templates + upload + editor)
+// ═══════════════════════════════════════════════════
+(function(){
+'use strict';
+const COVER_KEY = 'conniku-cover-v1';
+
+const TEMPLATES = [
+  { id:'cosmos',   name:'Cosmos',   tint:'#00C27A', bg:`radial-gradient(circle at 30% 50%, rgba(0,194,122,0.30), transparent 55%),radial-gradient(circle at 75% 30%, rgba(255,74,28,0.18), transparent 50%),linear-gradient(135deg,#0E1A18,#0A0E12)` },
+  { id:'sunrise',  name:'Sunrise',  tint:'#FF4A1C', bg:`linear-gradient(135deg,#FF8961 0%,#FF4A1C 60%,#7C2F0E 100%)` },
+  { id:'forest',   name:'Forest',   tint:'#3A7D5C', bg:`linear-gradient(135deg,#3A7D5C 0%,#1B5C3A 60%,#0A2E1B 100%)` },
+  { id:'electric', name:'Electric', tint:'#00C2FF', bg:`radial-gradient(circle at 70% 30%, #00C2FF, transparent 55%),linear-gradient(135deg,#1E2A6E 0%,#0A0E2E 100%)` },
+  { id:'violet',   name:'Violet',   tint:'#A78BFA', bg:`linear-gradient(135deg,#A78BFA 0%,#6B4EFF 50%,#1E0E5C 100%)` },
+  { id:'paper',    name:'Paper',    tint:'#A0A3A7', bg:`linear-gradient(135deg,#F5F4EF 0%,#EBE9E1 100%)` },
+  { id:'ink',      name:'Ink',      tint:null,      bg:`radial-gradient(circle at 50% 30%, #15181D, #050608)` },
+  { id:'lime',     name:'Lime',     tint:'#D9FF3A', bg:`linear-gradient(135deg,#D9FF3A 0%,#A8C92E 50%,#5C7016 100%)` },
+  { id:'coral',    name:'Coral',    tint:'#FF4D3A', bg:`linear-gradient(135deg,#FFE9B8 0%,#FF9787 50%,#DD341F 100%)` }
+];
+
+// Convierte hex → rgba con alpha
+function hexToRgba(hex, alpha){
+  const m = hex.replace('#','').match(/.{2}/g);
+  if(!m) return `rgba(0,0,0,${alpha})`;
+  const [r,g,b] = m.map(h => parseInt(h,16));
+  return `rgba(${r},${g},${b},${alpha})`;
+}
+function applyTint(hex){
+  const root = document.documentElement.style;
+  if(!hex){
+    ['--cover-tint','--cover-tint-line','--cover-tint-soft','--cover-tint-glow','--cover-tint-edge','--cover-tint-mist'].forEach(p => root.removeProperty(p));
+    return;
+  }
+  root.setProperty('--cover-tint',      hex);
+  root.setProperty('--cover-tint-line', hexToRgba(hex, 0.16));   // borde muy tenue
+  root.setProperty('--cover-tint-edge', hexToRgba(hex, 0.45));   // accent líneas específicas
+  root.setProperty('--cover-tint-soft', hexToRgba(hex, 0.08));   // fondos tintados
+  root.setProperty('--cover-tint-glow', hexToRgba(hex, 0.12));   // sombras
+  root.setProperty('--cover-tint-mist', hexToRgba(hex, 0.04));   // gradientes muy sutiles
+}
+
+let state = { type: null, templateId: null, image: null, x: 0, y: 0, scale: 1 };
+let drag = { active: false, sx: 0, sy: 0, ix: 0, iy: 0 };
+
+const $ = id => document.getElementById(id);
+
+function applyCoverToBanner(){
+  const banner = $('cv-banner'); if(!banner) return;
+  // limpiar previo
+  const prevImg = banner.querySelector('.cover-img');
+  if(prevImg) prevImg.remove();
+  banner.style.background = '';
+
+  if(state.type === 'template'){
+    const tpl = TEMPLATES.find(t => t.id === state.templateId);
+    if(tpl){
+      banner.style.background = tpl.bg;
+      applyTint(tpl.tint);
+    }
+  } else if(state.type === 'image' && state.image){
+    applyTint(null);
+    const img = document.createElement('img');
+    img.className = 'cover-img';
+    img.src = state.image;
+    img.style.objectPosition = `${50 + state.x}% ${50 + state.y}%`;
+    img.style.transform = `scale(${state.scale})`;
+    img.style.transformOrigin = 'center';
+    banner.insertBefore(img, banner.firstChild);
+  }
+}
+
+function loadStored(){
+  try {
+    const stored = JSON.parse(localStorage.getItem(COVER_KEY) || 'null');
+    if(stored){ state = Object.assign(state, stored); applyCoverToBanner(); }
+  } catch(e){}
+}
+
+function saveStored(){
+  localStorage.setItem(COVER_KEY, JSON.stringify(state));
+}
+
+// ── MODAL ──
+function openModal(){ $('cv-modal').classList.add('on'); buildTemplates(); switchTab('tpl'); }
+function closeModal(){ $('cv-modal').classList.remove('on'); }
+
+function switchTab(name){
+  document.querySelectorAll('.cv-tab').forEach(b => b.classList.toggle('active', b.dataset.tab === name));
+  document.querySelectorAll('.cv-pane').forEach(p => p.style.display = (p.dataset.pane === name ? 'block' : 'none'));
+}
+
+// ── Templates ──
+function buildTemplates(){
+  const grid = $('cv-tpl-grid');
+  if(grid.children.length) return; // ya construido
+  TEMPLATES.forEach(tpl => {
+    const el = document.createElement('div');
+    el.className = 'cv-tpl';
+    el.dataset.id = tpl.id;
+    el.dataset.name = tpl.name;
+    el.style.background = tpl.bg;
+    el.addEventListener('click', () => selectTemplate(tpl.id));
+    grid.appendChild(el);
+  });
+}
+function selectTemplate(id){
+  document.querySelectorAll('.cv-tpl').forEach(el => el.classList.toggle('selected', el.dataset.id === id));
+  state = { type: 'template', templateId: id, image: null, x: 0, y: 0, scale: 1 };
+  $('cv-apply').disabled = false;
+}
+
+// ── Upload + editor ──
+function handleFile(file){
+  if(!file || !file.type.startsWith('image/')) { alert('Por favor seleccioná una imagen.'); return; }
+  const reader = new FileReader();
+  reader.onload = e => {
+    state = { type: 'image', templateId: null, image: e.target.result, x: 0, y: 0, scale: 1 };
+    showEditor();
+    $('cv-apply').disabled = false;
+  };
+  reader.readAsDataURL(file);
+}
+function showEditor(){
+  $('cv-drop').style.display = 'none';
+  $('cv-editor').classList.add('on');
+  const img = $('cv-img');
+  img.src = state.image;
+  img.onload = () => positionImage();
+  $('cv-zoom').value = state.scale * 100;
+}
+function hideEditor(){
+  $('cv-drop').style.display = '';
+  $('cv-editor').classList.remove('on');
+}
+function positionImage(){
+  const img = $('cv-img');
+  const stage = $('cv-stage');
+  // contain image to stage initially
+  const sw = stage.clientWidth, sh = stage.clientHeight;
+  const iw = img.naturalWidth, ih = img.naturalHeight;
+  const baseScale = Math.max(sw/iw, sh/ih);
+  img.dataset.baseScale = baseScale;
+  img.style.width  = (iw * baseScale) + 'px';
+  img.style.height = (ih * baseScale) + 'px';
+  applyTransform();
+}
+function applyTransform(){
+  const img = $('cv-img');
+  img.style.transform = `translate(-50%,-50%) translate(${state.x}px,${state.y}px) scale(${state.scale})`;
+}
+
+function startDrag(e){
+  drag.active = true;
+  $('cv-stage').classList.add('dragging');
+  const p = e.touches ? e.touches[0] : e;
+  drag.sx = p.clientX; drag.sy = p.clientY;
+  drag.ix = state.x; drag.iy = state.y;
+  e.preventDefault();
+}
+function moveDrag(e){
+  if(!drag.active) return;
+  const p = e.touches ? e.touches[0] : e;
+  state.x = drag.ix + (p.clientX - drag.sx);
+  state.y = drag.iy + (p.clientY - drag.sy);
+  applyTransform();
+}
+function endDrag(){
+  drag.active = false;
+  $('cv-stage').classList.remove('dragging');
+}
+
+function bindEvents(){
+  $('cv-open-btn').addEventListener('click', openModal);
+  $('cv-close').addEventListener('click', closeModal);
+  $('cv-cancel').addEventListener('click', closeModal);
+  $('cv-modal').addEventListener('click', e => { if(e.target.id === 'cv-modal') closeModal(); });
+
+  document.querySelectorAll('.cv-tab').forEach(b => b.addEventListener('click', () => switchTab(b.dataset.tab)));
+
+  // upload
+  $('cv-drop').addEventListener('click', () => $('cv-file').click());
+  $('cv-file').addEventListener('change', e => { if(e.target.files[0]) handleFile(e.target.files[0]); });
+  $('cv-drop').addEventListener('dragover', e => { e.preventDefault(); $('cv-drop').classList.add('drag'); });
+  $('cv-drop').addEventListener('dragleave', () => $('cv-drop').classList.remove('drag'));
+  $('cv-drop').addEventListener('drop', e => {
+    e.preventDefault(); $('cv-drop').classList.remove('drag');
+    if(e.dataTransfer.files[0]) handleFile(e.dataTransfer.files[0]);
+  });
+
+  // editor drag
+  const stage = $('cv-stage');
+  stage.addEventListener('mousedown', startDrag);
+  document.addEventListener('mousemove', moveDrag);
+  document.addEventListener('mouseup', endDrag);
+  stage.addEventListener('touchstart', startDrag, {passive: false});
+  document.addEventListener('touchmove', moveDrag, {passive: false});
+  document.addEventListener('touchend', endDrag);
+
+  // zoom
+  $('cv-zoom').addEventListener('input', e => {
+    state.scale = parseInt(e.target.value) / 100;
+    applyTransform();
+  });
+
+  // reset position
+  $('cv-reset').addEventListener('click', () => {
+    state.x = 0; state.y = 0; state.scale = 1;
+    $('cv-zoom').value = 100;
+    applyTransform();
+  });
+
+  // apply
+  $('cv-apply').addEventListener('click', () => {
+    saveStored();
+    applyCoverToBanner();
+    closeModal();
+  });
+}
+
+if(document.readyState === 'loading'){
+  document.addEventListener('DOMContentLoaded', () => { bindEvents(); loadStored(); });
+} else {
+  bindEvents(); loadStored();
+}
+})();
+
+// ═══════════════════════════════════════════════════
+// BIO · max 300 palabras · edit/save/counter
+// ═══════════════════════════════════════════════════
+(function(){
+'use strict';
+const BIO_KEY = 'conniku-bio-v1';
+const MAX_WORDS = 300;
+const $ = id => document.getElementById(id);
+
+function countWords(t){ return (t.trim().match(/\S+/g) || []).length; }
+
+function loadBio(){
+  const stored = localStorage.getItem(BIO_KEY) || '';
+  $('bio-text').value = stored;
+  updateCounter();
+}
+function updateCounter(){
+  const w = countWords($('bio-text').value);
+  $('bio-counter').textContent = w + ' / ' + MAX_WORDS;
+  $('bio-counter').classList.toggle('warn', w > MAX_WORDS);
+}
+function startEdit(){
+  $('bio-card').classList.add('editing');
+  const ta = $('bio-text');
+  ta.removeAttribute('readonly');
+  ta.dataset.original = ta.value;
+  ta.focus();
+  $('bio-counter').style.display = '';
+  $('bio-edit-btn').style.display = 'none';
+}
+function endEdit(save){
+  const ta = $('bio-text');
+  if(!save){
+    ta.value = ta.dataset.original || '';
+  } else {
+    // Trim words to MAX
+    const words = ta.value.trim().split(/\s+/);
+    if(words.length > MAX_WORDS) ta.value = words.slice(0, MAX_WORDS).join(' ');
+    localStorage.setItem(BIO_KEY, ta.value);
+  }
+  ta.setAttribute('readonly', '');
+  $('bio-card').classList.remove('editing');
+  $('bio-counter').style.display = 'none';
+  $('bio-edit-btn').style.display = '';
+  updateCounter();
+}
+function init(){
+  loadBio();
+  $('bio-edit-btn').addEventListener('click', startEdit);
+  $('bio-cancel').addEventListener('click', () => endEdit(false));
+  $('bio-save').addEventListener('click', () => endEdit(true));
+  $('bio-text').addEventListener('input', updateCounter);
+}
+if(document.readyState === 'loading'){
+  document.addEventListener('DOMContentLoaded', init);
+} else { init(); }
+})();
+
+/* HexTide — montado con script externo */
+</script>
+
+<!-- ══ HexTide · Fondo hexagonal animado ══ -->
+<script src="../shared/hex-tide/hex-tide.js"></script>
+<script>
+  window._hxInst = HexTide.mount('#hexTide', {
+    variant:       'whisper',
+    background:    '#060E20',
+    hexSize:       30,
+    maxOpacity:    0.28,
+    mouseReactive: true,
+    vignette:      0.30,
+  });
+</script>
+
+</body>
+</html>

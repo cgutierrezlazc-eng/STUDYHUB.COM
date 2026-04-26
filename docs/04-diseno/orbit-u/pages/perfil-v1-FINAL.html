@@ -1,0 +1,525 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Conniku — Perfil Social V1 LinkedIn Navy (FINAL)</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+
+<!--
+  ╔══════════════════════════════════════════════════════════════════════╗
+  ║  CONNIKU — SOCIAL PROFILE  · Variante V1 "LinkedIn Navy"  · FINAL  ║
+  ║  Referencia de integración. No modificar sin autorizar cambio.      ║
+  ╠══════════════════════════════════════════════════════════════════════╣
+  ║  DESIGN TOKENS                                                      ║
+  ║  --bg:           #E8EEF8   page background                          ║
+  ║  --navy:         #0A2878   primary brand / CTA dark                 ║
+  ║  --navy-mid:     #1a5ccc   secondary navy accent                    ║
+  ║  --green:        #00C27A   success / active / points                ║
+  ║  --ink:          #060E24   headings / strong text                   ║
+  ║  --body:         #374151   body copy                                ║
+  ║  --muted:        #6b7280   labels                                   ║
+  ║  --subtle:       #9ca3af   meta / timestamps                        ║
+  ║  --border:       #e8eef8   card borders                             ║
+  ║  --surface:      #f0f4ff   tag backgrounds / light tint             ║
+  ║  --card-bg:      #ffffff   card background                          ║
+  ║  --card-shadow:  0 1px 4px rgba(10,40,120,.08)                      ║
+  ║  --radius-card:  12px                                               ║
+  ╠══════════════════════════════════════════════════════════════════════╣
+  ║  LAYOUT                                                             ║
+  ║  Grid: 280px | 1fr | 280px  · gap 20px · max-width 1200px          ║
+  ║  Mobile (<900px): single column, right panel hidden                 ║
+  ╠══════════════════════════════════════════════════════════════════════╣
+  ║  REACT COMPONENT MAP (para integración futura)                      ║
+  ║  <ProfilePage>                                                      ║
+  ║    <ProfileSidebar>                                                 ║
+  ║      <ProfileCard />      → cover + avatar + info + stats          ║
+  ║      <FeaturedCard />     → Destacado (3 ítems)                    ║
+  ║      <ModulesCard />      → tags de módulos activos                ║
+  ║    </ProfileSidebar>                                                ║
+  ║    <ProfileFeed>                                                    ║
+  ║      <ActivityPost />     → post + reactions (map sobre array)     ║
+  ║    </ProfileFeed>                                                   ║
+  ║    <ProfileRightPanel>                                              ║
+  ║      <MetricsCard />      → vistas / búsquedas / conexiones / pts  ║
+  ║      <SuggestionsCard />  → "Personas que podrías conocer"         ║
+  ║    </ProfileRightPanel>                                             ║
+  ║  </ProfilePage>                                                     ║
+  ╚══════════════════════════════════════════════════════════════════════╝
+-->
+
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+body {
+  font-family: 'Inter', system-ui, sans-serif;
+  background: #E8EEF8;
+  min-height: 100vh;
+  padding: 24px 0 48px;
+}
+
+/* ── PAGE WRAPPER ── */
+.profile-wrap {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 0 16px;
+  display: grid;
+  grid-template-columns: 280px 1fr 280px;
+  gap: 20px;
+}
+@media (max-width: 900px) {
+  .profile-wrap {
+    grid-template-columns: 1fr;
+  }
+  .profile-right { display: none; }
+}
+
+/* ── CARD BASE ── */
+.card {
+  background: #fff;
+  border-radius: 12px;
+  box-shadow: 0 1px 4px rgba(10,40,120,.08);
+  overflow: hidden;
+  margin-bottom: 16px;
+}
+.section-card {
+  background: #fff;
+  border-radius: 12px;
+  box-shadow: 0 1px 4px rgba(10,40,120,.08);
+  padding: 16px 20px;
+  margin-bottom: 16px;
+}
+.section-card h3 {
+  font-size: 14px;
+  font-weight: 700;
+  color: #060E24;
+  margin-bottom: 12px;
+}
+
+/* ── PROFILE CARD — SIDEBAR ── */
+.cover {
+  height: 120px;
+  background: linear-gradient(135deg, #c9d8f0 0%, #a8bedd 100%);
+}
+.avatar-wrap {
+  padding: 0 20px;
+  margin-top: -36px;
+  margin-bottom: 12px;
+}
+.avatar {
+  width: 72px;
+  height: 72px;
+  border-radius: 50%;
+  background: #0A2878;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 24px;
+  font-weight: 700;
+  color: #fff;
+  border: 3px solid #fff;
+}
+.profile-info {
+  padding: 0 20px 16px;
+}
+.profile-info h2 {
+  font-size: 18px;
+  font-weight: 700;
+  color: #060E24;
+}
+.profile-info .uni {
+  font-size: 13px;
+  color: #5a7abf;
+  margin-top: 2px;
+}
+.profile-info .tagline {
+  font-size: 13px;
+  color: #374151;
+  margin-top: 8px;
+  line-height: 1.5;
+}
+.connect-row {
+  display: flex;
+  gap: 8px;
+  margin-top: 14px;
+}
+.connect-row button {
+  padding: 7px 18px;
+  border-radius: 20px;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  font-family: inherit;
+  transition: opacity .15s;
+}
+.connect-row button:hover { opacity: .85; }
+.btn-primary { background: #0A2878; color: #fff; border: none; }
+.btn-outline  { background: transparent; color: #0A2878; border: 2px solid #0A2878; }
+
+.profile-divider { height: 1px; background: #e8eef8; margin: 0 20px; }
+
+.stats-row {
+  display: flex;
+  justify-content: space-around;
+  padding: 14px 20px;
+}
+.stat { text-align: center; }
+.stat .num { font-size: 18px; font-weight: 700; color: #0A2878; }
+.stat .lbl { font-size: 11px; color: #6b7280; margin-top: 2px; }
+
+/* ── FEATURED (Destacado) ── */
+.highlight {
+  display: flex;
+  gap: 10px;
+  align-items: flex-start;
+  padding: 8px 0;
+  border-bottom: 1px solid #f0f4ff;
+}
+.highlight:last-child { border-bottom: none; }
+.hl-icon {
+  width: 36px;
+  height: 36px;
+  border-radius: 8px;
+  background: #e8eef8;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 16px;
+  flex-shrink: 0;
+}
+.hl-text { font-size: 13px; color: #374151; line-height: 1.4; }
+.hl-text strong { display: block; color: #060E24; font-weight: 600; }
+
+/* ── MODULE TAGS ── */
+.module-tag {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background: #f0f4ff;
+  border-radius: 20px;
+  padding: 5px 12px;
+  font-size: 12px;
+  font-weight: 500;
+  color: #0A2878;
+  margin: 4px 3px;
+  cursor: pointer;
+  transition: all .15s;
+}
+.module-tag:hover { background: #0A2878; color: #fff; }
+
+/* ── FEED — ACTIVITY POSTS ── */
+.post {
+  background: #fff;
+  border-radius: 12px;
+  box-shadow: 0 1px 4px rgba(10,40,120,.08);
+  padding: 16px 20px;
+  margin-bottom: 16px;
+}
+.post-header {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+  margin-bottom: 10px;
+}
+.post-avatar {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  background: #0A2878;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 14px;
+  font-weight: 700;
+  color: #fff;
+  flex-shrink: 0;
+}
+.post-meta strong { font-size: 14px; color: #060E24; display: block; }
+.post-meta span   { font-size: 12px; color: #9ca3af; }
+.post p { font-size: 14px; color: #374151; line-height: 1.6; }
+.post-tag {
+  display: inline-block;
+  background: #e8f7f0;
+  color: #00C27A;
+  border-radius: 4px;
+  padding: 2px 8px;
+  font-size: 11px;
+  font-weight: 600;
+  margin-top: 8px;
+}
+.reactions {
+  display: flex;
+  gap: 16px;
+  margin-top: 12px;
+  padding-top: 10px;
+  border-top: 1px solid #f0f4ff;
+}
+.react-btn {
+  background: none;
+  border: none;
+  cursor: pointer;
+  font-size: 13px;
+  color: #6b7280;
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  font-family: inherit;
+  padding: 4px 8px;
+  border-radius: 6px;
+  transition: all .15s;
+}
+.react-btn:hover { background: #f0f4ff; color: #0A2878; }
+
+/* ── RIGHT PANEL ── */
+.right-card {
+  background: #fff;
+  border-radius: 12px;
+  box-shadow: 0 1px 4px rgba(10,40,120,.08);
+  padding: 16px 20px;
+  margin-bottom: 16px;
+}
+.right-card h3 {
+  font-size: 13px;
+  font-weight: 700;
+  color: #060E24;
+  margin-bottom: 12px;
+  text-transform: uppercase;
+  letter-spacing: .5px;
+}
+.metric-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 8px 0;
+  border-bottom: 1px solid #f5f7ff;
+  font-size: 13px;
+}
+.metric-row:last-child { border-bottom: none; }
+.metric-lbl { color: #6b7280; }
+.metric-val { font-weight: 700; color: #0A2878; }
+
+.suggestion {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+  padding: 8px 0;
+}
+.sug-avatar {
+  width: 38px;
+  height: 38px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 13px;
+  font-weight: 700;
+  color: #fff;
+  flex-shrink: 0;
+}
+.sug-info { flex: 1; font-size: 13px; }
+.sug-info strong { display: block; color: #060E24; }
+.sug-info span   { color: #9ca3af; font-size: 11px; }
+.sug-btn {
+  background: transparent;
+  border: 1.5px solid #0A2878;
+  color: #0A2878;
+  border-radius: 16px;
+  padding: 4px 12px;
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  font-family: inherit;
+  transition: all .15s;
+}
+.sug-btn:hover { background: #0A2878; color: #fff; }
+</style>
+</head>
+<body>
+
+<!--
+  ╔══════════════════════════════╗
+  ║  <ProfilePage>               ║
+  ╚══════════════════════════════╝
+-->
+<div class="profile-wrap">
+
+  <!-- ┌─────────────────────────────┐
+       │ <ProfileSidebar>           │
+       └─────────────────────────────┘ -->
+  <aside>
+
+    <!-- ── <ProfileCard> ── -->
+    <div class="card" style="margin-bottom:16px">
+      <div class="cover"></div>
+      <div class="avatar-wrap">
+        <!-- initials generados desde user.firstName + user.lastName -->
+        <div class="avatar">VR</div>
+      </div>
+      <div class="profile-info">
+        <h2>Valentina Reyes</h2>
+        <div class="uni">Universidad de Chile · Ing. Comercial 4to año</div>
+        <div class="tagline">Apasionada por finanzas, datos y educación. Conectando talento universitario con oportunidades reales.</div>
+        <div class="connect-row">
+          <button class="btn-primary">Conectar</button>
+          <button class="btn-outline">Mensaje</button>
+        </div>
+      </div>
+      <div class="profile-divider"></div>
+      <div class="stats-row">
+        <!-- datos de user.stats: courses / connections / tutorings -->
+        <div class="stat"><div class="num">12</div><div class="lbl">Cursos</div></div>
+        <div class="stat"><div class="num">847</div><div class="lbl">Conexiones</div></div>
+        <div class="stat"><div class="num">3</div><div class="lbl">Tutorías</div></div>
+      </div>
+    </div>
+
+    <!-- ── <FeaturedCard> ── -->
+    <div class="section-card">
+      <h3>Destacado</h3>
+      <div class="highlight">
+        <div class="hl-icon">📊</div>
+        <div class="hl-text">
+          <strong>Análisis de Datos con Python</strong>
+          Certificado · Conniku · 2025
+        </div>
+      </div>
+      <div class="highlight">
+        <div class="hl-icon">🏆</div>
+        <div class="hl-text">
+          <strong>Top 5% Estudiantes</strong>
+          Ranking trimestral · Workspace
+        </div>
+      </div>
+      <div class="highlight">
+        <div class="hl-icon">📝</div>
+        <div class="hl-text">
+          <strong>Artículo publicado</strong>
+          Finanzas conductuales en LATAM
+        </div>
+      </div>
+    </div>
+
+    <!-- ── <ModulesCard> ── -->
+    <div class="section-card">
+      <h3>Módulos activos</h3>
+      <!-- tags mapeados desde user.activeModules -->
+      <div>
+        <span class="module-tag">📁 Mi Workspace</span>
+        <span class="module-tag">📚 Mi Biblioteca</span>
+        <span class="module-tag">💼 Mi Trabajo</span>
+        <span class="module-tag">👨‍🏫 Mis Tutores</span>
+        <span class="module-tag">🌐 Comunidad</span>
+      </div>
+    </div>
+
+  </aside>
+
+  <!-- ┌─────────────────────────────┐
+       │ <ProfileFeed>              │
+       └─────────────────────────────┘ -->
+  <main>
+
+    <!-- ── <ActivityPost> × n ── -->
+    <div class="post">
+      <div class="post-header">
+        <div class="post-avatar">VR</div>
+        <div class="post-meta">
+          <strong>Valentina Reyes</strong>
+          <span>Ing. Comercial · Universidad de Chile · hace 2 días</span>
+        </div>
+      </div>
+      <p>Terminé el módulo de <strong>Análisis Financiero Avanzado</strong> en Conniku. Fue un curso muy completo — especialmente la parte de modelos de valoración con DCF. ¡Muy recomendado para quienes están en finanzas! 🎯</p>
+      <span class="post-tag">✅ Curso completado</span>
+      <div class="reactions">
+        <button class="react-btn">👍 42 Me gusta</button>
+        <button class="react-btn">💬 8 Comentarios</button>
+        <button class="react-btn">↗ Compartir</button>
+      </div>
+    </div>
+
+    <div class="post">
+      <div class="post-header">
+        <div class="post-avatar">VR</div>
+        <div class="post-meta">
+          <strong>Valentina Reyes</strong>
+          <span>hace 5 días</span>
+        </div>
+      </div>
+      <p>Mi primera tutoría como tutora en Conniku fue una experiencia increíble. Ayudé a dos estudiantes de primer año con estadística básica. Si puedo devolver lo que la plataforma me ha dado, vale la pena cada minuto.</p>
+      <span class="post-tag">🎓 Tutoría realizada</span>
+      <div class="reactions">
+        <button class="react-btn">❤️ 89 Me gusta</button>
+        <button class="react-btn">💬 14 Comentarios</button>
+        <button class="react-btn">↗ Compartir</button>
+      </div>
+    </div>
+
+    <div class="post">
+      <div class="post-header">
+        <div class="post-avatar">VR</div>
+        <div class="post-meta">
+          <strong>Valentina Reyes</strong>
+          <span>hace 1 semana</span>
+        </div>
+      </div>
+      <p>Acabo de alcanzar <strong>2.400 puntos</strong> en Conniku. Cada curso, cada conexión, cada tutoría cuenta. La gamificación de la plataforma realmente motiva a seguir aprendiendo consistentemente.</p>
+      <span class="post-tag">⭐ 2.400 puntos alcanzados</span>
+      <div class="reactions">
+        <button class="react-btn">🎉 156 Me gusta</button>
+        <button class="react-btn">💬 23 Comentarios</button>
+        <button class="react-btn">↗ Compartir</button>
+      </div>
+    </div>
+
+  </main>
+
+  <!-- ┌─────────────────────────────┐
+       │ <ProfileRightPanel>        │
+       └─────────────────────────────┘ -->
+  <aside class="profile-right">
+
+    <!-- ── <MetricsCard> ── -->
+    <div class="right-card">
+      <h3>Métricas de perfil</h3>
+      <!-- datos de analytics API — solo visibles para el propio usuario -->
+      <div class="metric-row"><span class="metric-lbl">Vistas esta semana</span><span class="metric-val">234</span></div>
+      <div class="metric-row"><span class="metric-lbl">Apariciones en búsqueda</span><span class="metric-val">67</span></div>
+      <div class="metric-row"><span class="metric-lbl">Conexiones nuevas</span><span class="metric-val">+12</span></div>
+      <div class="metric-row"><span class="metric-lbl">Puntos totales</span><span class="metric-val">2.400</span></div>
+    </div>
+
+    <!-- ── <SuggestionsCard> ── -->
+    <div class="right-card">
+      <h3>Personas que podrías conocer</h3>
+      <!-- lista de user.suggestions — algoritmo de afinidad por carrera/universidad -->
+      <div class="suggestion">
+        <div class="sug-avatar" style="background:#1a5ccc">CM</div>
+        <div class="sug-info">
+          <strong>Carlos Mendoza</strong>
+          <span>Economía · PUC Chile</span>
+        </div>
+        <button class="sug-btn">+ Conectar</button>
+      </div>
+      <div class="suggestion">
+        <div class="sug-avatar" style="background:#00C27A">AS</div>
+        <div class="sug-info">
+          <strong>Ana Soto</strong>
+          <span>Ing. Industrial · USACH</span>
+        </div>
+        <button class="sug-btn">+ Conectar</button>
+      </div>
+      <div class="suggestion">
+        <div class="sug-avatar" style="background:#7c3aed">LV</div>
+        <div class="sug-info">
+          <strong>Luis Vargas</strong>
+          <span>Finanzas · UAI</span>
+        </div>
+        <button class="sug-btn">+ Conectar</button>
+      </div>
+    </div>
+
+  </aside>
+
+</div><!-- /profile-wrap -->
+
+</body>
+</html>

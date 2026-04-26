@@ -1,0 +1,1230 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>conniku. · Dashboard</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Funnel+Display:wght@400;800;900&family=Inter:wght@400;500;600&family=Geist+Mono:wght@400;500;600&display=swap" />
+<link rel="stylesheet" href="../shared/tokens.css" />
+<link rel="stylesheet" href="../shared/base.css" />
+<style>
+
+/* ══════════════════════════════════════════
+   BRAND MARK — spec LOGO.06
+══════════════════════════════════════════ */
+.brand-mark {
+  font-family: 'Funnel Display', sans-serif;
+  font-weight: 900;
+  font-size: 22px;
+  letter-spacing: -.055em;
+  color: #F5F4EF;
+  display: inline-flex;
+  align-items: baseline;
+  line-height: 1;
+  text-decoration: none;
+}
+.brand-mark em {
+  font-style: italic;
+  opacity: .38;
+}
+.brand-tile {
+  display: inline-flex;
+  align-items: baseline;
+  background: #D9FF3A;
+  color: #0D0F10;
+  padding: .07em .14em .07em .09em;
+  border-radius: .2em;
+  margin-left: .02em;
+}
+.brand-dot { color: #FF4A1C; }
+
+/* ══════════════════════════════════════════
+   ROOT LAYOUT — 3-column grid
+══════════════════════════════════════════ */
+html, body {
+  height: 100%;
+  overflow: hidden;
+}
+
+.dashboard {
+  display: grid;
+  grid-template-columns: 240px 1fr 280px;
+  height: 100vh;
+  overflow: hidden;
+  background: #050608;
+}
+
+/* ══════════════════════════════════════════
+   SIDEBAR — 240px fixed left
+══════════════════════════════════════════ */
+.sidebar {
+  background: rgba(5,6,8,.95);
+  border-right: 1px solid rgba(245,244,239,.07);
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+  overflow: hidden;
+  flex-shrink: 0;
+}
+
+.sidebar-head {
+  padding: 24px 20px 0;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.sidebar-badge {
+  font-family: 'Geist Mono', monospace;
+  font-size: 9px;
+  font-weight: 500;
+  letter-spacing: .14em;
+  color: rgba(138,234,192,.45);
+  text-transform: uppercase;
+  margin-top: 2px;
+}
+
+.sidebar-sep {
+  height: 1px;
+  background: rgba(245,244,239,.07);
+  margin: 16px 0 8px;
+}
+
+.sidebar-nav {
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+  padding: 0 10px;
+  flex: 1;
+  overflow-y: auto;
+  overflow-x: hidden;
+}
+
+.nav-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 9px 10px;
+  border-radius: 9px;
+  border-left: 2px solid transparent;
+  color: rgba(245,244,239,.45);
+  font-size: 13px;
+  font-weight: 500;
+  text-decoration: none;
+  transition: all .15s ease;
+  white-space: nowrap;
+  position: relative;
+}
+
+.nav-item svg {
+  width: 16px;
+  height: 16px;
+  flex-shrink: 0;
+  opacity: .7;
+  transition: opacity .15s;
+}
+
+.nav-item:hover {
+  background: rgba(245,244,239,.05);
+  color: rgba(245,244,239,.75);
+  border-left-color: rgba(245,244,239,.12);
+}
+
+.nav-item:hover svg { opacity: 1; }
+
+.nav-item.active {
+  background: rgba(0,194,122,.10);
+  color: #00C27A;
+  border-left-color: #00C27A;
+  font-weight: 600;
+}
+
+.nav-item.active svg { opacity: 1; }
+
+.nav-spacer { flex: 1; min-height: 8px; }
+
+/* Sidebar legal links */
+.sidebar-legal {
+  padding: 8px 14px 12px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex-wrap: wrap;
+}
+.sidebar-legal a {
+  font-family: 'Geist Mono', monospace;
+  font-size: 9px;
+  color: rgba(245,244,239,.20);
+  letter-spacing: .04em;
+  text-decoration: none;
+  transition: color .15s;
+}
+.sidebar-legal a:hover { color: rgba(0,194,122,.6); }
+.sidebar-legal span { font-size: 9px; color: rgba(245,244,239,.10); }
+
+/* Sidebar footer — user profile */
+.sidebar-footer {
+  padding: 12px 10px 16px;
+  border-top: 1px solid rgba(245,244,239,.07);
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.user-avatar {
+  width: 34px;
+  height: 34px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #8AEAC0, #00C27A);
+  display: grid;
+  place-items: center;
+  font-family: 'Inter', sans-serif;
+  font-weight: 700;
+  font-size: 12px;
+  color: #050608;
+  flex-shrink: 0;
+  border: 1.5px solid rgba(0,194,122,.4);
+}
+
+.user-info {
+  flex: 1;
+  min-width: 0;
+}
+
+.user-name {
+  font-size: 12px;
+  font-weight: 600;
+  color: #F5F4EF;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.user-plan {
+  font-family: 'Geist Mono', monospace;
+  font-size: 9px;
+  font-weight: 500;
+  color: rgba(138,234,192,.5);
+  letter-spacing: .08em;
+  text-transform: uppercase;
+  margin-top: 1px;
+}
+
+.user-settings {
+  width: 28px;
+  height: 28px;
+  border-radius: 7px;
+  background: rgba(245,244,239,.04);
+  border: 1px solid rgba(245,244,239,.08);
+  color: rgba(245,244,239,.35);
+  display: grid;
+  place-items: center;
+  cursor: pointer;
+  transition: all .15s;
+  flex-shrink: 0;
+}
+
+.user-settings:hover {
+  background: rgba(245,244,239,.08);
+  color: rgba(245,244,239,.7);
+  border-color: rgba(245,244,239,.16);
+}
+
+.user-settings svg { width: 14px; height: 14px; }
+
+/* ══════════════════════════════════════════
+   MAIN CONTENT
+══════════════════════════════════════════ */
+.main {
+  overflow-y: auto;
+  overflow-x: hidden;
+  padding: 32px 36px;
+  display: flex;
+  flex-direction: column;
+  gap: 32px;
+  scroll-behavior: smooth;
+}
+
+/* Scrollbar */
+.main::-webkit-scrollbar { width: 4px; }
+.main::-webkit-scrollbar-track { background: transparent; }
+.main::-webkit-scrollbar-thumb { background: rgba(245,244,239,.1); border-radius: 2px; }
+.main::-webkit-scrollbar-thumb:hover { background: rgba(245,244,239,.18); }
+
+/* ── Hero ── */
+.hero {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.hero-date {
+  font-family: 'Geist Mono', monospace;
+  font-size: 10px;
+  font-weight: 500;
+  color: rgba(245,244,239,.3);
+  letter-spacing: .14em;
+  text-transform: uppercase;
+}
+
+.hero-title {
+  font-family: 'Funnel Display', sans-serif;
+  font-weight: 900;
+  font-size: clamp(32px, 4vw, 44px);
+  letter-spacing: -.04em;
+  color: #F5F4EF;
+  line-height: 1.05;
+}
+
+.hero-title .accent { color: #00C27A; }
+
+.hero-sub {
+  font-size: 14px;
+  color: rgba(245,244,239,.45);
+  margin-top: 2px;
+}
+
+/* ── Stats row ── */
+.stats-row {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 12px;
+}
+
+.stat-card {
+  background: rgba(245,244,239,.03);
+  border: 1px solid rgba(245,244,239,.07);
+  border-radius: 12px;
+  padding: 16px 18px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  transition: border-color .2s, background .2s;
+}
+
+.stat-card:hover {
+  background: rgba(245,244,239,.05);
+  border-color: rgba(245,244,239,.12);
+}
+
+.stat-num {
+  font-family: 'Funnel Display', sans-serif;
+  font-weight: 900;
+  font-size: 28px;
+  letter-spacing: -.04em;
+  color: #00C27A;
+  line-height: 1;
+}
+
+.stat-label {
+  font-size: 11px;
+  font-weight: 500;
+  color: rgba(245,244,239,.4);
+  margin-top: 2px;
+}
+
+/* ── Section header ── */
+.section-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 14px;
+}
+
+.section-title {
+  font-family: 'Geist Mono', monospace;
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: .12em;
+  text-transform: uppercase;
+  color: rgba(245,244,239,.3);
+}
+
+.section-link {
+  font-size: 11px;
+  font-weight: 500;
+  color: rgba(0,194,122,.6);
+  text-decoration: none;
+  transition: color .15s;
+}
+
+.section-link:hover { color: #00C27A; }
+
+/* ── Módulos grid ── */
+.modules-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 12px;
+}
+
+.module-card {
+  background: rgba(245,244,239,.03);
+  border: 1px solid rgba(245,244,239,.07);
+  border-radius: 12px;
+  padding: 18px;
+  text-decoration: none;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  transition: all .2s ease;
+  cursor: pointer;
+  position: relative;
+  overflow: hidden;
+}
+
+.module-card::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  opacity: 0;
+  transition: opacity .2s;
+  border-radius: 11px;
+}
+
+.module-card:hover {
+  transform: translateY(-2px);
+}
+
+.module-card:hover::before { opacity: 1; }
+
+/* Per-module accent colors */
+.module-card[data-color="amber"]  { --mc: #D97706; --mc-bg: rgba(217,119,6,.06); }
+.module-card[data-color="gold"]   { --mc: #C49A3A; --mc-bg: rgba(196,154,58,.06); }
+.module-card[data-color="cyan"]   { --mc: #0096CC; --mc-bg: rgba(0,150,204,.06); }
+.module-card[data-color="violet"] { --mc: #6B4EFF; --mc-bg: rgba(107,78,255,.06); }
+.module-card[data-color="green"]  { --mc: #00C27A; --mc-bg: rgba(0,194,122,.06); }
+.module-card[data-color="orange"] { --mc: #FF4A1C; --mc-bg: rgba(255,74,28,.06); }
+.module-card[data-color="pink"]   { --mc: #E91E8C; --mc-bg: rgba(233,30,140,.06); }
+.module-card[data-color="teal"]   { --mc: #00BFA5; --mc-bg: rgba(0,191,165,.06); }
+
+.module-card:hover {
+  border-color: var(--mc);
+  background: var(--mc-bg);
+  box-shadow: 0 4px 24px color-mix(in srgb, var(--mc) 15%, transparent);
+}
+
+.module-icon {
+  width: 34px;
+  height: 34px;
+  border-radius: 9px;
+  background: color-mix(in srgb, var(--mc) 12%, transparent);
+  border: 1px solid color-mix(in srgb, var(--mc) 25%, transparent);
+  display: grid;
+  place-items: center;
+  color: var(--mc);
+  flex-shrink: 0;
+}
+
+.module-icon svg { width: 16px; height: 16px; }
+
+.module-name {
+  font-size: 13px;
+  font-weight: 600;
+  color: #F5F4EF;
+}
+
+.module-desc {
+  font-size: 11px;
+  color: rgba(245,244,239,.38);
+  line-height: 1.5;
+}
+
+.module-footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-top: auto;
+}
+
+.module-arrow {
+  font-size: 14px;
+  color: var(--mc);
+  opacity: 0;
+  transform: translateX(-4px);
+  transition: all .2s;
+}
+
+.module-card:hover .module-arrow {
+  opacity: 1;
+  transform: translateX(0);
+}
+
+/* ── Actividad reciente ── */
+.activity-list {
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+}
+
+.activity-item {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  padding: 12px 14px;
+  border-radius: 10px;
+  transition: background .15s;
+}
+
+.activity-item:hover { background: rgba(245,244,239,.03); }
+
+.activity-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  flex-shrink: 0;
+  margin-top: 5px;
+}
+
+.activity-body { flex: 1; min-width: 0; }
+
+.activity-text {
+  font-size: 13px;
+  font-weight: 500;
+  color: rgba(245,244,239,.75);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.activity-time {
+  font-family: 'Geist Mono', monospace;
+  font-size: 10px;
+  color: rgba(245,244,239,.28);
+  margin-top: 2px;
+}
+
+/* ══════════════════════════════════════════
+   RIGHT PANEL — 280px
+══════════════════════════════════════════ */
+.panel {
+  background: rgba(5,6,8,.92);
+  border-left: 1px solid rgba(245,244,239,.07);
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+  overflow-y: auto;
+  overflow-x: hidden;
+  padding: 24px 20px;
+  gap: 28px;
+}
+
+.panel::-webkit-scrollbar { width: 3px; }
+.panel::-webkit-scrollbar-track { background: transparent; }
+.panel::-webkit-scrollbar-thumb { background: rgba(245,244,239,.08); border-radius: 2px; }
+
+/* ── Mini calendar ── */
+.cal-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 14px;
+}
+
+.cal-month {
+  font-family: 'Geist Mono', monospace;
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: .1em;
+  color: rgba(245,244,239,.55);
+  text-transform: uppercase;
+}
+
+.cal-nav {
+  display: flex;
+  gap: 2px;
+}
+
+.cal-nav-btn {
+  width: 22px;
+  height: 22px;
+  border-radius: 5px;
+  background: rgba(245,244,239,.04);
+  border: 1px solid rgba(245,244,239,.07);
+  color: rgba(245,244,239,.3);
+  display: grid;
+  place-items: center;
+  cursor: pointer;
+  transition: all .15s;
+}
+
+.cal-nav-btn:hover {
+  background: rgba(245,244,239,.08);
+  color: rgba(245,244,239,.6);
+}
+
+.cal-nav-btn svg { width: 10px; height: 10px; }
+
+.cal-grid {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 2px;
+}
+
+.cal-day-name {
+  font-family: 'Geist Mono', monospace;
+  font-size: 9px;
+  font-weight: 600;
+  letter-spacing: .06em;
+  color: rgba(245,244,239,.2);
+  text-align: center;
+  padding: 0 0 6px;
+  text-transform: uppercase;
+}
+
+.cal-day {
+  aspect-ratio: 1;
+  display: grid;
+  place-items: center;
+  font-size: 11px;
+  font-family: 'Geist Mono', monospace;
+  color: rgba(245,244,239,.45);
+  border-radius: 5px;
+  cursor: pointer;
+  transition: all .15s;
+}
+
+.cal-day:hover { background: rgba(245,244,239,.06); color: rgba(245,244,239,.75); }
+.cal-day.empty { pointer-events: none; }
+.cal-day.other-month { color: rgba(245,244,239,.15); }
+.cal-day.today {
+  background: #00C27A;
+  color: #050608;
+  font-weight: 600;
+  box-shadow: 0 0 10px rgba(0,194,122,.4);
+}
+
+/* ── Eventos próximos ── */
+.events-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.event-item {
+  display: flex;
+  gap: 10px;
+  align-items: flex-start;
+  padding: 10px 12px;
+  border-radius: 9px;
+  background: rgba(245,244,239,.03);
+  border: 1px solid rgba(245,244,239,.06);
+  transition: all .15s;
+}
+
+.event-item:hover {
+  background: rgba(245,244,239,.05);
+  border-color: rgba(245,244,239,.1);
+}
+
+.event-strip {
+  width: 3px;
+  border-radius: 2px;
+  flex-shrink: 0;
+  align-self: stretch;
+  min-height: 32px;
+}
+
+.event-body { flex: 1; }
+
+.event-name {
+  font-size: 12px;
+  font-weight: 600;
+  color: rgba(245,244,239,.8);
+  line-height: 1.3;
+}
+
+.event-meta {
+  font-family: 'Geist Mono', monospace;
+  font-size: 10px;
+  color: rgba(245,244,239,.3);
+  margin-top: 3px;
+}
+
+/* ── Profile progress ── */
+.progress-block {
+  background: rgba(245,244,239,.03);
+  border: 1px solid rgba(245,244,239,.07);
+  border-radius: 12px;
+  padding: 16px;
+}
+
+.progress-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 10px;
+}
+
+.progress-label {
+  font-size: 12px;
+  font-weight: 600;
+  color: rgba(245,244,239,.65);
+}
+
+.progress-pct {
+  font-family: 'Geist Mono', monospace;
+  font-size: 11px;
+  font-weight: 600;
+  color: #00C27A;
+}
+
+.progress-bar-track {
+  height: 4px;
+  background: rgba(245,244,239,.08);
+  border-radius: 2px;
+  overflow: hidden;
+  margin-bottom: 12px;
+}
+
+.progress-bar-fill {
+  height: 100%;
+  width: 65%;
+  background: linear-gradient(90deg, #00C27A, #8AEAC0);
+  border-radius: 2px;
+}
+
+.progress-tasks {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.progress-task {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 11px;
+  color: rgba(245,244,239,.4);
+}
+
+.progress-task::before {
+  content: '';
+  width: 5px;
+  height: 5px;
+  border-radius: 50%;
+  background: rgba(245,244,239,.2);
+  flex-shrink: 0;
+}
+
+/* ══════════════════════════════════════════
+   RESPONSIVE
+══════════════════════════════════════════ */
+@media (max-width: 1199px) {
+  .dashboard {
+    grid-template-columns: 240px 1fr;
+  }
+  .panel {
+    display: none;
+  }
+}
+
+@media (max-width: 767px) {
+  .dashboard {
+    grid-template-columns: 52px 1fr;
+  }
+
+  .sidebar-head { padding: 16px 8px 0; align-items: center; }
+  .sidebar-badge { display: none; }
+  .sidebar-sep { margin: 12px 0 6px; }
+  .sidebar-nav { padding: 0 6px; }
+
+  .nav-item span { display: none; }
+  .nav-item {
+    justify-content: center;
+    padding: 9px;
+    border-left: none;
+    border-bottom: 2px solid transparent;
+  }
+  .nav-item.active { border-left: none; border-bottom-color: #00C27A; }
+  .nav-item svg { opacity: 1; }
+
+  .sidebar-footer { padding: 10px 6px 12px; justify-content: center; }
+  .user-info, .user-settings { display: none; }
+
+  .main { padding: 20px 16px; gap: 24px; }
+  .stats-row { grid-template-columns: repeat(2, 1fr); }
+  .modules-grid { grid-template-columns: repeat(2, 1fr); }
+}
+
+@media (max-width: 480px) {
+  .modules-grid { grid-template-columns: 1fr; }
+  .stats-row { grid-template-columns: repeat(2, 1fr); }
+}
+
+</style>
+</head>
+<body>
+
+<div class="dashboard">
+
+  <!-- ══════════════════════════════════════
+       SIDEBAR
+  ══════════════════════════════════════ -->
+  <aside class="sidebar">
+
+    <div class="sidebar-head">
+      <a href="conniku.html" class="brand-mark"><!-- WORDMARK PENDIENTE --></a>
+      <span class="sidebar-badge">ORBIT · U</span>
+    </div>
+
+    <div class="sidebar-sep"></div>
+
+    <nav class="sidebar-nav">
+
+      <!-- conniku. — activo -->
+      <a href="conniku.html" class="nav-item active" aria-current="page">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M3 9.5L12 3l9 6.5V20a1 1 0 01-1 1H4a1 1 0 01-1-1V9.5z"/>
+          <path d="M9 21V12h6v9"/>
+        </svg>
+        <span>conniku.</span>
+      </a>
+
+      <!-- Mi U -->
+      <a href="mi-u.html" class="nav-item">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/>
+          <polyline points="9 22 9 12 15 12 15 22"/>
+        </svg>
+        <span>Mi U</span>
+      </a>
+
+      <!-- Tutores -->
+      <a href="tutores.html" class="nav-item">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+          <circle cx="12" cy="8" r="4"/>
+          <path d="M4 20c0-4 3.6-7 8-7s8 3 8 7"/>
+        </svg>
+        <span>Tutores</span>
+      </a>
+
+      <!-- Empleos -->
+      <a href="empleo.html" class="nav-item">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+          <rect x="2" y="7" width="20" height="14" rx="2"/>
+          <path d="M16 7V5a2 2 0 00-2-2h-4a2 2 0 00-2 2v2"/>
+          <line x1="12" y1="12" x2="12" y2="16"/>
+          <line x1="10" y1="14" x2="14" y2="14"/>
+        </svg>
+        <span>Empleos</span>
+      </a>
+
+      <!-- Workspaces -->
+      <a href="workspaces.html" class="nav-item">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+          <rect x="3" y="3" width="8" height="8" rx="1.5"/>
+          <rect x="13" y="3" width="8" height="8" rx="1.5"/>
+          <rect x="3" y="13" width="8" height="8" rx="1.5"/>
+          <rect x="13" y="13" width="8" height="8" rx="1.5"/>
+        </svg>
+        <span>Workspaces</span>
+      </a>
+
+      <!-- Mensajes -->
+      <a href="mensajes.html" class="nav-item">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"/>
+        </svg>
+        <span>Mensajes</span>
+      </a>
+
+      <!-- Biblioteca -->
+      <a href="biblioteca.html" class="nav-item">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M4 19.5A2.5 2.5 0 016.5 17H20"/>
+          <path d="M6.5 2H20v20H6.5A2.5 2.5 0 014 19.5v-15A2.5 2.5 0 016.5 2z"/>
+        </svg>
+        <span>Biblioteca</span>
+      </a>
+
+      <!-- Cursos -->
+      <a href="cursos.html" class="nav-item">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M22 10v6M2 10l10-5 10 5-10 5-10-5z"/>
+          <path d="M6 12v5c3 3 9 3 12 0v-5"/>
+        </svg>
+        <span>Cursos</span>
+      </a>
+
+      <!-- Calendario -->
+      <a href="calendario.html" class="nav-item">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+          <rect x="3" y="4" width="18" height="18" rx="2"/>
+          <line x1="16" y1="2" x2="16" y2="6"/>
+          <line x1="8" y1="2" x2="8" y2="6"/>
+          <line x1="3" y1="10" x2="21" y2="10"/>
+        </svg>
+        <span>Calendario</span>
+      </a>
+
+      <div class="nav-spacer"></div>
+
+    </nav>
+
+    <!-- User profile -->
+    <div class="sidebar-footer">
+      <div class="user-avatar">CG</div>
+      <div class="user-info">
+        <div class="user-name">Cristian G.</div>
+        <div class="user-plan">PLAN PRO</div>
+      </div>
+      <button class="user-settings" aria-label="Configuración">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+          <circle cx="12" cy="12" r="3"/>
+          <path d="M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 010 2.83 2 2 0 01-2.83 0l-.06-.06a1.65 1.65 0 00-1.82-.33 1.65 1.65 0 00-1 1.51V21a2 2 0 01-4 0v-.09A1.65 1.65 0 009 19.4a1.65 1.65 0 00-1.82.33l-.06.06a2 2 0 01-2.83-2.83l.06-.06A1.65 1.65 0 004.68 15a1.65 1.65 0 00-1.51-1H3a2 2 0 010-4h.09A1.65 1.65 0 004.6 9a1.65 1.65 0 00-.33-1.82l-.06-.06a2 2 0 012.83-2.83l.06.06A1.65 1.65 0 009 4.68a1.65 1.65 0 001-1.51V3a2 2 0 014 0v.09a1.65 1.65 0 001 1.51 1.65 1.65 0 001.82-.33l.06-.06a2 2 0 012.83 2.83l-.06.06A1.65 1.65 0 0019.4 9a1.65 1.65 0 001.51 1H21a2 2 0 010 4h-.09a1.65 1.65 0 00-1.51 1z"/>
+        </svg>
+      </button>
+    </div>
+
+    <!-- Legal footer -->
+    <div class="sidebar-legal">
+      <a href="terminos.html">Términos</a>
+      <span>·</span>
+      <a href="privacidad.html">Privacidad</a>
+      <span>·</span>
+      <a href="soporte.html">Soporte</a>
+      <span>·</span>
+      <a href="contacto.html">Contacto</a>
+    </div>
+
+  </aside>
+
+  <!-- ══════════════════════════════════════
+       MAIN CONTENT
+  ══════════════════════════════════════ -->
+  <main class="main">
+
+    <!-- Hero -->
+    <section class="hero">
+      <div class="hero-date">Miércoles · 24 Abr 2026</div>
+      <h1 class="hero-title">Hola, Cristian<span class="accent">.</span></h1>
+      <p class="hero-sub">Tienes 3 tareas pendientes y 1 mensaje nuevo.</p>
+    </section>
+
+    <!-- Stats rápidos -->
+    <div class="stats-row">
+      <div class="stat-card">
+        <div class="stat-num">+12</div>
+        <div class="stat-label">Conexiones</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-num">2</div>
+        <div class="stat-label">Tutores activos</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-num">5</div>
+        <div class="stat-label">Cursos en curso</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-num">98%</div>
+        <div class="stat-label">Asistencia</div>
+      </div>
+    </div>
+
+    <!-- Tus módulos -->
+    <section>
+      <div class="section-head">
+        <span class="section-title">Tus módulos</span>
+        <a href="#" class="section-link">Ver todo →</a>
+      </div>
+      <div class="modules-grid">
+
+        <a href="mi-u.html" class="module-card" data-color="amber">
+          <div class="module-icon">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/>
+              <polyline points="9 22 9 12 15 12 15 22"/>
+            </svg>
+          </div>
+          <div>
+            <div class="module-name">Mi U</div>
+            <div class="module-desc">Tu espacio universitario</div>
+          </div>
+          <div class="module-arrow">→</div>
+        </a>
+
+        <a href="tutores.html" class="module-card" data-color="gold">
+          <div class="module-icon">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+              <circle cx="12" cy="8" r="4"/>
+              <path d="M4 20c0-4 3.6-7 8-7s8 3 8 7"/>
+            </svg>
+          </div>
+          <div>
+            <div class="module-name">Tutores</div>
+            <div class="module-desc">Encuentra tu tutor ideal</div>
+          </div>
+          <div class="module-arrow">→</div>
+        </a>
+
+        <a href="empleo.html" class="module-card" data-color="cyan">
+          <div class="module-icon">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+              <rect x="2" y="7" width="20" height="14" rx="2"/>
+              <path d="M16 7V5a2 2 0 00-2-2h-4a2 2 0 00-2 2v2"/>
+            </svg>
+          </div>
+          <div>
+            <div class="module-name">Empleos</div>
+            <div class="module-desc">Prácticas y trabajos part-time</div>
+          </div>
+          <div class="module-arrow">→</div>
+        </a>
+
+        <a href="workspaces.html" class="module-card" data-color="violet">
+          <div class="module-icon">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+              <rect x="3" y="3" width="8" height="8" rx="1.5"/>
+              <rect x="13" y="3" width="8" height="8" rx="1.5"/>
+              <rect x="3" y="13" width="8" height="8" rx="1.5"/>
+              <rect x="13" y="13" width="8" height="8" rx="1.5"/>
+            </svg>
+          </div>
+          <div>
+            <div class="module-name">Workspaces</div>
+            <div class="module-desc">Colabora en proyectos</div>
+          </div>
+          <div class="module-arrow">→</div>
+        </a>
+
+        <a href="mensajes.html" class="module-card" data-color="green">
+          <div class="module-icon">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"/>
+            </svg>
+          </div>
+          <div>
+            <div class="module-name">Mensajes</div>
+            <div class="module-desc">Chat con compañeros y tutores</div>
+          </div>
+          <div class="module-arrow">→</div>
+        </a>
+
+        <a href="biblioteca.html" class="module-card" data-color="orange">
+          <div class="module-icon">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M4 19.5A2.5 2.5 0 016.5 17H20"/>
+              <path d="M6.5 2H20v20H6.5A2.5 2.5 0 014 19.5v-15A2.5 2.5 0 016.5 2z"/>
+            </svg>
+          </div>
+          <div>
+            <div class="module-name">Biblioteca</div>
+            <div class="module-desc">Recursos y apuntes</div>
+          </div>
+          <div class="module-arrow">→</div>
+        </a>
+
+        <a href="cursos.html" class="module-card" data-color="pink">
+          <div class="module-icon">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M2 3h6a4 4 0 014 4v14a3 3 0 00-3-3H2z"/>
+              <path d="M22 3h-6a4 4 0 00-4 4v14a3 3 0 013-3h7z"/>
+            </svg>
+          </div>
+          <div>
+            <div class="module-name">Cursos</div>
+            <div class="module-desc">Aprende a tu ritmo</div>
+          </div>
+          <div class="module-arrow">→</div>
+        </a>
+
+        <a href="calendario.html" class="module-card" data-color="teal">
+          <div class="module-icon">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+              <rect x="3" y="4" width="18" height="18" rx="2"/>
+              <line x1="16" y1="2" x2="16" y2="6"/>
+              <line x1="8" y1="2" x2="8" y2="6"/>
+              <line x1="3" y1="10" x2="21" y2="10"/>
+            </svg>
+          </div>
+          <div>
+            <div class="module-name">Calendario</div>
+            <div class="module-desc">Organiza tu agenda académica</div>
+          </div>
+          <div class="module-arrow">→</div>
+        </a>
+
+      </div>
+    </section>
+
+    <!-- Actividad reciente -->
+    <section>
+      <div class="section-head">
+        <span class="section-title">Actividad reciente</span>
+        <a href="mensajes.html" class="section-link">Ver todo →</a>
+      </div>
+      <div class="activity-list">
+
+        <div class="activity-item">
+          <div class="activity-dot" style="background:#00C27A; box-shadow: 0 0 6px rgba(0,194,122,.5);"></div>
+          <div class="activity-body">
+            <div class="activity-text">Nuevo mensaje de Prof. Ramírez — Matemáticas</div>
+            <div class="activity-time">hace 12 min</div>
+          </div>
+        </div>
+
+        <div class="activity-item">
+          <div class="activity-dot" style="background:#4F7BFF;"></div>
+          <div class="activity-body">
+            <div class="activity-text">Tarea entregada: Cálculo I</div>
+            <div class="activity-time">hace 2 horas</div>
+          </div>
+        </div>
+
+        <div class="activity-item">
+          <div class="activity-dot" style="background:#C49A3A;"></div>
+          <div class="activity-body">
+            <div class="activity-text">Conexión aceptada: María Torres</div>
+            <div class="activity-time">ayer</div>
+          </div>
+        </div>
+
+        <div class="activity-item">
+          <div class="activity-dot" style="background:#6B4EFF;"></div>
+          <div class="activity-body">
+            <div class="activity-text">Curso iniciado: Fundamentos de Programación</div>
+            <div class="activity-time">hace 3 días</div>
+          </div>
+        </div>
+
+      </div>
+    </section>
+
+  </main>
+
+  <!-- ══════════════════════════════════════
+       RIGHT PANEL
+  ══════════════════════════════════════ -->
+  <aside class="panel">
+
+    <!-- Mini calendario -->
+    <section>
+      <div class="cal-header">
+        <span class="cal-month">ABR 2026</span>
+        <div class="cal-nav">
+          <button class="cal-nav-btn" aria-label="Mes anterior">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"/></svg>
+          </button>
+          <button class="cal-nav-btn" aria-label="Mes siguiente">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg>
+          </button>
+        </div>
+      </div>
+
+      <div class="cal-grid">
+        <!-- Day names -->
+        <div class="cal-day-name">LU</div>
+        <div class="cal-day-name">MA</div>
+        <div class="cal-day-name">MI</div>
+        <div class="cal-day-name">JU</div>
+        <div class="cal-day-name">VI</div>
+        <div class="cal-day-name">SA</div>
+        <div class="cal-day-name">DO</div>
+
+        <!-- Week 1: Apr starts on Wednesday (offset 2 days) -->
+        <div class="cal-day other-month">31</div>
+        <div class="cal-day other-month"></div>
+        <div class="cal-day">1</div>
+        <div class="cal-day">2</div>
+        <div class="cal-day">3</div>
+        <div class="cal-day">4</div>
+        <div class="cal-day">5</div>
+
+        <!-- Week 2 -->
+        <div class="cal-day">6</div>
+        <div class="cal-day">7</div>
+        <div class="cal-day">8</div>
+        <div class="cal-day">9</div>
+        <div class="cal-day">10</div>
+        <div class="cal-day">11</div>
+        <div class="cal-day">12</div>
+
+        <!-- Week 3 -->
+        <div class="cal-day">13</div>
+        <div class="cal-day">14</div>
+        <div class="cal-day">15</div>
+        <div class="cal-day">16</div>
+        <div class="cal-day">17</div>
+        <div class="cal-day">18</div>
+        <div class="cal-day">19</div>
+
+        <!-- Week 4 -->
+        <div class="cal-day">20</div>
+        <div class="cal-day">21</div>
+        <div class="cal-day">22</div>
+        <div class="cal-day">23</div>
+        <div class="cal-day today">24</div>
+        <div class="cal-day">25</div>
+        <div class="cal-day">26</div>
+
+        <!-- Week 5 -->
+        <div class="cal-day">27</div>
+        <div class="cal-day">28</div>
+        <div class="cal-day">29</div>
+        <div class="cal-day">30</div>
+        <div class="cal-day other-month"></div>
+        <div class="cal-day other-month"></div>
+        <div class="cal-day other-month"></div>
+      </div>
+    </section>
+
+    <!-- Próximos eventos -->
+    <section>
+      <div class="section-head">
+        <span class="section-title">Próximos eventos</span>
+        <a href="calendario.html" class="section-link">Ver →</a>
+      </div>
+      <div class="events-list">
+
+        <div class="event-item">
+          <div class="event-strip" style="background:#00C27A;"></div>
+          <div class="event-body">
+            <div class="event-name">Sesión con tutor · 15:00</div>
+            <div class="event-meta">HOY · 24 ABR</div>
+          </div>
+        </div>
+
+        <div class="event-item">
+          <div class="event-strip" style="background:#D9FF3A;"></div>
+          <div class="event-body">
+            <div class="event-name">Entrega Tesis Borrador · Todo el día</div>
+            <div class="event-meta">MAÑANA · 25 ABR</div>
+          </div>
+        </div>
+
+        <div class="event-item">
+          <div class="event-strip" style="background:#4F7BFF;"></div>
+          <div class="event-body">
+            <div class="event-name">Clase: Álgebra Lineal · 09:30</div>
+            <div class="event-meta">JUE · 26 ABR</div>
+          </div>
+        </div>
+
+      </div>
+    </section>
+
+    <!-- Progreso de perfil -->
+    <section>
+      <div class="progress-block">
+        <div class="progress-header">
+          <span class="progress-label">Perfil completo</span>
+          <span class="progress-pct">65%</span>
+        </div>
+        <div class="progress-bar-track">
+          <div class="progress-bar-fill"></div>
+        </div>
+        <div class="progress-tasks">
+          <div class="progress-task">Agrega tu universidad y carrera</div>
+          <div class="progress-task">Sube tu foto de perfil</div>
+        </div>
+      </div>
+    </section>
+
+  </aside>
+
+</div>
+
+</body>
+</html>

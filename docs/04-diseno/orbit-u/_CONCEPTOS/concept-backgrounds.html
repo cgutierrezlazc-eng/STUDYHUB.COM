@@ -1,0 +1,532 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>Conceptos de Fondo · Conniku</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"/>
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Funnel+Display:wght@800;900&family=Inter:wght@400;500;600&family=Geist+Mono:wght@400;500;600&display=swap"/>
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+html,body{width:100%;height:100%;overflow:hidden;background:#050608;font-family:'Inter',sans-serif}
+canvas{position:fixed;inset:0;display:block}
+
+/* ── UI overlay ── */
+.ui{position:fixed;inset:0;pointer-events:none;z-index:10;display:flex;flex-direction:column;justify-content:space-between;padding:28px 36px}
+
+.top{display:flex;justify-content:space-between;align-items:flex-start;gap:20px}
+.concept-id{display:flex;flex-direction:column;gap:6px}
+.ccode{font-family:'Geist Mono',monospace;font-size:10px;letter-spacing:.18em;color:rgba(0,194,122,.6);background:rgba(0,194,122,.07);border:1px solid rgba(0,194,122,.2);padding:3px 8px;border-radius:4px;width:fit-content}
+.cname{font-family:'Funnel Display',sans-serif;font-weight:900;font-size:34px;color:#F5F4EF;letter-spacing:-.04em;line-height:1}
+.ctag{font-family:'Geist Mono',monospace;font-size:10px;color:rgba(245,244,239,.28);letter-spacing:.07em;margin-top:2px}
+
+.tabs{display:flex;gap:6px;pointer-events:all;flex-wrap:wrap;justify-content:flex-end}
+.tab{background:rgba(5,6,8,.75);border:1px solid rgba(245,244,239,.1);color:rgba(245,244,239,.32);font-family:'Geist Mono',monospace;font-size:10px;letter-spacing:.1em;padding:9px 16px;border-radius:7px;cursor:pointer;transition:all .18s;backdrop-filter:blur(8px)}
+.tab:hover{border-color:rgba(0,194,122,.35);color:rgba(0,194,122,.7)}
+.tab.active{border-color:rgba(0,194,122,.65);color:#00C27A;background:rgba(0,194,122,.09)}
+
+/* ── Wordmark centre preview ── */
+.wm-wrap{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);text-align:center;pointer-events:none;user-select:none}
+.wm{font-family:'Funnel Display',sans-serif;font-weight:900;font-size:56px;color:#F5F4EF;letter-spacing:-.05em;display:flex;align-items:baseline;justify-content:center;gap:0}
+.wm em{font-style:italic;opacity:.45;font-weight:800}
+.u-tile{display:inline-flex;align-items:baseline;background:linear-gradient(135deg,#8AEAC0 0%,#006E4A 100%);color:#0D0F10;padding:.03em .12em .03em .07em;border-radius:.18em;margin-left:.02em;transform:rotate(-12deg);transform-origin:center;line-height:1.05}
+.wm-dot{color:#FF4A1C}
+.wm-sub{font-family:'Geist Mono',monospace;font-size:11px;color:rgba(0,194,122,.35);letter-spacing:.22em;margin-top:8px}
+
+/* ── Bottom bar ── */
+.bottom{display:flex;justify-content:space-between;align-items:flex-end;gap:24px}
+.cdesc h3{font-family:'Geist Mono',monospace;font-size:10px;color:rgba(0,194,122,.55);letter-spacing:.13em;text-transform:uppercase;margin-bottom:7px}
+.cdesc p{font-size:13px;color:rgba(245,244,239,.3);line-height:1.75;max-width:480px}
+.cmeta{font-family:'Geist Mono',monospace;font-size:10px;color:rgba(245,244,239,.15);text-align:right;white-space:nowrap;flex-shrink:0}
+.cmeta span{display:block;margin-bottom:3px}
+.cmeta strong{color:rgba(0,194,122,.4)}
+
+/* ── Transition overlay ── */
+#fade{position:fixed;inset:0;background:#050608;z-index:99;pointer-events:none;opacity:0;transition:opacity .3s ease}
+</style>
+</head>
+<body>
+
+<canvas id="cvs"></canvas>
+<div id="fade"></div>
+
+<div class="ui">
+  <div class="top">
+    <div class="concept-id">
+      <span class="ccode" id="cCode">A</span>
+      <span class="cname" id="cName">SINAPSIS</span>
+      <span class="ctag" id="cTag">Cada nodo es una mente · cada línea una conversación</span>
+    </div>
+    <div class="tabs">
+      <button class="tab active" onclick="switchTo(0,this)">A · SINAPSIS</button>
+      <button class="tab" onclick="switchTo(1,this)">B · FLUJO</button>
+      <button class="tab" onclick="switchTo(2,this)">C · PULSO</button>
+      <button class="tab" onclick="switchTo(3,this)">D · TELA</button>
+      <button class="tab" onclick="switchTo(4,this)">E · HEX</button>
+    </div>
+  </div>
+
+  <div class="wm-wrap">
+    <div class="wm"><!-- WORDMARK PENDIENTE --></div>
+    <div class="wm-sub">ORBIT · U</div>
+  </div>
+
+  <div class="bottom">
+    <div class="cdesc">
+      <h3 id="dTitle">Red Neural Viva</h3>
+      <p id="dBody">Nodos autónomos que se conectan mediante pulsos viajeros. Cada destello es una conversación nueva iniciada en la plataforma. Refleja el núcleo de "conn" — la conexión orgánica y siempre activa entre personas.</p>
+    </div>
+    <div class="cmeta">
+      <span><strong>conn</strong> · conexión</span>
+      <span><strong>iku</strong> · 行く · movimiento</span>
+    </div>
+  </div>
+</div>
+
+<script>
+const cvs = document.getElementById('cvs');
+const ctx  = cvs.getContext('2d');
+let W, H, raf = null, cur = 0;
+
+function resize() {
+  W = cvs.width  = window.innerWidth;
+  H = cvs.height = window.innerHeight;
+}
+resize();
+window.addEventListener('resize', () => { resize(); boot(); });
+
+const concepts = [
+  { code:'A', name:'SINAPSIS',
+    tag:'Cada nodo es una mente · cada línea una conversación',
+    title:'Red Neural Viva',
+    body:'Nodos autónomos que se conectan mediante pulsos viajeros. Cada destello es una conversación nueva iniciada en la plataforma. Refleja el núcleo de "conn" — la conexión orgánica y siempre activa entre personas.' },
+
+  { code:'B', name:'FLUJO',
+    tag:'El movimiento que une · iku · 行く · avanzar siempre',
+    title:'Corrientes de Velocidad',
+    body:'Partículas en movimiento perpetuo que emergen del núcleo y viajan al horizonte. Visualiza "iku" — el avance constante, la energía de quien nunca se detiene. Cada color es un flujo de datos distinto.' },
+
+  { code:'C', name:'PULSO',
+    tag:'Una señal que lo alcanza todo · broadcast permanente',
+    title:'Señal de Broadcast',
+    body:'Ondas concéntricas que se expanden desde el núcleo de la plataforma, como una transmisión que llega a cada usuario en tiempo real. Combina "conn" (alcance) con "iku" (expansión continua e imparable).' },
+
+  { code:'D', name:'TELA',
+    tag:'Una red que respira · cada nodo, parte del todo',
+    title:'Malla Digital Orgánica',
+    body:'Una tela de conexiones que se mueve y reorganiza sola. Los nodos se activan, brillan y comunican, revelando la forma viva de la red. La plataforma como organismo, no como software.' },
+
+  { code:'E', name:'HEX',
+    tag:'Geometría del futuro · estructura que habilita el caos',
+    title:'Campo Hexagonal',
+    body:'Un campo geométrico de celdas que activan patrones de luz. La precisión del hexágono (la forma más eficiente de la naturaleza) como metáfora de la plataforma: estructura que libera en lugar de limitar.' },
+];
+
+function switchTo(idx, btn) {
+  const fade = document.getElementById('fade');
+  fade.style.opacity = '1';
+  setTimeout(() => {
+    cur = idx;
+    document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+    btn.classList.add('active');
+    const m = concepts[idx];
+    document.getElementById('cCode').textContent  = m.code;
+    document.getElementById('cName').textContent  = m.name;
+    document.getElementById('cTag').textContent   = m.tag;
+    document.getElementById('dTitle').textContent = m.title;
+    document.getElementById('dBody').textContent  = m.body;
+    boot();
+    setTimeout(() => { fade.style.opacity = '0'; }, 80);
+  }, 300);
+}
+
+function boot() {
+  cancelAnimationFrame(raf);
+  ctx.fillStyle = '#050608';
+  ctx.fillRect(0, 0, W, H);
+  [initSynapsis, initFlujo, initPulso, initTela, initHex][cur]();
+}
+
+/* ══════════════════════════════════════════
+   A · SINAPSIS — neural nodes + edge pulses
+══════════════════════════════════════════ */
+function initSynapsis() {
+  const N = 75, DIST = 175;
+  const nodes = Array.from({length:N}, () => ({
+    x: Math.random()*W, y: Math.random()*H,
+    vx: (Math.random()-.5)*.36, vy: (Math.random()-.5)*.36,
+    r: 1.4+Math.random()*1.2, glow: 0
+  }));
+  const pulses = [];
+  let fc = 0;
+
+  function spawnFrom(fi) {
+    if (pulses.length >= 20) return;
+    let best=-1, bd=Infinity;
+    for (let j=0;j<N;j++) {
+      if (j===fi) continue;
+      const d = Math.hypot(nodes[j].x-nodes[fi].x, nodes[j].y-nodes[fi].y);
+      if (d<DIST && d<bd) { bd=d; best=j; }
+    }
+    if (best>=0) pulses.push({f:fi, t:best, p:0, s:.018+Math.random()*.014});
+  }
+
+  function frame() {
+    ctx.fillStyle='rgba(5,6,8,0.14)';
+    ctx.fillRect(0,0,W,H);
+    fc++;
+
+    for (const n of nodes) {
+      n.x+=n.vx; n.y+=n.vy;
+      if(n.x<0||n.x>W) n.vx*=-1;
+      if(n.y<0||n.y>H) n.vy*=-1;
+      n.glow = Math.max(0, n.glow-.022);
+    }
+
+    // Edges
+    ctx.lineWidth=.7;
+    for (let i=0;i<N;i++) for (let j=i+1;j<N;j++) {
+      const dx=nodes[j].x-nodes[i].x, dy=nodes[j].y-nodes[i].y;
+      const d=Math.hypot(dx,dy);
+      if (d<DIST) {
+        ctx.strokeStyle=`rgba(0,194,122,${(1-d/DIST)*0.09})`;
+        ctx.beginPath();
+        ctx.moveTo(nodes[i].x,nodes[i].y);
+        ctx.lineTo(nodes[j].x,nodes[j].y);
+        ctx.stroke();
+      }
+    }
+
+    if (fc%88===0) spawnFrom(Math.floor(Math.random()*N));
+
+    // Pulses
+    for (let i=pulses.length-1;i>=0;i--) {
+      const p=pulses[i]; p.p+=p.s;
+      if (p.p>=1) {
+        nodes[p.t].glow=1;
+        if (Math.random()>.3) spawnFrom(p.t);
+        pulses.splice(i,1); continue;
+      }
+      const x=nodes[p.f].x+(nodes[p.t].x-nodes[p.f].x)*p.p;
+      const y=nodes[p.f].y+(nodes[p.t].y-nodes[p.f].y)*p.p;
+      // Lit edge
+      ctx.strokeStyle=`rgba(138,234,192,${.4*(1-p.p)+.12})`;
+      ctx.lineWidth=1.1;
+      ctx.beginPath();
+      ctx.moveTo(nodes[p.f].x,nodes[p.f].y);
+      ctx.lineTo(nodes[p.t].x,nodes[p.t].y);
+      ctx.stroke();
+      // Dot head
+      ctx.beginPath(); ctx.arc(x,y,3,0,Math.PI*2);
+      ctx.fillStyle='rgba(255,255,255,.9)'; ctx.fill();
+      ctx.beginPath(); ctx.arc(x,y,7,0,Math.PI*2);
+      ctx.fillStyle='rgba(0,194,122,.15)'; ctx.fill();
+    }
+
+    // Nodes
+    for (const n of nodes) {
+      ctx.beginPath(); ctx.arc(n.x,n.y,n.r+n.glow*3,0,Math.PI*2);
+      ctx.fillStyle=`rgba(0,194,122,${.28+n.glow*.72})`; ctx.fill();
+      if (n.glow>.12) {
+        ctx.beginPath(); ctx.arc(n.x,n.y,(n.r+n.glow*3)*3,0,Math.PI*2);
+        ctx.fillStyle=`rgba(0,194,122,${n.glow*.07})`; ctx.fill();
+      }
+    }
+    raf=requestAnimationFrame(frame);
+  }
+  raf=requestAnimationFrame(frame);
+}
+
+/* ══════════════════════════════════════════
+   B · FLUJO — outward velocity streams
+══════════════════════════════════════════ */
+function initFlujo() {
+  const maxR = Math.hypot(W,H)*.58;
+  function mkP(preset) {
+    const a = Math.random()*Math.PI*2;
+    const isOrg = Math.random()>.88;
+    const spd = isOrg ? .5+Math.random()*.6 : 1.4+Math.random()*2.8;
+    const col = Math.random()>.9 ? [255,74,28] :
+                Math.random()>.82 ? [245,244,239] : [0,194,122];
+    return {
+      angle: a,
+      r: preset ? Math.random()*maxR : 0,
+      dr: spd*(isOrg?.25:.9),
+      da: (Math.random()-.5)*.0012,   // slight orbit drift
+      size: .4+Math.random()*1.6,
+      col, maxR: maxR*(0.75+Math.random()*.5),
+      trailLen: isOrg ? .055 : .035+spd*.018
+    };
+  }
+  const pts = Array.from({length:260}, ()=>mkP(true));
+  const cx=()=>W*.5, cy=()=>H*.5;
+
+  function frame() {
+    ctx.fillStyle='rgba(5,6,8,0.11)';
+    ctx.fillRect(0,0,W,H);
+    for (const p of pts) {
+      const ox=cx()+Math.cos(p.angle)*p.r;
+      const oy=cy()+Math.sin(p.angle)*p.r;
+      p.r+=p.dr; p.angle+=p.da;
+      const nx=cx()+Math.cos(p.angle)*p.r;
+      const ny=cy()+Math.sin(p.angle)*p.r;
+      const pct=p.r/p.maxR;
+      const a=Math.min(1,pct*3)*.65;
+      const [r,g,b]=p.col;
+      ctx.strokeStyle=`rgba(${r},${g},${b},${a*.5})`;
+      ctx.lineWidth=p.size;
+      ctx.beginPath(); ctx.moveTo(ox,oy); ctx.lineTo(nx,ny); ctx.stroke();
+      ctx.beginPath(); ctx.arc(nx,ny,p.size*.85,0,Math.PI*2);
+      ctx.fillStyle=`rgba(${r},${g},${b},${a})`; ctx.fill();
+      if (p.r>p.maxR) Object.assign(p,mkP(false));
+    }
+    raf=requestAnimationFrame(frame);
+  }
+  raf=requestAnimationFrame(frame);
+}
+
+/* ══════════════════════════════════════════
+   C · PULSO — broadcast waves + ring packets
+══════════════════════════════════════════ */
+function initPulso() {
+  const sz = Math.min(W,H);
+  const rings = [
+    {r:sz*.11, spd:.014, n:3},
+    {r:sz*.21, spd:.009, n:5},
+    {r:sz*.33, spd:.006, n:4},
+    {r:sz*.45, spd:.004, n:6},
+    {r:sz*.58, spd:.0025,n:3},
+  ];
+  const pkts=[];
+  for (const rg of rings)
+    for (let i=0;i<rg.n;i++)
+      pkts.push({rg, a:(i/rg.n)*Math.PI*2, spd:rg.spd*(.8+Math.random()*.4)});
+
+  const waves=[]; let wt=0;
+  const spokes=8;
+
+  function frame() {
+    ctx.fillStyle='rgba(5,6,8,0.16)';
+    ctx.fillRect(0,0,W,H);
+    const cx=W/2, cy=H/2;
+    wt++;
+
+    // Spokes
+    for (let i=0;i<spokes;i++) {
+      const a=i/spokes*Math.PI*2;
+      const grd=ctx.createLinearGradient(cx,cy,cx+Math.cos(a)*Math.max(W,H),cy+Math.sin(a)*Math.max(W,H));
+      grd.addColorStop(0,'rgba(0,194,122,.045)');
+      grd.addColorStop(.5,'rgba(0,194,122,.018)');
+      grd.addColorStop(1,'rgba(0,194,122,0)');
+      ctx.strokeStyle=grd; ctx.lineWidth=1;
+      ctx.beginPath(); ctx.moveTo(cx,cy);
+      ctx.lineTo(cx+Math.cos(a)*Math.max(W,H), cy+Math.sin(a)*Math.max(W,H));
+      ctx.stroke();
+    }
+
+    // Static orbit traces
+    for (const rg of rings) {
+      ctx.beginPath(); ctx.arc(cx,cy,rg.r,0,Math.PI*2);
+      ctx.strokeStyle='rgba(0,194,122,.065)'; ctx.lineWidth=1; ctx.stroke();
+    }
+
+    // Spawn wave every ~2s
+    if (wt%118===0) waves.push({r:2,a:.85});
+    for (let i=waves.length-1;i>=0;i--) {
+      const w=waves[i]; w.r+=2.4; w.a*=.965;
+      ctx.beginPath(); ctx.arc(cx,cy,w.r,0,Math.PI*2);
+      ctx.strokeStyle=`rgba(0,194,122,${w.a})`;
+      ctx.lineWidth=1.3; ctx.stroke();
+      if(w.a<.01||w.r>Math.hypot(W,H)) waves.splice(i,1);
+    }
+
+    // Centre glow
+    const cg=ctx.createRadialGradient(cx,cy,0,cx,cy,100);
+    cg.addColorStop(0,'rgba(0,194,122,.14)');
+    cg.addColorStop(1,'rgba(0,194,122,0)');
+    ctx.fillStyle=cg; ctx.beginPath(); ctx.arc(cx,cy,100,0,Math.PI*2); ctx.fill();
+
+    // Data packets
+    for (const p of pkts) {
+      p.a+=p.spd;
+      const x=cx+Math.cos(p.a)*p.rg.r, y=cy+Math.sin(p.a)*p.rg.r;
+      // Arc trail
+      ctx.beginPath(); ctx.arc(cx,cy,p.rg.r,p.a-.20,p.a);
+      ctx.strokeStyle='rgba(0,194,122,.32)'; ctx.lineWidth=1.6; ctx.stroke();
+      // Head
+      ctx.beginPath(); ctx.arc(x,y,2.8,0,Math.PI*2);
+      ctx.fillStyle='rgba(138,234,192,.95)'; ctx.fill();
+      // Orange accent packets
+      if (Math.random()>.998) {
+        ctx.beginPath(); ctx.arc(x,y,4,0,Math.PI*2);
+        ctx.fillStyle='rgba(255,74,28,.9)'; ctx.fill();
+      }
+    }
+    raf=requestAnimationFrame(frame);
+  }
+  raf=requestAnimationFrame(frame);
+}
+
+/* ══════════════════════════════════════════
+   D · TELA — organic drifting mesh
+══════════════════════════════════════════ */
+function initTela() {
+  const N=62, DIST=195;
+  const nodes=Array.from({length:N},()=>({
+    x:Math.random()*W, y:Math.random()*H,
+    vx:(Math.random()-.5)*.18, vy:(Math.random()-.5)*.18,
+    r:1.6+Math.random()*.9, glow:0, active:false
+  }));
+  let at=0;
+
+  function activate() {
+    const n=nodes[Math.floor(Math.random()*N)];
+    n.active=true; n.glow=1;
+    setTimeout(()=>{ n.active=false; }, 2400);
+  }
+  activate();
+
+  function frame() {
+    ctx.fillStyle='rgba(5,6,8,0.12)';
+    ctx.fillRect(0,0,W,H);
+    at++;
+    if (at%155===0) activate();
+
+    for (const n of nodes) {
+      n.x+=n.vx; n.y+=n.vy;
+      if(n.x<0||n.x>W) n.vx*=-1;
+      if(n.y<0||n.y>H) n.vy*=-1;
+      n.glow=Math.max(0, n.glow-(n.active?.005:.018));
+    }
+
+    // Edges
+    for (let i=0;i<N;i++) for (let j=i+1;j<N;j++) {
+      const dx=nodes[j].x-nodes[i].x, dy=nodes[j].y-nodes[i].y;
+      const d=Math.hypot(dx,dy);
+      if (d<DIST) {
+        const base=(1-d/DIST)*(1-d/DIST)*0.13;
+        const boost=Math.max(nodes[i].glow,nodes[j].glow)*.55;
+        ctx.strokeStyle=`rgba(0,194,122,${base+boost})`;
+        ctx.lineWidth=.55+boost*1.4;
+        ctx.beginPath(); ctx.moveTo(nodes[i].x,nodes[i].y);
+        ctx.lineTo(nodes[j].x,nodes[j].y); ctx.stroke();
+      }
+    }
+
+    // Triangles (light fill for active nodes)
+    for (let i=0;i<N;i++) {
+      if (nodes[i].glow<.25) continue;
+      for (let j=i+1;j<N;j++) {
+        if (Math.hypot(nodes[j].x-nodes[i].x,nodes[j].y-nodes[i].y)>DIST) continue;
+        for (let k=j+1;k<N;k++) {
+          if (Math.hypot(nodes[k].x-nodes[j].x,nodes[k].y-nodes[j].y)>DIST) continue;
+          if (Math.hypot(nodes[k].x-nodes[i].x,nodes[k].y-nodes[i].y)>DIST) continue;
+          ctx.beginPath();
+          ctx.moveTo(nodes[i].x,nodes[i].y);
+          ctx.lineTo(nodes[j].x,nodes[j].y);
+          ctx.lineTo(nodes[k].x,nodes[k].y);
+          ctx.closePath();
+          ctx.fillStyle=`rgba(0,194,122,${nodes[i].glow*.025})`; ctx.fill();
+        }
+      }
+    }
+
+    // Nodes
+    for (const n of nodes) {
+      const r=n.r+n.glow*4.5;
+      ctx.beginPath(); ctx.arc(n.x,n.y,r,0,Math.PI*2);
+      ctx.fillStyle=`rgba(0,194,122,${.22+n.glow*.78})`; ctx.fill();
+      if (n.glow>.1) {
+        ctx.beginPath(); ctx.arc(n.x,n.y,r*3.2,0,Math.PI*2);
+        ctx.fillStyle=`rgba(0,194,122,${n.glow*.065})`; ctx.fill();
+      }
+    }
+    raf=requestAnimationFrame(frame);
+  }
+  raf=requestAnimationFrame(frame);
+}
+
+/* ══════════════════════════════════════════
+   E · HEX — hexagonal activation field
+══════════════════════════════════════════ */
+function initHex() {
+  const SIZE=38;
+  const cols=Math.ceil(W/(SIZE*1.732))+2;
+  const rows=Math.ceil(H/(SIZE*1.5))+2;
+  const hexes=[];
+
+  for (let r=0;r<rows;r++) for (let c=0;c<cols;c++) {
+    const ox=(r%2)*.866*SIZE;
+    hexes.push({
+      cx: c*SIZE*1.732+ox - SIZE,
+      cy: r*SIZE*1.5  - SIZE,
+      glow:0, active:false, timer:0
+    });
+  }
+
+  function hexPath(cx,cy,s) {
+    ctx.beginPath();
+    for (let i=0;i<6;i++) {
+      const a=Math.PI/180*(60*i-30);
+      i===0 ? ctx.moveTo(cx+s*Math.cos(a),cy+s*Math.sin(a))
+             : ctx.lineTo(cx+s*Math.cos(a),cy+s*Math.sin(a));
+    }
+    ctx.closePath();
+  }
+
+  let at=0;
+  function activate() {
+    const h=hexes[Math.floor(Math.random()*hexes.length)];
+    h.active=true; h.glow=1; h.timer=0;
+    // Cascade to neighbours
+    for (const nb of hexes) {
+      const d=Math.hypot(nb.cx-h.cx,nb.cy-h.cy);
+      if (d>0 && d<SIZE*2.2) {
+        setTimeout(()=>{ nb.glow=Math.max(nb.glow,.45); nb.timer=0; }, d*8);
+      }
+    }
+    setTimeout(()=>{ h.active=false; },2000);
+  }
+  activate();
+
+  function frame() {
+    ctx.fillStyle='rgba(5,6,8,0.18)';
+    ctx.fillRect(0,0,W,H);
+    at++;
+    if (at%180===0) activate();
+
+    for (const h of hexes) {
+      h.glow=Math.max(0, h.glow-.016);
+      const base=.028, a=base+h.glow*.22;
+
+      // Hex fill
+      hexPath(h.cx,h.cy,SIZE*.94);
+      ctx.fillStyle=`rgba(0,194,122,${h.glow*.06})`; ctx.fill();
+      ctx.strokeStyle=`rgba(0,194,122,${a})`;
+      ctx.lineWidth=.8; ctx.stroke();
+
+      // Centre dot
+      if (h.glow>.05) {
+        ctx.beginPath(); ctx.arc(h.cx,h.cy,1.4+h.glow*2.5,0,Math.PI*2);
+        ctx.fillStyle=`rgba(0,194,122,${h.glow*.8})`; ctx.fill();
+      }
+    }
+
+    // Orange pulse hex occasionally
+    if (at%260===0) {
+      const rh=hexes[Math.floor(Math.random()*hexes.length)];
+      hexPath(rh.cx,rh.cy,SIZE*.94);
+      ctx.strokeStyle='rgba(255,74,28,.55)'; ctx.lineWidth=1.2; ctx.stroke();
+      ctx.fillStyle='rgba(255,74,28,.05)'; ctx.fill();
+    }
+    raf=requestAnimationFrame(frame);
+  }
+  raf=requestAnimationFrame(frame);
+}
+
+// ── Start ──
+boot();
+</script>
+</body>
+</html>

@@ -1,0 +1,425 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>Demo Módulos · Conniku</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"/>
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Funnel+Display:wght@800;900&family=Inter:wght@400;500;600&family=Geist+Mono:wght@400;500;600&display=swap"/>
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+html,body{width:100%;height:100%;overflow:hidden;background:#050608}
+canvas{position:fixed;inset:0;display:block}
+
+/* ── Center engine face ── */
+.engine{
+  position:fixed;left:50%;top:50%;transform:translate(-50%,-50%);
+  width:90px;height:90px;border-radius:50%;z-index:20;pointer-events:none;
+  background:radial-gradient(circle at 38% 30%,#001810,#060809);
+  border:1.5px solid rgba(0,194,122,.5);
+  display:flex;flex-direction:column;align-items:center;justify-content:center;gap:5px;
+  box-shadow:0 0 24px rgba(0,194,122,.18),0 0 48px rgba(0,194,122,.07),inset 0 1px 0 rgba(0,194,122,.15);
+}
+.u-icon{
+  width:34px;height:34px;border-radius:8px;
+  background:linear-gradient(135deg,#8AEAC0 0%,#006E4A 100%);
+  display:grid;place-items:center;transform:rotate(-12deg);
+  box-shadow:0 2px 8px rgba(0,0,0,.5);
+}
+.u-letter{
+  font-family:'Funnel Display',sans-serif;font-weight:900;font-size:17px;
+  color:#0D0F10;letter-spacing:-.055em;transform:rotate(12deg);
+  display:flex;align-items:baseline;
+}
+.u-dot{color:#FF4A1C}
+.eng-sub{font-family:'Geist Mono',monospace;font-size:8px;color:rgba(0,194,122,.7);letter-spacing:.2em}
+
+/* Radar ring */
+.engine::before{
+  content:'';position:absolute;inset:-8px;border-radius:50%;
+  border:1px solid rgba(0,194,122,.14);animation:eng-breathe 3.6s ease-in-out infinite;
+}
+.engine::after{
+  content:'';position:absolute;inset:-16px;border-radius:50%;
+  border:1px dashed rgba(0,194,122,.08);animation:eng-breathe 3.6s .8s ease-in-out infinite;
+}
+@keyframes eng-breathe{0%,100%{opacity:.5;transform:scale(1);}50%{opacity:1;transform:scale(1.02);}}
+
+/* ── UI overlay ── */
+.ui{position:fixed;inset:0;pointer-events:none;z-index:30;display:flex;flex-direction:column;justify-content:space-between;padding:24px 32px}
+.top{display:flex;justify-content:space-between;align-items:flex-start}
+.concept-id{display:flex;flex-direction:column;gap:5px}
+.ccode{font-family:'Geist Mono',monospace;font-size:9px;letter-spacing:.18em;color:rgba(0,194,122,.6);background:rgba(0,194,122,.07);border:1px solid rgba(0,194,122,.2);padding:3px 8px;border-radius:4px;width:fit-content}
+.cname{font-family:'Funnel Display',sans-serif;font-weight:900;font-size:28px;color:#F5F4EF;letter-spacing:-.04em;line-height:1}
+.ctag{font-family:'Geist Mono',monospace;font-size:9px;color:rgba(245,244,239,.28);letter-spacing:.07em}
+.tabs{display:flex;gap:5px;pointer-events:all}
+.tab{background:rgba(5,6,8,.75);border:1px solid rgba(245,244,239,.1);color:rgba(245,244,239,.32);font-family:'Geist Mono',monospace;font-size:10px;letter-spacing:.1em;padding:8px 16px;border-radius:7px;cursor:pointer;transition:all .2s;backdrop-filter:blur(8px)}
+.tab:hover{border-color:rgba(0,194,122,.35);color:rgba(0,194,122,.7)}
+.tab.active{border-color:rgba(0,194,122,.65);color:#00C27A;background:rgba(0,194,122,.09)}
+.bottom{display:flex;justify-content:space-between;align-items:flex-end}
+.legend{display:flex;gap:16px;flex-wrap:wrap}
+.leg-item{display:flex;align-items:center;gap:6px;font-family:'Geist Mono',monospace;font-size:9px;letter-spacing:.06em}
+.leg-dot{width:8px;height:8px;border-radius:50%;flex-shrink:0}
+.cmeta{font-family:'Geist Mono',monospace;font-size:10px;color:rgba(245,244,239,.15);text-align:right}
+.cmeta span{display:block;margin-bottom:2px}
+.cmeta strong{color:rgba(0,194,122,.4)}
+
+/* ── Fade overlay ── */
+#fade{position:fixed;inset:0;background:#050608;z-index:99;pointer-events:none;opacity:0;transition:opacity .25s}
+</style>
+</head>
+<body>
+
+<canvas id="cvs"></canvas>
+
+<!-- Center engine -->
+<div class="engine">
+  <div class="u-icon"><span class="u-letter">u<span class="u-dot">.</span></span></div>
+  <span class="eng-sub">ORBIT</span>
+</div>
+
+<div id="fade"></div>
+
+<div class="ui">
+  <div class="top">
+    <div class="concept-id">
+      <span class="ccode" id="cCode">A</span>
+      <span class="cname" id="cName">SINAPSIS</span>
+      <span class="ctag" id="cTag">Módulos como nodos de una red viva</span>
+    </div>
+    <div class="tabs">
+      <button class="tab active" onclick="switchTo(0,this)">A · SINAPSIS</button>
+      <button class="tab" onclick="switchTo(1,this)">E · HEX</button>
+    </div>
+  </div>
+
+  <div class="bottom">
+    <div class="legend" id="legend"></div>
+    <div class="cmeta">
+      <span><strong>conn</strong> · conexión</span>
+      <span><strong>iku</strong> · 行く · movimiento</span>
+    </div>
+  </div>
+</div>
+
+<script>
+const cvs = document.getElementById('cvs');
+const ctx  = cvs.getContext('2d');
+let W, H, raf = null, cur = 0;
+
+function resize() { W = cvs.width = innerWidth; H = cvs.height = innerHeight; }
+resize();
+window.addEventListener('resize', () => { resize(); boot(); });
+
+// ── Planets ──
+const PLANETS = [
+  { name:'conniku.',     r: 95,  spd:.020,  a: 0.5, col:[0,194,122],  lc:'#8AEAC0' },
+  { name:'tutores',      r: 158, spd:.0130, a: 1.8, col:[196,154,58], lc:'#FFD87A' },
+  { name:'empleos',      r: 221, spd:.0085, a: 3.2, col:[0,150,204],  lc:'#67E8F9' },
+  { name:'entrar',       r: 284, spd:.0062, a: 4.7, col:[107,78,255], lc:'#C4B5FD' },
+  { name:'crear cuenta', r: 347, spd:.0045, a: 6.1, col:[255,74,28],  lc:'#FFBDAB' },
+];
+
+// Build legend
+const leg = document.getElementById('legend');
+PLANETS.forEach(p => {
+  const div = document.createElement('div');
+  div.className = 'leg-item';
+  div.innerHTML = `<div class="leg-dot" style="background:rgb(${p.col})"></div><span style="color:${p.lc}">${p.name}</span>`;
+  leg.appendChild(div);
+});
+
+const CONCEPTS = [
+  { code:'A', name:'SINAPSIS', tag:'Módulos como nodos de una red viva — cada órbita es una conexión activa' },
+  { code:'E', name:'HEX',      tag:'Módulos sobre una cuadrícula geométrica — precisión y energía latente'    },
+];
+
+function switchTo(idx, btn) {
+  const f = document.getElementById('fade');
+  f.style.opacity = '1';
+  setTimeout(() => {
+    cur = idx;
+    document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+    btn.classList.add('active');
+    const c = CONCEPTS[idx];
+    document.getElementById('cCode').textContent = c.code;
+    document.getElementById('cName').textContent = c.name;
+    document.getElementById('cTag').textContent  = c.tag;
+    boot();
+    setTimeout(() => { f.style.opacity = '0'; }, 80);
+  }, 250);
+}
+
+function boot() {
+  cancelAnimationFrame(raf);
+  ctx.fillStyle = '#050608'; ctx.fillRect(0,0,W,H);
+  cur === 0 ? runSinapsis() : runHex();
+}
+
+// ─────────────────────────────────────
+// Shared: draw orbit rings
+// ─────────────────────────────────────
+function drawRings() {
+  const cx = W/2, cy = H/2;
+  PLANETS.forEach((p, i) => {
+    ctx.beginPath(); ctx.arc(cx, cy, p.r, 0, Math.PI*2);
+    const [r,g,b] = p.col;
+    ctx.strokeStyle = `rgba(${r},${g},${b},0.12)`;
+    ctx.lineWidth = i === 0 ? 1 : .7;
+    ctx.setLineDash(i % 2 === 0 ? [] : [4,6]);
+    ctx.stroke();
+    ctx.setLineDash([]);
+  });
+}
+
+// ─────────────────────────────────────
+// Shared: update + draw planets
+// ─────────────────────────────────────
+function stepPlanets() {
+  PLANETS.forEach(p => {
+    p.a += p.spd;
+    p.x = W/2 + Math.cos(p.a) * p.r;
+    p.y = H/2 + Math.sin(p.a) * p.r;
+  });
+}
+
+function drawPlanets() {
+  PLANETS.forEach(p => {
+    const [r,g,b] = p.col;
+    const PR = 18; // planet radius
+
+    // Outer glow
+    const glo = ctx.createRadialGradient(p.x,p.y,0,p.x,p.y,PR*2.8);
+    glo.addColorStop(0, `rgba(${r},${g},${b},.12)`);
+    glo.addColorStop(1, `rgba(${r},${g},${b},0)`);
+    ctx.fillStyle = glo; ctx.beginPath(); ctx.arc(p.x,p.y,PR*2.8,0,Math.PI*2); ctx.fill();
+
+    // Planet sphere
+    const grad = ctx.createRadialGradient(p.x-PR*.25,p.y-PR*.28,0,p.x,p.y,PR);
+    grad.addColorStop(0, lighten(r,g,b,.75));
+    grad.addColorStop(.55, `rgba(${r},${g},${b},1)`);
+    grad.addColorStop(1, darken(r,g,b,.45));
+    ctx.beginPath(); ctx.arc(p.x,p.y,PR,0,Math.PI*2);
+    ctx.fillStyle = grad; ctx.fill();
+
+    // Dashed inner ring (rotates)
+    ctx.save();
+    ctx.translate(p.x,p.y); ctx.rotate(p.a*1.8);
+    ctx.beginPath(); ctx.arc(0,0,PR*.72,0,Math.PI*2);
+    ctx.strokeStyle=`rgba(255,255,255,.18)`; ctx.lineWidth=.8;
+    ctx.setLineDash([3,4]); ctx.stroke(); ctx.setLineDash([]);
+    ctx.restore();
+
+    // Box-shadow style glow ring
+    ctx.beginPath(); ctx.arc(p.x,p.y,PR+1,0,Math.PI*2);
+    ctx.strokeStyle=`rgba(${r},${g},${b},.55)`; ctx.lineWidth=1; ctx.stroke();
+
+    // Label
+    ctx.font = '600 10px "Geist Mono", monospace';
+    ctx.textAlign = 'center';
+    ctx.fillStyle = p.lc;
+    ctx.globalAlpha = .85;
+    ctx.fillText(p.name, p.x, p.y + PR + 14);
+    ctx.globalAlpha = 1;
+  });
+}
+
+function lighten(r,g,b,t){ return `rgba(${Math.min(255,r+180*t)},${Math.min(255,g+180*t)},${Math.min(255,b+180*t)},1)`; }
+function darken(r,g,b,t){  return `rgba(${Math.round(r*t)},${Math.round(g*t)},${Math.round(b*t)},1)`; }
+
+// ═══════════════════════════════════════════════════
+// A · SINAPSIS — neural nodes react to orbiting planets
+// ═══════════════════════════════════════════════════
+function runSinapsis() {
+  const N = 55, EDGE = 165, REACT = 95;
+  const nodes = Array.from({length:N}, () => ({
+    x: Math.random()*W, y: Math.random()*H,
+    vx:(Math.random()-.5)*.22, vy:(Math.random()-.5)*.22,
+    r:1.3+Math.random()*.9, glow:0
+  }));
+
+  // Small seed pulses
+  const pulses = [];
+  let fc = 0;
+
+  function spawnFrom(fi) {
+    if (pulses.length>14) return;
+    const fn = nodes[fi];
+    let best=-1, bd=Infinity;
+    for (let j=0;j<N;j++) {
+      if(j===fi) continue;
+      const d=Math.hypot(nodes[j].x-fn.x,nodes[j].y-fn.y);
+      if(d<EDGE&&d<bd){bd=d;best=j;}
+    }
+    if(best>=0) pulses.push({f:fi,t:best,p:0,s:.02+Math.random()*.015});
+  }
+
+  function frame() {
+    ctx.fillStyle='rgba(5,6,8,0.13)'; ctx.fillRect(0,0,W,H);
+    fc++;
+
+    // Move nodes
+    for(const n of nodes){
+      n.x+=n.vx; n.y+=n.vy;
+      if(n.x<0||n.x>W) n.vx*=-1;
+      if(n.y<0||n.y>H) n.vy*=-1;
+      n.glow=Math.max(0,n.glow-.018);
+    }
+
+    // Planet-node reactions
+    stepPlanets();
+    for(const n of nodes){
+      for(const p of PLANETS){
+        const d=Math.hypot(n.x-p.x,n.y-p.y);
+        if(d<REACT){
+          n.glow=Math.max(n.glow,(1-d/REACT)*.9);
+          // Draw connection line from planet to node
+          const a=(1-d/REACT)*.35;
+          const [r,g,b]=p.col;
+          ctx.strokeStyle=`rgba(${r},${g},${b},${a})`;
+          ctx.lineWidth=.8;
+          ctx.beginPath(); ctx.moveTo(p.x,p.y); ctx.lineTo(n.x,n.y); ctx.stroke();
+        }
+      }
+    }
+
+    // Base neural edges
+    ctx.lineWidth=.65;
+    for(let i=0;i<N;i++) for(let j=i+1;j<N;j++){
+      const dx=nodes[j].x-nodes[i].x, dy=nodes[j].y-nodes[i].y;
+      const d=Math.hypot(dx,dy);
+      if(d<EDGE){
+        const boost=Math.max(nodes[i].glow,nodes[j].glow);
+        ctx.strokeStyle=`rgba(0,194,122,${(1-d/EDGE)*(.07+boost*.22)})`;
+        ctx.beginPath(); ctx.moveTo(nodes[i].x,nodes[i].y); ctx.lineTo(nodes[j].x,nodes[j].y); ctx.stroke();
+      }
+    }
+
+    // Pulse spawns
+    if(fc%100===0) spawnFrom(Math.floor(Math.random()*N));
+
+    // Draw pulses
+    for(let i=pulses.length-1;i>=0;i--){
+      const p=pulses[i]; p.p+=p.s;
+      if(p.p>=1){ nodes[p.t].glow=1; if(Math.random()>.4) spawnFrom(p.t); pulses.splice(i,1); continue; }
+      const x=nodes[p.f].x+(nodes[p.t].x-nodes[p.f].x)*p.p;
+      const y=nodes[p.f].y+(nodes[p.t].y-nodes[p.f].y)*p.p;
+      ctx.strokeStyle=`rgba(138,234,192,${.5*(1-p.p)+.1})`; ctx.lineWidth=1;
+      ctx.beginPath(); ctx.moveTo(nodes[p.f].x,nodes[p.f].y); ctx.lineTo(nodes[p.t].x,nodes[p.t].y); ctx.stroke();
+      ctx.beginPath(); ctx.arc(x,y,2.5,0,Math.PI*2);
+      ctx.fillStyle='rgba(255,255,255,.88)'; ctx.fill();
+    }
+
+    // Neural nodes
+    for(const n of nodes){
+      ctx.beginPath(); ctx.arc(n.x,n.y,n.r+n.glow*3,0,Math.PI*2);
+      ctx.fillStyle=`rgba(0,194,122,${.22+n.glow*.78})`; ctx.fill();
+      if(n.glow>.15){
+        ctx.beginPath(); ctx.arc(n.x,n.y,(n.r+n.glow*3)*3.5,0,Math.PI*2);
+        ctx.fillStyle=`rgba(0,194,122,${n.glow*.06})`; ctx.fill();
+      }
+    }
+
+    drawRings();
+    drawPlanets();
+    raf=requestAnimationFrame(frame);
+  }
+  raf=requestAnimationFrame(frame);
+}
+
+// ═══════════════════════════════════════════════════
+// E · HEX — geometric grid glows under orbiting planets
+// ═══════════════════════════════════════════════════
+function runHex() {
+  const S = 30; // hex size
+  const SQ3 = Math.sqrt(3);
+  const cols = Math.ceil(W  / (S * SQ3)) + 3;
+  const rows = Math.ceil(H / (S * 1.5))  + 3;
+
+  const hexes = [];
+  for(let r=0;r<rows;r++) for(let c=0;c<cols;c++){
+    const ox = (r%2) * S * SQ3 * .5;
+    hexes.push({
+      cx: c * S * SQ3 + ox - S * SQ3,
+      cy: r * S * 1.5 - S * 1.5,
+      glow:0, colR:0, colG:194, colB:122
+    });
+  }
+
+  function hexPath(cx,cy,s){
+    ctx.beginPath();
+    for(let i=0;i<6;i++){
+      const a=Math.PI/180*(60*i-30);
+      i===0 ? ctx.moveTo(cx+s*Math.cos(a),cy+s*Math.sin(a))
+             : ctx.lineTo(cx+s*Math.cos(a),cy+s*Math.sin(a));
+    }
+    ctx.closePath();
+  }
+
+  let fc = 0;
+
+  function frame(){
+    ctx.fillStyle='rgba(5,6,8,0.16)'; ctx.fillRect(0,0,W,H);
+    fc++;
+
+    stepPlanets();
+
+    // Planet → hex influence
+    for(const h of hexes){
+      h.glow=Math.max(0,h.glow-.022);
+      for(const p of PLANETS){
+        const d=Math.hypot(h.cx-p.x,h.cy-p.y);
+        const range=S*3.5;
+        if(d<range){
+          const strength=(1-d/range);
+          h.glow=Math.max(h.glow,strength*.95);
+          h.colR=p.col[0]; h.colG=p.col[1]; h.colB=p.col[2];
+        }
+      }
+    }
+
+    // Draw hex grid
+    for(const h of hexes){
+      const base=.045;
+      const a=base+h.glow*.28;
+      hexPath(h.cx,h.cy,S*.92);
+      ctx.fillStyle=`rgba(${h.colR},${h.colG},${h.colB},${h.glow*.08})`; ctx.fill();
+      ctx.strokeStyle=`rgba(${h.colR},${h.colG},${h.colB},${a})`; ctx.lineWidth=.7; ctx.stroke();
+      // Centre dot for glowing hexes
+      if(h.glow>.18){
+        ctx.beginPath(); ctx.arc(h.cx,h.cy,1.2+h.glow*2,0,Math.PI*2);
+        ctx.fillStyle=`rgba(${h.colR},${h.colG},${h.colB},${h.glow*.7})`; ctx.fill();
+      }
+    }
+
+    // Orbit trail: small arc behind each planet in hex color
+    for(const p of PLANETS){
+      const [r,g,b]=p.col;
+      const trailArc=.22;
+      ctx.beginPath();
+      ctx.arc(W/2,H/2,p.r,p.a-trailArc,p.a);
+      ctx.strokeStyle=`rgba(${r},${g},${b},.28)`; ctx.lineWidth=1.8; ctx.stroke();
+    }
+
+    // Hex glow clusters near center
+    const cx2=W/2, cy2=H/2;
+    for(const h of hexes){
+      const d=Math.hypot(h.cx-cx2,h.cy-cy2);
+      if(d<S*4){
+        hexPath(h.cx,h.cy,S*.92);
+        ctx.fillStyle=`rgba(0,194,122,${(.06*(1-d/(S*4)))})`; ctx.fill();
+      }
+    }
+
+    drawRings();
+    drawPlanets();
+    raf=requestAnimationFrame(frame);
+  }
+  raf=requestAnimationFrame(frame);
+}
+
+boot();
+</script>
+</body>
+</html>

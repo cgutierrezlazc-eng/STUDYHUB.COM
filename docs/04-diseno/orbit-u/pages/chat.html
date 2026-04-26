@@ -1,0 +1,384 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Comunidades · Conniku</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Funnel+Display:wght@400;600;700;800;900&family=Inter:wght@400;500;600;700&family=Geist+Mono:wght@400;500;600&display=swap" />
+<link rel="stylesheet" href="../shared/tokens.css" />
+<link rel="stylesheet" href="../shared/base.css" />
+<link rel="stylesheet" href="../shared/nav.css" />
+<link rel="stylesheet" href="../shared/sidebar.css" />
+<style>
+  :root { --mod: #0096CC; --mod-2: rgba(0,194,255,0.08); --mod-3: #7FDAFF; }
+
+  .layout {
+    display: grid;
+    grid-template-columns: 240px 1fr 260px;
+    height: calc(100vh - 57px);
+  }
+
+  /* ── Lista de comunidades ── */
+  .comm-list {
+    background: var(--surface);
+    border-right: 1px solid var(--border);
+    display: flex; flex-direction: column; overflow: hidden;
+  }
+  .comm-list-top {
+    padding: 14px 14px 10px;
+    border-bottom: 1px solid var(--border);
+  }
+  .comm-label {
+    font-family: 'Geist Mono', monospace; font-size: 10px;
+    font-weight: 600; letter-spacing: .1em; text-transform: uppercase;
+    color: var(--text-4); margin-bottom: 8px; display: block;
+  }
+  .comm-new {
+    width: 100%; padding: 7px 10px; border-radius: 8px;
+    background: var(--mod-2); border: 1px solid rgba(0,194,255,0.2);
+    color: var(--mod-3); font-size: 11px; font-weight: 600;
+    cursor: pointer; display: flex; align-items: center; gap: 5px;
+    transition: all .15s;
+  }
+  .comm-new:hover { background: rgba(0,194,255,0.14); }
+  .comm-new svg { width: 13px; height: 13px; }
+
+  .comm-scroll { flex: 1; overflow-y: auto; padding: 6px; }
+  .comm-section-label {
+    font-family: 'Geist Mono', monospace; font-size: 9px;
+    color: var(--text-4); text-transform: uppercase; letter-spacing: .1em;
+    padding: 10px 8px 4px;
+  }
+  .comm-item {
+    padding: 8px 10px; border-radius: 8px; cursor: pointer;
+    display: flex; align-items: center; gap: 9px;
+    transition: background .14s; border: 1px solid transparent;
+  }
+  .comm-item:hover { background: var(--surface-2); }
+  .comm-item.active { background: var(--mod-2); border-color: rgba(0,194,255,0.2); }
+  .comm-ico {
+    width: 32px; height: 32px; border-radius: 9px; flex-shrink: 0;
+    display: grid; place-items: center; font-size: 15px;
+  }
+  .comm-item-info { flex: 1; min-width: 0; }
+  .comm-item-name { font-size: 12px; font-weight: 600; color: var(--text); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .comm-item-last { font-size: 10px; color: var(--text-4); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .comm-badge {
+    min-width: 16px; height: 16px; border-radius: 999px;
+    background: var(--mod); color: #0B0C0E;
+    font-family: 'Geist Mono', monospace; font-size: 8px; font-weight: 700;
+    display: grid; place-items: center; padding: 0 4px; flex-shrink: 0;
+  }
+
+  /* ── Chat area ── */
+  .chat-area { display: flex; flex-direction: column; background: var(--bg); }
+  .chat-header {
+    padding: 12px 20px; border-bottom: 1px solid var(--border);
+    background: var(--surface);
+    display: flex; align-items: center; gap: 12px;
+  }
+  .ch-ico {
+    width: 36px; height: 36px; border-radius: 10px;
+    background: linear-gradient(135deg, rgba(0,194,255,0.2), rgba(0,150,204,0.3));
+    border: 1px solid rgba(0,194,255,0.25);
+    display: grid; place-items: center; font-size: 17px; flex-shrink: 0;
+  }
+  .ch-name { font-weight: 700; font-size: 14px; }
+  .ch-desc { font-size: 11px; color: var(--text-3); }
+  .ch-members {
+    margin-left: auto; font-family: 'Geist Mono', monospace; font-size: 10px;
+    color: var(--text-4); display: flex; align-items: center; gap: 5px;
+  }
+  .ch-members::before { content:""; width:6px;height:6px;border-radius:50%;background:var(--mod);box-shadow:0 0 5px var(--mod); }
+
+  .chat-msgs { flex: 1; overflow-y: auto; padding: 20px; display: flex; flex-direction: column; gap: 12px; }
+  .msg { display: flex; gap: 10px; max-width: 80%; }
+  .msg.mine { align-self: flex-end; flex-direction: row-reverse; }
+  .msg-av {
+    width: 30px; height: 30px; border-radius: 50%; flex-shrink: 0; margin-top: 2px;
+    display: grid; place-items: center; font-weight: 700; font-size: 10px; color: #0B0C0E;
+  }
+  .msg-body { display: flex; flex-direction: column; gap: 3px; }
+  .msg-sender { font-size: 10px; font-weight: 600; color: var(--text-3); display: flex; align-items: center; gap: 6px; }
+  .msg-u-tag {
+    font-family: 'Geist Mono', monospace; font-size: 8px;
+    color: var(--mod-3); background: var(--mod-2);
+    padding: 1px 5px; border-radius: 3px; letter-spacing: .04em;
+  }
+  .msg-bubble { padding: 9px 13px; border-radius: 14px; font-size: 13px; line-height: 1.55; }
+  .msg .msg-bubble { background: var(--surface-2); color: var(--text); border-radius: 4px 14px 14px 14px; }
+  .msg.mine .msg-bubble { background: var(--mod-2); border: 1px solid rgba(0,194,255,0.18); color: var(--text); border-radius: 14px 4px 14px 14px; }
+  .msg-time { font-family: 'Geist Mono', monospace; font-size: 9px; color: var(--text-4); }
+  .msg.mine .msg-time { text-align: right; }
+
+  .date-sep {
+    align-self: center; font-family: 'Geist Mono', monospace; font-size: 9.5px;
+    color: var(--text-4); padding: 3px 10px; background: var(--surface-2);
+    border-radius: 999px; border: 1px solid var(--border);
+  }
+  .system-msg {
+    align-self: center; font-size: 11px; color: var(--text-4);
+    background: var(--surface-2); border-radius: 6px; padding: 5px 12px;
+    border: 1px solid var(--border);
+  }
+
+  .chat-input-area { padding: 14px 20px; background: var(--surface); border-top: 1px solid var(--border); }
+  .chat-input-box {
+    background: var(--surface-2); border: 1px solid var(--border);
+    border-radius: 12px; padding: 10px 14px;
+    display: flex; align-items: center; gap: 10px;
+    transition: border-color .18s;
+  }
+  .chat-input-box:focus-within { border-color: var(--mod); box-shadow: 0 0 0 3px rgba(0,194,255,0.08); }
+  .chat-input-box input { flex: 1; background: transparent; border: 0; outline: 0; font-family: inherit; font-size: 13px; color: var(--text); }
+  .chat-input-box input::placeholder { color: var(--text-4); }
+  .send-btn { width: 30px; height: 30px; border-radius: 8px; background: var(--mod); border: 0; cursor: pointer; display: grid; place-items: center; color: #fff; transition: transform .15s; }
+  .send-btn:hover { transform: scale(1.08); }
+
+  /* ── Panel derecho: info comunidad ── */
+  .comm-panel {
+    background: var(--surface); border-left: 1px solid var(--border);
+    display: flex; flex-direction: column; overflow-y: auto;
+  }
+  .cp-banner {
+    height: 80px;
+    background: linear-gradient(135deg, rgba(0,194,255,0.15), rgba(0,150,204,0.08));
+    border-bottom: 1px solid var(--border);
+    display: flex; align-items: center; justify-content: center; font-size: 32px;
+  }
+  .cp-body { padding: 16px; display: flex; flex-direction: column; gap: 14px; }
+  .cp-name { font-weight: 800; font-size: 16px; letter-spacing: -.02em; }
+  .cp-desc { font-size: 12px; color: var(--text-3); line-height: 1.6; }
+  .cp-section { font-family: 'Geist Mono', monospace; font-size: 9.5px; color: var(--text-4); text-transform: uppercase; letter-spacing: .1em; margin-bottom: 6px; }
+  .cp-tag-list { display: flex; flex-wrap: wrap; gap: 5px; }
+  .cp-tag {
+    padding: 3px 9px; border-radius: 999px;
+    font-size: 11px; font-weight: 500;
+    background: var(--surface-2); border: 1px solid var(--border);
+    color: var(--text-3);
+  }
+  .member-row { display: flex; align-items: center; gap: 9px; padding: 5px 0; }
+  .member-av { width: 28px; height: 28px; border-radius: 50%; display: grid; place-items: center; font-size: 10px; font-weight: 700; color: #0B0C0E; flex-shrink: 0; }
+  .member-name { font-size: 12px; font-weight: 500; flex: 1; }
+  .member-u { font-family: 'Geist Mono', monospace; font-size: 9px; color: var(--text-4); }
+  .join-btn {
+    width: 100%; padding: 10px; border-radius: 10px;
+    background: var(--mod-2); border: 1px solid var(--mod);
+    color: var(--mod-3); font-size: 13px; font-weight: 600;
+    cursor: pointer; transition: all .15s;
+  }
+  .join-btn:hover { background: rgba(0,194,255,0.14); }
+</style>
+</head>
+<body>
+
+<nav class="nav">
+  <div class="nav-inner">
+    <div class="nav-brand">
+      <a href="orbit-u.html" class="nav-back">
+        <span class="orbit-ico" aria-hidden="true"></span>
+        Orbit<span class="nav-back-u">·U</span>
+      </a>
+      <span class="nav-sep" aria-hidden="true"></span>
+      <a href="orbit-u.html" class="brand">conn<span>i</span>k<span class="u-pack">u<span class="dot">.</span></span></a>
+    </div>
+    <span class="nav-mod-name">Comunidades</span>
+    <div class="nav-right">
+      <button class="nav-ico has-badge" aria-label="Notificaciones">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" width="18" height="18"><path d="M18 8A6 6 0 006 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 01-3.46 0"/></svg>
+      </button>
+      <div class="nav-av">CG</div>
+    </div>
+  </div>
+</nav>
+
+<div class="layout">
+
+  <aside class="comm-list">
+    <div class="comm-list-top">
+      <span class="comm-label">Mis comunidades</span>
+      <button class="comm-new">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 5v14M5 12h14"/></svg>
+        Explorar
+      </button>
+    </div>
+    <div class="comm-scroll">
+      <div class="comm-section-label">Unido</div>
+
+      <div class="comm-item active">
+        <div class="comm-ico" style="background:rgba(0,194,255,0.12)">💻</div>
+        <div class="comm-item-info">
+          <div class="comm-item-name">Ing. Informática UCH</div>
+          <div class="comm-item-last">Diego: ¿alguien tiene el enunciado...</div>
+        </div>
+        <div class="comm-badge">5</div>
+      </div>
+
+      <div class="comm-item">
+        <div class="comm-ico" style="background:rgba(107,78,255,0.12)">🧠</div>
+        <div class="comm-item-info">
+          <div class="comm-item-name">Machine Learning Chile</div>
+          <div class="comm-item-last">Se subió el notebook del lab 3</div>
+        </div>
+        <div class="comm-badge">2</div>
+      </div>
+
+      <div class="comm-item">
+        <div class="comm-ico" style="background:rgba(217,255,58,0.08)">📐</div>
+        <div class="comm-item-info">
+          <div class="comm-item-name">Cálculo Avanzado</div>
+          <div class="comm-item-last">Profe confirmó: parcial es el vie...</div>
+        </div>
+      </div>
+
+      <div class="comm-item">
+        <div class="comm-ico" style="background:rgba(255,233,184,0.10)">📚</div>
+        <div class="comm-item-info">
+          <div class="comm-item-name">Tesis & Postgrado</div>
+          <div class="comm-item-last">Ana: recomiendo este paper de NLP</div>
+        </div>
+      </div>
+
+      <div class="comm-section-label">Sugeridos</div>
+
+      <div class="comm-item">
+        <div class="comm-ico" style="background:rgba(0,194,122,0.10)">🌱</div>
+        <div class="comm-item-info">
+          <div class="comm-item-name">Emprendimiento U</div>
+          <div class="comm-item-last">2.4k miembros</div>
+        </div>
+      </div>
+
+      <div class="comm-item">
+        <div class="comm-ico" style="background:rgba(255,74,28,0.10)">🎨</div>
+        <div class="comm-item-info">
+          <div class="comm-item-name">Diseño + Código</div>
+          <div class="comm-item-last">1.1k miembros</div>
+        </div>
+      </div>
+    </div>
+  </aside>
+
+  <main class="chat-area">
+    <div class="chat-header">
+      <div class="ch-ico">💻</div>
+      <div>
+        <div class="ch-name">Ing. Informática UCH</div>
+        <div class="ch-desc">#general · Canal principal del ramo</div>
+      </div>
+      <span class="ch-members">248 activos ahora</span>
+    </div>
+
+    <div class="chat-msgs">
+      <span class="date-sep">Hoy</span>
+      <div class="system-msg">Diego Morales se unió a la comunidad ✓</div>
+
+      <div class="msg">
+        <div class="msg-av" style="background:linear-gradient(135deg,#B8A6FF,#6B4EFF)">LF</div>
+        <div class="msg-body">
+          <div class="msg-sender">Luis F. <span class="msg-u-tag">UCH · 4to año</span></div>
+          <div class="msg-bubble">¿Alguien tiene el enunciado del laboratorio 4? El profesor dijo que lo subía hoy</div>
+          <div class="msg-time">09:12</div>
+        </div>
+      </div>
+
+      <div class="msg">
+        <div class="msg-av" style="background:linear-gradient(135deg,#8AEAC0,#006E4A)">KM</div>
+        <div class="msg-body">
+          <div class="msg-sender">Karla M. <span class="msg-u-tag">UCH · 4to año</span></div>
+          <div class="msg-bubble">Está en el aula virtual, sección "Laboratorios 2do semestre". Lo vi hace un rato 👍</div>
+          <div class="msg-time">09:15</div>
+        </div>
+      </div>
+
+      <div class="msg">
+        <div class="msg-av" style="background:linear-gradient(135deg,#FFD96B,#C47A00)">RM</div>
+        <div class="msg-body">
+          <div class="msg-sender">Rodrigo M. <span class="msg-u-tag">UCH · 3er año</span></div>
+          <div class="msg-bubble">Para el lab 4 les recomiendo ver el paper de Dijkstra primero, el enunciado hace referencia directa</div>
+          <div class="msg-time">09:22</div>
+        </div>
+      </div>
+
+      <div class="msg">
+        <div class="msg-av" style="background:linear-gradient(135deg,#B8A6FF,#6B4EFF)">LF</div>
+        <div class="msg-body">
+          <div class="msg-sender">Luis F. <span class="msg-u-tag">UCH · 4to año</span></div>
+          <div class="msg-bubble">Gracias a ambos! Rodrigo, ¿cuál paper exactamente? ¿El clásico del 59 o hay una versión más nueva?</div>
+          <div class="msg-time">09:24</div>
+        </div>
+      </div>
+
+      <div class="msg mine">
+        <div class="msg-av" style="background:linear-gradient(135deg,#7FDAFF,#0096CC)">CG</div>
+        <div class="msg-body">
+          <div class="msg-bubble">El del 59 sirve, pero hay una explicación mucho más clara en el libro de Sedgewick (cap. 4). Lo tienen en la Biblioteca Conniku</div>
+          <div class="msg-time">09:31</div>
+        </div>
+      </div>
+
+      <div class="msg">
+        <div class="msg-av" style="background:linear-gradient(135deg,#FFD96B,#C47A00)">RM</div>
+        <div class="msg-body">
+          <div class="msg-sender">Rodrigo M. <span class="msg-u-tag">UCH · 3er año</span></div>
+          <div class="msg-bubble">Exacto, Sedgewick es lo mejor para esto 💯 Además Athena puede generar flashcards del capítulo</div>
+          <div class="msg-time">09:33</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="chat-input-area">
+      <div class="chat-input-box">
+        <input type="text" placeholder="Mensaje a #general..." />
+        <button class="send-btn" aria-label="Enviar">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" width="14" height="14"><path d="M22 2L11 13M22 2l-7 20-4-9-9-4 20-7z"/></svg>
+        </button>
+      </div>
+    </div>
+  </main>
+
+  <aside class="comm-panel">
+    <div class="cp-banner">💻</div>
+    <div class="cp-body">
+      <div class="cp-name">Ing. Informática UCH</div>
+      <div class="cp-desc">Comunidad oficial de la carrera. Comparte apuntes, dudas, oportunidades y eventos del departamento.</div>
+
+      <div>
+        <div class="cp-section">Temas</div>
+        <div class="cp-tag-list">
+          <span class="cp-tag">Algoritmos</span>
+          <span class="cp-tag">Bases de datos</span>
+          <span class="cp-tag">Redes</span>
+          <span class="cp-tag">ML</span>
+          <span class="cp-tag">Tesis</span>
+        </div>
+      </div>
+
+      <div>
+        <div class="cp-section">Miembros activos</div>
+        <div class="member-row">
+          <div class="member-av" style="background:linear-gradient(135deg,#8AEAC0,#006E4A)">KM</div>
+          <div><div class="member-name">Karla Medina</div><div class="member-u">UCH · 4to año</div></div>
+        </div>
+        <div class="member-row">
+          <div class="member-av" style="background:linear-gradient(135deg,#B8A6FF,#6B4EFF)">LF</div>
+          <div><div class="member-name">Luis Fuentes</div><div class="member-u">UCH · 4to año</div></div>
+        </div>
+        <div class="member-row">
+          <div class="member-av" style="background:linear-gradient(135deg,#FFD96B,#C47A00)">RM</div>
+          <div><div class="member-name">Rodrigo Muñoz</div><div class="member-u">UCH · 3er año</div></div>
+        </div>
+      </div>
+
+      <button class="join-btn">+ Invitar compañeros</button>
+    </div>
+  </aside>
+
+</div>
+
+<script src="../shared/sidebar.js"></script>
+<script src="../shared/theme-loader.js"></script>
+</body>
+</html>

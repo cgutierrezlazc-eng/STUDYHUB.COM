@@ -1,0 +1,9 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="-10 -10 120 120" width="512" height="512">
+  <title>Conniku · App Icon · color</title>
+  
+  <rect x="0" y="0" width="100" height="100" rx="22" fill="#D9FF3A" transform="rotate(-8 50 50)"></rect>
+  
+  <text x="50" y="71" text-anchor="middle" font-family="Funnel Display, -apple-system, sans-serif" font-weight="900" font-size="84" letter-spacing="-4" fill="#0D0F10">u</text>
+  
+  <circle cx="77" cy="68" r="6" fill="#FF4A1C"></circle>
+</svg>

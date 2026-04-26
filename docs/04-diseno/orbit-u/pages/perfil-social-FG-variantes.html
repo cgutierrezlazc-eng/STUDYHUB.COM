@@ -1,0 +1,1884 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Conniku — Perfil Social FaceGram · 6 Variantes</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Playfair+Display:wght@700&display=swap" rel="stylesheet">
+
+<style>
+/* ===== RESET & BASE ===== */
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+body {
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  background: #E8EEF8;
+  color: #060E24;
+  min-height: 100vh;
+}
+
+/* ===== VARIANT SWITCHER (sticky top bar) ===== */
+#switcher {
+  position: sticky;
+  top: 0;
+  z-index: 1000;
+  background: #060E24;
+  display: flex;
+  align-items: stretch;
+  gap: 0;
+  overflow-x: auto;
+  scrollbar-width: none;
+  box-shadow: 0 2px 12px rgba(0,0,0,0.35);
+}
+#switcher::-webkit-scrollbar { display: none; }
+#switcher .brand {
+  display: flex;
+  align-items: center;
+  padding: 0 20px;
+  font-size: 13px;
+  font-weight: 700;
+  color: #00C27A;
+  letter-spacing: 0.08em;
+  white-space: nowrap;
+  border-right: 1px solid rgba(255,255,255,0.08);
+  flex-shrink: 0;
+}
+.sw-btn {
+  padding: 12px 18px;
+  border: none;
+  background: transparent;
+  color: rgba(255,255,255,0.5);
+  font-family: inherit;
+  font-size: 12px;
+  font-weight: 500;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: all 0.18s ease;
+  border-bottom: 3px solid transparent;
+  border-right: 1px solid rgba(255,255,255,0.06);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+  flex-shrink: 0;
+}
+.sw-btn .sw-id {
+  font-size: 10px;
+  font-weight: 700;
+  color: rgba(255,255,255,0.3);
+  letter-spacing: 0.05em;
+}
+.sw-btn:hover { background: rgba(255,255,255,0.06); color: #fff; }
+.sw-btn.active {
+  background: rgba(0,194,122,0.12);
+  color: #fff;
+  border-bottom-color: #00C27A;
+}
+.sw-btn.active .sw-id { color: #00C27A; }
+
+/* ===== VARIANT PANELS ===== */
+.variant-panel { display: none; min-height: calc(100vh - 50px); }
+.variant-panel.active { display: block; }
+
+/* ===== SHARED COMPONENTS ===== */
+
+/* Cover gradient with hex pattern */
+.cover-bg {
+  background: linear-gradient(135deg, #0A2878 0%, #1e4db7 60%, #0A2878 100%);
+  position: relative;
+  overflow: hidden;
+}
+.cover-bg::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='60' height='52' viewBox='0 0 60 52'%3E%3Cpolygon points='30,2 58,17 58,35 30,50 2,35 2,17' fill='none' stroke='rgba(255,255,255,0.07)' stroke-width='1.5'/%3E%3C/svg%3E");
+  background-size: 60px 52px;
+}
+
+/* Avatar base */
+.avatar-vr {
+  background: #0A2878;
+  border: 4px solid #00C27A;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 700;
+  color: #fff;
+  letter-spacing: 0.05em;
+  flex-shrink: 0;
+  position: relative;
+  box-shadow: 0 4px 16px rgba(10,40,120,0.3);
+}
+
+/* ================================
+   VARIANTE F1 — FaceGram Classic
+   ================================ */
+#v1 { background: #E8EEF8; }
+
+.v1-cover {
+  height: 200px;
+  width: 100%;
+}
+
+.v1-profile-bar {
+  background: #fff;
+  border-bottom: 1px solid #E0E8F4;
+  padding: 0 40px 0 40px;
+  position: relative;
+}
+
+.v1-avatar-wrap {
+  position: absolute;
+  top: -52px;
+  left: 40px;
+}
+
+.v1-avatar {
+  width: 120px;
+  height: 120px;
+  font-size: 36px;
+  border-width: 4px;
+}
+
+.v1-profile-info {
+  padding: 12px 0 16px 156px;
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 12px;
+}
+
+.v1-name {
+  font-size: 22px;
+  font-weight: 700;
+  color: #060E24;
+  line-height: 1.1;
+}
+
+.v1-uni {
+  font-size: 14px;
+  color: #0A2878;
+  font-weight: 500;
+  margin-top: 3px;
+}
+
+.v1-actions {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.btn-primary {
+  background: #0A2878;
+  color: #fff;
+  border: none;
+  padding: 8px 18px;
+  border-radius: 8px;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.15s;
+}
+.btn-primary:hover { background: #1e4db7; }
+
+.btn-secondary {
+  background: transparent;
+  color: #0A2878;
+  border: 1.5px solid #0A2878;
+  padding: 7px 16px;
+  border-radius: 8px;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.15s;
+}
+.btn-secondary:hover { background: #E8EEF8; }
+
+.v1-layout {
+  display: flex;
+  gap: 20px;
+  max-width: 1100px;
+  margin: 20px auto;
+  padding: 0 20px;
+  align-items: flex-start;
+}
+
+.v1-sidebar {
+  width: 320px;
+  flex-shrink: 0;
+  position: sticky;
+  top: 66px;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.v1-card {
+  background: #fff;
+  border-radius: 12px;
+  padding: 18px;
+  box-shadow: 0 1px 4px rgba(10,40,120,0.07);
+}
+
+.v1-card h4 {
+  font-size: 13px;
+  font-weight: 700;
+  color: #0A2878;
+  text-transform: uppercase;
+  letter-spacing: 0.07em;
+  margin-bottom: 10px;
+}
+
+.v1-bio {
+  font-size: 14px;
+  color: #3d4a6b;
+  line-height: 1.55;
+}
+
+.v1-module-list {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.v1-mod-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 12px;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: background 0.15s;
+  text-decoration: none;
+  color: #060E24;
+}
+.v1-mod-item:hover { background: #E8EEF8; }
+.v1-mod-item.active-mod { background: #E8EEF8; color: #0A2878; font-weight: 600; }
+
+.v1-mod-icon {
+  width: 36px;
+  height: 36px;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 18px;
+  flex-shrink: 0;
+}
+.mod-u { background: rgba(10,40,120,0.1); }
+.mod-t { background: rgba(0,194,122,0.12); }
+.mod-w { background: rgba(10,40,120,0.07); }
+
+.v1-mod-label { font-size: 14px; font-weight: 500; }
+.v1-mod-sub { font-size: 12px; color: #7b8bb2; margin-top: 1px; }
+
+.v1-main { flex: 1; min-width: 0; }
+
+.v1-tab-bar {
+  background: #fff;
+  border-radius: 12px;
+  padding: 4px;
+  display: flex;
+  gap: 2px;
+  box-shadow: 0 1px 4px rgba(10,40,120,0.07);
+  margin-bottom: 16px;
+}
+
+.v1-tab {
+  flex: 1;
+  padding: 10px 8px;
+  border: none;
+  background: transparent;
+  border-radius: 9px;
+  font-family: inherit;
+  font-size: 14px;
+  font-weight: 500;
+  color: #7b8bb2;
+  cursor: pointer;
+  transition: all 0.15s;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+}
+.v1-tab:hover { background: #E8EEF8; color: #0A2878; }
+.v1-tab.active { background: #0A2878; color: #fff; font-weight: 600; }
+
+.v1-content-area {
+  background: #fff;
+  border-radius: 12px;
+  padding: 24px;
+  box-shadow: 0 1px 4px rgba(10,40,120,0.07);
+  min-height: 300px;
+}
+
+.v1-content-header {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 20px;
+  padding-bottom: 16px;
+  border-bottom: 1px solid #E8EEF8;
+}
+.v1-content-header .icon { font-size: 28px; }
+.v1-content-header h3 { font-size: 18px; font-weight: 700; color: #060E24; }
+.v1-content-header p { font-size: 13px; color: #7b8bb2; margin-top: 2px; }
+
+.v1-feed-items { display: flex; flex-direction: column; gap: 10px; }
+.v1-feed-item {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  padding: 12px;
+  border-radius: 8px;
+  border: 1px solid #E8EEF8;
+  transition: border-color 0.15s;
+}
+.v1-feed-item:hover { border-color: #0A2878; }
+.v1-feed-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: #00C27A;
+  margin-top: 5px;
+  flex-shrink: 0;
+}
+.v1-feed-text { font-size: 14px; color: #3d4a6b; line-height: 1.45; }
+.v1-feed-time { font-size: 12px; color: #aab4cc; margin-top: 3px; }
+
+/* ================================
+   VARIANTE F2 — FaceGram Centered
+   ================================ */
+#v2 { background: #E8EEF8; }
+
+.v2-cover {
+  height: 220px;
+  width: 100%;
+  position: relative;
+}
+
+.v2-avatar-wrap {
+  position: absolute;
+  bottom: -54px;
+  left: 50%;
+  transform: translateX(-50%);
+}
+
+.v2-avatar {
+  width: 108px;
+  height: 108px;
+  font-size: 32px;
+  border-width: 5px;
+  background: #0A2878;
+  box-shadow: 0 6px 24px rgba(10,40,120,0.25);
+}
+
+.v2-identity {
+  background: #fff;
+  padding: 64px 20px 24px;
+  text-align: center;
+  border-bottom: 1px solid #E0E8F4;
+}
+
+.v2-name {
+  font-size: 24px;
+  font-weight: 700;
+  color: #060E24;
+}
+
+.v2-uni {
+  font-size: 14px;
+  color: #0A2878;
+  font-weight: 500;
+  margin-top: 4px;
+}
+
+.v2-bio-text {
+  font-size: 14px;
+  color: #5a6a8e;
+  margin-top: 10px;
+  max-width: 480px;
+  margin-left: auto;
+  margin-right: auto;
+  line-height: 1.5;
+}
+
+.v2-stats {
+  display: flex;
+  justify-content: center;
+  gap: 32px;
+  margin-top: 18px;
+}
+
+.v2-stat {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+}
+
+.v2-stat-num {
+  font-size: 22px;
+  font-weight: 700;
+  color: #0A2878;
+}
+
+.v2-stat-label {
+  font-size: 12px;
+  color: #7b8bb2;
+  font-weight: 500;
+}
+
+.v2-modules {
+  max-width: 860px;
+  margin: 28px auto;
+  padding: 0 20px;
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 16px;
+}
+
+.v2-mod-card {
+  background: #fff;
+  border-radius: 16px;
+  padding: 28px 20px;
+  text-align: center;
+  box-shadow: 0 1px 4px rgba(10,40,120,0.07);
+  cursor: pointer;
+  transition: all 0.2s ease;
+  border: 2px solid transparent;
+  text-decoration: none;
+  color: #060E24;
+  display: block;
+}
+.v2-mod-card:hover {
+  border-color: #0A2878;
+  box-shadow: 0 6px 24px rgba(10,40,120,0.13);
+  transform: translateY(-3px);
+}
+
+.v2-mod-emoji {
+  font-size: 42px;
+  margin-bottom: 12px;
+  display: block;
+}
+
+.v2-mod-title {
+  font-size: 17px;
+  font-weight: 700;
+  color: #060E24;
+}
+
+.v2-mod-desc {
+  font-size: 13px;
+  color: #7b8bb2;
+  margin-top: 6px;
+  line-height: 1.45;
+}
+
+.v2-mod-cta {
+  display: inline-block;
+  margin-top: 16px;
+  padding: 7px 18px;
+  background: #0A2878;
+  color: #fff;
+  border-radius: 8px;
+  font-size: 13px;
+  font-weight: 600;
+}
+.v2-mod-card:nth-child(2) .v2-mod-cta { background: #00C27A; }
+
+/* ================================
+   VARIANTE F3 — LinkedIn Split
+   ================================ */
+#v3 { background: #E8EEF8; }
+
+.v3-banner {
+  height: 100px;
+  width: 100%;
+}
+
+.v3-body {
+  max-width: 1060px;
+  margin: -30px auto 30px;
+  padding: 0 20px;
+  display: grid;
+  grid-template-columns: 2fr 3fr;
+  gap: 20px;
+  align-items: flex-start;
+}
+
+.v3-left {
+  background: #fff;
+  border-radius: 14px;
+  box-shadow: 0 1px 4px rgba(10,40,120,0.08);
+  overflow: hidden;
+  position: sticky;
+  top: 66px;
+}
+
+.v3-left-top {
+  padding: 28px 22px 22px;
+  border-bottom: 1px solid #E8EEF8;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+}
+
+.v3-avatar {
+  width: 90px;
+  height: 90px;
+  font-size: 28px;
+  border-width: 4px;
+  margin-bottom: 14px;
+}
+
+.v3-name {
+  font-size: 18px;
+  font-weight: 700;
+  color: #060E24;
+}
+.v3-uni {
+  font-size: 13px;
+  color: #0A2878;
+  font-weight: 500;
+  margin-top: 4px;
+}
+.v3-bio {
+  font-size: 13px;
+  color: #5a6a8e;
+  margin-top: 10px;
+  line-height: 1.5;
+}
+
+.v3-module-nav {
+  padding: 10px 0;
+}
+
+.v3-nav-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 13px 22px;
+  cursor: pointer;
+  transition: background 0.15s;
+  border-left: 3px solid transparent;
+}
+.v3-nav-item:hover { background: #F5F8FF; }
+.v3-nav-item.active-v3 {
+  background: #EEF3FF;
+  border-left-color: #0A2878;
+}
+
+.v3-nav-icon { font-size: 20px; width: 28px; text-align: center; }
+.v3-nav-text { flex: 1; }
+.v3-nav-label { font-size: 14px; font-weight: 600; color: #060E24; }
+.v3-nav-sub { font-size: 12px; color: #7b8bb2; }
+.v3-chevron {
+  color: #aab4cc;
+  font-size: 14px;
+  transition: transform 0.15s;
+}
+.v3-nav-item.active-v3 .v3-chevron { transform: rotate(90deg); color: #0A2878; }
+
+.v3-right {
+  background: #fff;
+  border-radius: 14px;
+  box-shadow: 0 1px 4px rgba(10,40,120,0.08);
+  padding: 28px;
+  min-height: 400px;
+}
+
+.v3-right-header {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  margin-bottom: 24px;
+  padding-bottom: 18px;
+  border-bottom: 2px solid #E8EEF8;
+}
+.v3-right-header .big-icon { font-size: 36px; }
+.v3-right-header h2 { font-size: 20px; font-weight: 700; color: #060E24; }
+.v3-right-header p { font-size: 13px; color: #7b8bb2; margin-top: 2px; }
+
+.v3-badge {
+  margin-left: auto;
+  background: #E8EEF8;
+  color: #0A2878;
+  font-size: 12px;
+  font-weight: 700;
+  padding: 4px 12px;
+  border-radius: 20px;
+}
+
+.v3-list { display: flex; flex-direction: column; gap: 12px; }
+.v3-list-item {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 14px 16px;
+  border: 1.5px solid #E8EEF8;
+  border-radius: 10px;
+  cursor: pointer;
+  transition: all 0.15s;
+}
+.v3-list-item:hover { border-color: #0A2878; background: #F5F8FF; }
+.v3-li-dot {
+  width: 10px; height: 10px; border-radius: 50%; background: #0A2878; flex-shrink: 0;
+}
+.v3-li-text { flex: 1; font-size: 14px; color: #3d4a6b; }
+.v3-li-status {
+  font-size: 11px;
+  font-weight: 600;
+  padding: 3px 10px;
+  border-radius: 12px;
+  background: rgba(0,194,122,0.12);
+  color: #00a366;
+}
+
+/* ================================
+   VARIANTE F4 — Instagram Story
+   ================================ */
+#v4 {
+  background: linear-gradient(160deg, #0A2878 0%, #1e4db7 40%, #0c3a9e 70%, #0A2878 100%);
+  min-height: 100vh;
+  position: relative;
+  overflow: hidden;
+}
+#v4::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='60' height='52' viewBox='0 0 60 52'%3E%3Cpolygon points='30,2 58,17 58,35 30,50 2,35 2,17' fill='none' stroke='rgba(255,255,255,0.05)' stroke-width='1.5'/%3E%3C/svg%3E");
+  background-size: 60px 52px;
+  pointer-events: none;
+}
+
+.v4-content {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 48px 20px 60px;
+}
+
+.v4-avatar-ring {
+  width: 110px;
+  height: 110px;
+  border-radius: 50%;
+  background: conic-gradient(#00C27A 0%, #1e4db7 50%, #00C27A 100%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 18px;
+  box-shadow: 0 0 0 4px rgba(255,255,255,0.12), 0 8px 32px rgba(0,0,0,0.3);
+  animation: ring-rotate 6s linear infinite;
+}
+@keyframes ring-rotate {
+  from { box-shadow: 0 0 0 4px rgba(255,255,255,0.12), 0 0 0 8px rgba(0,194,122,0.15), 0 8px 32px rgba(0,0,0,0.3); }
+  50% { box-shadow: 0 0 0 4px rgba(255,255,255,0.2), 0 0 0 12px rgba(0,194,122,0.25), 0 8px 32px rgba(0,0,0,0.3); }
+  to { box-shadow: 0 0 0 4px rgba(255,255,255,0.12), 0 0 0 8px rgba(0,194,122,0.15), 0 8px 32px rgba(0,0,0,0.3); }
+}
+
+.v4-avatar-inner {
+  width: 94px;
+  height: 94px;
+  border-radius: 50%;
+  background: #0A2878;
+  border: 3px solid #fff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 28px;
+  font-weight: 700;
+  color: #fff;
+  letter-spacing: 0.05em;
+}
+
+.v4-name {
+  font-size: 26px;
+  font-weight: 700;
+  color: #fff;
+  text-align: center;
+}
+.v4-uni {
+  font-size: 14px;
+  color: rgba(255,255,255,0.7);
+  text-align: center;
+  margin-top: 4px;
+  font-weight: 400;
+}
+.v4-bio {
+  font-size: 14px;
+  color: rgba(255,255,255,0.6);
+  text-align: center;
+  margin-top: 10px;
+  max-width: 400px;
+  line-height: 1.5;
+}
+
+.v4-divider {
+  width: 60px;
+  height: 2px;
+  background: rgba(255,255,255,0.2);
+  border-radius: 2px;
+  margin: 24px 0;
+}
+
+.v4-stories {
+  display: flex;
+  gap: 28px;
+  flex-wrap: wrap;
+  justify-content: center;
+}
+
+.v4-story {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+  cursor: pointer;
+}
+
+.v4-story-circle {
+  width: 100px;
+  height: 100px;
+  border-radius: 50%;
+  background: rgba(255,255,255,0.1);
+  backdrop-filter: blur(8px);
+  border: 2px solid rgba(255,255,255,0.25);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 42px;
+  transition: all 0.25s cubic-bezier(0.34,1.56,0.64,1);
+  box-shadow: 0 4px 20px rgba(0,0,0,0.2);
+}
+.v4-story:hover .v4-story-circle {
+  transform: scale(1.15);
+  background: rgba(255,255,255,0.18);
+  border-color: #00C27A;
+  box-shadow: 0 8px 32px rgba(0,0,0,0.3), 0 0 0 3px rgba(0,194,122,0.3);
+}
+
+.v4-story-label {
+  font-size: 13px;
+  font-weight: 600;
+  color: #fff;
+  text-align: center;
+}
+.v4-story-sub {
+  font-size: 11px;
+  color: rgba(255,255,255,0.5);
+  text-align: center;
+  margin-top: -8px;
+}
+
+/* ================================
+   VARIANTE F5 — Dashboard Card
+   ================================ */
+#v5 { background: #E8EEF8; }
+
+.v5-header {
+  background: #0A2878;
+  padding: 16px 32px;
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.v5-avatar {
+  width: 48px;
+  height: 48px;
+  font-size: 16px;
+  border-width: 2px;
+  flex-shrink: 0;
+}
+
+.v5-header-info { flex: 1; }
+.v5-header-name {
+  font-size: 16px;
+  font-weight: 700;
+  color: #fff;
+}
+.v5-header-uni {
+  font-size: 12px;
+  color: rgba(255,255,255,0.6);
+  margin-top: 2px;
+}
+.v5-header-actions { display: flex; gap: 8px; }
+.v5-btn-ghost {
+  background: rgba(255,255,255,0.1);
+  color: #fff;
+  border: 1px solid rgba(255,255,255,0.2);
+  padding: 6px 14px;
+  border-radius: 8px;
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.15s;
+}
+.v5-btn-ghost:hover { background: rgba(255,255,255,0.18); }
+
+.v5-dashboard {
+  max-width: 1060px;
+  margin: 0 auto;
+  padding: 24px 20px;
+}
+
+.v5-cards-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 16px;
+  margin-bottom: 24px;
+}
+
+.v5-module-card {
+  background: #fff;
+  border-radius: 14px;
+  padding: 24px;
+  box-shadow: 0 1px 4px rgba(10,40,120,0.07);
+  cursor: pointer;
+  transition: all 0.2s;
+  border: 2px solid transparent;
+  position: relative;
+  overflow: hidden;
+}
+.v5-module-card::before {
+  content: '';
+  position: absolute;
+  top: 0; left: 0; right: 0;
+  height: 4px;
+  background: #0A2878;
+}
+.v5-module-card:nth-child(2)::before { background: #00C27A; }
+.v5-module-card:nth-child(3)::before { background: #1e4db7; }
+.v5-module-card:hover {
+  box-shadow: 0 8px 28px rgba(10,40,120,0.14);
+  transform: translateY(-2px);
+  border-color: #0A2878;
+}
+.v5-module-card:nth-child(2):hover { border-color: #00C27A; }
+
+.v5-mc-icon {
+  font-size: 36px;
+  margin-bottom: 14px;
+  display: block;
+}
+.v5-mc-title {
+  font-size: 16px;
+  font-weight: 700;
+  color: #060E24;
+}
+.v5-mc-desc {
+  font-size: 13px;
+  color: #7b8bb2;
+  margin-top: 5px;
+  line-height: 1.45;
+}
+.v5-mc-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  margin-top: 14px;
+  background: #E8EEF8;
+  color: #0A2878;
+  font-size: 12px;
+  font-weight: 700;
+  padding: 4px 10px;
+  border-radius: 20px;
+}
+.v5-mc-badge span { font-size: 16px; font-weight: 800; }
+.v5-mc-cta {
+  display: block;
+  margin-top: 16px;
+  width: 100%;
+  padding: 9px 0;
+  background: #0A2878;
+  color: #fff;
+  border: none;
+  border-radius: 8px;
+  font-family: inherit;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.15s;
+}
+.v5-mc-cta:hover { background: #1e4db7; }
+.v5-module-card:nth-child(2) .v5-mc-badge { background: rgba(0,194,122,0.1); color: #00875A; }
+.v5-module-card:nth-child(2) .v5-mc-cta { background: #00C27A; }
+.v5-module-card:nth-child(2) .v5-mc-cta:hover { background: #00a366; }
+
+.v5-activity {
+  background: #fff;
+  border-radius: 14px;
+  padding: 22px;
+  box-shadow: 0 1px 4px rgba(10,40,120,0.07);
+}
+.v5-activity h4 {
+  font-size: 13px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.07em;
+  color: #0A2878;
+  margin-bottom: 16px;
+}
+
+.v5-feed {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+}
+.v5-feed-row {
+  display: flex;
+  align-items: flex-start;
+  gap: 14px;
+  padding: 12px 0;
+  border-bottom: 1px solid #F0F4FC;
+}
+.v5-feed-row:last-child { border-bottom: none; }
+.v5-feed-icon {
+  width: 36px;
+  height: 36px;
+  border-radius: 9px;
+  background: #E8EEF8;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 18px;
+  flex-shrink: 0;
+}
+.v5-feed-body { flex: 1; }
+.v5-feed-title { font-size: 14px; font-weight: 500; color: #060E24; }
+.v5-feed-time { font-size: 12px; color: #aab4cc; margin-top: 2px; }
+
+/* ================================
+   VARIANTE F6 — Notion Profile
+   ================================ */
+#v6 { background: #fff; }
+
+.v6-container {
+  max-width: 760px;
+  margin: 0 auto;
+  padding: 48px 32px 80px;
+}
+
+.v6-header {
+  display: flex;
+  align-items: flex-start;
+  gap: 22px;
+  margin-bottom: 32px;
+}
+
+.v6-avatar {
+  width: 72px;
+  height: 72px;
+  background: #0A2878;
+  border: 2px solid #00C27A;
+  border-radius: 16px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 24px;
+  font-weight: 700;
+  color: #fff;
+  letter-spacing: 0.05em;
+  flex-shrink: 0;
+}
+
+.v6-header-text { flex: 1; }
+.v6-name {
+  font-family: 'Playfair Display', Georgia, 'Times New Roman', serif;
+  font-size: 32px;
+  font-weight: 700;
+  color: #060E24;
+  line-height: 1.15;
+}
+.v6-uni {
+  font-size: 15px;
+  color: #0A2878;
+  font-weight: 500;
+  margin-top: 5px;
+}
+.v6-bio {
+  font-size: 14px;
+  color: #6b7795;
+  margin-top: 8px;
+  line-height: 1.55;
+  max-width: 500px;
+}
+
+.v6-divider {
+  height: 1px;
+  background: #E8EEF8;
+  margin: 28px 0;
+}
+
+.v6-tabs {
+  display: flex;
+  gap: 0;
+  border-bottom: 2px solid #E8EEF8;
+  margin-bottom: 28px;
+}
+
+.v6-tab {
+  padding: 10px 20px;
+  font-size: 14px;
+  font-weight: 500;
+  color: #7b8bb2;
+  cursor: pointer;
+  border: none;
+  background: transparent;
+  font-family: inherit;
+  border-bottom: 2px solid transparent;
+  margin-bottom: -2px;
+  transition: all 0.15s;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+.v6-tab:hover { color: #060E24; }
+.v6-tab.active { color: #060E24; border-bottom-color: #060E24; font-weight: 600; }
+
+.v6-tab-content { display: none; }
+.v6-tab-content.active-tc { display: block; }
+
+.v6-section-label {
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  color: #aab4cc;
+  margin-bottom: 8px;
+  margin-top: 24px;
+}
+.v6-section-label:first-child { margin-top: 0; }
+
+.v6-notion-list { display: flex; flex-direction: column; gap: 0; }
+.v6-notion-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 8px 10px;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: background 0.12s;
+  text-decoration: none;
+  color: #060E24;
+}
+.v6-notion-item:hover { background: #F5F7FA; }
+.v6-notion-bullet {
+  width: 6px; height: 6px; border-radius: 50%; background: #D0D8EC; flex-shrink: 0;
+}
+.v6-notion-text { font-size: 14px; color: #3d4a6b; flex: 1; }
+.v6-notion-tag {
+  font-size: 11px;
+  font-weight: 600;
+  padding: 2px 8px;
+  border-radius: 4px;
+  background: #EEF3FF;
+  color: #0A2878;
+}
+.v6-notion-tag.green { background: rgba(0,194,122,0.1); color: #00875A; }
+.v6-notion-tag.gray { background: #F0F4FC; color: #7b8bb2; }
+
+/* ===== RESPONSIVE ===== */
+@media (max-width: 768px) {
+  /* F1 */
+  .v1-layout { flex-direction: column; }
+  .v1-sidebar { width: 100%; position: static; }
+  .v1-profile-bar { padding: 0 16px; }
+  .v1-avatar-wrap { left: 16px; }
+  .v1-profile-info { padding: 12px 0 16px 136px; }
+
+  /* F2 */
+  .v2-modules { grid-template-columns: 1fr; }
+  .v2-stats { gap: 20px; }
+
+  /* F3 */
+  .v3-body { grid-template-columns: 1fr; margin-top: 10px; }
+  .v3-left { position: static; }
+
+  /* F4 */
+  .v4-stories { gap: 20px; }
+  .v4-story-circle { width: 80px; height: 80px; font-size: 34px; }
+
+  /* F5 */
+  .v5-cards-grid { grid-template-columns: 1fr; }
+  .v5-header { padding: 14px 16px; }
+
+  /* F6 */
+  .v6-container { padding: 28px 16px 60px; }
+  .v6-name { font-size: 24px; }
+}
+</style>
+</head>
+<body>
+
+<!-- ===== SWITCHER ===== -->
+<nav id="switcher">
+  <div class="brand">CONNIKU</div>
+  <button class="sw-btn active" onclick="showVariant(1, this)">
+    <span class="sw-id">F1</span>
+    FaceGram Classic
+  </button>
+  <button class="sw-btn" onclick="showVariant(2, this)">
+    <span class="sw-id">F2</span>
+    FaceGram Centered
+  </button>
+  <button class="sw-btn" onclick="showVariant(3, this)">
+    <span class="sw-id">F3</span>
+    LinkedIn Split
+  </button>
+  <button class="sw-btn" onclick="showVariant(4, this)">
+    <span class="sw-id">F4</span>
+    Instagram Story
+  </button>
+  <button class="sw-btn" onclick="showVariant(5, this)">
+    <span class="sw-id">F5</span>
+    Dashboard Card
+  </button>
+  <button class="sw-btn" onclick="showVariant(6, this)">
+    <span class="sw-id">F6</span>
+    Notion Profile
+  </button>
+</nav>
+
+<!-- ============================================================
+     VARIANTE F1 — FaceGram Classic
+     ============================================================ -->
+<section id="v1" class="variant-panel active">
+
+  <!-- Cover -->
+  <div class="cover-bg v1-cover"></div>
+
+  <!-- Profile bar -->
+  <div class="v1-profile-bar">
+    <div class="v1-avatar-wrap">
+      <div class="avatar-vr v1-avatar">VR</div>
+    </div>
+    <div class="v1-profile-info">
+      <div>
+        <div class="v1-name">Valentina Reyes</div>
+        <div class="v1-uni">Universidad de Chile · Ingeniería Comercial</div>
+      </div>
+      <div class="v1-actions">
+        <button class="btn-primary">+ Conectar</button>
+        <button class="btn-secondary">Mensaje</button>
+        <button class="btn-secondary">···</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Layout: sidebar + main -->
+  <div class="v1-layout">
+
+    <!-- Sidebar -->
+    <aside class="v1-sidebar">
+      <div class="v1-card">
+        <h4>Sobre mí</h4>
+        <p class="v1-bio">Estudiante de 4to año, apasionada por finanzas y tecnología. Buscando prácticas en fintech.</p>
+      </div>
+      <div class="v1-card">
+        <h4>Mis módulos</h4>
+        <div class="v1-module-list">
+          <div class="v1-mod-item active-mod" onclick="setV1Tab('u')">
+            <div class="v1-mod-icon mod-u">🎓</div>
+            <div>
+              <div class="v1-mod-label">Mi U</div>
+              <div class="v1-mod-sub">Cursos · Notas · Calendario</div>
+            </div>
+          </div>
+          <div class="v1-mod-item" onclick="setV1Tab('t')">
+            <div class="v1-mod-icon mod-t">📚</div>
+            <div>
+              <div class="v1-mod-label">Mi T</div>
+              <div class="v1-mod-sub">Tutores · Sesiones · Recursos</div>
+            </div>
+          </div>
+          <div class="v1-mod-item" onclick="setV1Tab('w')">
+            <div class="v1-mod-icon mod-w">💼</div>
+            <div>
+              <div class="v1-mod-label">Mi Trabajo</div>
+              <div class="v1-mod-sub">Empleos · Prácticas · CV</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </aside>
+
+    <!-- Main feed -->
+    <main class="v1-main">
+      <div class="v1-tab-bar">
+        <button class="v1-tab active" onclick="setV1Tab('u', this)">🎓 Mi U</button>
+        <button class="v1-tab" onclick="setV1Tab('t', this)">📚 Mi T</button>
+        <button class="v1-tab" onclick="setV1Tab('w', this)">💼 Mi Trabajo</button>
+      </div>
+
+      <!-- Tab: Mi U -->
+      <div id="v1-tab-u" class="v1-content-area">
+        <div class="v1-content-header">
+          <span class="icon">🎓</span>
+          <div>
+            <h3>Mi U — Universidad</h3>
+            <p>Ingeniería Comercial · Semestre 8 · Universidad de Chile</p>
+          </div>
+        </div>
+        <div class="v1-feed-items">
+          <div class="v1-feed-item">
+            <div class="v1-feed-dot"></div>
+            <div>
+              <div class="v1-feed-text">Entrega Tarea 3 — Econometría Financiera</div>
+              <div class="v1-feed-time">Vence en 2 días · Pendiente</div>
+            </div>
+          </div>
+          <div class="v1-feed-item">
+            <div class="v1-feed-dot" style="background:#0A2878"></div>
+            <div>
+              <div class="v1-feed-text">Control de Gestión — Clase grabada disponible</div>
+              <div class="v1-feed-time">Hace 3 horas · UCursos</div>
+            </div>
+          </div>
+          <div class="v1-feed-item">
+            <div class="v1-feed-dot" style="background:#aab4cc"></div>
+            <div>
+              <div class="v1-feed-text">Notas parciales publicadas — Finanzas Corporativas I</div>
+              <div class="v1-feed-time">Ayer · Nota: 6.2</div>
+            </div>
+          </div>
+          <div class="v1-feed-item">
+            <div class="v1-feed-dot"></div>
+            <div>
+              <div class="v1-feed-text">Inscripción de ramos Semestre 2025-2 abre en 5 días</div>
+              <div class="v1-feed-time">Recordatorio · Alta prioridad</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Tab: Mi T -->
+      <div id="v1-tab-t" class="v1-content-area" style="display:none">
+        <div class="v1-content-header">
+          <span class="icon">📚</span>
+          <div>
+            <h3>Mi T — Tutores y Mentores</h3>
+            <p>3 sesiones activas · 1 solicitud pendiente</p>
+          </div>
+        </div>
+        <div class="v1-feed-items">
+          <div class="v1-feed-item">
+            <div class="v1-feed-dot"></div>
+            <div>
+              <div class="v1-feed-text">Sesión con Carlos Mendoza — Derivados y Opciones</div>
+              <div class="v1-feed-time">Hoy 18:00 · Zoom · Confirmada</div>
+            </div>
+          </div>
+          <div class="v1-feed-item">
+            <div class="v1-feed-dot" style="background:#0A2878"></div>
+            <div>
+              <div class="v1-feed-text">Material subido: Ejercicios Finanzas Cuantitativas</div>
+              <div class="v1-feed-time">Por Ana Riveros · Hace 1 día</div>
+            </div>
+          </div>
+          <div class="v1-feed-item">
+            <div class="v1-feed-dot" style="background:#aab4cc"></div>
+            <div>
+              <div class="v1-feed-text">Solicitud de tutoría: Estadística Avanzada — pendiente</div>
+              <div class="v1-feed-time">Enviada hace 2 días · Sin respuesta</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Tab: Mi Trabajo -->
+      <div id="v1-tab-w" class="v1-content-area" style="display:none">
+        <div class="v1-content-header">
+          <span class="icon">💼</span>
+          <div>
+            <h3>Mi Trabajo — Empleos & Carrera</h3>
+            <p>4 postulaciones activas · 2 entrevistas programadas</p>
+          </div>
+        </div>
+        <div class="v1-feed-items">
+          <div class="v1-feed-item">
+            <div class="v1-feed-dot"></div>
+            <div>
+              <div class="v1-feed-text">Práctica Profesional — Fintual · Analista de Datos</div>
+              <div class="v1-feed-time">Entrevista el 30 Abr · 10:00 AM · Google Meet</div>
+            </div>
+          </div>
+          <div class="v1-feed-item">
+            <div class="v1-feed-dot" style="background:#0A2878"></div>
+            <div>
+              <div class="v1-feed-text">Nuevo match: Khipu · Analista Financiero Junior</div>
+              <div class="v1-feed-time">Publicado hace 1 día · 85% de compatibilidad</div>
+            </div>
+          </div>
+          <div class="v1-feed-item">
+            <div class="v1-feed-dot" style="background:#aab4cc"></div>
+            <div>
+              <div class="v1-feed-text">Bci — Postulación en revisión</div>
+              <div class="v1-feed-time">Enviada hace 4 días</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </main>
+
+  </div>
+</section>
+
+
+<!-- ============================================================
+     VARIANTE F2 — FaceGram Centered
+     ============================================================ -->
+<section id="v2" class="variant-panel">
+
+  <!-- Cover + avatar centrado -->
+  <div class="cover-bg v2-cover">
+    <div class="v2-avatar-wrap">
+      <div class="avatar-vr v2-avatar">VR</div>
+    </div>
+  </div>
+
+  <!-- Identity centered -->
+  <div class="v2-identity">
+    <div class="v2-name">Valentina Reyes</div>
+    <div class="v2-uni">Universidad de Chile · Ingeniería Comercial</div>
+    <p class="v2-bio-text">Estudiante de 4to año, apasionada por finanzas y tecnología. Buscando prácticas en fintech.</p>
+    <div class="v2-stats">
+      <div class="v2-stat"><span class="v2-stat-num">6</span><span class="v2-stat-label">Cursos activos</span></div>
+      <div class="v2-stat"><span class="v2-stat-num">143</span><span class="v2-stat-label">Conexiones</span></div>
+      <div class="v2-stat"><span class="v2-stat-num">3</span><span class="v2-stat-label">Tutorías</span></div>
+      <div class="v2-stat"><span class="v2-stat-num">4</span><span class="v2-stat-label">Postulaciones</span></div>
+    </div>
+  </div>
+
+  <!-- 3 Module Cards -->
+  <div class="v2-modules">
+
+    <a class="v2-mod-card" href="#">
+      <span class="v2-mod-emoji">🎓</span>
+      <div class="v2-mod-title">Mi U</div>
+      <p class="v2-mod-desc">Cursos, notas, calendario académico y recursos de tu universidad.</p>
+      <span class="v2-mod-cta">Ir a Mi U →</span>
+    </a>
+
+    <a class="v2-mod-card" href="#">
+      <span class="v2-mod-emoji">📚</span>
+      <div class="v2-mod-title">Mi T</div>
+      <p class="v2-mod-desc">Conecta con tutores y mentores. Agenda sesiones y accede a materiales.</p>
+      <span class="v2-mod-cta">Ir a Mi T →</span>
+    </a>
+
+    <a class="v2-mod-card" href="#">
+      <span class="v2-mod-emoji">💼</span>
+      <div class="v2-mod-title">Mi Trabajo</div>
+      <p class="v2-mod-desc">Explora empleos, prácticas profesionales y herramientas de carrera.</p>
+      <span class="v2-mod-cta">Ir a Mi Trabajo →</span>
+    </a>
+
+  </div>
+</section>
+
+
+<!-- ============================================================
+     VARIANTE F3 — LinkedIn Split
+     ============================================================ -->
+<section id="v3" class="variant-panel">
+
+  <!-- Banner compacto -->
+  <div class="cover-bg v3-banner"></div>
+
+  <div class="v3-body">
+
+    <!-- Left column -->
+    <div class="v3-left">
+      <div class="v3-left-top">
+        <div class="avatar-vr v3-avatar">VR</div>
+        <div class="v3-name">Valentina Reyes</div>
+        <div class="v3-uni">Universidad de Chile · Ing. Comercial</div>
+        <p class="v3-bio">Estudiante de 4to año, apasionada por finanzas y tecnología. Buscando prácticas en fintech.</p>
+      </div>
+
+      <nav class="v3-module-nav">
+        <div class="v3-nav-item active-v3" onclick="setV3('u', this)">
+          <span class="v3-nav-icon">🎓</span>
+          <div class="v3-nav-text">
+            <div class="v3-nav-label">Mi U</div>
+            <div class="v3-nav-sub">6 cursos activos</div>
+          </div>
+          <span class="v3-chevron">›</span>
+        </div>
+        <div class="v3-nav-item" onclick="setV3('t', this)">
+          <span class="v3-nav-icon">📚</span>
+          <div class="v3-nav-text">
+            <div class="v3-nav-label">Mi T</div>
+            <div class="v3-nav-sub">3 tutores · 1 pendiente</div>
+          </div>
+          <span class="v3-chevron">›</span>
+        </div>
+        <div class="v3-nav-item" onclick="setV3('w', this)">
+          <span class="v3-nav-icon">💼</span>
+          <div class="v3-nav-text">
+            <div class="v3-nav-label">Mi Trabajo</div>
+            <div class="v3-nav-sub">4 postulaciones activas</div>
+          </div>
+          <span class="v3-chevron">›</span>
+        </div>
+      </nav>
+    </div>
+
+    <!-- Right column -->
+    <div class="v3-right">
+
+      <!-- Mi U -->
+      <div id="v3-pane-u">
+        <div class="v3-right-header">
+          <span class="big-icon">🎓</span>
+          <div>
+            <h2>Mi U</h2>
+            <p>Universidad de Chile · Ingeniería Comercial</p>
+          </div>
+          <span class="v3-badge">Sem 8</span>
+        </div>
+        <div class="v3-list">
+          <div class="v3-list-item">
+            <div class="v3-li-dot"></div>
+            <span class="v3-li-text">Econometría Financiera — Tarea 3 vence en 2 días</span>
+            <span class="v3-li-status">Pendiente</span>
+          </div>
+          <div class="v3-list-item">
+            <div class="v3-li-dot" style="background:#00C27A"></div>
+            <span class="v3-li-text">Control de Gestión — Clase grabada disponible</span>
+            <span class="v3-li-status">Nuevo</span>
+          </div>
+          <div class="v3-list-item">
+            <div class="v3-li-dot" style="background:#aab4cc"></div>
+            <span class="v3-li-text">Finanzas Corporativas I — Nota parcial: 6.2</span>
+            <span class="v3-li-status" style="background:#EEF3FF; color:#0A2878">Completado</span>
+          </div>
+          <div class="v3-list-item">
+            <div class="v3-li-dot"></div>
+            <span class="v3-li-text">Inscripción de ramos 2025-2 — abre en 5 días</span>
+            <span class="v3-li-status">Recordatorio</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Mi T -->
+      <div id="v3-pane-t" style="display:none">
+        <div class="v3-right-header">
+          <span class="big-icon">📚</span>
+          <div>
+            <h2>Mi T</h2>
+            <p>Tutores y Mentores · 3 sesiones activas</p>
+          </div>
+          <span class="v3-badge">3 activos</span>
+        </div>
+        <div class="v3-list">
+          <div class="v3-list-item">
+            <div class="v3-li-dot"></div>
+            <span class="v3-li-text">Carlos Mendoza — Derivados y Opciones · Hoy 18:00</span>
+            <span class="v3-li-status">Confirmada</span>
+          </div>
+          <div class="v3-list-item">
+            <div class="v3-li-dot" style="background:#00C27A"></div>
+            <span class="v3-li-text">Ana Riveros subió: Ejercicios Finanzas Cuantitativas</span>
+            <span class="v3-li-status">Nuevo</span>
+          </div>
+          <div class="v3-list-item">
+            <div class="v3-li-dot" style="background:#aab4cc"></div>
+            <span class="v3-li-text">Solicitud: Estadística Avanzada — sin respuesta</span>
+            <span class="v3-li-status" style="background:#FFF3E0; color:#E65100">Pendiente</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Mi Trabajo -->
+      <div id="v3-pane-w" style="display:none">
+        <div class="v3-right-header">
+          <span class="big-icon">💼</span>
+          <div>
+            <h2>Mi Trabajo</h2>
+            <p>Empleos · Prácticas · CV y Carrera</p>
+          </div>
+          <span class="v3-badge">4 activas</span>
+        </div>
+        <div class="v3-list">
+          <div class="v3-list-item">
+            <div class="v3-li-dot"></div>
+            <span class="v3-li-text">Fintual — Práctica Analista Datos · Entrevista 30 Abr</span>
+            <span class="v3-li-status">Entrevista</span>
+          </div>
+          <div class="v3-list-item">
+            <div class="v3-li-dot" style="background:#00C27A"></div>
+            <span class="v3-li-text">Khipu — Analista Financiero Junior · 85% match</span>
+            <span class="v3-li-status">Nuevo</span>
+          </div>
+          <div class="v3-list-item">
+            <div class="v3-li-dot" style="background:#aab4cc"></div>
+            <span class="v3-li-text">Bci — Postulación enviada hace 4 días</span>
+            <span class="v3-li-status" style="background:#EEF3FF; color:#0A2878">En revisión</span>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</section>
+
+
+<!-- ============================================================
+     VARIANTE F4 — Instagram Story
+     ============================================================ -->
+<section id="v4" class="variant-panel">
+  <div class="v4-content">
+
+    <!-- Avatar ring -->
+    <div class="v4-avatar-ring">
+      <div class="v4-avatar-inner">VR</div>
+    </div>
+
+    <div class="v4-name">Valentina Reyes</div>
+    <div class="v4-uni">Universidad de Chile · Ingeniería Comercial</div>
+    <p class="v4-bio">Estudiante de 4to año, apasionada por finanzas y tecnología. Buscando prácticas en fintech.</p>
+
+    <div class="v4-divider"></div>
+
+    <!-- Story circles -->
+    <div class="v4-stories">
+
+      <div class="v4-story">
+        <div class="v4-story-circle">🎓</div>
+        <div class="v4-story-label">Mi U</div>
+        <div class="v4-story-sub">Universidad · Cursos</div>
+      </div>
+
+      <div class="v4-story">
+        <div class="v4-story-circle">📚</div>
+        <div class="v4-story-label">Mi T</div>
+        <div class="v4-story-sub">Tutores · Mentores</div>
+      </div>
+
+      <div class="v4-story">
+        <div class="v4-story-circle">💼</div>
+        <div class="v4-story-label">Mi Trabajo</div>
+        <div class="v4-story-sub">Empleos · Carrera</div>
+      </div>
+
+    </div>
+
+  </div>
+</section>
+
+
+<!-- ============================================================
+     VARIANTE F5 — Dashboard Card
+     ============================================================ -->
+<section id="v5" class="variant-panel">
+
+  <!-- Compact header -->
+  <div class="v5-header">
+    <div class="avatar-vr v5-avatar">VR</div>
+    <div class="v5-header-info">
+      <div class="v5-header-name">Valentina Reyes</div>
+      <div class="v5-header-uni">Universidad de Chile · Ingeniería Comercial · 4to año</div>
+    </div>
+    <div class="v5-header-actions">
+      <button class="v5-btn-ghost">Editar perfil</button>
+      <button class="v5-btn-ghost">···</button>
+    </div>
+  </div>
+
+  <!-- Dashboard -->
+  <div class="v5-dashboard">
+
+    <!-- 3 module cards -->
+    <div class="v5-cards-grid">
+
+      <div class="v5-module-card">
+        <span class="v5-mc-icon">🎓</span>
+        <div class="v5-mc-title">Mi U</div>
+        <p class="v5-mc-desc">Gestiona tus cursos, notas y calendario académico.</p>
+        <div class="v5-mc-badge"><span>2</span> tareas pendientes</div>
+        <button class="v5-mc-cta">Ir a Mi U →</button>
+      </div>
+
+      <div class="v5-module-card">
+        <span class="v5-mc-icon">📚</span>
+        <div class="v5-mc-title">Mi T</div>
+        <p class="v5-mc-desc">Tutores y mentores para acompañar tu aprendizaje.</p>
+        <div class="v5-mc-badge"><span>1</span> sesión hoy</div>
+        <button class="v5-mc-cta">Ir a Mi T →</button>
+      </div>
+
+      <div class="v5-module-card">
+        <span class="v5-mc-icon">💼</span>
+        <div class="v5-mc-title">Mi Trabajo</div>
+        <p class="v5-mc-desc">Postulaciones, prácticas y oportunidades de carrera.</p>
+        <div class="v5-mc-badge"><span>4</span> postulaciones</div>
+        <button class="v5-mc-cta">Ir a Mi Trabajo →</button>
+      </div>
+
+    </div>
+
+    <!-- Activity feed -->
+    <div class="v5-activity">
+      <h4>Actividad reciente</h4>
+      <div class="v5-feed">
+
+        <div class="v5-feed-row">
+          <div class="v5-feed-icon">🎓</div>
+          <div class="v5-feed-body">
+            <div class="v5-feed-title">Tarea 3 — Econometría Financiera vence en 2 días</div>
+            <div class="v5-feed-time">Mi U · Hace 1 hora</div>
+          </div>
+        </div>
+
+        <div class="v5-feed-row">
+          <div class="v5-feed-icon">💼</div>
+          <div class="v5-feed-body">
+            <div class="v5-feed-title">Entrevista confirmada con Fintual — 30 Abr 10:00</div>
+            <div class="v5-feed-time">Mi Trabajo · Hace 3 horas</div>
+          </div>
+        </div>
+
+        <div class="v5-feed-row">
+          <div class="v5-feed-icon">📚</div>
+          <div class="v5-feed-body">
+            <div class="v5-feed-title">Carlos Mendoza confirmó sesión — hoy 18:00</div>
+            <div class="v5-feed-time">Mi T · Hace 5 horas</div>
+          </div>
+        </div>
+
+        <div class="v5-feed-row">
+          <div class="v5-feed-icon">🎓</div>
+          <div class="v5-feed-body">
+            <div class="v5-feed-title">Nota publicada: Finanzas Corporativas I — 6.2</div>
+            <div class="v5-feed-time">Mi U · Ayer</div>
+          </div>
+        </div>
+
+        <div class="v5-feed-row">
+          <div class="v5-feed-icon">💼</div>
+          <div class="v5-feed-body">
+            <div class="v5-feed-title">Nuevo match: Khipu · Analista Financiero Junior (85%)</div>
+            <div class="v5-feed-time">Mi Trabajo · Ayer</div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+  </div>
+</section>
+
+
+<!-- ============================================================
+     VARIANTE F6 — Notion Profile
+     ============================================================ -->
+<section id="v6" class="variant-panel">
+  <div class="v6-container">
+
+    <!-- Header -->
+    <div class="v6-header">
+      <div class="v6-avatar">VR</div>
+      <div class="v6-header-text">
+        <div class="v6-name">Valentina Reyes</div>
+        <div class="v6-uni">Universidad de Chile · Ingeniería Comercial</div>
+        <p class="v6-bio">Estudiante de 4to año, apasionada por finanzas y tecnología. Buscando prácticas en fintech.</p>
+      </div>
+    </div>
+
+    <div class="v6-divider"></div>
+
+    <!-- Inline tabs -->
+    <div class="v6-tabs">
+      <button class="v6-tab active" onclick="setV6Tab('u', this)">🎓 Mi U</button>
+      <button class="v6-tab" onclick="setV6Tab('t', this)">📚 Mi T</button>
+      <button class="v6-tab" onclick="setV6Tab('w', this)">💼 Mi Trabajo</button>
+    </div>
+
+    <!-- Tab: Mi U -->
+    <div id="v6-tc-u" class="v6-tab-content active-tc">
+      <div class="v6-section-label">Tareas pendientes</div>
+      <div class="v6-notion-list">
+        <div class="v6-notion-item">
+          <div class="v6-notion-bullet"></div>
+          <span class="v6-notion-text">Econometría Financiera — Tarea 3</span>
+          <span class="v6-notion-tag">Vence en 2 días</span>
+        </div>
+        <div class="v6-notion-item">
+          <div class="v6-notion-bullet"></div>
+          <span class="v6-notion-text">Inscripción de ramos 2025-2</span>
+          <span class="v6-notion-tag">5 días</span>
+        </div>
+      </div>
+      <div class="v6-section-label">Novedades académicas</div>
+      <div class="v6-notion-list">
+        <div class="v6-notion-item">
+          <div class="v6-notion-bullet"></div>
+          <span class="v6-notion-text">Control de Gestión — Clase grabada disponible</span>
+          <span class="v6-notion-tag green">Nuevo</span>
+        </div>
+        <div class="v6-notion-item">
+          <div class="v6-notion-bullet"></div>
+          <span class="v6-notion-text">Finanzas Corporativas I — Nota parcial publicada: 6.2</span>
+          <span class="v6-notion-tag gray">Completado</span>
+        </div>
+        <div class="v6-notion-item">
+          <div class="v6-notion-bullet"></div>
+          <span class="v6-notion-text">Derecho Empresarial — Programa actualizado</span>
+          <span class="v6-notion-tag gray">Info</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Tab: Mi T -->
+    <div id="v6-tc-t" class="v6-tab-content">
+      <div class="v6-section-label">Próximas sesiones</div>
+      <div class="v6-notion-list">
+        <div class="v6-notion-item">
+          <div class="v6-notion-bullet"></div>
+          <span class="v6-notion-text">Carlos Mendoza — Derivados y Opciones · Hoy 18:00</span>
+          <span class="v6-notion-tag green">Hoy</span>
+        </div>
+        <div class="v6-notion-item">
+          <div class="v6-notion-bullet"></div>
+          <span class="v6-notion-text">Ana Riveros — Finanzas Cuantitativas · Jue 29 Abr</span>
+          <span class="v6-notion-tag">3 días</span>
+        </div>
+      </div>
+      <div class="v6-section-label">Materiales y recursos</div>
+      <div class="v6-notion-list">
+        <div class="v6-notion-item">
+          <div class="v6-notion-bullet"></div>
+          <span class="v6-notion-text">Ejercicios Finanzas Cuantitativas — subido por Ana Riveros</span>
+          <span class="v6-notion-tag green">Nuevo</span>
+        </div>
+        <div class="v6-notion-item">
+          <div class="v6-notion-bullet"></div>
+          <span class="v6-notion-text">Solicitud tutoría Estadística Avanzada — sin respuesta</span>
+          <span class="v6-notion-tag gray">Pendiente</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Tab: Mi Trabajo -->
+    <div id="v6-tc-w" class="v6-tab-content">
+      <div class="v6-section-label">Postulaciones activas</div>
+      <div class="v6-notion-list">
+        <div class="v6-notion-item">
+          <div class="v6-notion-bullet"></div>
+          <span class="v6-notion-text">Fintual — Práctica Analista de Datos</span>
+          <span class="v6-notion-tag green">Entrevista 30 Abr</span>
+        </div>
+        <div class="v6-notion-item">
+          <div class="v6-notion-bullet"></div>
+          <span class="v6-notion-text">Bci — Analista Financiero Trainee</span>
+          <span class="v6-notion-tag gray">En revisión</span>
+        </div>
+        <div class="v6-notion-item">
+          <div class="v6-notion-bullet"></div>
+          <span class="v6-notion-text">Khipu — Analista Financiero Junior · 85% match</span>
+          <span class="v6-notion-tag green">Nuevo match</span>
+        </div>
+        <div class="v6-notion-item">
+          <div class="v6-notion-bullet"></div>
+          <span class="v6-notion-text">Mercado Pago — Práctica Fintech</span>
+          <span class="v6-notion-tag gray">Enviada</span>
+        </div>
+      </div>
+      <div class="v6-section-label">Recursos de carrera</div>
+      <div class="v6-notion-list">
+        <div class="v6-notion-item">
+          <div class="v6-notion-bullet"></div>
+          <span class="v6-notion-text">CV actualizado — versión 3.1</span>
+          <span class="v6-notion-tag gray">26 Abr 2026</span>
+        </div>
+        <div class="v6-notion-item">
+          <div class="v6-notion-bullet"></div>
+          <span class="v6-notion-text">Carta de presentación — plantilla fintech</span>
+          <span class="v6-notion-tag gray">Borrador</span>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</section>
+
+
+<!-- ===== JAVASCRIPT ===== -->
+<script>
+  // Switcher principal
+  function showVariant(n, btn) {
+    document.querySelectorAll('.variant-panel').forEach(p => p.classList.remove('active'));
+    document.querySelectorAll('.sw-btn').forEach(b => b.classList.remove('active'));
+    document.getElementById('v' + n).classList.add('active');
+    btn.classList.add('active');
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  }
+
+  // F1 — tab bar + sidebar sync
+  function setV1Tab(key, tabBtn) {
+    // hide all content
+    ['u','t','w'].forEach(k => {
+      var el = document.getElementById('v1-tab-' + k);
+      if(el) el.style.display = 'none';
+    });
+    var target = document.getElementById('v1-tab-' + key);
+    if(target) target.style.display = 'block';
+
+    // update tab buttons
+    document.querySelectorAll('.v1-tab').forEach(b => b.classList.remove('active'));
+    if(tabBtn) tabBtn.classList.add('active');
+
+    // update sidebar items
+    document.querySelectorAll('.v1-mod-item').forEach(item => {
+      item.classList.remove('active-mod');
+    });
+    var map = { u: 0, t: 1, w: 2 };
+    var items = document.querySelectorAll('#v1 .v1-mod-item');
+    if(items[map[key]]) items[map[key]].classList.add('active-mod');
+  }
+
+  // F1 sidebar clicks sync to tabs
+  document.querySelectorAll('#v1 .v1-mod-item').forEach((item, idx) => {
+    item.onclick = function() {
+      var keys = ['u','t','w'];
+      var tabs = document.querySelectorAll('#v1 .v1-tab');
+      setV1Tab(keys[idx], tabs[idx]);
+    };
+  });
+
+  // F3 — left nav
+  function setV3(key, navBtn) {
+    ['u','t','w'].forEach(k => {
+      var el = document.getElementById('v3-pane-' + k);
+      if(el) el.style.display = 'none';
+    });
+    document.getElementById('v3-pane-' + key).style.display = 'block';
+    document.querySelectorAll('.v3-nav-item').forEach(b => b.classList.remove('active-v3'));
+    if(navBtn) navBtn.classList.add('active-v3');
+  }
+
+  // F6 — notion tabs
+  function setV6Tab(key, tabBtn) {
+    ['u','t','w'].forEach(k => {
+      var el = document.getElementById('v6-tc-' + k);
+      if(el) el.classList.remove('active-tc');
+    });
+    document.getElementById('v6-tc-' + key).classList.add('active-tc');
+    document.querySelectorAll('.v6-tab').forEach(b => b.classList.remove('active'));
+    if(tabBtn) tabBtn.classList.add('active');
+  }
+</script>
+
+</body>
+</html>

@@ -1,0 +1,551 @@
+<!DOCTYPE html>
+<html lang="es" data-theme="ig-light">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>Instagram Themes · Conniku</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"/>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Funnel+Display:wght@700;800;900&family=Inter:wght@400;500;600;700&family=Geist+Mono:wght@400;500;600&display=swap"/>
+<style>
+* { box-sizing: border-box; margin: 0; padding: 0; }
+
+/* ══════════════════════════
+   IG LIGHT — Instagram light
+   ══════════════════════════ */
+[data-theme="ig-light"] {
+  --bg:        #FAFAFA;
+  --surface:   #FFFFFF;
+  --surface-2: #F5F5F5;
+  --surface-3: #EFEFEF;
+  --border:    #DBDBDB;
+  --border-2:  #EFEFEF;
+  --text:      #262626;
+  --text-2:    #737373;
+  --text-3:    #A8A8A8;
+  --text-4:    #C7C7C7;
+  --sig:       #0095F6;
+  --sig-soft:  rgba(0,149,246,.10);
+  --sig-mid:   rgba(0,149,246,.22);
+  --sig-ink:   #FFFFFF;
+  --hex-bg:    #FAFAFA;
+  /* Instagram gradient para stories/avatar rings */
+  --ig-grad:   linear-gradient(45deg, #F09433, #E6683C 25%, #DC2743 50%, #CC2366 75%, #BC1888);
+}
+
+/* ══════════════════════════
+   IG DARK — Instagram dark
+   ══════════════════════════ */
+[data-theme="ig-dark"] {
+  --bg:        #000000;
+  --surface:   #121212;
+  --surface-2: #1C1C1C;
+  --surface-3: #262626;
+  --border:    #262626;
+  --border-2:  #1C1C1C;
+  --text:      #F5F5F5;
+  --text-2:    #A8A8A8;
+  --text-3:    #737373;
+  --text-4:    #3C3C3C;
+  --sig:       #0095F6;
+  --sig-soft:  rgba(0,149,246,.12);
+  --sig-mid:   rgba(0,149,246,.25);
+  --sig-ink:   #FFFFFF;
+  --hex-bg:    #000000;
+  --ig-grad:   linear-gradient(45deg, #F09433, #E6683C 25%, #DC2743 50%, #CC2366 75%, #BC1888);
+}
+
+/* ══════════════════════
+   BASE
+   ══════════════════════ */
+html, body {
+  background: var(--bg) !important;
+  min-height: 100vh;
+  font-family: 'Inter', sans-serif;
+  font-size: 14px;
+  -webkit-font-smoothing: antialiased;
+  color: var(--text);
+  transition: background .3s, color .3s;
+}
+#hexTide { position: fixed; inset: 0; pointer-events: none; z-index: 0; width: 100%; height: 100%; }
+.wrap    { position: relative; z-index: 2; max-width: 960px; margin: 0 auto; padding: 0 20px 60px; }
+
+/* ══ SELECTOR ══ */
+.switcher {
+  position: sticky; top: 0; z-index: 50;
+  background: var(--surface); border-bottom: 1px solid var(--border);
+  padding: 10px 20px; display: flex; gap: 8px; align-items: center;
+  box-shadow: 0 1px 3px rgba(0,0,0,.08); transition: background .3s;
+}
+.switcher-label { font-family: 'Geist Mono', monospace; font-size: 9px; letter-spacing: .14em; color: var(--text-4); text-transform: uppercase; margin-right: 6px; }
+.tbtn { border: 1.5px solid var(--border); cursor: pointer; font-family: 'Geist Mono', monospace; font-size: 10px; font-weight: 600; padding: 5px 16px; border-radius: 20px; transition: all .18s; background: var(--surface-2); color: var(--text-3); }
+.tbtn:hover { border-color: var(--sig); color: var(--sig); }
+.tbtn.on    { background: var(--sig); color: var(--sig-ink); border-color: transparent; }
+.badge-cur  { margin-left: auto; font-family: 'Geist Mono', monospace; font-size: 10px; color: var(--text-4); }
+
+/* ══ NAV — Instagram style ══ */
+.nav {
+  background: var(--surface); border-bottom: 1px solid var(--border);
+  height: 54px; display: flex; align-items: center; padding: 0 20px; gap: 12px;
+  position: sticky; top: 41px; z-index: 40;
+  transition: background .3s;
+}
+.nav-logo   { font-family: 'Funnel Display', sans-serif; font-weight: 900; font-size: 22px; color: var(--text); letter-spacing: -.5px; transition: color .3s; margin-right: auto; }
+.nav-logo span { color: var(--sig); }
+.nav-icon   { width: 26px; height: 26px; display: grid; place-items: center; font-size: 22px; cursor: pointer; color: var(--text); position: relative; transition: opacity .18s; }
+.nav-icon:hover { opacity: .7; }
+.ndot       { position: absolute; top: -1px; right: -1px; width: 8px; height: 8px; border-radius: 50%; background: #E41E3F; border: 2px solid var(--surface); }
+.nav-me-sm  { width: 24px; height: 24px; border-radius: 50%; background: var(--sig); color: var(--sig-ink); font-size: 9px; font-weight: 800; display: grid; place-items: center; cursor: pointer; transition: background .3s; }
+
+/* ══ LAYOUT ══ */
+.main-layout { display: grid; grid-template-columns: 1fr 320px; gap: 32px; padding-top: 24px; align-items: start; }
+
+/* ══ STORIES ══ */
+.stories {
+  background: var(--surface); border: 1px solid var(--border);
+  border-radius: 8px; padding: 14px 16px; margin-bottom: 16px;
+  display: flex; gap: 16px; overflow-x: auto;
+  transition: background .3s;
+}
+.stories::-webkit-scrollbar { display: none; }
+.story-item { display: flex; flex-direction: column; align-items: center; gap: 6px; cursor: pointer; flex-shrink: 0; }
+.story-ring {
+  width: 56px; height: 56px; border-radius: 50%; padding: 2px;
+  background: var(--ig-grad);
+  display: grid; place-items: center;
+}
+.story-ring.seen { background: var(--surface-3); }
+.story-av {
+  width: 100%; height: 100%; border-radius: 50%;
+  background: var(--surface-2); border: 2px solid var(--surface);
+  display: grid; place-items: center; font-size: 20px;
+  transition: background .3s;
+}
+.story-av.add-av { background: var(--surface); font-size: 14px; color: var(--sig); font-weight: 700; border: 2px solid var(--sig); }
+.story-name { font-size: 11px; color: var(--text-2); text-align: center; max-width: 60px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; transition: color .3s; }
+.story-name.you { color: var(--text); font-weight: 500; }
+
+/* ══ POSTS ══ */
+.post {
+  background: var(--surface); border: 1px solid var(--border);
+  border-radius: 8px; margin-bottom: 16px; overflow: hidden;
+  transition: background .3s, border-color .3s;
+}
+
+/* Post header */
+.post-head  { display: flex; align-items: center; gap: 10px; padding: 12px 14px; }
+.pav-wrap   { position: relative; }
+.pav-ring   { width: 34px; height: 34px; border-radius: 50%; padding: 1.5px; background: var(--ig-grad); display: grid; place-items: center; flex-shrink: 0; }
+.pav        { width: 100%; height: 100%; border-radius: 50%; background: var(--surface-2); border: 1.5px solid var(--surface); display: grid; place-items: center; font-size: 16px; }
+.pmt        { flex: 1; }
+.pn         { font-weight: 600; font-size: 13px; color: var(--text); line-height: 1.2; transition: color .3s; }
+.pn span    { font-weight: 400; color: var(--text-2); margin-left: 4px; }
+.pt         { font-size: 11px; color: var(--text-3); margin-top: 1px; }
+.post-more  { font-size: 20px; color: var(--text); cursor: pointer; padding: 4px; opacity: .8; }
+
+/* Post image/media */
+.post-img {
+  width: 100%; aspect-ratio: 1 / 1;
+  background: linear-gradient(135deg, var(--surface-2), var(--surface-3));
+  display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 8px;
+  border-top: 1px solid var(--border-2); border-bottom: 1px solid var(--border-2);
+  transition: background .3s;
+}
+.post-img-icon { font-size: 48px; }
+.post-img-label { font-size: 13px; color: var(--text-3); font-weight: 500; }
+.post-img.short { aspect-ratio: 4 / 3; }
+.post-img.wide  { aspect-ratio: 16 / 7; }
+
+/* Post actions */
+.post-actions { padding: 8px 14px 4px; display: flex; align-items: center; gap: 4px; }
+.pig-btn { background: transparent; border: none; cursor: pointer; padding: 6px; font-size: 22px; display: grid; place-items: center; transition: opacity .18s; }
+.pig-btn:hover { opacity: .6; }
+.pig-btn.liked { animation: heartpop .2s ease; }
+.save-btn { margin-left: auto; }
+
+/* Likes -->
+.post-likes { padding: 0 14px 6px; font-size: 13px; font-weight: 600; color: var(--text); transition: color .3s; }
+
+/* Caption */
+.post-caption { padding: 0 14px 8px; font-size: 13px; color: var(--text); line-height: 1.5; transition: color .3s; }
+.post-caption strong { font-weight: 700; margin-right: 6px; }
+.post-caption .tag { color: var(--sig); cursor: pointer; }
+
+/* Comments preview */
+.post-comments { padding: 0 14px 6px; }
+.cmt-line { font-size: 13px; color: var(--text-2); margin-bottom: 3px; transition: color .3s; }
+.cmt-line strong { color: var(--text); font-weight: 600; margin-right: 5px; }
+.cmt-more { font-size: 13px; color: var(--text-3); cursor: pointer; }
+
+/* Add comment */
+.add-comment { display: flex; align-items: center; gap: 8px; padding: 8px 14px; border-top: 1px solid var(--border-2); }
+.cmt-emoji { font-size: 20px; cursor: pointer; }
+.cmt-input { flex: 1; background: transparent; border: none; outline: none; font-family: 'Inter', sans-serif; font-size: 13px; color: var(--text); }
+.cmt-input::placeholder { color: var(--text-3); }
+.cmt-post-btn { font-size: 13px; font-weight: 700; color: var(--sig); cursor: pointer; background: none; border: none; font-family: 'Inter', sans-serif; transition: opacity .18s; }
+.cmt-post-btn:hover { opacity: .7; }
+.post-time-ago { padding: 0 14px 10px; font-size: 10px; color: var(--text-3); text-transform: uppercase; letter-spacing: .06em; }
+
+/* ══ SIDEBAR DERECHO ══ */
+.sidebar { position: sticky; top: 113px; }
+
+/* Profile mini */
+.profile-card { display: flex; align-items: center; gap: 14px; padding: 10px 0 20px; border-bottom: 1px solid var(--border-2); margin-bottom: 20px; }
+.pc-ring { width: 56px; height: 56px; border-radius: 50%; padding: 2px; background: var(--ig-grad); display: grid; place-items: center; flex-shrink: 0; }
+.pc-av   { width: 100%; height: 100%; border-radius: 50%; background: var(--sig); border: 2px solid var(--surface); display: grid; place-items: center; font-size: 16px; font-weight: 800; color: var(--sig-ink); }
+.pc-name { font-weight: 700; font-size: 13px; color: var(--text); transition: color .3s; }
+.pc-user { font-size: 13px; color: var(--text-3); margin-top: 1px; transition: color .3s; }
+.pc-btn  { margin-left: auto; font-size: 13px; font-weight: 700; color: var(--sig); background: none; border: none; cursor: pointer; font-family: 'Inter', sans-serif; }
+
+/* Suggested */
+.sug-title { display: flex; justify-content: space-between; align-items: center; margin-bottom: 14px; }
+.sug-label { font-size: 13px; font-weight: 700; color: var(--text-3); transition: color .3s; }
+.sug-all   { font-size: 12px; font-weight: 700; color: var(--text); cursor: pointer; transition: color .3s; }
+.sug-item  { display: flex; align-items: center; gap: 10px; margin-bottom: 12px; }
+.sug-ring  { width: 32px; height: 32px; border-radius: 50%; padding: 1.5px; background: var(--ig-grad); display: grid; place-items: center; flex-shrink: 0; }
+.sug-av    { width: 100%; height: 100%; border-radius: 50%; background: var(--surface-2); border: 1.5px solid var(--surface); display: grid; place-items: center; font-size: 14px; }
+.sug-info  { flex: 1; }
+.sug-name  { font-size: 12px; font-weight: 600; color: var(--text); transition: color .3s; }
+.sug-sub   { font-size: 11px; color: var(--text-3); transition: color .3s; }
+.sug-flw   { font-size: 12px; font-weight: 700; color: var(--sig); background: none; border: none; cursor: pointer; font-family: 'Inter', sans-serif; }
+
+/* Footer */
+.ig-footer { margin-top: 24px; }
+.ig-links  { display: flex; flex-wrap: wrap; gap: 4px 8px; }
+.ig-link   { font-size: 11px; color: var(--text-4); cursor: pointer; transition: color .3s; }
+.ig-copy   { font-size: 11px; color: var(--text-4); margin-top: 10px; text-transform: uppercase; letter-spacing: .06em; }
+
+/* Reels mini strip */
+.reels-strip { margin-bottom: 16px; }
+.reels-label { font-size: 13px; font-weight: 600; color: var(--text); margin-bottom: 10px; display: flex; justify-content: space-between; }
+.reels-label span { color: var(--sig); font-size: 12px; cursor: pointer; }
+.reels-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 2px; border-radius: 6px; overflow: hidden; }
+.reel-cell  {
+  aspect-ratio: 9/14;
+  background: linear-gradient(135deg, var(--surface-2), var(--surface-3));
+  display: flex; align-items: center; justify-content: center;
+  font-size: 24px; cursor: pointer; transition: opacity .18s;
+}
+.reel-cell:hover { opacity: .85; }
+</style>
+</head>
+<body>
+<canvas id="hexTide"></canvas>
+
+<!-- SELECTOR -->
+<div class="switcher">
+  <span class="switcher-label">Instagram style ·</span>
+  <button class="tbtn on" data-t="ig-light">☀️ Light</button>
+  <button class="tbtn"    data-t="ig-dark">🌙 Dark</button>
+  <span class="badge-cur" id="cur">ig-light</span>
+</div>
+
+<!-- NAV -->
+<nav class="nav">
+  <div class="nav-logo">
+    <!-- LOGO PENDIENTE -->conni<span>ku</span>
+  </div>
+  <div class="nav-icon">🔍</div>
+  <div class="nav-icon">🧭</div>
+  <div class="nav-icon">▶️</div>
+  <div class="nav-icon">🛍</div>
+  <div class="nav-icon">💬</div>
+  <div class="nav-icon">🔔<span class="ndot"></span></div>
+  <div class="nav-icon">➕</div>
+  <div class="nav-me-sm">CG</div>
+</nav>
+
+<div class="wrap">
+  <div class="main-layout">
+
+    <!-- FEED -->
+    <main>
+
+      <!-- Stories -->
+      <div class="stories">
+        <div class="story-item">
+          <div class="story-ring">
+            <div class="story-av add-av">+</div>
+          </div>
+          <div class="story-name you">Tu historia</div>
+        </div>
+        <div class="story-item">
+          <div class="story-ring">
+            <div class="story-av">👩‍💻</div>
+          </div>
+          <div class="story-name">ana.m</div>
+        </div>
+        <div class="story-item">
+          <div class="story-ring">
+            <div class="story-av">🧑‍🎓</div>
+          </div>
+          <div class="story-name">rodrigov</div>
+        </div>
+        <div class="story-item">
+          <div class="story-ring seen">
+            <div class="story-av">👨‍🏫</div>
+          </div>
+          <div class="story-name">sofia.p</div>
+        </div>
+        <div class="story-item">
+          <div class="story-ring">
+            <div class="story-av">👩‍🔬</div>
+          </div>
+          <div class="story-name">laura.s</div>
+        </div>
+        <div class="story-item">
+          <div class="story-ring seen">
+            <div class="story-av">👨‍💼</div>
+          </div>
+          <div class="story-name">marcos_r</div>
+        </div>
+        <div class="story-item">
+          <div class="story-ring">
+            <div class="story-av">👩‍🎨</div>
+          </div>
+          <div class="story-name">daniela.v</div>
+        </div>
+      </div>
+
+      <!-- POST 1 — con imagen cuadrada -->
+      <div class="post">
+        <div class="post-head">
+          <div class="pav-wrap">
+            <div class="pav-ring"><div class="pav">👩‍💻</div></div>
+          </div>
+          <div class="pmt">
+            <div class="pn">ana.martinez <span>· Conniku</span></div>
+            <div class="pt">Ciudad de México</div>
+          </div>
+          <div class="post-more">⋯</div>
+        </div>
+        <div class="post-img">
+          <div class="post-img-icon">🎓</div>
+          <div class="post-img-label">Certificado · IA Generativa</div>
+        </div>
+        <div class="post-actions">
+          <button class="pig-btn liked">❤️</button>
+          <button class="pig-btn">💬</button>
+          <button class="pig-btn">✈️</button>
+          <button class="pig-btn save-btn">🔖</button>
+        </div>
+        <div class="post-likes">24 Me gusta</div>
+        <div class="post-caption">
+          <strong>ana.martinez</strong>
+          Terminé Fundamentos de IA Generativa con 98/100 🎉 Aprendes haciendo desde el día 1.
+          <span class="tag">#ConnikusIA</span> <span class="tag">#AprendizajeReal</span>
+        </div>
+        <div class="post-comments">
+          <div class="cmt-more">Ver los 8 comentarios</div>
+          <div class="cmt-line"><strong>rodrigov</strong> ¡Increíble Ana, felicidades! 🚀</div>
+          <div class="cmt-line"><strong>sofia.p</strong> Te lo mereces 👏</div>
+        </div>
+        <div class="post-time-ago">hace 15 minutos</div>
+        <div class="add-comment">
+          <span class="cmt-emoji">😊</span>
+          <input class="cmt-input" placeholder="Añade un comentario…"/>
+          <button class="cmt-post-btn">Publicar</button>
+        </div>
+      </div>
+
+      <!-- Reels mini strip -->
+      <div class="reels-strip">
+        <div class="reels-label">Reels sugeridos <span>Ver todo</span></div>
+        <div class="reels-grid">
+          <div class="reel-cell">🎬</div>
+          <div class="reel-cell">📐</div>
+          <div class="reel-cell">🤖</div>
+        </div>
+      </div>
+
+      <!-- POST 2 -->
+      <div class="post">
+        <div class="post-head">
+          <div class="pav-wrap">
+            <div class="pav-ring"><div class="pav">🧑‍🎓</div></div>
+          </div>
+          <div class="pmt">
+            <div class="pn">rodrigo.v</div>
+            <div class="pt">Primera entrevista 🚀</div>
+          </div>
+          <div class="post-more">⋯</div>
+        </div>
+        <div class="post-img short">
+          <div class="post-img-icon">💼</div>
+          <div class="post-img-label">Portafolio Profesional · 8 proyectos</div>
+        </div>
+        <div class="post-actions">
+          <button class="pig-btn">🤍</button>
+          <button class="pig-btn">💬</button>
+          <button class="pig-btn">✈️</button>
+          <button class="pig-btn save-btn">🔖</button>
+        </div>
+        <div class="post-likes">41 Me gusta</div>
+        <div class="post-caption">
+          <strong>rodrigo.v</strong>
+          ¡Primera entrevista conseguida con el módulo de Portafolio Profesional! El sistema funciona 💪
+          <span class="tag">#Conniku</span> <span class="tag">#Empleo</span>
+        </div>
+        <div class="post-comments">
+          <div class="cmt-more">Ver los 15 comentarios</div>
+          <div class="cmt-line"><strong>ana.martinez</strong> ¡Qué logro tan grande! 🎉</div>
+        </div>
+        <div class="post-time-ago">hace 1 hora</div>
+        <div class="add-comment">
+          <span class="cmt-emoji">😊</span>
+          <input class="cmt-input" placeholder="Añade un comentario…"/>
+          <button class="cmt-post-btn">Publicar</button>
+        </div>
+      </div>
+
+      <!-- POST 3 -->
+      <div class="post">
+        <div class="post-head">
+          <div class="pav-wrap">
+            <div class="pav-ring seen"><div class="pav">👨‍🏫</div></div>
+          </div>
+          <div class="pmt">
+            <div class="pn">sofia.pedraza</div>
+            <div class="pt">🏆 Top Semanal</div>
+          </div>
+          <div class="post-more">⋯</div>
+        </div>
+        <div class="post-img wide">
+          <div class="post-img-icon">🥇</div>
+          <div class="post-img-label">Nivel Platino · Leaderboard semanal</div>
+        </div>
+        <div class="post-actions">
+          <button class="pig-btn">🤍</button>
+          <button class="pig-btn">💬</button>
+          <button class="pig-btn">✈️</button>
+          <button class="pig-btn save-btn">🔖</button>
+        </div>
+        <div class="post-likes">87 Me gusta</div>
+        <div class="post-caption">
+          <strong>sofia.pedraza</strong>
+          Platino en el leaderboard esta semana 🥇 ¡Gracias a todos por el apoyo!
+          <span class="tag">#ConnikusRanking</span>
+        </div>
+        <div class="post-comments">
+          <div class="cmt-more">Ver los 32 comentarios</div>
+        </div>
+        <div class="post-time-ago">hace 3 horas</div>
+        <div class="add-comment">
+          <span class="cmt-emoji">😊</span>
+          <input class="cmt-input" placeholder="Añade un comentario…"/>
+          <button class="cmt-post-btn">Publicar</button>
+        </div>
+      </div>
+
+    </main>
+
+    <!-- SIDEBAR -->
+    <aside class="sidebar">
+
+      <!-- Profile mini -->
+      <div class="profile-card">
+        <div class="pc-ring"><div class="pc-av">CG</div></div>
+        <div>
+          <div class="pc-name">cristian.g</div>
+          <div class="pc-user">Cristian G.</div>
+        </div>
+        <button class="pc-btn">Cambiar</button>
+      </div>
+
+      <!-- Suggested -->
+      <div class="sug-title">
+        <div class="sug-label">Sugerencias para ti</div>
+        <div class="sug-all">Ver todo</div>
+      </div>
+      <div class="sug-item">
+        <div class="sug-ring"><div class="sug-av">👩‍🔬</div></div>
+        <div class="sug-info">
+          <div class="sug-name">laura.soto</div>
+          <div class="sug-sub">Sugerido · Data Science</div>
+        </div>
+        <button class="sug-flw">Seguir</button>
+      </div>
+      <div class="sug-item">
+        <div class="sug-ring"><div class="sug-av">👨‍💼</div></div>
+        <div class="sug-info">
+          <div class="sug-name">marcos.ruiz</div>
+          <div class="sug-sub">Lo siguen ana.m +3 más</div>
+        </div>
+        <button class="sug-flw">Seguir</button>
+      </div>
+      <div class="sug-item">
+        <div class="sug-ring"><div class="sug-av">👩‍🎨</div></div>
+        <div class="sug-info">
+          <div class="sug-name">daniela.v</div>
+          <div class="sug-sub">Sugerido · UI Design</div>
+        </div>
+        <button class="sug-flw">Seguir</button>
+      </div>
+      <div class="sug-item">
+        <div class="sug-ring"><div class="sug-av">🧑‍💻</div></div>
+        <div class="sug-info">
+          <div class="sug-name">conniku.oficial</div>
+          <div class="sug-sub">Cuenta verificada ✓</div>
+        </div>
+        <button class="sug-flw">Seguir</button>
+      </div>
+      <div class="sug-item">
+        <div class="sug-ring"><div class="sug-av">🤖</div></div>
+        <div class="sug-info">
+          <div class="sug-name">athena.ia</div>
+          <div class="sug-sub">Tutor IA · Conniku</div>
+        </div>
+        <button class="sug-flw">Seguir</button>
+      </div>
+
+      <!-- Footer -->
+      <div class="ig-footer">
+        <div class="ig-links">
+          <span class="ig-link">Acerca de</span>
+          <span class="ig-link">Ayuda</span>
+          <span class="ig-link">Prensa</span>
+          <span class="ig-link">API</span>
+          <span class="ig-link">Empleo</span>
+          <span class="ig-link">Privacidad</span>
+          <span class="ig-link">Términos</span>
+          <span class="ig-link">Ubicaciones</span>
+          <span class="ig-link">Idioma</span>
+        </div>
+        <div class="ig-copy">© 2026 Conniku</div>
+      </div>
+
+    </aside>
+
+  </div>
+</div>
+
+<script src="../shared/hex-tide/hex-tide.js"></script>
+<script>
+const CFG = {
+  'ig-light': { bg: '#FAFAFA', maxOpacity: 0.12, vignette: 0.07 },
+  'ig-dark':  { bg: '#000000', maxOpacity: 0.20, vignette: 0.22 },
+};
+
+const INIT = 'ig-light';
+window._hx = HexTide.mount('#hexTide', {
+  variant: 'whisper', background: CFG[INIT].bg,
+  hexSize: 30, maxOpacity: CFG[INIT].maxOpacity,
+  mouseReactive: true, vignette: CFG[INIT].vignette,
+});
+
+const btns = document.querySelectorAll('.tbtn');
+const cur  = document.getElementById('cur');
+const html = document.documentElement;
+
+function apply(id) {
+  html.setAttribute('data-theme', id);
+  cur.textContent = id;
+  btns.forEach(b => b.classList.toggle('on', b.dataset.t === id));
+  const c = CFG[id];
+  if (c) window._hx.setOptions({ background: c.bg, maxOpacity: c.maxOpacity, vignette: c.vignette });
+}
+
+btns.forEach(b => b.addEventListener('click', () => apply(b.dataset.t)));
+apply(INIT);
+</script>
+</body>
+</html>

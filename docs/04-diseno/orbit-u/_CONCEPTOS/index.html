@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>Conceptos · Conniku Design Lab</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"/>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Funnel+Display:wght@900&family=Inter:wght@400;500;600&family=Geist+Mono:wght@400;600&display=swap"/>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{background:#050608;color:#F5F4EF;font-family:'Inter',sans-serif;min-height:100vh;padding:48px 40px}
+.header{margin-bottom:48px;border-bottom:1px solid rgba(245,244,239,.07);padding-bottom:28px;display:flex;align-items:flex-start;justify-content:space-between;gap:20px;flex-wrap:wrap}
+.logo{font-family:'Funnel Display',sans-serif;font-weight:900;font-size:28px;letter-spacing:-.04em;color:#F5F4EF}
+.logo em{font-style:italic;opacity:.45}
+.u-tile{display:inline-flex;align-items:baseline;background:linear-gradient(135deg,#8AEAC0 0%,#006E4A 100%);color:#0D0F10;padding:.02em .1em .02em .06em;border-radius:.16em;margin-left:.02em;transform:rotate(-12deg);transform-origin:center}
+.dot{color:#FF4A1C}
+.header-meta{text-align:right}
+.lab-badge{font-family:'Geist Mono',monospace;font-size:10px;letter-spacing:.15em;color:rgba(0,194,122,.6);background:rgba(0,194,122,.07);border:1px solid rgba(0,194,122,.2);padding:5px 10px;border-radius:5px;display:inline-block;margin-bottom:6px}
+.header-meta p{font-size:12px;color:rgba(245,244,239,.25);font-family:'Geist Mono',monospace;letter-spacing:.04em}
+
+.section-label{font-family:'Geist Mono',monospace;font-size:10px;letter-spacing:.14em;color:rgba(245,244,239,.3);text-transform:uppercase;margin-bottom:20px}
+
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:14px;margin-bottom:48px}
+
+.card{border:1px solid rgba(245,244,239,.08);border-radius:14px;background:rgba(245,244,239,.02);overflow:hidden;transition:all .2s;text-decoration:none;display:block}
+.card:hover{border-color:rgba(0,194,122,.3);background:rgba(0,194,122,.03);transform:translateY(-2px)}
+.card-thumb{height:160px;background:#0A0C0E;border-bottom:1px solid rgba(245,244,239,.06);display:flex;align-items:center;justify-content:center;position:relative;overflow:hidden}
+.thumb-label{font-family:'Funnel Display',sans-serif;font-weight:900;font-size:42px;letter-spacing:-.04em;color:rgba(0,194,122,.12)}
+.thumb-code{position:absolute;top:12px;left:12px;font-family:'Geist Mono',monospace;font-size:9px;color:rgba(0,194,122,.45);background:rgba(0,194,122,.07);border:1px solid rgba(0,194,122,.15);padding:2px 7px;border-radius:3px}
+.thumb-status{position:absolute;top:12px;right:12px;font-family:'Geist Mono',monospace;font-size:9px;padding:2px 7px;border-radius:3px}
+.status-concept{color:rgba(196,154,58,.8);background:rgba(196,154,58,.08);border:1px solid rgba(196,154,58,.2)}
+.status-wip{color:rgba(0,150,204,.8);background:rgba(0,150,204,.08);border:1px solid rgba(0,150,204,.2)}
+.status-ready{color:rgba(0,194,122,.8);background:rgba(0,194,122,.08);border:1px solid rgba(0,194,122,.2)}
+
+.card-body{padding:16px 18px}
+.card-name{font-family:'Funnel Display',sans-serif;font-weight:900;font-size:17px;color:#F5F4EF;letter-spacing:-.03em;margin-bottom:4px}
+.card-desc{font-size:12px;color:rgba(245,244,239,.35);line-height:1.65;margin-bottom:10px}
+.card-tags{display:flex;gap:5px;flex-wrap:wrap}
+.tag{font-family:'Geist Mono',monospace;font-size:9px;padding:2px 7px;border-radius:3px;background:rgba(245,244,239,.05);color:rgba(245,244,239,.3);border:1px solid rgba(245,244,239,.07)}
+
+.divider{height:1px;background:rgba(245,244,239,.06);margin:36px 0}
+.note{font-size:12px;color:rgba(245,244,239,.22);font-family:'Geist Mono',monospace;letter-spacing:.04em;line-height:1.8}
+.note strong{color:rgba(0,194,122,.5)}
+</style>
+</head>
+<body>
+
+<div class="header">
+  <div>
+    <div class="logo"><!-- WORDMARK PENDIENTE --></div>
+  </div>
+  <div class="header-meta">
+    <div class="lab-badge">DESIGN LAB · _CONCEPTOS</div>
+    <p>Templates y conceptos en desarrollo</p>
+  </div>
+</div>
+
+<div class="section-label">Fondos y estética</div>
+<div class="grid">
+
+  <a href="concept-backgrounds.html" class="card">
+    <div class="card-thumb">
+      <span class="thumb-label">BG</span>
+      <span class="thumb-code">01</span>
+      <span class="thumb-status status-concept">CONCEPTO</span>
+    </div>
+    <div class="card-body">
+      <div class="card-name">Fondos de Plataforma</div>
+      <div class="card-desc">5 conceptos interactivos de fondo: Sinapsis, Flujo, Pulso, Tela y Hex. Para decidir la dirección visual definitiva.</div>
+      <div class="card-tags">
+        <span class="tag">canvas</span>
+        <span class="tag">5 variantes</span>
+        <span class="tag">conn · iku</span>
+      </div>
+    </div>
+  </a>
+
+</div>
+
+<div class="divider"></div>
+<div class="note">
+  <strong>_CONCEPTOS/</strong> — carpeta de trabajo de diseño. Los archivos aquí son prototipos y exploración visual.<br>
+  No son páginas de producción. Para ver la plataforma en vivo ir a <strong>../index.html</strong>
+</div>
+
+</body>
+</html>

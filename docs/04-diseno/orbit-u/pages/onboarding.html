@@ -1,0 +1,894 @@
+<!DOCTYPE html>
+<!--
+  ONBOARDING · Conniku
+  ====================
+  DEV ACCESS:
+  - Email:    dev@conniku.test
+  - Password: dev2025
+  - Skip shortcut: Ctrl+Shift+D
+  - Skip button: ⚡ Dev: skip (bottom-left, always visible for now)
+
+  TODO backend:
+  - Validate device fingerprint server-side
+  - Enforce 2-device max in DB
+  - Real upload of profile photo to storage
+  - University autocomplete from API
+-->
+<html lang="es" data-theme="navy-l">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Onboarding · Conniku</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Funnel+Display:wght@400;600;700;800;900&family=Inter:wght@400;500;600;700&family=Geist+Mono:wght@400;500;600&display=swap" />
+<link rel="stylesheet" href="../shared/tokens.css" />
+<link rel="stylesheet" href="../shared/themes.css" />
+<link rel="stylesheet" href="../shared/base.css" />
+<style>
+  :root { --sig: #D9FF3A; --sig-ink: #0B0C0E; --orange: #FF4A1C; --lime: #D9FF3A; }
+  * { box-sizing: border-box; }
+  body {
+    min-height: 100vh; background: var(--bg); color: var(--text);
+    font-family: 'Inter', sans-serif;
+    display: flex; flex-direction: column; align-items: center;
+    padding: 24px; position: relative;
+  }
+
+  /* top bar */
+  .ob-topbar {
+    width: 100%; max-width: 520px;
+    display: flex; align-items: center; justify-content: space-between;
+    margin-bottom: 18px; font-family: 'Geist Mono', monospace;
+    font-size: 11px; color: var(--text-3);
+  }
+  .ob-time { display: inline-flex; align-items: center; gap: 6px; }
+  .ob-time svg { width: 13px; height: 13px; }
+  .ob-login { font-size: 12px; color: var(--text-3); text-decoration: none; }
+  .ob-login a { color: var(--text); text-decoration: underline; }
+
+  /* progress */
+  .ob-progress-wrap { width: 100%; max-width: 520px; margin-bottom: 8px; }
+  .ob-progress {
+    height: 6px; background: var(--surface-2); border-radius: 999px;
+    overflow: hidden; border: 1px solid var(--border);
+  }
+  .ob-progress-bar {
+    height: 100%; background: linear-gradient(90deg, var(--lime), var(--orange));
+    width: 16.6%; transition: width .35s cubic-bezier(.2,.7,.2,1);
+    border-radius: 999px;
+  }
+  .ob-step-counter {
+    font-family: 'Geist Mono', monospace; font-size: 11px;
+    color: var(--text-3); margin: 8px 0 18px;
+    width: 100%; max-width: 520px;
+  }
+
+  /* card */
+  .ob-card {
+    width: 100%; max-width: 520px;
+    background: var(--surface); border: 1px solid var(--border);
+    border-radius: 18px; padding: 32px;
+    box-shadow: 0 30px 80px rgba(0,0,0,.35);
+  }
+  .ob-title {
+    font-family: 'Funnel Display', sans-serif; font-weight: 800;
+    font-size: 26px; letter-spacing: -.025em; line-height: 1.15;
+    color: var(--text); margin-bottom: 6px;
+  }
+  .ob-sub { font-size: 13.5px; color: var(--text-3); margin-bottom: 24px; line-height: 1.55; }
+
+  .panel { display: none; }
+  .panel.show { display: block; }
+
+  /* form */
+  .form-group { margin-bottom: 14px; }
+  .form-label {
+    display: block; font-family: 'Geist Mono', monospace; font-size: 10px;
+    color: var(--text-3); text-transform: uppercase; letter-spacing: .08em;
+    margin-bottom: 6px; font-weight: 600;
+  }
+  .form-input, .form-select, .form-textarea {
+    width: 100%; padding: 11px 14px; border-radius: 10px;
+    background: var(--surface-2); border: 1px solid var(--border);
+    color: var(--text); font: inherit; font-size: 14px;
+    outline: none; transition: all .15s; appearance: none;
+  }
+  .form-input:focus, .form-select:focus, .form-textarea:focus {
+    border-color: var(--lime); box-shadow: 0 0 0 3px rgba(217,255,58,.15);
+  }
+  .form-textarea { min-height: 100px; resize: vertical; line-height: 1.5; }
+  .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+  .form-hint { font-size: 11px; color: var(--text-4); margin-top: 4px; font-family: 'Geist Mono', monospace; }
+  .form-error { font-size: 11px; color: var(--orange); margin-top: 4px; min-height: 14px; }
+
+  /* avatar / foto */
+  .av-zone {
+    display: flex; align-items: center; gap: 14px;
+    padding: 14px; border: 1px dashed var(--border-2); border-radius: 14px;
+    background: var(--surface-2); cursor: pointer; transition: all .15s;
+    margin-bottom: 14px;
+  }
+  .av-zone:hover { border-color: var(--lime); }
+  .av-zone.dragover { border-color: var(--lime); background: rgba(217,255,58,.05); }
+  .av-preview {
+    width: 64px; height: 64px; border-radius: 50%;
+    background: linear-gradient(135deg, var(--lime), var(--orange));
+    display: grid; place-items: center; color: #0B0C0E;
+    font-weight: 800; font-size: 22px; flex-shrink: 0;
+    background-size: cover; background-position: center;
+  }
+  .av-zone-text { font-size: 13px; color: var(--text-2); }
+  .av-zone-text small { display: block; font-size: 11px; color: var(--text-4); margin-top: 2px; font-family: 'Geist Mono', monospace; }
+  .av-zone input[type="file"] { display: none; }
+
+  /* chips */
+  .chip-grid { display: flex; flex-wrap: wrap; gap: 8px; }
+  .chip {
+    padding: 7px 13px; border-radius: 999px; font-size: 12px; font-weight: 600;
+    background: var(--surface-2); border: 1px solid var(--border);
+    color: var(--text-3); cursor: pointer; transition: all .15s;
+  }
+  .chip:hover { border-color: var(--text-3); color: var(--text-2); }
+  .chip.sel { background: rgba(217,255,58,.12); border-color: var(--lime); color: var(--lime); }
+
+  /* radios */
+  .radio-group { display: flex; flex-direction: column; gap: 8px; }
+  .radio-row {
+    display: flex; align-items: center; gap: 10px;
+    background: var(--surface-2); border: 1px solid var(--border);
+    border-radius: 10px; padding: 11px 14px; cursor: pointer;
+    transition: all .15s; font-size: 13px;
+  }
+  .radio-row:hover { border-color: var(--text-3); }
+  .radio-row.sel { border-color: var(--lime); background: rgba(217,255,58,.06); }
+  .radio-dot {
+    width: 16px; height: 16px; border-radius: 50%;
+    border: 2px solid var(--border-2); flex-shrink: 0; position: relative;
+  }
+  .radio-row.sel .radio-dot { border-color: var(--lime); }
+  .radio-row.sel .radio-dot::after {
+    content: ''; position: absolute; inset: 2px;
+    border-radius: 50%; background: var(--lime);
+  }
+
+  /* live calc panel */
+  .calc-panel {
+    margin-top: 6px; padding: 12px 14px;
+    background: var(--surface-2); border: 1px solid var(--border);
+    border-radius: 10px; font-size: 13px; color: var(--text-2);
+    display: flex; align-items: center; gap: 8px;
+  }
+  .calc-panel.dim { color: var(--text-4); font-style: italic; }
+  .calc-panel strong { color: var(--lime); font-weight: 700; }
+
+  /* device cards */
+  .dev-cards { display: flex; flex-direction: column; gap: 10px; }
+  .dev-card {
+    border: 1px solid var(--border); border-radius: 12px;
+    padding: 14px; background: var(--surface-2);
+    display: flex; gap: 12px; align-items: flex-start;
+  }
+  .dev-icon {
+    width: 38px; height: 38px; border-radius: 10px;
+    background: var(--surface); border: 1px solid var(--border);
+    display: grid; place-items: center; flex-shrink: 0;
+  }
+  .dev-card-body { flex: 1; min-width: 0; }
+  .dev-card-title { font-weight: 700; font-size: 14px; margin-bottom: 2px; }
+  .dev-card-sub { font-size: 12px; color: var(--text-3); line-height: 1.45; }
+  .dev-actions { display: flex; gap: 6px; margin-top: 8px; flex-wrap: wrap; }
+  .dev-btn {
+    padding: 6px 11px; border-radius: 8px; font-size: 11px; font-weight: 600;
+    background: var(--surface); border: 1px solid var(--border); color: var(--text-2);
+    text-decoration: none; cursor: pointer;
+  }
+  .dev-btn:hover { border-color: var(--lime); color: var(--lime); }
+  .dev-badge {
+    font-family: 'Geist Mono', monospace; font-size: 10px; padding: 3px 8px;
+    border-radius: 999px; background: rgba(217,255,58,.1);
+    color: var(--lime); border: 1px solid rgba(217,255,58,.3);
+  }
+  .qr-square {
+    width: 56px; height: 56px; border-radius: 8px;
+    background: repeating-conic-gradient(#222 0 25%, #000 0 50%);
+    display: grid; place-items: center; font-size: 22px; color: var(--lime);
+    background: var(--surface); border: 1px dashed var(--border-2);
+  }
+
+  /* nav */
+  .ob-nav { display: flex; gap: 10px; margin-top: 24px; align-items: center; }
+  .btn-primary {
+    flex: 1; padding: 13px; border-radius: 10px;
+    background: var(--lime); color: #0B0C0E;
+    font-weight: 800; font-size: 14px; border: none; cursor: pointer;
+    transition: all .2s; font-family: 'Inter', sans-serif;
+  }
+  .btn-primary:hover { box-shadow: 0 0 24px rgba(217,255,58,.35); transform: translateY(-1px); }
+  .btn-back {
+    padding: 13px 16px; border-radius: 10px;
+    background: var(--surface-2); border: 1px solid var(--border);
+    color: var(--text-3); cursor: pointer; transition: all .15s;
+  }
+  .btn-back:hover { color: var(--text); border-color: var(--text-3); }
+  .btn-skip-later {
+    background: none; border: none; color: var(--text-4);
+    font-size: 12px; cursor: pointer; margin-left: auto;
+    text-decoration: none; transition: color .15s;
+  }
+  .btn-skip-later:hover { color: var(--text-2); text-decoration: underline; }
+
+  /* dev skip */
+  .dev-skip {
+    position: fixed; bottom: 16px; left: 16px; z-index: 50;
+    padding: 8px 12px; border-radius: 8px;
+    background: var(--surface-2); border: 1px solid var(--orange);
+    color: var(--orange); font-family: 'Geist Mono', monospace;
+    font-size: 11px; cursor: pointer; transition: all .15s;
+  }
+  .dev-skip:hover { background: var(--orange); color: #0B0C0E; }
+
+  /* preview card step 6 */
+  .preview-card {
+    border: 1px solid var(--border); border-radius: 14px;
+    padding: 18px; background: var(--surface-2);
+    text-align: center; margin-bottom: 14px;
+  }
+  .preview-av {
+    width: 72px; height: 72px; border-radius: 50%;
+    margin: 0 auto 10px; display: grid; place-items: center;
+    color: #0B0C0E; font-weight: 800; font-size: 26px;
+    background: linear-gradient(135deg, var(--lime), var(--orange));
+    background-size: cover; background-position: center;
+  }
+  .preview-name { font-family: 'Funnel Display', sans-serif; font-weight: 800; font-size: 19px; }
+  .preview-handle { font-size: 12px; color: var(--text-3); margin-top: 2px; font-family: 'Geist Mono', monospace; }
+  .preview-meta { font-size: 12px; color: var(--text-2); margin-top: 8px; }
+  .preview-bio { font-size: 12.5px; color: var(--text-3); margin-top: 8px; line-height: 1.5; font-style: italic; }
+  .preview-chips { display: flex; flex-wrap: wrap; gap: 6px; justify-content: center; margin-top: 10px; }
+  .preview-chip {
+    font-size: 11px; padding: 4px 10px; border-radius: 999px;
+    background: rgba(217,255,58,.1); color: var(--lime); border: 1px solid rgba(217,255,58,.3);
+  }
+  .progress-badge {
+    display: inline-flex; align-items: center; gap: 6px;
+    padding: 6px 12px; border-radius: 999px;
+    background: rgba(0,194,122,.1); border: 1px solid rgba(0,194,122,.3);
+    color: var(--green, #00C27A); font-size: 12px; font-weight: 700;
+    font-family: 'Geist Mono', monospace; margin-bottom: 14px;
+  }
+
+  /* confetti */
+  .confetti { position: fixed; inset: 0; pointer-events: none; z-index: 100; overflow: hidden; }
+  .confetti-piece {
+    position: absolute; width: 8px; height: 14px; top: -10px;
+    animation: confetti-fall linear forwards;
+  }
+  @keyframes confetti-fall {
+    to { transform: translateY(105vh) rotate(720deg); opacity: 0; }
+  }
+
+  @media (max-width: 560px) {
+    .ob-card { padding: 24px; }
+    .ob-title { font-size: 22px; }
+  }
+</style>
+</head>
+<body>
+
+<button class="dev-skip" id="dev-skip" title="Ctrl+Shift+D">⚡ Dev: skip</button>
+
+<div class="ob-topbar">
+  <span class="ob-time">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+    ~2 min
+  </span>
+  <span class="ob-login">Ya tengo cuenta · <a href="#">Iniciar sesión</a></span>
+</div>
+
+<div class="ob-progress-wrap">
+  <div class="ob-progress"><div class="ob-progress-bar" id="progress-bar"></div></div>
+</div>
+<div class="ob-step-counter" id="step-counter">Paso 1 de 6</div>
+
+<div class="ob-card">
+
+  <!-- STEP 1 · Identidad -->
+  <div class="panel show" id="panel-1">
+    <div class="ob-title">Empecemos por lo básico</div>
+    <div class="ob-sub">Esto será visible para tus compañeros.</div>
+
+    <label class="av-zone" id="av-zone">
+      <div class="av-preview" id="av-preview">?</div>
+      <div class="av-zone-text">
+        Subí tu foto
+        <small>arrástrala aquí o haz clic · jpg/png</small>
+      </div>
+      <input type="file" id="foto-input" accept="image/*" />
+    </label>
+
+    <div class="form-group">
+      <label class="form-label">Nombre completo</label>
+      <input class="form-input" id="in-nombre" type="text" placeholder="Ej: Juan Pérez" />
+      <div class="form-error" id="err-nombre"></div>
+    </div>
+
+    <div class="form-group">
+      <label class="form-label">@usuario</label>
+      <input class="form-input" id="in-handle" type="text" placeholder="@juan.perez" />
+      <div class="form-hint">letras, números y puntos · min 3</div>
+      <div class="form-error" id="err-handle"></div>
+    </div>
+
+    <div class="ob-nav">
+      <button class="btn-primary" data-next="2">Continuar →</button>
+      <a class="btn-skip-later" data-next="2">Lo completo después →</a>
+    </div>
+  </div>
+
+  <!-- STEP 2 · Universidad -->
+  <div class="panel" id="panel-2">
+    <div class="ob-title">Tu universidad</div>
+    <div class="ob-sub">Conectaremos tu calendario, notas y compañeros.</div>
+
+    <div class="form-group">
+      <label class="form-label">Universidad</label>
+      <input class="form-input" id="in-uni" list="uni-list" placeholder="Busca tu universidad…" autocomplete="off" />
+      <datalist id="uni-list"></datalist>
+    </div>
+
+    <div class="form-group">
+      <label class="form-label">Carrera</label>
+      <input class="form-input" id="in-carrera" type="text" placeholder="Ej: Ingeniería Civil Industrial" />
+    </div>
+
+    <div class="form-row">
+      <div class="form-group">
+        <label class="form-label">Mes inicio</label>
+        <select class="form-select" id="in-mes"></select>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Año inicio</label>
+        <select class="form-select" id="in-anio"></select>
+      </div>
+    </div>
+
+    <div class="form-group">
+      <label class="form-label">Sistema</label>
+      <div class="radio-group" id="grp-sistema">
+        <div class="radio-row sel" data-val="semestre"><div class="radio-dot"></div>Semestre</div>
+        <div class="radio-row" data-val="trimestre"><div class="radio-dot"></div>Trimestre</div>
+      </div>
+    </div>
+
+    <div class="calc-panel dim" id="calc-panel">📅 Completá los datos para ver tu progreso</div>
+
+    <div class="ob-nav">
+      <button class="btn-back" data-next="1">←</button>
+      <button class="btn-primary" data-next="3">Continuar →</button>
+      <a class="btn-skip-later" data-next="3">Lo completo después →</a>
+    </div>
+  </div>
+
+  <!-- STEP 3 · Vibe -->
+  <div class="panel" id="panel-3">
+    <div class="ob-title">Cuéntanos sobre ti</div>
+    <div class="ob-sub">Para que la gente te conozca · todo opcional.</div>
+
+    <div class="form-group">
+      <label class="form-label">Bio</label>
+      <textarea class="form-textarea" id="in-bio" placeholder="¿Qué te apasiona estudiar?"></textarea>
+      <div class="form-hint" id="bio-counter">0 / 300 palabras</div>
+    </div>
+
+    <div class="form-group">
+      <label class="form-label">Intereses · max 5</label>
+      <div class="chip-grid" id="chip-intereses"></div>
+    </div>
+
+    <div class="ob-nav">
+      <button class="btn-back" data-next="2">←</button>
+      <button class="btn-primary" data-next="4">Continuar →</button>
+      <a class="btn-skip-later" data-next="4">Lo completo después →</a>
+    </div>
+  </div>
+
+  <!-- STEP 4 · Privacidad -->
+  <div class="panel" id="panel-4">
+    <div class="ob-title">Tu privacidad</div>
+    <div class="ob-sub">Puedes cambiarlo cuando quieras.</div>
+
+    <div class="form-group">
+      <label class="form-label">¿Quién ve mi perfil?</label>
+      <div class="radio-group" id="grp-perfil">
+        <div class="radio-row" data-val="all"><div class="radio-dot"></div>Cualquiera</div>
+        <div class="radio-row sel" data-val="mi-u"><div class="radio-dot"></div>Solo mi U</div>
+        <div class="radio-row" data-val="amigos"><div class="radio-dot"></div>Solo amigos</div>
+      </div>
+    </div>
+
+    <div class="form-group">
+      <label class="form-label">¿Quién puede mensajearme?</label>
+      <div class="radio-group" id="grp-mensajes">
+        <div class="radio-row" data-val="all"><div class="radio-dot"></div>Cualquiera verificado</div>
+        <div class="radio-row sel" data-val="mi-u"><div class="radio-dot"></div>Solo mi U</div>
+        <div class="radio-row" data-val="amigos"><div class="radio-dot"></div>Solo amigos</div>
+      </div>
+    </div>
+
+    <div class="ob-nav">
+      <button class="btn-back" data-next="3">←</button>
+      <button class="btn-primary" data-next="5">Continuar →</button>
+      <a class="btn-skip-later" data-next="5">Lo completo después →</a>
+    </div>
+  </div>
+
+  <!-- STEP 5 · Dispositivos -->
+  <div class="panel" id="panel-5">
+    <div class="ob-title">Lleva Conniku contigo</div>
+    <div class="ob-sub">Sincroniza tu universidad y estudia donde quieras.</div>
+
+    <div class="dev-cards">
+      <div class="dev-card">
+        <div class="dev-icon">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#D9FF3A" stroke-width="2"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="4"/><line x1="21.17" y1="8" x2="12" y2="8"/><line x1="3.95" y1="6.06" x2="8.54" y2="14"/><line x1="10.88" y1="21.94" x2="15.46" y2="14"/></svg>
+        </div>
+        <div class="dev-card-body">
+          <div class="dev-card-title">Extensión Chrome</div>
+          <div class="dev-card-sub">Captura apuntes y citas desde cualquier sitio · sincroniza con tu Mi U</div>
+          <div class="dev-actions"><a href="#" class="dev-btn">Instalar</a></div>
+        </div>
+      </div>
+
+      <div class="dev-card">
+        <div class="dev-icon">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="#D9FF3A"><path d="M17.05 20.28c-.98.95-2.05.94-3.08.41-1.09-.54-2.08-.55-3.22 0-1.43.73-2.18.51-3.06-.41C2.79 15.25 3.51 7.59 9.05 7.31c1.35.07 2.29.74 3.08.79 1.18-.22 2.31-.84 3.57-.78 1.51.07 2.65.66 3.4 1.71-3.12 1.93-2.38 6.05.48 7.27-.57 1.5-1.31 3-2.54 3.99zM12.03 7.25c-.15-2.23 1.66-4.07 3.74-4.25.29 2.58-2.34 4.5-3.74 4.25z"/></svg>
+        </div>
+        <div class="dev-card-body">
+          <div class="dev-card-title">App móvil</div>
+          <div class="dev-card-sub">iOS · iPadOS · Android · Tablet</div>
+          <div class="dev-actions">
+            <a href="#" class="dev-btn">App Store</a>
+            <a href="#" class="dev-btn">Google Play</a>
+          </div>
+        </div>
+        <div class="qr-square">📱</div>
+      </div>
+
+      <div class="dev-card">
+        <div class="dev-icon">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#D9FF3A" stroke-width="2"><rect x="2" y="3" width="20" height="14" rx="2" ry="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/></svg>
+        </div>
+        <div class="dev-card-body">
+          <div class="dev-card-title">Tus dispositivos <span class="dev-badge" id="dev-count">Conectados: 1 / 2</span></div>
+          <div class="dev-card-sub" title="Por seguridad, máximo 2 dispositivos activos · evitamos perfiles falsos">
+            Por seguridad, máximo 2 dispositivos activos · evitamos perfiles falsos
+          </div>
+          <!-- TODO backend: validar fingerprint + límite server-side -->
+        </div>
+      </div>
+    </div>
+
+    <div class="ob-nav">
+      <button class="btn-back" data-next="4">←</button>
+      <button class="btn-primary" data-next="6">Continuar →</button>
+      <a class="btn-skip-later" data-next="6">Lo completo después →</a>
+    </div>
+  </div>
+
+  <!-- STEP 6 · Listo -->
+  <div class="panel" id="panel-6">
+    <div class="ob-title">¡Tu Orbit·U está listo!</div>
+    <div class="ob-sub">Así te verán tus compañeros.</div>
+
+    <div class="progress-badge" id="completion-badge">✓ 0% perfil completado</div>
+
+    <div class="preview-card">
+      <div class="preview-av" id="prev-av">?</div>
+      <div class="preview-name" id="prev-name">—</div>
+      <div class="preview-handle" id="prev-handle">@—</div>
+      <div class="preview-meta" id="prev-meta">—</div>
+      <div class="preview-bio" id="prev-bio"></div>
+      <div class="preview-chips" id="prev-chips"></div>
+    </div>
+
+    <div class="ob-nav">
+      <button class="btn-primary" id="btn-finish">Entrar a tu Orbit·U →</button>
+    </div>
+  </div>
+
+</div>
+
+<script>
+/* ═══ DATA ═══ */
+const UNIS = [
+  'Universidad de Chile', 'Pontificia Universidad Católica de Chile',
+  'Universidad de Santiago de Chile', 'Universidad Adolfo Ibáñez',
+  'Universidad de los Andes', 'Universidad Técnica Federico Santa María',
+  'Universidad Diego Portales', 'Universidad de Concepción',
+  'Universidad Austral', 'Pontificia Universidad Católica de Valparaíso',
+  'Universidad de Tarapacá', 'Universidad de Antofagasta',
+  'Universidad Mayor', 'Universidad del Desarrollo', 'Universidad Andrés Bello',
+  'UTEM', 'INACAP', 'DUOC UC', 'Universidad de la Frontera', 'Universidad Católica del Norte'
+];
+const INTERESES = [
+  'Diseño', 'Código', 'IA', 'Investigación', 'Negocios', 'Arte',
+  'Música', 'Deporte', 'Lectura', 'Viajes', 'Voluntariado',
+  'Emprendimiento', 'Ciencia', 'Filosofía', 'Cine', 'Fotografía'
+];
+const MOCK = {
+  foto: null,
+  nombre: 'Dev User',
+  handle: '@dev.user',
+  bio: 'Probando Conniku · estudiante de Ingeniería',
+  universidad: 'Universidad de Chile',
+  carrera: 'Ingeniería Civil Industrial',
+  fechaInicio: { mes: 3, año: 2023 },
+  sistema: 'semestre',
+  intereses: ['Diseño', 'Código', 'IA'],
+  privacidad: { perfilVisible: 'mi-u', mensajesDe: 'mi-u' },
+  dispositivos: { connected: 1, max: 2, fingerprint: 'dev-fp-001' }
+};
+
+/* ═══ STATE ═══ */
+const STORAGE_KEY = 'conniku-user-v1';
+const TOTAL = 6;
+let current = 1;
+const state = loadState();
+
+function emptyState() {
+  return {
+    profile: { foto: null, nombre: '', handle: '', bio: '', universidad: '', carrera: '', fechaInicio: { mes: null, año: null }, sistema: 'semestre' },
+    intereses: [],
+    privacidad: { perfilVisible: 'mi-u', mensajesDe: 'mi-u' },
+    dispositivos: { connected: 1, max: 2, fingerprint: null },
+    completed: false,
+    completedAt: null
+  };
+}
+function loadState() {
+  try {
+    const raw = localStorage.getItem(STORAGE_KEY);
+    if (raw) return Object.assign(emptyState(), JSON.parse(raw));
+  } catch (e) {}
+  return emptyState();
+}
+function saveState() {
+  localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+}
+
+/* ═══ HELPERS ═══ */
+function slugifyName(name) {
+  return (name || '').toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g, '')
+    .replace(/[^a-z0-9\s.]/g, '').trim().split(/\s+/).slice(0, 2).join('.').slice(0, 20);
+}
+function calcSemestre(mesIni, anioIni, sistema) {
+  const ahora = new Date();
+  const meses = (ahora.getFullYear() - anioIni) * 12 + (ahora.getMonth() + 1 - mesIni);
+  const periodo = sistema === 'semestre' ? 6 : 4;
+  const actual = Math.max(1, Math.floor(meses / periodo) + 1);
+  const años = Math.floor(meses / 12);
+  const mesesRestantes = meses % 12;
+  return {
+    actual,
+    label: sistema === 'semestre' ? `${actual}° semestre` : `${actual}° trimestre`,
+    tiempoEnU: `${años} año${años !== 1 ? 's' : ''}, ${mesesRestantes} ${mesesRestantes !== 1 ? 'meses' : 'mes'}`
+  };
+}
+function calcAvancePerfil(d) {
+  const fields = [d?.profile?.foto, d?.profile?.nombre, d?.profile?.handle, d?.profile?.bio, d?.profile?.universidad, d?.profile?.carrera, d?.profile?.fechaInicio?.año, d?.profile?.sistema, d?.intereses?.length > 0];
+  return Math.round((fields.filter(Boolean).length / fields.length) * 100);
+}
+function avatarColors(name) {
+  const palettes = ['#FF4A1C,#FFA042', '#D9FF3A,#A8C92E', '#00C2FF,#0098CC', '#8B6FFF,#6B4EFF', '#00C87A,#00A866'];
+  let hash = 0; for (const c of (name || '?')) hash = (hash + c.charCodeAt(0)) % palettes.length;
+  return palettes[hash];
+}
+function initials(name) {
+  return (name || '?').split(' ').filter(Boolean).slice(0, 2).map(s => s[0]).join('').toUpperCase() || '?';
+}
+function getFingerprint() {
+  const data = navigator.userAgent + screen.width + screen.height + screen.colorDepth + new Date().getTimezoneOffset() + (navigator.language || '');
+  let hash = 0;
+  for (let i = 0; i < data.length; i++) hash = ((hash << 5) - hash + data.charCodeAt(i)) | 0;
+  return 'dev-' + Math.abs(hash).toString(16);
+}
+
+/* ═══ NAV ═══ */
+function goStep(n) {
+  if (n < 1 || n > TOTAL) return;
+  document.getElementById('panel-' + current).classList.remove('show');
+  current = n;
+  document.getElementById('panel-' + current).classList.add('show');
+  document.getElementById('progress-bar').style.width = (current / TOTAL * 100) + '%';
+  document.getElementById('step-counter').textContent = `Paso ${current} de ${TOTAL}`;
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+  if (current === 5) ensureFingerprint();
+  if (current === 6) renderPreview();
+}
+
+document.querySelectorAll('[data-next]').forEach(el => {
+  el.addEventListener('click', (e) => {
+    e.preventDefault();
+    const n = parseInt(el.dataset.next, 10);
+    const isSkip = el.classList.contains('btn-skip-later');
+    // collect current step state if user is leaving forward
+    if (n > current) collectStep(current, isSkip);
+    if (current === 1 && n > 1 && !isSkip) {
+      if (!validateStep1()) return;
+    }
+    goStep(n);
+    saveState();
+  });
+});
+
+/* ═══ STEP 1 · IDENTIDAD ═══ */
+const inNombre = document.getElementById('in-nombre');
+const inHandle = document.getElementById('in-handle');
+const avPreview = document.getElementById('av-preview');
+const avZone = document.getElementById('av-zone');
+const fotoInput = document.getElementById('foto-input');
+
+function refreshAvatarPreview() {
+  if (state.profile.foto) {
+    avPreview.style.backgroundImage = `url(${state.profile.foto})`;
+    avPreview.textContent = '';
+  } else {
+    const [c1, c2] = avatarColors(state.profile.nombre).split(',');
+    avPreview.style.backgroundImage = `linear-gradient(135deg, ${c1}, ${c2})`;
+    avPreview.textContent = initials(state.profile.nombre);
+  }
+}
+inNombre.addEventListener('input', () => {
+  state.profile.nombre = inNombre.value;
+  if (!inHandle.dataset.touched) {
+    const slug = slugifyName(inNombre.value);
+    inHandle.value = slug ? '@' + slug : '';
+    state.profile.handle = inHandle.value;
+  }
+  refreshAvatarPreview();
+});
+inHandle.addEventListener('input', () => {
+  inHandle.dataset.touched = '1';
+  state.profile.handle = inHandle.value;
+});
+
+function readFile(file) {
+  if (!file) return;
+  const r = new FileReader();
+  r.onload = e => {
+    state.profile.foto = e.target.result;
+    refreshAvatarPreview();
+    saveState();
+  };
+  r.readAsDataURL(file);
+}
+fotoInput.addEventListener('change', e => readFile(e.target.files[0]));
+['dragover','dragenter'].forEach(ev => avZone.addEventListener(ev, e => { e.preventDefault(); avZone.classList.add('dragover'); }));
+['dragleave','drop'].forEach(ev => avZone.addEventListener(ev, e => { e.preventDefault(); avZone.classList.remove('dragover'); }));
+avZone.addEventListener('drop', e => { if (e.dataTransfer.files.length) readFile(e.dataTransfer.files[0]); });
+
+function validateStep1() {
+  let ok = true;
+  const errN = document.getElementById('err-nombre');
+  const errH = document.getElementById('err-handle');
+  errN.textContent = ''; errH.textContent = '';
+  if ((inNombre.value || '').trim().length < 2) { errN.textContent = 'Min 2 caracteres'; ok = false; }
+  const h = (inHandle.value || '').replace(/^@/, '');
+  if (h.length < 3 || !/^[a-zA-Z0-9.]+$/.test(h)) { errH.textContent = 'Min 3 chars · letras, números y puntos'; ok = false; }
+  return ok;
+}
+
+/* ═══ STEP 2 · UNIVERSIDAD ═══ */
+const dl = document.getElementById('uni-list');
+UNIS.forEach(u => { const o = document.createElement('option'); o.value = u; dl.appendChild(o); });
+const inUni = document.getElementById('in-uni');
+const inCarrera = document.getElementById('in-carrera');
+const selMes = document.getElementById('in-mes');
+const selAnio = document.getElementById('in-anio');
+const MESES = ['Enero','Febrero','Marzo','Abril','Mayo','Junio','Julio','Agosto','Septiembre','Octubre','Noviembre','Diciembre'];
+selMes.innerHTML = '<option value="">Mes</option>' + MESES.map((m, i) => `<option value="${i+1}">${m}</option>`).join('');
+const yearNow = new Date().getFullYear();
+selAnio.innerHTML = '<option value="">Año</option>' + Array.from({length: 8}, (_,i) => yearNow - i).map(y => `<option value="${y}">${y}</option>`).join('');
+
+const calcPanel = document.getElementById('calc-panel');
+function updateCalc() {
+  const m = parseInt(selMes.value, 10);
+  const a = parseInt(selAnio.value, 10);
+  const sis = document.querySelector('#grp-sistema .radio-row.sel')?.dataset.val || 'semestre';
+  if (m && a) {
+    const r = calcSemestre(m, a, sis);
+    calcPanel.classList.remove('dim');
+    calcPanel.innerHTML = `📅 Estás en <strong>${r.label}</strong> · llevas <strong>${r.tiempoEnU}</strong>`;
+  } else {
+    calcPanel.classList.add('dim');
+    calcPanel.textContent = '📅 Completá los datos para ver tu progreso';
+  }
+}
+[inUni, inCarrera, selMes, selAnio].forEach(el => el.addEventListener('input', updateCalc));
+document.querySelectorAll('#grp-sistema .radio-row').forEach(r => {
+  r.addEventListener('click', () => {
+    document.querySelectorAll('#grp-sistema .radio-row').forEach(x => x.classList.remove('sel'));
+    r.classList.add('sel'); updateCalc();
+  });
+});
+
+/* ═══ STEP 3 · VIBE ═══ */
+const inBio = document.getElementById('in-bio');
+const bioCounter = document.getElementById('bio-counter');
+function countWords(s){ return (s.trim().match(/\S+/g) || []).length; }
+inBio.addEventListener('input', () => {
+  let w = countWords(inBio.value);
+  if (w > 300) {
+    const words = inBio.value.trim().split(/\s+/).slice(0, 300);
+    inBio.value = words.join(' ');
+    w = 300;
+  }
+  bioCounter.textContent = `${w} / 300 palabras`;
+});
+
+const chipBox = document.getElementById('chip-intereses');
+INTERESES.forEach(it => {
+  const c = document.createElement('div');
+  c.className = 'chip'; c.textContent = it; c.dataset.val = it;
+  c.addEventListener('click', () => {
+    if (c.classList.contains('sel')) {
+      c.classList.remove('sel');
+      state.intereses = state.intereses.filter(x => x !== it);
+    } else {
+      if (state.intereses.length >= 5) return;
+      c.classList.add('sel');
+      state.intereses.push(it);
+    }
+    saveState();
+  });
+  chipBox.appendChild(c);
+});
+
+/* ═══ STEP 4 · PRIVACIDAD ═══ */
+function bindRadio(groupId, onPick) {
+  document.querySelectorAll(`#${groupId} .radio-row`).forEach(r => {
+    r.addEventListener('click', () => {
+      document.querySelectorAll(`#${groupId} .radio-row`).forEach(x => x.classList.remove('sel'));
+      r.classList.add('sel'); onPick(r.dataset.val);
+    });
+  });
+}
+bindRadio('grp-perfil', v => { state.privacidad.perfilVisible = v; saveState(); });
+bindRadio('grp-mensajes', v => { state.privacidad.mensajesDe = v; saveState(); });
+
+/* ═══ STEP 5 · DISPOSITIVOS ═══ */
+function ensureFingerprint() {
+  if (!state.dispositivos.fingerprint) {
+    state.dispositivos.fingerprint = getFingerprint();
+    localStorage.setItem('conniku-device-fp', state.dispositivos.fingerprint);
+    saveState();
+  }
+  document.getElementById('dev-count').textContent = `Conectados: ${state.dispositivos.connected} / ${state.dispositivos.max}`;
+}
+
+/* ═══ STEP 6 · PREVIEW ═══ */
+function renderPreview() {
+  const p = state.profile;
+  const av = document.getElementById('prev-av');
+  if (p.foto) { av.style.backgroundImage = `url(${p.foto})`; av.textContent = ''; }
+  else {
+    const [c1, c2] = avatarColors(p.nombre).split(',');
+    av.style.backgroundImage = `linear-gradient(135deg, ${c1}, ${c2})`;
+    av.textContent = initials(p.nombre);
+  }
+  document.getElementById('prev-name').textContent = p.nombre || '—';
+  document.getElementById('prev-handle').textContent = p.handle ? (p.handle.startsWith('@') ? p.handle : '@' + p.handle) : '@—';
+  const meta = [];
+  if (p.universidad) meta.push(p.universidad);
+  if (p.carrera) meta.push(p.carrera);
+  if (p.fechaInicio?.mes && p.fechaInicio?.año) {
+    meta.push(calcSemestre(p.fechaInicio.mes, p.fechaInicio.año, p.sistema).label);
+  }
+  document.getElementById('prev-meta').textContent = meta.join(' · ') || '—';
+  document.getElementById('prev-bio').textContent = p.bio ? `"${p.bio}"` : '';
+  const chipsBox = document.getElementById('prev-chips');
+  chipsBox.innerHTML = '';
+  state.intereses.forEach(i => {
+    const c = document.createElement('span'); c.className = 'preview-chip'; c.textContent = i; chipsBox.appendChild(c);
+  });
+  const pct = calcAvancePerfil(state);
+  document.getElementById('completion-badge').textContent = `✓ ${pct}% perfil completado`;
+  fireConfetti();
+}
+
+/* ═══ COLLECT FROM UI ═══ */
+function collectStep(step, isSkip) {
+  if (step === 1) {
+    state.profile.nombre = inNombre.value.trim();
+    state.profile.handle = inHandle.value.trim();
+  } else if (step === 2) {
+    state.profile.universidad = inUni.value.trim();
+    state.profile.carrera = inCarrera.value.trim();
+    state.profile.fechaInicio.mes = parseInt(selMes.value, 10) || null;
+    state.profile.fechaInicio.año = parseInt(selAnio.value, 10) || null;
+    state.profile.sistema = document.querySelector('#grp-sistema .radio-row.sel')?.dataset.val || 'semestre';
+  } else if (step === 3) {
+    state.profile.bio = inBio.value.trim();
+  }
+}
+
+/* ═══ HYDRATE FORMS FROM STATE ═══ */
+function hydrate() {
+  const p = state.profile;
+  inNombre.value = p.nombre || '';
+  inHandle.value = p.handle || '';
+  if (p.handle) inHandle.dataset.touched = '1';
+  inUni.value = p.universidad || '';
+  inCarrera.value = p.carrera || '';
+  if (p.fechaInicio?.mes) selMes.value = p.fechaInicio.mes;
+  if (p.fechaInicio?.año) selAnio.value = p.fechaInicio.año;
+  document.querySelectorAll('#grp-sistema .radio-row').forEach(r => {
+    r.classList.toggle('sel', r.dataset.val === (p.sistema || 'semestre'));
+  });
+  inBio.value = p.bio || '';
+  bioCounter.textContent = `${countWords(inBio.value)} / 300 palabras`;
+  document.querySelectorAll('#chip-intereses .chip').forEach(c => {
+    c.classList.toggle('sel', state.intereses.includes(c.dataset.val));
+  });
+  document.querySelectorAll('#grp-perfil .radio-row').forEach(r => r.classList.toggle('sel', r.dataset.val === state.privacidad.perfilVisible));
+  document.querySelectorAll('#grp-mensajes .radio-row').forEach(r => r.classList.toggle('sel', r.dataset.val === state.privacidad.mensajesDe));
+  refreshAvatarPreview();
+  updateCalc();
+}
+hydrate();
+
+/* ═══ FINISH ═══ */
+document.getElementById('btn-finish').addEventListener('click', () => {
+  state.completed = true;
+  state.completedAt = new Date().toISOString();
+  saveState();
+  window.location.href = 'orbit-u.html';
+});
+
+/* ═══ DEV SKIP ═══ */
+function devSkip() {
+  Object.assign(state.profile, {
+    foto: MOCK.foto, nombre: MOCK.nombre, handle: MOCK.handle, bio: MOCK.bio,
+    universidad: MOCK.universidad, carrera: MOCK.carrera,
+    fechaInicio: { ...MOCK.fechaInicio }, sistema: MOCK.sistema
+  });
+  state.intereses = [...MOCK.intereses];
+  state.privacidad = { ...MOCK.privacidad };
+  state.dispositivos = { ...MOCK.dispositivos };
+  saveState();
+  hydrate();
+  goStep(6);
+}
+document.getElementById('dev-skip').addEventListener('click', devSkip);
+window.addEventListener('keydown', e => {
+  if (e.ctrlKey && e.shiftKey && (e.key === 'D' || e.key === 'd')) {
+    e.preventDefault(); devSkip();
+  }
+});
+
+/* ═══ CONFETTI ═══ */
+function fireConfetti() {
+  if (document.querySelector('.confetti')) return;
+  const wrap = document.createElement('div'); wrap.className = 'confetti';
+  document.body.appendChild(wrap);
+  const colors = ['#D9FF3A','#FF4A1C','#00C27A','#8B6FFF','#00C2FF'];
+  for (let i = 0; i < 60; i++) {
+    const p = document.createElement('div');
+    p.className = 'confetti-piece';
+    p.style.left = Math.random() * 100 + '%';
+    p.style.background = colors[i % colors.length];
+    p.style.animationDuration = (1.5 + Math.random() * 2) + 's';
+    p.style.animationDelay = (Math.random() * .5) + 's';
+    p.style.transform = `rotate(${Math.random()*360}deg)`;
+    wrap.appendChild(p);
+  }
+  setTimeout(() => wrap.remove(), 4500);
+}
+
+/* init progress bar */
+goStep(1);
+</script>
+<script src="../shared/theme-loader.js"></script>
+</body>
+</html>

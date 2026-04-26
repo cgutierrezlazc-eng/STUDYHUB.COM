@@ -1,0 +1,371 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Athena · Conniku</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Funnel+Display:wght@400;600;700;800;900&family=Inter:wght@400;500;600;700&family=Geist+Mono:wght@400;500;600&display=swap" />
+<link rel="stylesheet" href="../shared/tokens.css" />
+<link rel="stylesheet" href="../shared/base.css" />
+<link rel="stylesheet" href="../shared/nav.css" />
+<link rel="stylesheet" href="../shared/sidebar.css" />
+<style>
+  :root { --mod: #7C3AED; --mod-2: rgba(107,78,255,0.10); --mod-3: #B8A6FF; }
+
+  .layout {
+    display: grid;
+    grid-template-columns: 240px 1fr 260px;
+    height: calc(100vh - 57px);
+  }
+
+  /* ── Historial ── */
+  .history {
+    background: var(--surface); border-right: 1px solid var(--border);
+    display: flex; flex-direction: column; overflow: hidden;
+  }
+  .history-top {
+    padding: 14px 14px 10px; border-bottom: 1px solid var(--border);
+  }
+  .history-label {
+    font-family: 'Geist Mono', monospace; font-size: 10px;
+    font-weight: 600; letter-spacing: .1em; text-transform: uppercase;
+    color: var(--text-4); margin-bottom: 8px; display: block;
+  }
+  .new-chat-btn {
+    width: 100%; padding: 8px 12px; border-radius: 8px;
+    background: var(--mod-2); border: 1px solid rgba(107,78,255,0.3);
+    color: var(--mod-3); font-size: 11px; font-weight: 600;
+    cursor: pointer; display: flex; align-items: center; gap: 6px; transition: all .15s;
+  }
+  .new-chat-btn:hover { background: rgba(107,78,255,0.16); }
+  .new-chat-btn svg { width: 13px; height: 13px; }
+
+  .history-scroll { flex: 1; overflow-y: auto; padding: 8px; }
+  .hist-section { font-family: 'Geist Mono', monospace; font-size: 9px; color: var(--text-4); text-transform: uppercase; letter-spacing: .1em; padding: 8px 8px 4px; }
+  .hist-item {
+    padding: 8px 10px; border-radius: 7px; cursor: pointer;
+    font-size: 12px; color: var(--text-3); transition: all .14s;
+    white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+    border: 1px solid transparent;
+  }
+  .hist-item:hover { background: var(--surface-2); color: var(--text); }
+  .hist-item.active { background: var(--mod-2); border-color: rgba(107,78,255,0.2); color: var(--mod-3); }
+
+  /* ── Chat ── */
+  .chat-area { display: flex; flex-direction: column; background: var(--bg); position: relative; }
+
+  /* Ambient glow */
+  .chat-area::before {
+    content: ""; position: absolute; inset: 0; pointer-events: none; z-index: 0;
+    background: radial-gradient(ellipse at 50% 0%, rgba(107,78,255,0.08), transparent 60%);
+  }
+
+  .chat-msgs { flex: 1; overflow-y: auto; padding: 28px 32px; display: flex; flex-direction: column; gap: 20px; position: relative; z-index: 1; }
+
+  /* Intro state */
+  .athena-intro { display: flex; flex-direction: column; align-items: center; text-align: center; padding: 40px 0 20px; gap: 14px; }
+  .athena-orb {
+    width: 64px; height: 64px; border-radius: 50%;
+    background: radial-gradient(circle at 35% 30%, #B8A6FF, #6B4EFF 50%, #3B1FA8);
+    box-shadow: 0 0 0 8px rgba(107,78,255,0.10), 0 0 40px rgba(107,78,255,0.30);
+    display: grid; place-items: center;
+  }
+  .athena-orb svg { width: 28px; height: 28px; color: #fff; }
+  .athena-intro h2 {
+    font-family: 'Funnel Display', sans-serif; font-weight: 900;
+    font-size: 24px; letter-spacing: -.04em; color: var(--text);
+  }
+  .athena-intro p { font-size: 13px; color: var(--text-3); max-width: 380px; line-height: 1.6; }
+  .athena-chips { display: flex; flex-wrap: wrap; gap: 8px; justify-content: center; margin-top: 4px; }
+  .athena-chip {
+    padding: 7px 14px; border-radius: 999px; font-size: 12px;
+    background: var(--surface); border: 1px solid var(--border);
+    color: var(--text-2); cursor: pointer; transition: all .15s;
+  }
+  .athena-chip:hover { border-color: var(--mod-3); color: var(--mod-3); background: var(--mod-2); }
+
+  /* Mensajes */
+  .msg-row { display: flex; gap: 12px; max-width: 720px; }
+  .msg-row.user { align-self: flex-end; flex-direction: row-reverse; max-width: 600px; }
+  .msg-avatar {
+    width: 32px; height: 32px; border-radius: 50%; flex-shrink: 0; margin-top: 2px;
+    display: grid; place-items: center;
+  }
+  .msg-avatar.athena-av {
+    background: radial-gradient(circle at 35% 30%, #B8A6FF, #6B4EFF);
+    box-shadow: 0 0 10px rgba(107,78,255,0.35);
+  }
+  .msg-avatar.athena-av svg { width: 14px; height: 14px; color: #fff; }
+  .msg-avatar.user-av {
+    background: linear-gradient(135deg, var(--green-3), var(--green-2));
+    font-weight: 700; font-size: 11px; color: #0B0C0E;
+  }
+  .msg-content { display: flex; flex-direction: column; gap: 4px; }
+  .msg-sender-name { font-size: 10px; font-weight: 700; letter-spacing: .04em; text-transform: uppercase; color: var(--text-4); }
+  .msg-sender-name.athena { color: var(--mod-3); }
+  .msg-bubble {
+    padding: 12px 16px; border-radius: 14px;
+    font-size: 13px; line-height: 1.7; color: var(--text);
+  }
+  .msg-row .msg-bubble { background: var(--surface); border: 1px solid var(--border); border-radius: 4px 14px 14px 14px; }
+  .msg-row.user .msg-bubble { background: var(--mod-2); border: 1px solid rgba(107,78,255,0.2); border-radius: 14px 4px 14px 14px; }
+  .msg-bubble code {
+    font-family: 'Geist Mono', monospace; font-size: 11.5px;
+    background: var(--surface-2); padding: 1px 5px; border-radius: 4px;
+    color: var(--mod-3);
+  }
+  .msg-bubble .code-block {
+    display: block; background: var(--surface-2); border: 1px solid var(--border);
+    border-radius: 8px; padding: 12px 14px; margin: 10px 0;
+    font-family: 'Geist Mono', monospace; font-size: 11px;
+    color: var(--text-2); overflow-x: auto; white-space: pre;
+  }
+  .msg-actions { display: flex; gap: 6px; margin-top: 4px; }
+  .msg-action-btn {
+    font-family: 'Geist Mono', monospace; font-size: 9px; font-weight: 600;
+    padding: 3px 9px; border-radius: 4px;
+    background: var(--surface-2); border: 1px solid var(--border);
+    color: var(--text-4); cursor: pointer; transition: all .15s;
+    letter-spacing: .04em;
+  }
+  .msg-action-btn:hover { border-color: var(--mod-3); color: var(--mod-3); }
+  .msg-time { font-family: 'Geist Mono', monospace; font-size: 9px; color: var(--text-4); }
+
+  /* Typing indicator */
+  .typing { display: flex; align-items: center; gap: 4px; padding: 10px 14px; }
+  .typing span { width: 6px; height: 6px; border-radius: 50%; background: var(--mod-3); animation: bounce .8s ease-in-out infinite; }
+  .typing span:nth-child(2) { animation-delay: .15s; }
+  .typing span:nth-child(3) { animation-delay: .30s; }
+  @keyframes bounce { 0%,100%{transform:translateY(0)} 50%{transform:translateY(-5px)} }
+
+  /* ── Input ── */
+  .chat-input-area { padding: 16px 32px 20px; position: relative; z-index: 1; }
+  .chat-input-box {
+    background: var(--surface); border: 1px solid var(--border);
+    border-radius: 14px; overflow: hidden;
+    transition: border-color .18s, box-shadow .18s;
+  }
+  .chat-input-box:focus-within {
+    border-color: var(--mod); box-shadow: 0 0 0 4px rgba(107,78,255,0.10);
+  }
+  .chat-input-box textarea {
+    width: 100%; background: transparent; border: 0; outline: 0;
+    font-family: inherit; font-size: 13px; color: var(--text);
+    padding: 12px 14px; resize: none; min-height: 48px; max-height: 160px;
+    display: block;
+  }
+  .chat-input-box textarea::placeholder { color: var(--text-4); }
+  .chat-input-footer {
+    padding: 6px 10px; display: flex; align-items: center; justify-content: space-between;
+    border-top: 1px solid var(--border-2);
+  }
+  .ctx-chip {
+    display: inline-flex; align-items: center; gap: 6px;
+    font-family: 'Geist Mono', monospace; font-size: 9px; font-weight: 600;
+    color: var(--mod-3); background: var(--mod-2); padding: 3px 9px;
+    border-radius: 4px; border: 1px solid rgba(107,78,255,0.25);
+    letter-spacing: .04em;
+  }
+  .ctx-chip svg { width: 10px; height: 10px; }
+  .send-btn {
+    width: 30px; height: 30px; border-radius: 8px;
+    background: var(--mod); border: 0; cursor: pointer;
+    display: grid; place-items: center; color: #fff; transition: all .18s;
+  }
+  .send-btn:hover { background: #6B4EFF; box-shadow: 0 0 12px rgba(107,78,255,0.4); }
+
+  /* ── Panel contexto ── */
+  .ctx-panel {
+    background: var(--surface); border-left: 1px solid var(--border);
+    display: flex; flex-direction: column; overflow-y: auto;
+  }
+  .ctx-panel-head {
+    padding: 14px 16px; border-bottom: 1px solid var(--border);
+    font-size: 12px; font-weight: 700; color: var(--text);
+    display: flex; align-items: center; gap: 7px;
+  }
+  .ctx-panel-head svg { width: 14px; height: 14px; color: var(--mod-3); }
+  .ctx-section { padding: 12px 16px; border-bottom: 1px solid var(--border-2); }
+  .ctx-section-label { font-family: 'Geist Mono', monospace; font-size: 9.5px; color: var(--text-4); text-transform: uppercase; letter-spacing: .1em; margin-bottom: 8px; }
+  .ctx-item {
+    display: flex; align-items: center; gap: 8px; padding: 6px 0;
+    font-size: 12px; color: var(--text-2); cursor: pointer; transition: color .14s;
+  }
+  .ctx-item:hover { color: var(--text); }
+  .ctx-item svg { width: 13px; height: 13px; color: var(--mod-3); flex-shrink: 0; opacity: .6; }
+  .ctx-item.active svg { opacity: 1; }
+  .ctx-item.active { color: var(--mod-3); }
+  .ctx-toggle {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 7px 0; font-size: 12px; color: var(--text-2);
+  }
+  .toggle {
+    width: 30px; height: 16px; border-radius: 999px;
+    background: var(--border); position: relative; cursor: pointer; transition: background .15s;
+  }
+  .toggle.on { background: var(--mod); }
+  .toggle::after { content:""; position:absolute; top:2px; left:2px; width:12px; height:12px; border-radius:50%; background:#fff; transition: transform .15s; }
+  .toggle.on::after { transform: translateX(14px); }
+</style>
+</head>
+<body>
+
+<nav class="nav">
+  <div class="nav-inner">
+    <div class="nav-brand">
+      <a href="orbit-u.html" class="nav-back">
+        <span class="orbit-ico" aria-hidden="true"></span>
+        Orbit<span class="nav-back-u">·U</span>
+      </a>
+      <span class="nav-sep" aria-hidden="true"></span>
+      <a href="orbit-u.html" class="brand">conn<span>i</span>k<span class="u-pack">u<span class="dot">.</span></span></a>
+    </div>
+    <span class="nav-mod-name">Athena</span>
+    <div class="nav-right">
+      <button class="nav-ico" aria-label="Notificaciones">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" width="18" height="18"><path d="M18 8A6 6 0 006 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 01-3.46 0"/></svg>
+      </button>
+      <div class="nav-av">CG</div>
+    </div>
+  </div>
+</nav>
+
+<div class="layout">
+
+  <aside class="history">
+    <div class="history-top">
+      <span class="history-label">Conversaciones</span>
+      <button class="new-chat-btn">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 5v14M5 12h14"/></svg>
+        Nueva conversación
+      </button>
+    </div>
+    <div class="history-scroll">
+      <div class="hist-section">Hoy</div>
+      <div class="hist-item active">Cálculo III · series de potencias</div>
+      <div class="hist-item">Corrección ensayo epistemología</div>
+      <div class="hist-section">Esta semana</div>
+      <div class="hist-item">Algoritmo Dijkstra paso a paso</div>
+      <div class="hist-item">Flashcards Redes de Computadores</div>
+      <div class="hist-item">Resumen cap. 4 Sedgewick</div>
+      <div class="hist-section">Antes</div>
+      <div class="hist-item">Práctica SQL · consultas JOIN</div>
+      <div class="hist-item">Ideas para tesis NLP</div>
+      <div class="hist-item">Traducción abstract inglés</div>
+    </div>
+  </aside>
+
+  <main class="chat-area">
+    <div class="chat-msgs">
+
+      <div class="msg-row">
+        <div class="msg-avatar athena-av">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="12" r="3"/><path d="M12 2v3M12 19v3M4.22 4.22l2.12 2.12M17.66 17.66l2.12 2.12M2 12h3M19 12h3M4.22 19.78l2.12-2.12M17.66 6.34l2.12-2.12"/></svg>
+        </div>
+        <div class="msg-content">
+          <div class="msg-sender-name athena">Athena</div>
+          <div class="msg-bubble">Hola. Leí tu workspace <strong>Cálculo III · Resumen</strong>. Veo que estás trabajando en series de potencias. ¿Qué necesitas? Puedo explicar conceptos, generar ejercicios, o crear flashcards del material.</div>
+          <div class="msg-actions">
+            <button class="msg-action-btn">Generar flashcards</button>
+            <button class="msg-action-btn">Crear quiz</button>
+            <button class="msg-action-btn">Explicar concepto</button>
+          </div>
+          <div class="msg-time">09:48</div>
+        </div>
+      </div>
+
+      <div class="msg-row user">
+        <div class="msg-avatar user-av">CG</div>
+        <div class="msg-content">
+          <div class="msg-bubble">Explícame el radio de convergencia con un ejemplo concreto, me cuesta entender cuándo usar la fórmula de Cauchy-Hadamard vs el criterio de la razón</div>
+          <div class="msg-time">09:50</div>
+        </div>
+      </div>
+
+      <div class="msg-row">
+        <div class="msg-avatar athena-av">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="12" r="3"/><path d="M12 2v3M12 19v3M4.22 4.22l2.12 2.12M17.66 17.66l2.12 2.12M2 12h3M19 12h3M4.22 19.78l2.12-2.12M17.66 6.34l2.12-2.12"/></svg>
+        </div>
+        <div class="msg-content">
+          <div class="msg-sender-name athena">Athena</div>
+          <div class="msg-bubble">
+            Buena pregunta. Regla simple: <strong>usa el criterio de la razón cuando los coeficientes incluyen factoriales o potencias</strong>. Usa Cauchy-Hadamard cuando los coeficientes son más complejos o no aplica la razón.<br><br>
+            <strong>Ejemplo con criterio de la razón:</strong><br>
+            Serie: <code>Σ xⁿ/n!</code> (la serie de eˣ)<br>
+            L = lim |aₙ₊₁/aₙ| = lim |x/(n+1)| = 0 para todo x<br>
+            → R = ∞, converge en toda la recta real ✓<br><br>
+            <strong>Ejemplo con Cauchy-Hadamard:</strong><br>
+            Serie: <code>Σ (2n choose n) · xⁿ</code><br>
+            <span class="code-block">R = 1/limsup|cₙ|^(1/n)
+  cₙ = (2n choose n) ≈ 4ⁿ/√(πn)   [Stirling]
+  limsup|cₙ|^(1/n) = 4
+  → R = 1/4</span>
+            En este caso la razón daría 0/0 en el límite, por eso Cauchy-Hadamard es más directo.<br><br>
+            ¿Quieres que genere 3 ejercicios de práctica de este tema para tu examen del viernes?
+          </div>
+          <div class="msg-actions">
+            <button class="msg-action-btn">Sí, generar ejercicios</button>
+            <button class="msg-action-btn">Agregar a workspace</button>
+            <button class="msg-action-btn">Explicar Stirling</button>
+          </div>
+          <div class="msg-time">09:51</div>
+        </div>
+      </div>
+
+    </div>
+
+    <div class="chat-input-area">
+      <div class="chat-input-box">
+        <textarea placeholder="Pregunta a Athena sobre tus apuntes, materia o ejercicios..." rows="2"></textarea>
+        <div class="chat-input-footer">
+          <div class="ctx-chip">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M5 3h10l4 4v14H5z"/><path d="M15 3v4h4"/></svg>
+            Cálculo III · Resumen
+          </div>
+          <button class="send-btn" aria-label="Enviar">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" width="14" height="14"><path d="M22 2L11 13M22 2l-7 20-4-9-9-4 20-7z"/></svg>
+          </button>
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <aside class="ctx-panel">
+    <div class="ctx-panel-head">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="12" r="10"/><path d="M12 8v4l3 3"/></svg>
+      Contexto activo
+    </div>
+    <div class="ctx-section">
+      <div class="ctx-section-label">Workspaces</div>
+      <div class="ctx-item active">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M5 3h10l4 4v14H5z"/><path d="M15 3v4h4"/></svg>
+        Cálculo III · Resumen
+      </div>
+      <div class="ctx-item">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M5 3h10l4 4v14H5z"/><path d="M15 3v4h4"/></svg>
+        Apuntes Redes Comp.
+      </div>
+    </div>
+    <div class="ctx-section">
+      <div class="ctx-section-label">Modos</div>
+      <div class="ctx-toggle"><span>Explicar con ejemplos</span><div class="toggle on"></div></div>
+      <div class="ctx-toggle"><span>Modo examen</span><div class="toggle"></div></div>
+      <div class="ctx-toggle"><span>Citar fuentes</span><div class="toggle on"></div></div>
+      <div class="ctx-toggle"><span>Respuesta breve</span><div class="toggle"></div></div>
+    </div>
+    <div class="ctx-section">
+      <div class="ctx-section-label">Acciones rápidas</div>
+      <div class="ctx-item"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="2" y="7" width="20" height="14" rx="2"/><path d="M16 21V5a2 2 0 00-2-2h-4a2 2 0 00-2 2v16"/></svg>Generar flashcards</div>
+      <div class="ctx-item"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="12" r="10"/><path d="M12 8v4M12 16h.01"/></svg>Crear quiz de práctica</div>
+      <div class="ctx-item"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><path d="M14 2v6h6"/></svg>Resumir workspace</div>
+    </div>
+  </aside>
+
+</div>
+
+<script src="../shared/sidebar.js"></script>
+<script src="../shared/theme-loader.js"></script>
+</body>
+</html>
