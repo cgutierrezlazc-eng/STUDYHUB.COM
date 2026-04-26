@@ -1,6 +1,6 @@
 # Pendientes del proyecto Conniku — maestro priorizado
 
-**Última actualización**: 2026-04-18 tras Capa 5 sub-bloque 2b Workspaces.
+**Última actualización**: 2026-04-26 tras cleanup pre-Fase 2.1 (cierres parciales AUDITOR_BRIEFING #9/#10/#14).
 
 Este archivo consolida todos los pendientes conocidos para que Tori pueda
 presentarlos cuando Cristian pida "pendientes" o decida qué bloque emprender.
@@ -190,9 +190,11 @@ presentarlos cuando Cristian pida "pendientes" o decida qué bloque emprender.
 - `ai_workflow_routes.py` docstring dice "Gemini" pero código usa OpenAI (clarificar)
 - `.claude/session.lock` stale handling
 - ✅ `cleanup_production_db.py` movido a `backend/scripts/dangerous/` con guards ENV — CERRADO 2026-04-26 (commit `5c548e5`, AUDITOR_BRIEFING #10)
+- ✅ `handleLogin` en `src/pages/Start.tsx:507` cabled a `POST /auth/login` con error inline + tests TDD — CERRADO 2026-04-26 (commit `7ec63e7`, AUDITOR_BRIEFING #9 parcial)
+- ✅ Drift CLAUDE.md "Supabase" → PostgreSQL+SQLAlchemy (líneas 60/250/757) + `.claude/agents/backend-builder.md` líneas 3 y 105 — CERRADO 2026-04-26 (commit `9a734fc`, AUDITOR_BRIEFING #14)
 - `seed_ceo_profile.py` gitignore o mover (AUDITOR_BRIEFING #11, Moderado)
 - Cablear `handleRegistro` en `src/pages/Start.tsx:513` a `POST /auth/register` — bloque futuro separado, requiere armar `RegisterRequest` con 30+ campos legales (legal_session_token, age_declaration_accepted, accepted_text_version_hash, user_timezone, etc.) y agregar inputs faltantes en el modal de registro. Origen: AUDITOR_BRIEFING #9 (precisión 2026-04-26).
-- Limpiar TODOs de navegación legacy en `src/pages/Start.tsx:452,481` — los archivos `conniku.html` / `pages/conniku.html` referenciados ya fueron migrados a `docs/04-diseno/orbit-u/` con PR #57. Acción: remover los comentarios `// TODO: cuando se bridgee...` y dejar la navegación final actual. Origen: AUDITOR_BRIEFING #9 (precisión 2026-04-26).
+- Limpiar TODOs de navegación legacy en `src/pages/Start.tsx:454,483` — los archivos `conniku.html` / `pages/conniku.html` referenciados ya fueron migrados a `docs/04-diseno/orbit-u/` con PR #57. Acción: remover los comentarios `// TODO: cuando se bridgee...` y dejar la navegación final actual. Origen: AUDITOR_BRIEFING #9 (precisión 2026-04-26). Nota: tras cabling de handleLogin, las líneas se renumeraron de 452/481 a 454/483.
 
 ---
 
