@@ -1,186 +1,127 @@
 # Estado Actual del Proyecto — Conniku SpA
-## Punto de referencia: 22 de abril de 2026
+## Punto de referencia: 26 de abril de 2026
 
-**Mantenido por:** Tori (Asistente Interno)  
-**Próxima actualización recomendada:** Después del merge a `main`  
-**Rama activa de desarrollo:** `bloque-sandbox-integrity-v1`  
-**Rama de producción:** `main` (último PR mergeado: #27 · bloque-contact-tickets-v1)
-
----
-
-## 🟢 ¿Qué está funcionando hoy?
-
-### Plataforma web — Frontend
-
-| Módulo | Estado | Notas |
-|---|---|---|
-| Autenticación (login, registro, OAuth Google) | ✅ Activo | Gate de aceptación T&C activo |
-| Dashboard estudiante | ✅ Activo | — |
-| Dashboard tutor | ✅ Activo | Incluye boletas de honorarios |
-| Biblioteca de recursos | ✅ Activo | — |
-| Sistema de workspaces colaborativos | ✅ Activo | Lexical + Yjs |
-| Salas de estudio (Study Rooms) | ✅ Activo | — |
-| Tutorías (búsqueda, reserva, pago) | ✅ Activo | — |
-| Cursos y diploma | ✅ Activo | — |
-| Comunidades | ✅ Activo | — |
-| Calendario | ✅ Activo | — |
-| Chat / Mensajería | ✅ Activo | — |
-| Videoconferencias | ✅ Activo | — |
-| Sistema de quizzes | ✅ Activo | Hardening c3 aplicado |
-| Perfil CV | ✅ Activo | — |
-| Ofertas laborales | ✅ Activo | — |
-| Pomodoro | ✅ Activo | — |
-| Certificados | ✅ Activo | Verificación con hash |
-| Notificaciones push | ✅ Activo | FCM |
-| Bienestar (Wellness) | ✅ Activo | — |
-| Extensión del navegador (sync) | ✅ Activo | — |
-| Examen predictor (Asistente Virtual Athena) | ✅ Activo | Sin referencias a "IA" |
-| AI Workflows internos | ✅ Activo | Solo uso interno/CEO |
-| Mentoría | ✅ Activo | — |
-| Landing page pública | ✅ Activo | Rediseño v3 aplicado |
-| Suscripción (Free / Pro) | ✅ Activo | — |
-| Checkout / Pagos | ✅ Activo | MercadoPago (CLP) + PayPal (USD) |
-| Términos de Servicio (viewer) | ✅ Activo | v3.2.2 — actualizado hoy |
-| Política de Privacidad (viewer) | ✅ Activo | v2.4.2 |
-| Cookies (banner + policy) | ✅ Activo | v1.1.0 |
-| Panel Admin (CEO) | ✅ Activo | Acceso restringido por rol |
-| Panel RRHH | ✅ Activo | Nómina, contratos, FES |
-| **Total páginas TSX** | **218 archivos** | — |
-
-### Backend
-
-| Área | Estado | Notas |
-|---|---|---|
-| API FastAPI | ✅ Activo | ~**594 endpoints** |
-| Base de datos (PostgreSQL) | ✅ Activo | SQLAlchemy + migraciones auto |
-| Autenticación JWT | ✅ Activo | Middleware activo |
-| **Total módulos de rutas** | **~47 archivos `*_routes.py`** | — |
-| Tests backend | ✅ Activo | **36 archivos de test** |
-| Constantes legales Chile (labor_chile.py) | ✅ Activo | IMM, jornada, AFP, AFC, SIS |
-| Registro legal de versiones | ✅ Activo | Hashes SHA-256, gate de re-aceptación |
-
-### Integraciones externas
-
-| Servicio | Función | Estado |
-|---|---|---|
-| MercadoPago | Pagos CLP (Chile) | ✅ Activo |
-| PayPal | Pagos USD (internacional) | ✅ Activo |
-| Supabase | Storage de archivos | ✅ Activo |
-| Google OAuth | Login social | ✅ Activo |
-| FCM (Firebase) | Notificaciones push | ✅ Activo |
-| Anthropic (Claude) | Asistente Virtual Athena | ✅ Activo |
-| Zoho | Email corporativo | ✅ Activo |
-| Vercel | Hosting frontend | ✅ Activo |
-| Render | Hosting backend | ✅ Activo |
+**Mantenido por:** Tori (Asistente Interno)
+**Última actualización:** 2026-04-26 — post-auditoría pre-Fase 2.1 (PRs #43 #51 #54 #55 mergeados)
+**Rama de producción:** `main` — 5 PRs mergeados desde el cierre anterior
+**HEAD actual:** `466f428` (#51 feat/careers navy oscuro — mergeado después de #53 #54 #55)
+**HEAD al cierre anterior:** `8458eef` (#53 feat/M01.6 cookies)
 
 ---
 
-## 🟡 ¿Qué está en progreso?
+## ¿Qué está construido y en producción?
 
-| Ítem | Rama | Estado |
-|---|---|---|
-| Auditoría de integridad y compliance 2026 | `bloque-sandbox-integrity-v1` | 🔄 **Activa hoy** |
-| RIOHS — promulgación y envío a DT | — | ⚠️ Pendiente |
-| Protocolo Ley Karin — firma del empleador | — | ⚠️ **Urgente (desde ago-2024)** |
-| Contratos empleados — cláusula 42h Ley 21.561 | — | ⚠️ Urgente (antes 26/04) |
-| Feature GeoGebra / calculadora matemática | — | 📋 En backlog |
+### Páginas públicas (M01.x) — en `main`, EN PRUEBAS
 
----
+| ID | Ruta | Descripción | Estado |
+|----|------|-------------|--------|
+| M01 | `/start` | Landing + onboarding idioma/rol + forms registro + reveal | EN PRUEBAS |
+| M01.1 | `/terms` | Términos de servicio v1.0.0 | EN PRUEBAS |
+| M01.2 | `/privacy` | Política de privacidad v1.0.0 | EN PRUEBAS |
+| M01.3 | `/support` | Centro de soporte | EN PRUEBAS |
+| M01.4 | `/contact` | Formulario de contacto — SMTP real funcional | EN PRUEBAS |
+| M01.5 | `/careers` | Trabaja con nosotros — tema navy oscuro + fix layout (PR #44 + PR #51) | EN PRUEBAS |
+| M01.6 | `/cookies` | Política de cookies v1.0.0 — canónico restaurado (PR #53 + PR #54 + PR #55) | EN PRUEBAS |
 
-## 🔴 ¿Qué está bloqueado o pendiente crítico?
+**Ningún módulo firmado por Cristian.** Solo él cierra con "OK Cristian + fecha".
 
-| # | Urgencia | Ítem | Responsable |
-|---|---|---|---|
-| 1 | 🚨 **Inmediato** | Protocolo Ley Karin firmado por Conniku SpA (infracción desde 01/08/2024) | Cristian + Abogado |
-| 2 | 🔴 **Antes 26/04/2026** | Verificar contratos de empleados vs escalón 42h | Cristian + Abogado |
-| 3 | 🟡 **Esta semana** | Abogado aprueba Arts. 33bis, 33.4-33.5 (T&C v3.2.2) | Abogado |
-| 4 | 🟡 **Esta semana** | RIOHS promulgar y enviar a Inspección del Trabajo | Cristian + Abogado |
-| 5 | 🟡 **Esta semana** | Confirmar IMM $539.000 no requiere addendum contratos | Abogado |
-| 6 | 🟢 **Noviembre 2026** | Adecuación completa Ley 21.719 (protección datos) | Abogado |
-| 7 | 🟢 **Antes del lanzamiento** | Push al repositorio y merge `bloque-sandbox-integrity-v1` → `main` | Cristian |
+### Flujo de inicio completo (Start page)
+1. START presionado → selector de idioma (6 idiomas: ES/EN/PT/IT/FR/DE)
+2. Selección → UI se traduce en tiempo real (`setLang()` → Context re-render)
+3. Selector de tipo de usuario (ya en el idioma elegido)
+4. Estudiante → form crear cuenta
+5. Tutor → form tutor
+6. General/Laboral → form perfil laboral + redes
+7. Business → tab A (login) ó tab B (panel módulos + form ventas)
+8. Form completado → animación reveal órbita → plataforma
 
----
+### Sistema i18n
+- **Sistema activo:** `src/services/i18n.tsx` — custom Context 275KB, cubre toda la plataforma
+- **Hook:** `useI18n()` → `{t, setLang, lang}` — importar desde `../services/i18n`
+- **Idiomas:** ES, EN, PT, IT, FR, DE
+- **Nota:** `src/i18n/index.ts` (react-i18next) existe pero es código muerto — no importado
 
-## 📋 Correcciones aplicadas hoy (22/04/2026)
+### Sistema de email (Contact form)
+- **Backend:** `backend/contact_routes.py` — `_send_email_sync`, HTTP 502 si falla
+- **SMTP:** Zoho Mail con App Specific Passwords
+- **Routing:**
 
-### Bloque A — Nómina · commit `f2ac9fb`
-- IMM corregido: ~~$500.000~~ → **$539.000** (Ley 21.751 · vigente desde 01/01/2026)
-- AFC tope imponible: ~~122,6 UF~~ → **135,2 UF** (Sup. Pensiones · feb-2026)
-- SIS tasa empleador: ~~1,41%~~ → **1,54%** (Sup. Pensiones · ene-2026)
-
-### Bloque B — Ley Karin · commit `bd4d939`
-- T&C v3.2.2: Art. 33.4, 33.5 y nuevo Art. 33bis (Política de Ambiente Seguro)
-- Referencia expresa a Ley 21.643 en contrato de tutores
-- Canal de denuncias: seguridad@conniku.com
-
-### Bloque E — Jornada automática · commit `3e5d74a`
-- Jornada laboral: ~~"45 horas" hardcodeado~~ → calculada en tiempo real
-- Backend devuelve escalón vigente según fecha del sistema
-- Próximo escalón automático: **42h desde 26/04/2026 · 40h desde 26/04/2028**
-
-### Bloque C — Registros de versión · commit `4a4d9eb`
-- `legal_versions.py`: TOS_VERSION `3.2.0` → `3.2.2`, hash actualizado
-- `documentRegistry.ts`: terms version + sha256, privacy sha256
-- `terms.md` frontmatter: version `3.2.0` → `3.2.2`, hash real calculado
-
-### Bloque D — Paquete abogado · commit `7cb5e69`
-- Documento resumen para el abogado: `02-legal/para-abogado/2026-04-22-paquete-abogado.md`
-
-### Reorganización docs · commit `34caae2`
-- 231 archivos reorganizados en estructura numerada `01-` a `05-`
-- Índice maestro `docs/README.md` creado
-- Rutas backend actualizadas (`docs/legal/v3.2/` → `docs/02-legal/vigentes/`)
+| Motivo | Destino | Cuenta SMTP |
+|--------|---------|-------------|
+| Soporte técnico | soporte@conniku.com | noreply |
+| Contacto general | contacto@conniku.com | contacto |
+| Privacidad | privacidad@conniku.com | noreply |
+| Legal | legal@conniku.com | noreply |
+| Seguridad y Ley Karin | seguridad@conniku.com | noreply |
+| Prensa y medios | prensa@conniku.com | noreply |
+| Conniku Business | contacto@conniku.com | contacto |
 
 ---
 
-## 🏗️ Stack técnico
+## Plan de fases — estado de avance
+
+| Fase | Descripción | Estado |
+|------|-------------|--------|
+| **Fase 0** | i18n base — 6 idiomas, selección real-time | ✅ COMPLETA (PR #52) |
+| **Fase 1** | Onboarding — forms por rol, reveal → plataforma | ✅ COMPLETA (en main) |
+| **Fase 2** | Perfil Social V2 — `/profile` base + perfiles por rol + stories + feed | ❌ **PRÓXIMO OBJETIVO** |
+| **Fase 3** | Módulos internos por rol (Mi U, Mi T, Mi Trabajo, Panel CEO) | ❌ NO INICIADA |
+| **Fase 4** | Infraestructura transversal — Auth JWT, notificaciones, mensajería, hardening | ❌ NO INICIADA |
+
+---
+
+## Referencias de diseño
+
+| Archivo | Descripción | Ruta |
+|---------|-------------|------|
+| perfil-v1-FINAL.html | Perfil Social V1 "LinkedIn Navy" — diseño definitivo | `/Users/cristiang./Desktop/ORBIT-U/pages/perfil-v1-FINAL.html` |
+| perfil-v2-FINAL.html | Perfil Social V2 — listo para integrar | `/Users/cristiang./Desktop/ORBIT-U/pages/perfil-v2-FINAL.html` |
+| perfil-social-v2.html | Fuente de verdad layout V2 (sidebar 360px + feed 1fr) | `/Users/cristiang./Desktop/ORBIT-U/pages/perfil-social-v2.html` |
+| start-perfil-v1-light.html | 6 variantes light (descartadas por ahora) | `/Users/cristiang./Desktop/ORBIT-U/pages/start-perfil-v1-light.html` |
+
+**Tema visual activo:** `navy-l`
+```
+--bg: #E8EEF8  |  --signature: #0A2878  |  --surface: #FFFFFF
+--text: #060E24  |  --text-3: #4A5C88  |  --text-4: #8A9DC0
+```
+
+---
+
+## Stack técnico activo
 
 | Capa | Tecnología |
-|---|---|
+|------|-----------|
 | Frontend | React 18 + TypeScript + Vite |
-| Estilos | CSS Modules (sin Tailwind) |
-| Editor colaborativo | Lexical + Yjs |
-| Backend | Python 3.11 + FastAPI + SQLAlchemy |
-| Base de datos | PostgreSQL |
-| Mobile | Capacitor (iOS + Android) |
+| Estilos | CSS Modules — tema navy-l |
+| Router | React Router v6 — lazy imports |
+| i18n | Custom Context `services/i18n.tsx` |
+| Backend | Python FastAPI + SQLAlchemy + PostgreSQL |
+| Email | Zoho Mail SMTP — `_send_email_sync` |
 | CI/CD | Husky + lint-staged + Prettier + ESLint + Ruff |
+| Deploy frontend | Vercel — `studyhub-com` |
+| Deploy backend | Render — `srv-d751eh75r7bs73d5ata0` |
 
 ---
 
-## 📁 Estructura del repositorio (nivel alto)
+## PRs mergeados hoy — 2026-04-26
 
-```
-CONNIKU/
-├── src/            → Frontend React (218 archivos TSX)
-├── backend/        → API Python FastAPI (47 módulos de rutas)
-├── docs/           → ← TODA LA DOCUMENTACIÓN (reorganizada hoy)
-├── assets/         → Logo, íconos, branding
-├── CLAUDE.md       → Instrucciones para el asistente
-├── FROZEN.md       → Archivos protegidos (no modificar)
-├── BLOCKS.md       → Historial de bloques de desarrollo
-└── MOBILE_RELEASE_GUIDE.md → Guía de publicación móvil
-```
+| PR | Commit | Contenido |
+|----|--------|-----------|
+| #43 | `ba31ff0` | docs: CLAUDE.md sec 17 lecciones A–G cierres + autorización |
+| #51 | `466f428` | feat(careers): tema navy oscuro + fix layout ancho completo |
+| #53 | `8458eef` | feat(M01.6): página /cookies + footer links + wizard legal activo |
+| #54 | `a7ad8c4` | fix(cookies): intento de corrección — revertido por PR #55 |
+| #55 | `5f04c7b` | fix(cookies): restaura Cookies.tsx a cookies.md v1.0.0 canónico |
 
----
+## Ramas abiertas
 
-## 🔐 Estado legal (documentos públicos vigentes)
-
-| Documento | Versión | SHA-256 (parcial) | Vigente desde |
-|---|---|---|---|
-| Términos de Servicio | **3.2.2** | `b2b834b6...` | 22/04/2026 |
-| Política de Privacidad | **2.4.2** | `cc933274...` | 23/04/2026 |
-| Política de Cookies | **1.0.0** | `80d41f71...` | 21/04/2026 |
-| Declaración de Edad | **1.0.0** | `61dab2ec...` | 21/04/2026 |
+Ninguna — todas las ramas de la sesión fueron mergeadas y eliminadas.
 
 ---
 
-## 📅 Próximos hitos
+## URLs de producción
 
-| Fecha | Hito |
-|---|---|
-| **26/04/2026** | Escalón 42h/semana Ley 21.561 — **automático en el sistema** |
-| **ASAP** | Merge `bloque-sandbox-integrity-v1` → `main` |
-| **Semana del 28/04** | Envío documentos al abogado para revisión |
-| **Mayo 2026** | Lanzamiento público (~3 semanas desde hoy) |
-| **01/12/2026** | Entra en vigor Ley 21.719 (nueva ley de datos personales) |
-| **26/04/2028** | Escalón 40h/semana Ley 21.561 — **automático en el sistema** |
+- **Frontend:** https://studyhub-com-cgutierrezlazc-9346s-projects.vercel.app
+- **Backend:** https://studyhub-api-bpco.onrender.com
+- **Render dashboard:** https://dashboard.render.com/web/srv-d751eh75r7bs73d5ata0
+- **Vercel dashboard:** https://vercel.com/cgutierrezlazc-9346s-projects/studyhub-com
