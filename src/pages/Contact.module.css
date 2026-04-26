@@ -261,6 +261,27 @@
   line-height: 1.45;
 }
 
+/* sidebar · botón link al centro de ayuda */
+.helpLinkBtn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  margin-top: 6px;
+  padding: 8px 14px;
+  border-radius: 8px;
+  background: rgba(0, 194, 122, 0.1);
+  border: 1px solid rgba(0, 194, 122, 0.35);
+  color: var(--green);
+  font-size: 13px;
+  font-weight: 600;
+  text-decoration: none;
+  transition: all 0.15s;
+}
+.helpLinkBtn:hover {
+  background: rgba(0, 194, 122, 0.18);
+  border-color: var(--green);
+}
+
 /* sidebar · legal */
 .legalText {
   font-size: 13px;
@@ -544,28 +565,6 @@
 .btnSecondary:hover {
   border-color: var(--green);
   color: var(--green);
-}
-
-/* ───────── redirect a Centro de soporte ───────── */
-.supportRedirect {
-  padding: 18px 16px 6px;
-  border-top: 1px solid var(--border-2);
-  margin-top: 8px;
-  display: flex;
-  flex-direction: column;
-  gap: 14px;
-  align-items: flex-start;
-}
-.supportRedirectText {
-  font-size: 14px;
-  color: var(--text-2);
-  margin: 0;
-  line-height: 1.55;
-}
-.supportRedirect .btnSend {
-  align-self: flex-start;
-  text-decoration: none;
-  display: inline-block;
 }
 
 /* ───────── form ───────── */

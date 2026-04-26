@@ -19,7 +19,7 @@
  * - Logo oficial: estructura inviolable de `<span class="brand on-dark">`.
  */
 import React, { useEffect, useLayoutEffect, useRef, useState } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link } from 'react-router-dom';
 import HexNebulaCanvas from '../lib/hex-nebula/HexNebulaCanvas';
 import styles from './Contact.module.css';
 
@@ -29,7 +29,6 @@ type MotivoValue =
   | 'Privacidad'
   | 'Legal'
   | 'Seguridad y Ley Karin'
-  | 'Centro de soporte'
   | 'Prensa y medios';
 
 type MotivoOption = {
@@ -72,12 +71,6 @@ const MOTIVOS: MotivoOption[] = [
     sidebarKey: 'seguridad',
   },
   {
-    value: 'Centro de soporte',
-    label: 'Centro de soporte',
-    desc: 'Artículos de ayuda y guías',
-    sidebarKey: 'support',
-  },
-  {
     value: 'Prensa y medios',
     label: 'Prensa y medios',
     desc: 'Entrevistas, notas y cobertura',
@@ -95,8 +88,6 @@ type CablePoints = {
 };
 
 export default function Contact() {
-  const navigate = useNavigate();
-
   const [motivo, setMotivo] = useState<MotivoValue | null>(null);
   const [open, setOpen] = useState(false);
   const [nombre, setNombre] = useState('');
@@ -113,6 +104,7 @@ export default function Contact() {
   const triggerRef = useRef<HTMLButtonElement | null>(null);
   const wrapRef = useRef<HTMLDivElement | null>(null);
   const composerRef = useRef<HTMLElement | null>(null);
+  const motivoLabelRef = useRef<HTMLSpanElement | null>(null);
 
   // Click fuera → cierra el dropdown.
   useEffect(() => {
@@ -140,11 +132,10 @@ export default function Contact() {
         return;
       }
       const sidebarEl = sidebarItemRefs.current[opt.sidebarKey];
-      // Si el dropdown está abierto, anclar al item del menú.
-      // Si está cerrado, anclar al trigger.
-      const sourceEl = open
-        ? (dropdownItemRefs.current[opt.value] ?? triggerRef.current)
-        : triggerRef.current;
+      // Source SIEMPRE es el label "Motivo" (la M), no el trigger ni el
+      // item del dropdown. Pedido explícito del usuario para que la línea
+      // siempre arranque del mismo punto visual.
+      const sourceEl = motivoLabelRef.current;
       if (!sourceEl || !sidebarEl) {
         setCable(null);
         return;
@@ -152,18 +143,14 @@ export default function Contact() {
       const a = sourceEl.getBoundingClientRect();
       const b = sidebarEl.getBoundingClientRect();
       const comp = composerRef.current?.getBoundingClientRect();
-      // El cable sale por el borde IZQUIERDO del item del motivo, va horizontal
-      // hacia la izquierda hasta el corredor (espacio vacío entre sidebar y
-      // composer), baja/sube vertical por ese corredor, y entra horizontal
-      // hacia la izquierda al borde DERECHO del canal del sidebar.
-      // Patrón ← ↓ ← (todo el trazo viaja por dentro del corredor visible).
+      // x1 = borde izquierdo del label "Motivo" (justo en la M).
+      // y1 = centro vertical del label.
+      // x2 = borde derecho del canal del sidebar (entrada por la derecha).
+      // xCorridor = centro del gap entre sidebar y composer.
       const x1 = a.left;
       const y1 = a.top + a.height / 2;
       const x2 = b.right;
       const y2 = b.top + b.height / 2;
-      // Corredor centrado entre el borde derecho del sidebar y el borde
-      // izquierdo del composer. Si no hay composer ref por algún motivo,
-      // colocamos el corredor a media distancia entre los dos puntos.
       const xCorridor = comp ? (b.right + comp.left) / 2 : (x1 + x2) / 2;
       setCable({ x1, y1, x2, y2, xCorridor });
     }
@@ -174,16 +161,12 @@ export default function Contact() {
       window.removeEventListener('resize', computeCable);
       window.removeEventListener('scroll', computeCable, true);
     };
-  }, [motivo, open]);
+  }, [motivo]);
 
   async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
     if (!motivo) {
       alert('Selecciona un motivo de consulta');
-      return;
-    }
-    if (motivo === 'Centro de soporte') {
-      navigate('/support');
       return;
     }
     setSending(true);
@@ -230,9 +213,21 @@ export default function Contact() {
     alert('Página pendiente');
   };
 
+  /**
+   * Click en un canal del sidebar → autoseleccionar el motivo correspondiente
+   * en el dropdown (vía bidireccional). Evitamos abrir el cliente de email
+   * (mailto:) para que el usuario complete el formulario, que es el flujo
+   * preferido — los mailto se mantienen como fallback para JS off.
+   */
+  const handleChannelClick =
+    (motivoValue: MotivoValue) => (e: React.MouseEvent<HTMLAnchorElement>) => {
+      e.preventDefault();
+      setMotivo(motivoValue);
+      setOpen(false);
+    };
+
   const motivoOption = motivo ? MOTIVOS.find((m) => m.value === motivo) : null;
   const activeSidebarKey = motivoOption?.sidebarKey ?? null;
-  const isCentroSoporte = motivo === 'Centro de soporte';
 
   // Conector ortogonal ← ↓ ← (o ← ↑ ← si el canal está arriba):
   //   1. Sale por el lado IZQUIERDO del motivo, viaja horizontal hacia
@@ -335,11 +330,27 @@ export default function Contact() {
             </ul>
           </section>
 
+          {/* Centro de ayuda · NO es un canal de email, es la página de
+              autoatención (artículos, FAQ). Sale como card aparte para
+              que el usuario distinga entre "leerme yo solo" vs "escribir a
+              un humano". */}
+          <section className={styles.dCard}>
+            <h2 className={styles.dCardTitle}>Antes de escribirnos</h2>
+            <p className={styles.dCardText}>
+              Visita el <strong>Centro de ayuda</strong> con artículos, guías y respuestas
+              frecuentes. Suele resolver tu duda al instante.
+            </p>
+            <Link to="/support" className={styles.helpLinkBtn}>
+              Ir al Centro de ayuda →
+            </Link>
+          </section>
+
           <section className={styles.dCard}>
             <h2 className={styles.dCardTitle}>Otros canales</h2>
             <div className={styles.channelsList}>
               <a
                 href="mailto:soporte@conniku.com"
+                onClick={handleChannelClick('Soporte técnico')}
                 ref={(el) => {
                   sidebarItemRefs.current['soporte'] = el;
                 }}
@@ -351,6 +362,7 @@ export default function Contact() {
               </a>
               <a
                 href="mailto:contacto@conniku.com"
+                onClick={handleChannelClick('Contacto general')}
                 ref={(el) => {
                   sidebarItemRefs.current['contacto'] = el;
                 }}
@@ -362,6 +374,7 @@ export default function Contact() {
               </a>
               <a
                 href="mailto:privacidad@conniku.com"
+                onClick={handleChannelClick('Privacidad')}
                 ref={(el) => {
                   sidebarItemRefs.current['privacidad'] = el;
                 }}
@@ -373,6 +386,7 @@ export default function Contact() {
               </a>
               <a
                 href="mailto:legal@conniku.com"
+                onClick={handleChannelClick('Legal')}
                 ref={(el) => {
                   sidebarItemRefs.current['legal'] = el;
                 }}
@@ -384,6 +398,7 @@ export default function Contact() {
               </a>
               <a
                 href="mailto:seguridad@conniku.com"
+                onClick={handleChannelClick('Seguridad y Ley Karin')}
                 ref={(el) => {
                   sidebarItemRefs.current['seguridad'] = el;
                 }}
@@ -393,20 +408,9 @@ export default function Contact() {
                 <span className={styles.channelRowAddr}>seguridad@conniku.com</span>
                 <span className={styles.channelRowDesc}>Denuncias y reportes de seguridad</span>
               </a>
-              <Link
-                to="/support"
-                ref={(el) => {
-                  // Link forwarda ref a su <a> renderizado.
-                  sidebarItemRefs.current['support'] = el as unknown as HTMLAnchorElement | null;
-                }}
-                className={`${styles.channelRow} ${activeSidebarKey === 'support' ? styles.enchufado : ''}`}
-              >
-                <span className={styles.channelRowLabel}>Centro de soporte</span>
-                <span className={styles.channelRowAddr}>/support →</span>
-                <span className={styles.channelRowDesc}>Artículos de ayuda y guías</span>
-              </Link>
               <a
                 href="mailto:prensa@conniku.com"
+                onClick={handleChannelClick('Prensa y medios')}
                 ref={(el) => {
                   sidebarItemRefs.current['prensa'] = el;
                 }}
@@ -452,7 +456,9 @@ export default function Contact() {
             </div>
 
             <div className={styles.composerActs}>
-              <span className={styles.pgLabel}>Motivo</span>
+              <span className={styles.pgLabel} ref={motivoLabelRef}>
+                Motivo
+              </span>
               <div className={styles.dropdownWrap} ref={wrapRef}>
                 <button
                   type="button"
@@ -515,16 +521,6 @@ export default function Contact() {
                 >
                   Enviar otro mensaje
                 </button>
-              </div>
-            ) : isCentroSoporte ? (
-              <div className={styles.supportRedirect}>
-                <p className={styles.supportRedirectText}>
-                  El Centro de soporte tiene artículos, guías y respuestas frecuentes para resolver
-                  tu duda al instante.
-                </p>
-                <Link to="/support" className={styles.btnSend}>
-                  Visitar Centro de soporte →
-                </Link>
               </div>
             ) : (
               <form className={styles.contactForm} onSubmit={handleSubmit}>
