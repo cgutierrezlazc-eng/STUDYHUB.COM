@@ -1,14 +1,13 @@
 /**
  * Terms.module.css
  *
- * Traducción literal de los estilos del <style> de
- * ORBIT-U/pages/terminos.html. Reglas globales (*, html, body) se omiten
- * porque ya viven en src/styles/global.css del proyecto CONNIKU.
+ * Rediseño visual M01.1 · Términos de Servicio. Adopta el lenguaje visual
+ * del perfil social v2 (facegram): cards `.dCard`, layout grid 360px + 1fr
+ * a 1180px max-width. Mismo patrón que Contact/Support.
  *
  * Tokens (`--bg`, `--text`, `--surface`, etc.) se redefinen aquí dentro
  * del scope local del módulo (clase `.page`) para preservar la paleta
- * original "Orbit Dark" de ORBIT-U sin chocar con los tokens de CONNIKU
- * (`--bg-primary`, `--text-primary`, etc.).
+ * "Orbit Dark" sin chocar con los tokens de CONNIKU.
  */
 
 .page {
@@ -34,29 +33,24 @@
   --pink: #ff4d3a;
   --paper: #f5f4ef;
 
-  /* TODO: cuando se bridgee el motor Nebula → src/lib/hex-nebula */
   background: var(--bg);
   color: var(--text);
   font-family: 'Inter', sans-serif;
   font-size: 15px;
   line-height: 1.7;
   min-height: 100vh;
-  /* Cubrir todo el viewport · evita que se vea el body claro de CONNIKU
-     a los lados del contenido centrado. */
   width: 100%;
   position: relative;
   isolation: isolate;
 }
-/* Forzar fondo oscuro en html/body mientras esta página está montada,
-   por si algún ancestor pinta encima. Limita scope con :has() para no
-   afectar al resto de la app. */
+
 :global(body):has(.page) {
   background: #050608;
   overflow-y: auto;
   height: auto;
 }
 
-/* top bar */
+/* ───────── topbar ───────── */
 .topbar {
   position: sticky;
   top: 0;
@@ -68,6 +62,8 @@
   display: flex;
   align-items: center;
   gap: 20px;
+  position: relative;
+  z-index: 1;
 }
 .backLink {
   display: flex;
@@ -77,6 +73,10 @@
   color: var(--text-4);
   text-decoration: none;
   transition: color 0.15s;
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 0;
 }
 .backLink:hover {
   color: var(--text-2);
@@ -97,33 +97,77 @@
   color: var(--text-4);
   letter-spacing: 0.06em;
 }
-
-/* layout */
-.layout {
-  display: grid;
-  grid-template-columns: 240px 1fr;
-  gap: 0;
-  max-width: 1100px;
-  margin: 0 auto;
-  padding: 48px 32px;
+.topbarBrand {
+  font-size: 16px;
+  text-decoration: none;
 }
-@media (max-width: 860px) {
+
+/* ───────── layout grid (perfil-social-v2) ───────── */
+.layout {
+  max-width: 1180px;
+  margin: 16px auto;
+  padding: 0 16px;
+  display: grid;
+  grid-template-columns: 360px minmax(0, 1fr);
+  gap: 96px;
+  align-items: start;
+  position: relative;
+  z-index: 1;
+}
+@media (max-width: 768px) {
   .layout {
     grid-template-columns: 1fr;
-  }
-  .tocWrap {
-    display: none;
+    gap: 24px;
   }
 }
 
-/* TOC sidebar */
-.tocWrap {
+/* ───────── sidebar ───────── */
+.sidebar {
+  display: flex;
+  flex-direction: column;
   position: sticky;
-  top: 65px;
-  height: fit-content;
-  padding-right: 32px;
+  top: 72px;
+  max-height: calc(100vh - 88px);
+  overflow-y: auto;
+  scrollbar-width: thin;
+  scrollbar-color: var(--border) transparent;
 }
-.tocLabel {
+.sidebar::-webkit-scrollbar {
+  width: 6px;
+}
+.sidebar::-webkit-scrollbar-thumb {
+  background: var(--border);
+  border-radius: 3px;
+}
+.sidebar::-webkit-scrollbar-track {
+  background: transparent;
+}
+@media (max-width: 768px) {
+  .sidebar {
+    position: static;
+    max-height: none;
+    overflow: visible;
+  }
+}
+
+/* ───────── feed ───────── */
+.feed {
+  display: flex;
+  flex-direction: column;
+}
+
+/* ───────── d-card ───────── */
+.dCard {
+  background: var(--surface);
+  border-radius: 10px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.09);
+  border: 1px solid var(--border-2);
+  padding: 16px;
+  margin-bottom: 14px;
+}
+
+/* ───────── card labels & text ───────── */
+.cardLabel {
   font-family: 'Geist Mono', monospace;
   font-size: 10px;
   color: var(--text-4);
@@ -131,6 +175,61 @@
   text-transform: uppercase;
   margin-bottom: 12px;
 }
+.cardText {
+  font-size: 13px;
+  color: var(--text-3);
+  margin: 0;
+  line-height: 1.55;
+}
+.cardText a {
+  color: var(--green);
+  text-decoration: none;
+}
+.cardText a:hover {
+  color: var(--green-3);
+  text-decoration: underline;
+}
+
+/* ───────── doc badge & meta (inside sidebar dCard) ───────── */
+.docBadge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 3px 10px;
+  border-radius: 999px;
+  background: rgba(0, 194, 122, 0.08);
+  border: 1px solid rgba(0, 194, 122, 0.2);
+  font-family: 'Geist Mono', monospace;
+  font-size: 10px;
+  color: var(--green-3);
+  letter-spacing: 0.08em;
+  margin-bottom: 14px;
+}
+.docBadge::before {
+  content: '';
+  width: 5px;
+  height: 5px;
+  border-radius: 50%;
+  background: var(--green);
+}
+.docMeta {
+  font-family: 'Geist Mono', monospace;
+  font-size: 11px;
+  color: var(--text-4);
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+.docMeta span {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+}
+.docMeta strong {
+  color: var(--text-3);
+}
+
+/* ───────── TOC list ───────── */
 .tocList {
   list-style: none;
   padding: 0;
@@ -151,110 +250,69 @@
 }
 .tocList a:hover {
   color: var(--text-2);
-  background: var(--surface);
+  background: var(--surface-2);
   border-left-color: var(--border-2);
 }
 
-/* doc */
-.docHeader {
-  margin-bottom: 40px;
-}
-.docBadge {
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-  padding: 3px 10px;
-  border-radius: 999px;
-  background: rgba(0, 194, 122, 0.08);
-  border: 1px solid rgba(0, 194, 122, 0.2);
-  font-family: 'Geist Mono', monospace;
-  font-size: 10px;
-  color: var(--green-3);
-  letter-spacing: 0.08em;
-  margin-bottom: 16px;
-}
-.docBadge::before {
-  content: '';
-  width: 5px;
-  height: 5px;
-  border-radius: 50%;
-  background: var(--green);
-}
+/* ───────── doc title (inside feed dCard) ───────── */
 .docTitle {
   font-family: 'Funnel Display', sans-serif;
   font-weight: 900;
-  font-size: clamp(28px, 4vw, 42px);
+  font-size: clamp(24px, 3.5vw, 38px);
   letter-spacing: -0.04em;
   color: var(--text);
-  margin-bottom: 12px;
-}
-.docMeta {
-  font-family: 'Geist Mono', monospace;
-  font-size: 11px;
-  color: var(--text-4);
-  display: flex;
-  flex-wrap: wrap;
-  gap: 16px;
-}
-.docMeta span {
-  display: flex;
-  align-items: center;
-  gap: 5px;
-}
-.docMeta strong {
-  color: var(--text-3);
+  margin: 0 0 16px;
 }
 
-.docBody h2 {
+/* ───────── headings & body inside feed dCard ───────── */
+.feed h2 {
   font-family: 'Funnel Display', sans-serif;
   font-weight: 800;
   font-size: 18px;
   letter-spacing: -0.02em;
   color: var(--text);
-  margin: 48px 0 16px;
-  padding-top: 24px;
+  margin: 40px 0 14px;
+  padding-top: 20px;
   border-top: 1px solid var(--border);
 }
-.docBody h2:first-child {
-  margin-top: 0;
-  border-top: none;
-  padding-top: 0;
+.feed h2:first-of-type {
+  margin-top: 24px;
 }
-.docBody h3 {
+.feed h3 {
   font-size: 14px;
   font-weight: 700;
   color: var(--text-2);
-  margin: 24px 0 10px;
+  margin: 20px 0 8px;
 }
-.docBody p {
+.feed p {
   color: var(--text-2);
-  margin-bottom: 14px;
+  margin-bottom: 12px;
 }
-.docBody p:last-child {
+.feed p:last-child {
   margin-bottom: 0;
 }
-.docBody ul,
-.docBody ol {
+.feed ul,
+.feed ol {
   color: var(--text-2);
   padding-left: 20px;
-  margin-bottom: 14px;
+  margin-bottom: 12px;
 }
-.docBody li {
-  margin-bottom: 6px;
+.feed li {
+  margin-bottom: 5px;
 }
-.docBody strong {
+.feed strong {
   color: var(--text);
   font-weight: 600;
 }
-.docBody a {
+.feed a {
   color: var(--green);
   text-decoration: none;
 }
-.docBody a:hover {
+.feed a:hover {
   color: var(--green-3);
   text-decoration: underline;
 }
-.docBody code {
+.feed code {
   font-family: 'Geist Mono', monospace;
   font-size: 12px;
   background: var(--surface-2);
@@ -263,56 +321,48 @@
   border-radius: 4px;
   color: var(--text-3);
 }
+.feed em {
+  color: var(--text-3);
+}
 
-/* info box */
+/* ───────── info box ───────── */
 .infoBox {
-  background: var(--surface);
+  background: var(--surface-2);
   border: 1px solid var(--border);
   border-radius: 10px;
-  padding: 16px 20px;
-  margin: 20px 0;
+  padding: 14px 18px;
+  margin: 16px 0;
   font-size: 13px;
   color: var(--text-3);
 }
-.infoBox.green {
+.infoBox a {
+  color: var(--green);
+  text-decoration: none;
+}
+.infoBox a:hover {
+  color: var(--green-3);
+  text-decoration: underline;
+}
+.green {
   border-left: 3px solid var(--green);
 }
-.infoBox.orange {
+.orange {
   border-left: 3px solid var(--orange);
 }
 
-/* art block (no usado actualmente; preservado del original) */
-.art {
-  margin: 12px 0 20px;
-  padding: 14px 20px;
-  background: var(--surface);
-  border: 1px solid var(--border);
-  border-radius: 8px;
-}
-.artNum {
-  font-family: 'Geist Mono', monospace;
-  font-size: 10px;
-  color: var(--text-4);
-  letter-spacing: 0.08em;
-  margin-bottom: 6px;
-}
-.art p {
-  font-size: 14px;
-}
-
-/* footer */
+/* ───────── footer ───────── */
 .pageFooter {
   border-top: 1px solid var(--border);
-  margin-top: 80px;
   padding: 24px 32px;
   display: flex;
   flex-wrap: wrap;
   justify-content: space-between;
   align-items: center;
   gap: 12px;
-  max-width: 1100px;
-  margin-left: auto;
-  margin-right: auto;
+  max-width: 1180px;
+  margin: 24px auto 0;
+  position: relative;
+  z-index: 1;
 }
 .footerCopy {
   font-size: 11px;
@@ -324,21 +374,19 @@
   flex-wrap: wrap;
   gap: 16px;
 }
-.footerLinks a {
+.footerLinks a,
+.footerLinks span {
   font-size: 11px;
   color: var(--text-4);
   text-decoration: none;
   transition: color 0.15s;
+  cursor: pointer;
 }
 .footerLinks a:hover {
   color: var(--text-2);
 }
-.footerLinks a.active {
+.footerLinks .active,
+.active {
   color: var(--green);
-}
-
-/* topbar wordmark · ajusta tamaño dentro del topbar */
-.topbarBrand {
-  font-size: 16px;
-  text-decoration: none;
+  cursor: default;
 }
