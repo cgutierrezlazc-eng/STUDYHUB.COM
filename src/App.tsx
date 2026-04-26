@@ -9,7 +9,7 @@
  *   - `*`              · NotFound
  */
 import { lazy, Suspense } from 'react';
-import { Routes, Route, useNavigate } from 'react-router-dom';
+import { Routes, Route, useNavigate, useLocation } from 'react-router-dom';
 import ErrorBoundary from './components/ErrorBoundary';
 
 const UnderConstruction = lazy(() => import('./pages/UnderConstruction'));
@@ -31,20 +31,29 @@ function UnderConstructionWithNav() {
   return <UnderConstruction onStaffLogin={() => navigate('/start')} />;
 }
 
+function AnimatedRoutes() {
+  const location = useLocation();
+  return (
+    <div key={location.pathname} className="route-transition">
+      <Routes location={location}>
+        <Route path="/" element={<UnderConstructionWithNav />} />
+        <Route path="/start" element={<Start />} />
+        <Route path="/terms" element={<Terms />} />
+        <Route path="/privacy" element={<Privacy />} />
+        <Route path="/support" element={<Support />} />
+        <Route path="/contact" element={<Contact />} />
+        <Route path="/careers" element={<Careers />} />
+        <Route path="*" element={<NotFoundWithNav />} />
+      </Routes>
+    </div>
+  );
+}
+
 export default function App() {
   return (
     <ErrorBoundary>
       <Suspense fallback={null}>
-        <Routes>
-          <Route path="/" element={<UnderConstructionWithNav />} />
-          <Route path="/start" element={<Start />} />
-          <Route path="/terms" element={<Terms />} />
-          <Route path="/privacy" element={<Privacy />} />
-          <Route path="/support" element={<Support />} />
-          <Route path="/contact" element={<Contact />} />
-          <Route path="/careers" element={<Careers />} />
-          <Route path="*" element={<NotFoundWithNav />} />
-        </Routes>
+        <AnimatedRoutes />
       </Suspense>
     </ErrorBoundary>
   );
