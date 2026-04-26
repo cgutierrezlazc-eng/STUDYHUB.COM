@@ -10,6 +10,7 @@
  */
 import React, { useEffect, useRef, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
+import { getApiBase } from '../services/api';
 import { useI18n } from '../services/i18n';
 import {
   AGE_DECLARATION_TEXT_HASH,
@@ -90,6 +91,7 @@ export default function Start() {
   const [revealing, setRevealing] = useState(false);
   const [leaving, setLeaving] = useState(false);
   const [modal, setModal] = useState<ModalKind>(null);
+  const [loginError, setLoginError] = useState('');
   const [visibleBtns, setVisibleBtns] = useState<Record<string, boolean>>({});
   const [landingVis, setLandingVis] = useState<Record<string, boolean>>({});
   const [hiddenVis, setHiddenVis] = useState<Record<string, boolean>>({});
@@ -503,10 +505,35 @@ export default function Start() {
     return () => document.removeEventListener('keydown', onKey);
   }, []);
 
-  function handleLogin() {
-    // TODO: cuando se cablee el backend, llamar al endpoint de login.
-    alert('Login pendiente · backend por cablear');
-    setModal(null);
+  useEffect(() => {
+    if (modal !== 'entrar') setLoginError('');
+  }, [modal]);
+
+  async function handleLogin() {
+    const emailInput = document.getElementById('loginEmail') as HTMLInputElement | null;
+    const passInput = document.getElementById('loginPass') as HTMLInputElement | null;
+    const email = emailInput?.value ?? '';
+    const password = passInput?.value ?? '';
+    setLoginError('');
+    try {
+      const res = await fetch(`${getApiBase()}/auth/login`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email, password }),
+      });
+      if (!res.ok) {
+        const data = await res.json().catch(() => ({}));
+        setLoginError(data.detail || 'No se pudo iniciar sesión');
+        return;
+      }
+      const data = await res.json();
+      localStorage.setItem('token', data.token);
+      if (data.refresh_token) localStorage.setItem('refresh_token', data.refresh_token);
+      setModal(null);
+      go('/');
+    } catch {
+      setLoginError('No se pudo conectar al servidor');
+    }
   }
 
   function handleRegistro() {
@@ -1303,6 +1330,7 @@ export default function Start() {
             <button type="button" className={styles.modalBtn} onClick={handleLogin}>
               {t('start.modal.btn_login')}
             </button>
+            {loginError && <p>{loginError}</p>}
             <div className={styles.modalSwitch}>
               {t('start.modal.no_account')}{' '}
               <button type="button" onClick={() => setModal('crear')}>
@@ -2078,6 +2106,7 @@ export default function Start() {
                 <button type="button" className={styles.modalBtn} onClick={handleLogin}>
                   {t('start.modal.btn_login')}
                 </button>
+                {loginError && <p>{loginError}</p>}
               </>
             ) : rfSent ? (
               <div className={styles.modalSentBox}>
