@@ -1,17 +1,13 @@
 /**
- * Terms.module.css
+ * Cookies.module.css
  *
- * Rediseño visual M01.1 · Términos de Servicio. Adopta el lenguaje visual
- * del perfil social v2 (facegram): cards `.dCard`, layout grid 360px + 1fr
- * a 1180px max-width. Mismo patrón que Contact/Support.
- *
- * Tokens (`--bg`, `--text`, `--surface`, etc.) se redefinen aquí dentro
- * del scope local del módulo (clase `.page`) para preservar la paleta
- * "Orbit Dark" sin chocar con los tokens de CONNIKU.
+ * M01.6 · Política de Cookies. Mismo patrón visual que Terms.module.css
+ * y Privacy.module.css: cards `.dCard`, layout grid 360px + 1fr a 1180px
+ * max-width, Orbit Dark tokens.
  */
 
 .page {
-  /* ORBIT-U · Orbit Dark tokens (copia literal de shared/tokens.css) */
+  /* ORBIT-U · Orbit Dark tokens */
   --bg: #050608;
   --surface: #0d0e11;
   --surface-2: #15181d;
@@ -60,7 +56,6 @@
   display: block;
 }
 
-/* Topbar y layout deben quedar encima del canvas. */
 .topbar,
 .layout,
 .pageFooter {
@@ -118,7 +113,7 @@
   text-decoration: none;
 }
 
-/* ───────── layout grid (perfil-social-v2) ───────── */
+/* ───────── layout grid ───────── */
 .layout {
   max-width: 1180px;
   margin: 16px auto;
@@ -204,7 +199,7 @@
   text-decoration: underline;
 }
 
-/* ───────── doc badge & meta (inside sidebar dCard) ───────── */
+/* ───────── doc badge & meta ───────── */
 .docBadge {
   display: inline-flex;
   align-items: center;
@@ -268,7 +263,7 @@
   border-left-color: var(--border-2);
 }
 
-/* ───────── doc title (inside feed dCard) ───────── */
+/* ───────── doc title ───────── */
 .docTitle {
   font-family: 'Funnel Display', sans-serif;
   font-weight: 900;
@@ -278,7 +273,7 @@
   margin: 0 0 16px;
 }
 
-/* ───────── headings & body inside feed dCard ───────── */
+/* ───────── headings & body ───────── */
 .feed h2 {
   font-family: 'Funnel Display', sans-serif;
   font-weight: 800;
@@ -297,6 +292,10 @@
   font-weight: 700;
   color: var(--text-2);
   margin: 20px 0 8px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
 }
 .feed p {
   color: var(--text-2);
@@ -335,9 +334,6 @@
   border-radius: 4px;
   color: var(--text-3);
 }
-.feed em {
-  color: var(--text-3);
-}
 
 /* ───────── info box ───────── */
 .infoBox {
@@ -362,6 +358,70 @@
 }
 .orange {
   border-left: 3px solid var(--orange);
+}
+.none {
+  border-left: 3px solid var(--text-4);
+}
+
+/* ───────── tables ───────── */
+.tableWrap {
+  overflow-x: auto;
+  margin: 16px 0;
+}
+.tableWrap table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 13px;
+}
+.tableWrap th {
+  font-family: 'Geist Mono', monospace;
+  font-size: 10px;
+  color: var(--text-4);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  padding: 10px 14px;
+  border-bottom: 1px solid var(--border);
+  text-align: left;
+}
+.tableWrap td {
+  padding: 10px 14px;
+  border-bottom: 1px solid rgba(38, 42, 50, 0.5);
+  color: var(--text-3);
+  vertical-align: top;
+}
+.tableWrap td strong {
+  color: var(--text-2);
+}
+.tableWrap tr:last-child td {
+  border-bottom: none;
+}
+
+/* ───────── category chips ───────── */
+.catChip {
+  display: inline-block;
+  padding: 2px 8px;
+  border-radius: 4px;
+  font-family: 'Geist Mono', monospace;
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: 0.05em;
+  vertical-align: middle;
+}
+.catNec {
+  background: rgba(0, 194, 122, 0.1);
+  color: var(--green-3);
+}
+.catFun {
+  background: rgba(0, 150, 204, 0.1);
+  color: #5bb8e0;
+}
+.catAna {
+  background: rgba(107, 78, 255, 0.1);
+  color: #a898ff;
+}
+.catMkt {
+  background: rgba(255, 74, 28, 0.1);
+  color: #ff8a6b;
 }
 
 /* ───────── footer ───────── */

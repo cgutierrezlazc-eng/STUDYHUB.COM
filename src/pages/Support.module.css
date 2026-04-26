@@ -39,6 +39,8 @@
 
 :global(body):has(.page) {
   background: #050608;
+  overflow-y: auto;
+  height: auto;
 }
 
 /* Hex Nebula canvas mounted via React component, fixed fullscreen */
@@ -283,6 +285,10 @@
   color: var(--text-4);
   text-decoration: none;
   transition: color 0.15s;
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 0;
 }
 .backLink:hover {
   color: var(--text-2);

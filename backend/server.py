@@ -26,6 +26,7 @@ from chile_tax_routes import router as finance_router
 # from collab_ws import router as collab_ws_router
 from community_routes import router as community_router
 from conference_routes import router as conference_router
+from careers_routes import router as careers_router
 from contact_routes import router as contact_router
 from course_routes import router as course_router
 from cv_routes import router as cv_router
@@ -84,6 +85,7 @@ from workspaces_export import router as workspaces_export_router
 from workspaces_routes import router as workspaces_router
 from workspaces_ws import router as workspaces_ws_router
 from ws_routes import router as ws_router
+from legal_document_views_routes import router as legal_views_router
 
 app = FastAPI(title="Conniku Backend", version="2.0.0")
 
@@ -319,6 +321,8 @@ app.include_router(cv_router)
 app.include_router(push_router)
 app.include_router(certificate_router)
 app.include_router(conference_router)
+app.include_router(careers_router)
+app.include_router(legal_views_router)
 app.include_router(contact_router)
 app.include_router(ws_router)
 app.include_router(hr_router)

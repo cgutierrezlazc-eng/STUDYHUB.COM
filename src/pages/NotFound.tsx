@@ -128,8 +128,7 @@ export default function NotFound({ onNavigate }: Props) {
           maxWidth: 640,
         }}
       >
-        Esta página no{' '}
-        <span style={{ background: '#ffe9b8', padding: '0 8px', borderRadius: 10 }}>existe</span>.
+        {t('notFound.title') || 'Esta página no existe.'}
       </h2>
 
       <p
@@ -176,7 +175,7 @@ export default function NotFound({ onNavigate }: Props) {
             gap: 10,
           }}
         >
-          Volver al inicio
+          {t('notFound.btn_home') || 'Volver al inicio'}
           <span
             style={{
               width: 24,
@@ -207,7 +206,7 @@ export default function NotFound({ onNavigate }: Props) {
             cursor: 'pointer',
           }}
         >
-          Contactar soporte
+          {t('notFound.btn_support') || 'Contactar soporte'}
         </button>
       </div>
     </div>

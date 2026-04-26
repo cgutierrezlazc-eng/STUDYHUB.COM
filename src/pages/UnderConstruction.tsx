@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from 'react';
+import { useI18n } from '../services/i18n';
 
 /**
  * UnderConstruction
@@ -16,6 +17,7 @@ interface UnderConstructionProps {
 }
 
 export default function UnderConstruction({ onStaffLogin }: UnderConstructionProps = {}) {
+  const { t } = useI18n();
   const [dots, setDots] = useState('');
 
   useEffect(() => {
@@ -106,9 +108,9 @@ export default function UnderConstruction({ onStaffLogin }: UnderConstructionPro
               animation: 'ucPulse 1.6s cubic-bezier(0.2, 0.8, 0.2, 1) infinite',
             }}
           />
-          <span>Conniku · en desarrollo</span>
+          <span>{t('under.status') || 'Conniku · en desarrollo'}</span>
         </div>
-        <span>Volvemos pronto</span>
+        <span>{t('under.soon') || 'Volvemos pronto'}</span>
       </div>
       <style>{`
         @keyframes ucPulse {
@@ -174,27 +176,7 @@ export default function UnderConstruction({ onStaffLogin }: UnderConstructionPro
             maxWidth: 1000,
           }}
         >
-          Estamos{' '}
-          <span
-            style={{
-              background: '#6b4eff',
-              color: '#fff',
-              padding: '0 16px',
-              borderRadius: 20,
-              display: 'inline-block',
-              transform: 'rotate(-1.5deg)',
-            }}
-          >
-            subiendo
-          </span>
-          <br />
-          el nuevo{' '}
-          <span
-            style={{ background: '#d9ff3a', color: '#181f08', padding: '0 14px', borderRadius: 18 }}
-          >
-            Conniku
-          </span>
-          <span style={{ color: '#ff4a1c' }}>.</span>
+          {t('under.h1') || 'Estamos subiendo el nuevo Conniku.'}
         </h1>
 
         {/* Lead */}
@@ -208,12 +190,12 @@ export default function UnderConstruction({ onStaffLogin }: UnderConstructionPro
             fontWeight: 500,
           }}
         >
-          Estamos actualizando toda la plataforma con un nuevo diseño editorial. Workspaces,
-          biblioteca, tutorías, cursos, comunidad.{' '}
+          {t('under.lead') ||
+            'Estamos actualizando toda la plataforma con un nuevo diseño editorial. Workspaces, biblioteca, tutorías, cursos, comunidad.'}{' '}
           <strong
             style={{ background: '#ffe9b8', padding: '2px 8px', borderRadius: 6, fontWeight: 700 }}
           >
-            Volvemos muy pronto.
+            {t('under.lead_strong') || 'Volvemos muy pronto.'}
           </strong>
         </p>
 
@@ -255,7 +237,8 @@ export default function UnderConstruction({ onStaffLogin }: UnderConstructionPro
               textTransform: 'uppercase',
             }}
           >
-            Actualizando diseño{dots}
+            {t('under.chip') || 'Actualizando diseño'}
+            {dots}
           </span>
         </div>
 
@@ -271,7 +254,7 @@ export default function UnderConstruction({ onStaffLogin }: UnderConstructionPro
             fontWeight: 600,
           }}
         >
-          ¿Necesitas algo urgente?{' '}
+          {t('under.urgent') || '¿Necesitas algo urgente?'}{' '}
           <a
             href="mailto:contacto@conniku.com"
             style={{ color: '#0d0f10', textDecoration: 'underline', textUnderlineOffset: 3 }}
@@ -300,7 +283,7 @@ export default function UnderConstruction({ onStaffLogin }: UnderConstructionPro
             gap: 10,
           }}
         >
-          <span>Conniku SpA · Hecho en Chile · +18</span>
+          <span>{t('under.footer') || 'Conniku SpA · Hecho en Chile · +18'}</span>
           {onStaffLogin && (
             <button
               type="button"
@@ -332,7 +315,7 @@ export default function UnderConstruction({ onStaffLogin }: UnderConstructionPro
               }}
               aria-label="Acceso interno para equipo Conniku"
             >
-              Acceso interno
+              {t('under.internal') || 'Acceso interno'}
             </button>
           )}
         </div>
