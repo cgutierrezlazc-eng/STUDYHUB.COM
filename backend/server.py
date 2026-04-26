@@ -85,6 +85,7 @@ from workspaces_export import router as workspaces_export_router
 from workspaces_routes import router as workspaces_router
 from workspaces_ws import router as workspaces_ws_router
 from ws_routes import router as ws_router
+from legal_document_views_routes import router as legal_views_router
 
 app = FastAPI(title="Conniku Backend", version="2.0.0")
 
@@ -321,6 +322,7 @@ app.include_router(push_router)
 app.include_router(certificate_router)
 app.include_router(conference_router)
 app.include_router(careers_router)
+app.include_router(legal_views_router)
 app.include_router(contact_router)
 app.include_router(ws_router)
 app.include_router(hr_router)

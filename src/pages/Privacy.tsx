@@ -1,9 +1,11 @@
 import { Link, useNavigate } from 'react-router-dom';
 import HexNebulaCanvas from '../lib/hex-nebula/HexNebulaCanvas';
 import styles from './Privacy.module.css';
+import { useI18n } from '../services/i18n';
 
 export default function Privacy() {
   const navigate = useNavigate();
+  const { t } = useI18n();
   return (
     <div className={styles.page}>
       <HexNebulaCanvas
@@ -16,7 +18,7 @@ export default function Privacy() {
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
             <path d="M19 12H5M12 19l-7-7 7-7" />
           </svg>
-          Volver
+          {t('chrome.back') || 'Volver'}
         </button>
         <div className={styles.topbarSep} />
         <Link to="/" className={`brand on-dark ${styles.topbarBrand}`} aria-label="Conniku">
@@ -28,14 +30,18 @@ export default function Privacy() {
           </span>
         </Link>
         <div className={styles.topbarSep} />
-        <span className={styles.topbarTitle}>POLÍTICA DE PRIVACIDAD</span>
+        <span className={styles.topbarTitle}>
+          {t('privacy.topbar_title') || 'POLÍTICA DE PRIVACIDAD'}
+        </span>
       </div>
 
       <div className={styles.layout}>
         {/* ── Sidebar ── */}
         <aside className={styles.sidebar}>
           <div className={styles.dCard}>
-            <div className={styles.docBadge}>DOCUMENTO LEGAL VIGENTE</div>
+            <div className={styles.docBadge}>
+              {t('terms.doc_badge') || 'DOCUMENTO LEGAL VIGENTE'}
+            </div>
             <div className={styles.docMeta}>
               <span>
                 <strong>Versión</strong> 2.4.2
@@ -50,7 +56,7 @@ export default function Privacy() {
           </div>
 
           <div className={styles.dCard}>
-            <div className={styles.cardLabel}>Contenido</div>
+            <div className={styles.cardLabel}>{t('chrome.legal_content') || 'Contenido'}</div>
             <ul className={styles.tocList}>
               <li>
                 <a href="#s1">1 · Responsable del tratamiento</a>
@@ -707,6 +713,7 @@ export default function Privacy() {
         <nav className={styles.footerLinks}>
           <Link to="/terms">Términos</Link>
           <span className={styles.active}>Privacidad</span>
+          <Link to="/cookies">Cookies</Link>
           <Link to="/support">Soporte</Link>
           <Link to="/contact">Contacto</Link>
           <Link to="/careers">Trabaja con nosotros</Link>

@@ -22,6 +22,7 @@ import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import HexNebulaCanvas from '../lib/hex-nebula/HexNebulaCanvas';
 import styles from './Support.module.css';
+import { useI18n } from '../services/i18n';
 
 type Category = 'all' | 'cuenta' | 'pagos' | 'plataforma' | 'privacidad' | 'tutores';
 
@@ -276,14 +277,7 @@ const SECTIONS: FaqSection[] = [
   },
 ];
 
-const CATEGORIES: { id: Category; label: string }[] = [
-  { id: 'all', label: 'Todo' },
-  { id: 'cuenta', label: 'Cuenta' },
-  { id: 'pagos', label: 'Pagos' },
-  { id: 'plataforma', label: 'Plataforma' },
-  { id: 'privacidad', label: 'Privacidad' },
-  { id: 'tutores', label: 'Tutores' },
-];
+const CATEGORY_IDS: Category[] = ['all', 'cuenta', 'pagos', 'plataforma', 'privacidad', 'tutores'];
 
 function extractText(node: React.ReactNode): string {
   if (node == null || typeof node === 'boolean') return '';
@@ -302,6 +296,7 @@ const pendingAlert = (label: string) => () => {
 
 export default function Support() {
   const navigate = useNavigate();
+  const { t } = useI18n();
   const [activeCat, setActiveCat] = useState<Category>('all');
   const [search, setSearch] = useState('');
   const [openKey, setOpenKey] = useState<string | null>(null);
@@ -320,7 +315,7 @@ export default function Support() {
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
             <path d="M19 12H5M12 19l-7-7 7-7" />
           </svg>
-          Volver
+          {t('chrome.back') || 'Volver'}
         </button>
         <div className={styles.topbarSep} />
         <Link to="/" className={`brand on-dark ${styles.topbarBrand}`} aria-label="Conniku">
@@ -332,7 +327,9 @@ export default function Support() {
           </span>
         </Link>
         <div className={styles.topbarSep} />
-        <span className={styles.topbarTitle}>CENTRO DE AYUDA</span>
+        <span className={styles.topbarTitle}>
+          {t('support.topbar_title') || 'CENTRO DE SOPORTE'}
+        </span>
       </div>
 
       <div className={styles.layout}>
@@ -352,14 +349,14 @@ export default function Support() {
           <section className={styles.dCard}>
             <h2 className={styles.dCardTitle}>Categorías</h2>
             <div className={styles.catChipList}>
-              {CATEGORIES.map((c) => (
+              {CATEGORY_IDS.map((id) => (
                 <button
-                  key={c.id}
+                  key={id}
                   type="button"
-                  className={`${styles.catChip} ${activeCat === c.id ? styles.active : ''}`}
-                  onClick={() => setActiveCat(c.id)}
+                  className={`${styles.catChip} ${activeCat === id ? styles.active : ''}`}
+                  onClick={() => setActiveCat(id)}
                 >
-                  {c.label}
+                  {t(`support.filter.${id}`) || id}
                 </button>
               ))}
             </div>
@@ -402,11 +399,12 @@ export default function Support() {
         {/* COLUMNA DERECHA · feed */}
         <main className={styles.feed}>
           <section className={styles.pageHead}>
-            <div className={styles.pageBadge}>SOPORTE Y AYUDA</div>
-            <h1 className={styles.pageTitle}>¿En qué podemos ayudarte?</h1>
+            <div className={styles.pageBadge}>{t('support.head.badge') || 'CENTRO DE SOPORTE'}</div>
+            <h1 className={styles.pageTitle}>
+              {t('support.head.title') || '¿En qué podemos ayudarte?'}
+            </h1>
             <p className={styles.pageSub}>
-              Encuentra respuestas a las preguntas más frecuentes. Si no encuentras lo que buscas,
-              escríbenos directamente.
+              {t('support.head.sub') || 'Encuentra respuestas rápidas o escríbenos directamente.'}
             </p>
           </section>
 
@@ -479,13 +477,13 @@ export default function Support() {
 
           {/* CTA final */}
           <div className={styles.ctaBox}>
-            <h2>¿No encontraste lo que buscabas?</h2>
+            <h2>{t('support.cta.title') || '¿No encontraste lo que buscabas?'}</h2>
             <p>
-              Nuestro equipo de soporte está disponible para ayudarte. Respondemos dentro de 24–48
-              horas hábiles.
+              {t('support.cta.sub') ||
+                'Escríbenos directamente y te respondemos en 24–48 h hábiles.'}
             </p>
             <Link to="/contact" className={styles.ctaBtn}>
-              Contactar soporte →
+              {t('support.cta.btn') || 'Ir a Contacto →'}
             </Link>
           </div>
         </main>
@@ -493,10 +491,12 @@ export default function Support() {
 
       {/* Footer · igualado al de Contact */}
       <footer className={styles.pageFooter}>
-        <span className={styles.footerCopy}>© 2026 Conniku SpA · Antofagasta, Chile</span>
+        <span className={styles.footerCopy}>
+          {t('chrome.footer_copy_antof') || '© 2026 Conniku SpA · Antofagasta, Chile'}
+        </span>
         <nav className={styles.footerLinks}>
-          <Link to="/terms">Términos</Link>
-          <Link to="/privacy">Privacidad</Link>
+          <Link to="/terms">{t('chrome.footer_terms') || 'Términos'}</Link>
+          <Link to="/privacy">{t('chrome.footer_privacy') || 'Privacidad'}</Link>
           <a
             href="#"
             onClick={(e) => {
@@ -504,12 +504,12 @@ export default function Support() {
               pendingAlert('Cookies')();
             }}
           >
-            Cookies
+            {t('chrome.footer_cookies') || 'Cookies'}
           </a>
           <Link to="/support" className={styles.active}>
-            Soporte
+            {t('chrome.footer_support') || 'Soporte'}
           </Link>
-          <Link to="/contact">Contacto</Link>
+          <Link to="/contact">{t('chrome.footer_contact') || 'Contacto'}</Link>
           <a
             href="#"
             onClick={(e) => {
@@ -517,9 +517,9 @@ export default function Support() {
               pendingAlert('Prensa')();
             }}
           >
-            Prensa
+            {t('chrome.footer_press') || 'Prensa'}
           </a>
-          <Link to="/careers">Trabaja con nosotros</Link>
+          <Link to="/careers">{t('chrome.footer_careers') || 'Trabaja con nosotros'}</Link>
         </nav>
       </footer>
     </div>
