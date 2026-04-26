@@ -1065,6 +1065,20 @@ nuevo debe prevenir. No se replican bajo ninguna circunstancia.
   destructiva o irreversible siempre requieren autorización explícita,
   nunca se hacen "porque parecía obvio".
 
+- **2026-04-25**: `UnderConstruction` tenía prop `onStaffLogin` para
+  mostrar botón "ACCESO INTERNO" que navega a `/start`, pero en
+  `App.tsx` se renderizaba como `<UnderConstruction />` sin pasarle
+  el prop — resultado: el botón era invisible y no había forma de
+  entrar a la app desde el flujo normal. Cristian lo descubrió al
+  intentar revisar el flujo completo en el browser. Prevención
+  aplicada: (1) al añadir una ruta nueva o modificar el wrapper de
+  un componente en `App.tsx`, revisar todos los props que acepta ese
+  componente y confirmar que los props funcionales (callbacks de
+  navegación) estén cableados; (2) antes de dar por completado
+  cualquier módulo o página, abrir el flujo desde `/` (la landing
+  pública) y navegar manualmente hasta la nueva ruta, no solo
+  navegar directo a la URL interna.
+
 Este registro queda vivo. Si en el futuro Tori comete un error con
 implicaciones similares, se agrega a este registro como lección
 adicional, no se oculta ni se relativiza.

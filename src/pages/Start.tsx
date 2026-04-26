@@ -862,25 +862,13 @@ export default function Start() {
         <nav className={styles.footerLinks}>
           <Link to="/terms">Términos de servicio</Link>
           <div className={styles.footerSep} />
-          {/* TODO: cuando se bridgee privacidad.html → /privacy */}
-          <a href="#" onClick={handlePending}>
-            Política de privacidad
-          </a>
+          <Link to="/privacy">Política de privacidad</Link>
           <div className={styles.footerSep} />
-          {/* TODO: cuando se bridgee soporte.html → /support */}
-          <a href="#" onClick={handlePending}>
-            Soporte
-          </a>
+          <Link to="/support">Soporte</Link>
           <div className={styles.footerSep} />
-          {/* TODO: cuando se bridgee contacto.html → /contact */}
-          <a href="#" onClick={handlePending}>
-            Contacto
-          </a>
+          <Link to="/contact">Contacto</Link>
           <div className={styles.footerSep} />
-          {/* TODO: cuando se bridgee empleo-conniku.html → /careers */}
-          <a href="#" onClick={handlePending}>
-            Trabaja con nosotros
-          </a>
+          <Link to="/careers">Trabaja con nosotros</Link>
         </nav>
       </footer>
 

@@ -714,18 +714,8 @@ export default function Privacy() {
         <nav className={styles.footerLinks}>
           <Link to="/terms">Términos</Link>
           <span className={styles.active}>Privacidad</span>
-          <a href="#" onClick={handlePending}>
-            Cookies
-          </a>
-          <a href="#" onClick={handlePending}>
-            Soporte
-          </a>
-          <a href="#" onClick={handlePending}>
-            Contacto
-          </a>
-          <a href="#" onClick={handlePending}>
-            Prensa
-          </a>
+          <Link to="/support">Soporte</Link>
+          <Link to="/contact">Contacto</Link>
           <Link to="/careers">Trabaja con nosotros</Link>
         </nav>
       </footer>

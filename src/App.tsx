@@ -26,12 +26,17 @@ function NotFoundWithNav() {
   return <NotFound onNavigate={(path: string) => navigate(path)} />;
 }
 
+function UnderConstructionWithNav() {
+  const navigate = useNavigate();
+  return <UnderConstruction onStaffLogin={() => navigate('/start')} />;
+}
+
 export default function App() {
   return (
     <ErrorBoundary>
       <Suspense fallback={null}>
         <Routes>
-          <Route path="/" element={<UnderConstruction />} />
+          <Route path="/" element={<UnderConstructionWithNav />} />
           <Route path="/start" element={<Start />} />
           <Route path="/terms" element={<Terms />} />
           <Route path="/privacy" element={<Privacy />} />

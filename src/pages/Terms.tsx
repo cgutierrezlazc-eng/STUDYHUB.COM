@@ -405,8 +405,8 @@ export default function Terms() {
           {/* TODO: cuando se bridgee privacidad.html → ruta /privacy */}
           <p>
             El tratamiento de los datos personales del Usuario se rige por la{' '}
-            <a href="/">Política de Privacidad</a> de Conniku, que forma parte integrante de estos
-            Términos. Al aceptar estos Términos, el Usuario acepta también la Política de
+            <Link to="/privacy">Política de Privacidad</Link> de Conniku, que forma parte integrante
+            de estos Términos. Al aceptar estos Términos, el Usuario acepta también la Política de
             Privacidad.
           </p>
 
@@ -554,11 +554,9 @@ export default function Terms() {
           <Link to="/terms" className={styles.active}>
             Términos
           </Link>
-          <Link to="/">Privacidad</Link>
-          <Link to="/">Cookies</Link>
-          <Link to="/">Soporte</Link>
-          <Link to="/">Contacto</Link>
-          <Link to="/">Prensa</Link>
+          <Link to="/privacy">Privacidad</Link>
+          <Link to="/support">Soporte</Link>
+          <Link to="/contact">Contacto</Link>
           <Link to="/careers">Trabaja con nosotros</Link>
         </nav>
       </footer>
