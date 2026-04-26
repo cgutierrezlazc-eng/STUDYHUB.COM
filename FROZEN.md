@@ -45,3 +45,6 @@
 | `public/favicon.svg` | completo | 2026-04-20 | bloque-rollout-v3-ola-1: favicon oficial LOGO.04 |
 | `docs/brand/LOGO-SPEC.md` | completo | 2026-04-20 | bloque-rollout-v3-ola-1: spec canónica del logo |
 | `src/pages/UnderConstruction.tsx` | completo | 2026-04-20 | bloque-rollout-v3-ola-1: landing pública temporal + acceso discreto CEO |
+| `src/components/LanguageSwitcher.tsx` | completo | 2026-04-26 | language-switcher-start: trigger pill + popup grid 2×3 con ARIA + keyboard nav + focus management. Acepta props `ariaLabel?` y `title?` para no acoplar al hook useI18n. |
+| `src/components/LanguageSwitcher.module.css` | completo | 2026-04-26 | language-switcher-start: z-index 300 (margen sobre máximo del scope Start.module.css = 200), animación fade+scale 120ms, media query mobile 480px. |
+| `src/components/LanguageSwitcher.test.tsx` | completo | 2026-04-26 | language-switcher-start: 6 tests vitest jsdom (TDD RED→GREEN). Cubre selección, open/close, ESC, click fuera. Focus/keyboard nav verificados manualmente en Capa 6 (no en jsdom por D10). |
